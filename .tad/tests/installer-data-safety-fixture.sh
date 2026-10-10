@@ -65,6 +65,11 @@ new_sandbox() {
   CURL_FUNC_LOG="$SANDBOX/curl-func.log"
   CURL_PATH_LOG="$SANDBOX/curl-path.log"
   mkdir -p "$TARGET" "$SNAP" "$SHIMBIN"
+  # Phase 5b rework R1: pin the backup root inside the sandbox (outside TARGET)
+  # for every case, whatever the caller exported, so no installer run can write
+  # to $HOME/.tad-backups. run_install_cc still overrides it per call.
+  TAD_BACKUP_ROOT="$SANDBOX/tad-backups"
+  export TAD_BACKUP_ROOT
   : > "$CURL_FUNC_LOG"
   : > "$CURL_PATH_LOG"
   # PATH shim (belt-and-braces; the mechanism that survives under zsh, where
@@ -209,6 +214,38 @@ extract_fn() { # $1=fn-name $2=outfile [$3=required body token]
   if [ ! -s "$2" ]; then echo "fixture: cannot extract $1" >&2; exit 2; fi
   if [ "$(tail -n 1 "$2")" != "}" ]; then echo "fixture: $1 extraction truncated (tail is not })" >&2; exit 2; fi
   if [ -n "${3:-}" ] && ! grep -qF -e "$3" "$2"; then echo "fixture: $1 extraction missing token: $3" >&2; exit 2; fi
+}
+
+# extract_rollback_harness <outfile> — every tad.sh function the manifest-scoped
+# rollback_on_failure path calls (f9f397bc): the two restore helpers and the
+# tree comparison they verify with, the backup-root gate, and the prefix
+# helpers behind both gates. A missing one must stop the fixture (exit 2),
+# never degrade the probe into a vacuous PASS.
+extract_rollback_harness() { # $1 = outfile
+  local out="$1" fn part
+  : > "$out"
+  for fn in _tad_tree_equal restore_dir_entry restore_file_entry _literal_has_prefix assert_under_root assert_under_backup_root rollback_on_failure; do
+    part="$out.$fn"
+    case "$fn" in
+      _tad_tree_equal) extract_fn "$fn" "$part" "cmp -s" ;;
+      restore_dir_entry|restore_file_entry) extract_fn "$fn" "$part" "rollback-staging" ;;
+      _literal_has_prefix) extract_fn "$fn" "$part" "lhp_esc" ;;
+      assert_under_root) extract_fn "$fn" "$part" "TARGET_ROOT" ;;
+      assert_under_backup_root) extract_fn "$fn" "$part" "manifest.txt" ;;
+      rollback_on_failure) extract_fn "$fn" "$part" "Rollback coverage" ;;
+    esac
+    cat "$part" >> "$out"
+  done
+}
+
+# make_probe_backup <backup_dir> <content> — a production-shaped backup as
+# backup_existing writes it: <dir>/.tad/data.txt holding <content> and a
+# manifest.txt (written last, version= trailer) that lists data.txt. <dir> must
+# be under the caller's backup root and named YYYYMMDD_HHMMSS.
+make_probe_backup() { # $1 = dir, $2 = data.txt content
+  mkdir -p "$1/.tad"
+  printf '%s\n' "$2" > "$1/.tad/data.txt"
+  printf 'data.txt\nversion=3.1.0\n' > "$1/manifest.txt"
 }
 
 # ════════════════════════ AC2.1 (FR-1) ════════════════════════
@@ -442,6 +479,21 @@ case_ac26() {
   CURRENT_CASE="ac2.6"
   # (a) current=2.2.0 → 2.3.0 entries inert (every deprecation version is
   # higher, so zero deletion attempts + planted TAD-owned files intact).
+  #
+  # Phase 5b (B1) — what changed and why. This half was written 2026-09-03
+  # (f61c1892) with `run_install claude-code`, a platform that then generated
+  # no hooks, so ".codex/hooks.json must be byte-identical" could hold. The
+  # v3.0.0 commit (20223774) mechanically retargeted it to `codex`; but a
+  # codex install regenerates .codex/hooks.json unconditionally (tad.sh
+  # `if [ "$PLATFORM" = "codex" ]`, the .codex/hooks.json projection), so the
+  # assertion could never hold again. The thing this case protects is "a
+  # deprecation entry whose version is higher than the target's current
+  # version deletes/rewrites nothing", and that is platform-independent, so
+  # the run now uses `opencode`: the platform that, like the original
+  # claude-code, never writes .codex/hooks.json. The three byte-identity
+  # assertions (hooks.json + the two .tad/templates/*.template) are unchanged.
+  # The codex-regenerates-hooks behaviour is covered by the installer's own
+  # projection cases, not by this inertness check.
   new_sandbox
   stage_pruned_source
   local want rc
@@ -452,7 +504,7 @@ case_ac26() {
   printf 'STALE-AGENTS-TPL\n' > "$TARGET/.tad/templates/AGENTS.md.template"
   printf 'STALE-GEMINI-TPL\n' > "$TARGET/.tad/templates/GEMINI.md.template"
   snapshot_target "$SNAP/pre"
-  rc="$(run_install codex "$SANDBOX/install-220.log")"
+  rc="$(run_install opencode "$SANDBOX/install-220.log")"
   if [ "$rc" = "0" ]; then pass "ac2.6a: run rc=0"; else fail "ac2.6a: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
@@ -486,11 +538,33 @@ case_ac26() {
   if [ "$rc" = "0" ]; then pass "ac2.6b: run rc=0"; else fail "ac2.6b: run rc=$rc"; fi
   assert_no_network
   assert_version_proof "$want"
-  local ok26b=0
-  for f in AGENTS.md GEMINI.md .codex/config.toml; do
+  # Phase 5b (B2) — what changed and why. This half protects "a user's own
+  # files survive an upgrade install". It was written when the root AGENTS.md
+  # was not a TAD-installed file for the platform under test (f61c1892 ran it
+  # with `claude-code`, which then listed no root files; 20223774 retargeted it
+  # to `codex`, which installs AGENTS.md). The installer's contract for a root
+  # file it installs has been "back up the user's copy to <name>.pre-tad.<ts>,
+  # then overwrite" since 46af019c (2026-08-17, FR-4b), so "AGENTS.md
+  # byte-identical in place" cannot be true under codex. The data-safety
+  # guarantee the case exists for is unchanged and is asserted directly: the
+  # user's original AGENTS.md bytes must still exist, byte-identical, in a
+  # .pre-tad.* backup next to it (no user byte lost). GEMINI.md and
+  # .codex/config.toml are not installed root files under this platform and
+  # keep the original in-place byte-identity assertion.
+  local ok26b=0 pre_tad_bk="" pre_tad_hit=0 pre_tad_f
+  for f in GEMINI.md .codex/config.toml; do
     if cmp -s "$SNAP/pre/$f" "$TARGET/$f"; then :; else fail "ac2.6b: user file $f touched"; ok26b=1; fi
   done
-  if [ "$ok26b" = "0" ]; then pass "ac2.6b: user files untouched"; fi
+  if [ "$ok26b" = "0" ]; then pass "ac2.6b: GEMINI.md and .codex/config.toml untouched"; fi
+  for pre_tad_f in "$TARGET"/AGENTS.md.pre-tad.*; do
+    [ -f "$pre_tad_f" ] || continue
+    if cmp -s "$SNAP/pre/AGENTS.md" "$pre_tad_f"; then pre_tad_hit=1; pre_tad_bk="$pre_tad_f"; break; fi
+  done
+  if [ "$pre_tad_hit" = "1" ]; then
+    pass "ac2.6b: user AGENTS.md preserved byte-identical in $(basename "$pre_tad_bk")"
+  else
+    fail "ac2.6b: no AGENTS.md.pre-tad.* backup holds the user's original AGENTS.md bytes"
+  fi
   if [ ! -e "$TARGET/.tad/templates/AGENTS.md.template" ] && [ ! -e "$TARGET/.tad/templates/GEMINI.md.template" ]; then
     pass "ac2.6b: stale TAD-owned templates removed"
   else
@@ -548,10 +622,26 @@ case_ac28() {
   CURRENT_CASE="ac2.8"
   new_sandbox
   stage_pruned_source
-  # Upgrade-shaped target (current=2.2.0: every deprecation inert, so the
-  # failure lands purely on the cp fault → rollback coverage is isolated).
+  # Upgrade-shaped target (current=3.1.0, so the installer takes the plain
+  # upgrade path and the failure lands purely on the cp fault → rollback
+  # coverage is isolated).
+  #
+  # Phase 5b (B4) — what changed and why. The premise used to be current=2.2.0
+  # ("every deprecation inert"). Since the v3 major bump a 2.x target routes to
+  # the `migrate` state, which first copies .tad to .tad-migrate-backup.<ts>;
+  # rollback_on_failure deliberately keeps that copy ("preserved-for-manual-
+  # recovery", step 4d) and lists it in the coverage message, so the
+  # whole-tree diff below correctly reported it as new. The discriminator
+  # (find of .tad/{active,archive,evidence,pair-testing,reports} after the
+  # faulted run, taken before sandbox cleanup) returned NO files and no
+  # directories: the migrate skeleton dirs are swept by rollback, and the
+  # migrate backup was the only drift. So this was a stale premise/filter, not
+  # an installer sweep defect. The case now uses an upgrade-shaped 3.1.0 target
+  # (what the case was written to cover: an in-place upgrade whose copy phase
+  # fails). Rework R2/R3: the migrate-path variant now lives in its own
+  # sub-case below, and only that sub-case tolerates .tad-migrate-backup.*.
   mkdir -p "$TARGET/.tad" "$TARGET/.tad/project-knowledge" "$TARGET/.claude/skills/custom" "$TARGET/.codex" "$TARGET/.codex/prompts" "$TARGET/.claude/commands"
-  printf '2.2.0\n' > "$TARGET/.tad/version.txt"
+  printf '3.1.0\n' > "$TARGET/.tad/version.txt"
   printf '# Project\n<!-- TAD:PROJECT-CONTENT-BELOW -->\nMY-PROJECT-BYTES\n' > "$TARGET/CLAUDE.md"
   printf 'CUSTOM-SKILL-BYTES\n' > "$TARGET/.claude/skills/custom/skill.md"
   printf 'USER-HOOKS\n' > "$TARGET/.codex/hooks.json"
@@ -581,7 +671,10 @@ case_ac28() {
   # documented below if present).
   local d
   d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1)" || true
-  # Filter the known-benign recovery-copy dir (engine backup namespace).
+  # Filter the known-benign recovery-copy dir (engine backup namespace). The
+  # migrate-backup namespace is NOT filtered here: on this plain-upgrade premise
+  # a stray .tad-migrate-backup.* would be a real finding (the migrate path is
+  # covered by the sub-case below).
   local d_unexp
   d_unexp="$(printf '%s\n' "$d" | grep -v -e '.tad-backup' || true)"
   if [ -z "$d_unexp" ]; then
@@ -597,30 +690,81 @@ case_ac28() {
   assert_no_network
   guarded_cleanup "$SANDBOX"; SANDBOX=""
 
-  # (b) sed-extracted rollback_on_failure under a FOREIGN cwd with absolute
-  # BACKUP_PATH → target restored, foreign cwd untouched (absolutization).
+  # (a2) Phase 5b rework R3: the migrate-path variant of (a). A 2.2.0 target
+  # routes to the `migrate` state; after the same one-shot cp fault, rollback
+  # must leave every user surface byte-identical, and the ONLY extra entry is
+  # exactly one .tad-migrate-backup.<ts> directory (kept on purpose, step 4d of
+  # rollback_on_failure, and listed in the coverage message).
   CURRENT_CASE="ac2.8"
   new_sandbox
-  # Extract rollback + its dir-restore helper (BACKUP_PATH_ABS semantics: the
-  # dir whose CONTENT is the .tad content, exactly like .tad.backup.TS).
-  # Helper fns are load-bearing for the exercised guard path — extract them
-  # strictly when present (a half-extracted harness must never go vacuous).
-  extract_fn restore_dir_entry "$SANDBOX/rb.fn.sh" "rollback-staging"
-  extract_fn rollback_on_failure "$SANDBOX/rb2.fn.sh" "Rollback coverage"
-  cat "$SANDBOX/rb2.fn.sh" >> "$SANDBOX/rb.fn.sh"
-  if grep -q -e '^_literal_has_prefix() {' "$TADSH"; then
-    extract_fn _literal_has_prefix "$SANDBOX/rb-h1.fn.sh" "lhp_esc"
-    extract_fn assert_under_root "$SANDBOX/rb-h2.fn.sh" "TARGET_ROOT"
-    cat "$SANDBOX/rb-h1.fn.sh" "$SANDBOX/rb-h2.fn.sh" >> "$SANDBOX/rb.fn.sh"
+  stage_pruned_source
+  mkdir -p "$TARGET/.tad" "$TARGET/.tad/project-knowledge" "$TARGET/.claude/skills/custom" "$TARGET/.codex" "$TARGET/.codex/prompts" "$TARGET/.claude/commands"
+  printf '2.2.0\n' > "$TARGET/.tad/version.txt"
+  printf '# Project\n<!-- TAD:PROJECT-CONTENT-BELOW -->\nMY-PROJECT-BYTES\n' > "$TARGET/CLAUDE.md"
+  printf 'CUSTOM-SKILL-BYTES\n' > "$TARGET/.claude/skills/custom/skill.md"
+  printf 'USER-HOOKS\n' > "$TARGET/.codex/hooks.json"
+  printf 'USER-CONFIG-TOML\n' > "$TARGET/.codex/config.toml"
+  printf 'USER-PROMPT\n' > "$TARGET/.codex/prompts/mine.md"
+  printf 'USER-COMMAND\n' > "$TARGET/.claude/commands/my-cmd.md"
+  printf 'KNOWLEDGE-README\n' > "$TARGET/.tad/project-knowledge/README.md"
+  snapshot_target "$SNAP/pre"
+  printf '0\n' > "$SANDBOX/failcp"
+  printf '#!/bin/sh\nprintf "%%s\\n" "CP-CALL $*" >> "%s/cp.log"\ncase "$*" in\n  *"%s"*) case "$*" in\n    *.agents/skills*) n=$(cat "%s/failcp"); if [ "$n" = "0" ]; then echo 1 > "%s/failcp"; exit 1; fi ;;\n  esac ;;\nesac\nexec /bin/cp "$@"\n' \
+    "$SANDBOX" "$SOURCE" "$SANDBOX" "$SANDBOX" > "$SHIMBIN/cp"
+  chmod +x "$SHIMBIN/cp"
+  rc=0
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform codex --yes >"$SANDBOX/install-fail-mig.log" 2>&1 ) || rc=$?
+  if [ "$rc" != "0" ]; then pass "ac2.8: migrate-path faulted run non-zero (rc=$rc)"; else fail "ac2.8: migrate-path faulted run unexpectedly rc=0"; fi
+  d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1)" || true
+  d_unexp="$(printf '%s\n' "$d" | grep -v -e '.tad-backup' | grep -v -E '^Only in [^:]*: \.tad-migrate-backup\.[0-9]{8}_[0-9]{6}(\.[0-9]+)?$' || true)"
+  if [ -z "$(printf '%s' "$d_unexp" | tr -d '[:space:]')" ]; then
+    pass "ac2.8: migrate path: user surfaces byte-identical after rollback"
+  else
+    fail "ac2.8: migrate path: unexpected drift:"; printf '%s\n' "$d_unexp" | head -10
   fi
-  printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb.log"; }\nrollback_opencode_projection() { printf "OPCODE-ROLLBACK-CALLED\\n" >> "%s/rb.log"; }\ncleanup_source_tree() { printf "CLEANUP-SOURCE-CALLED\\n" >> "%s/rb.log"; }\n' \
-    "$SANDBOX" "$SANDBOX" "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs.sh"
-  mkdir -p "$TARGET/.tad" "$SANDBOX/foreign" "$TARGET/.tad.backup.PROBE"
-  printf 'ORIGINAL-TAD\n' > "$TARGET/.tad.backup.PROBE/data.txt"
+  local mig_n
+  mig_n="$(find "$TARGET" -maxdepth 1 -name '.tad-migrate-backup.*' -type d | wc -l | tr -d ' ')"
+  if [ "$mig_n" = "1" ]; then
+    pass "ac2.8: migrate path: exactly one .tad-migrate-backup.<ts> kept"
+  else
+    fail "ac2.8: migrate path: expected exactly 1 .tad-migrate-backup.*, found $mig_n"
+  fi
+  if grep -qF -e 'Rollback coverage' "$SANDBOX/install-fail-mig.log"; then
+    pass "ac2.8: migrate path: coverage message present"
+  else
+    fail "ac2.8: migrate path: coverage message missing"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+
+  # (b) sed-extracted rollback_on_failure under a FOREIGN cwd with absolute
+  # BACKUP_PATH → target restored, foreign cwd untouched (absolutization).
+  #
+  # Phase 5b (B3) — what changed and why. The original probe built a sibling
+  # `$TARGET/.tad.backup.PROBE` whose CONTENT was the .tad content. Since
+  # f9f397bc (2026-10-06, "manifest-scoped rollback") rollback_on_failure only
+  # accepts a backup that assert_under_backup_root approves: strictly under
+  # $TAD_BACKUP_ROOT_ABS, named YYYYMMDD_HHMMSS, holding manifest.txt; it then
+  # restores only the entries listed in that manifest, from <backup>/.tad/.
+  # The old probe could never pass that gate, so the case failed for a reason
+  # unrelated to what it protects. The protected property is unchanged: with
+  # a valid backup and an absolute BACKUP_PATH_ABS, rollback run from an
+  # unrelated cwd restores the target through absolute paths and creates
+  # nothing in that cwd. The probe now builds a production-shaped backup under
+  # a sandbox backup root and the harness extracts every function the current
+  # rollback path calls. A second probe (added with this rewrite) feeds the
+  # old-style in-project backup and requires the new gate to refuse it.
+  CURRENT_CASE="ac2.8"
+  new_sandbox
+  extract_rollback_harness "$SANDBOX/rb.fn.sh"
+  printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb.log"; }\nlog_warn() { printf "WARN: %%s\\n" "$*" >> "%s/rb.log"; }\nrollback_opencode_projection() { printf "OPCODE-ROLLBACK-CALLED\\n" >> "%s/rb.log"; }\ncleanup_source_tree() { printf "CLEANUP-SOURCE-CALLED\\n" >> "%s/rb.log"; }\n' \
+    "$SANDBOX" "$SANDBOX" "$SANDBOX" "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs.sh"
+  mkdir -p "$TARGET/.tad" "$SANDBOX/foreign"
+  local rb_bk="$SANDBOX/bk-root/20260101_000000"
+  make_probe_backup "$rb_bk" "ORIGINAL-TAD"
   printf 'HALF-INSTALLED\n' > "$TARGET/.tad/data.txt"
   printf 'FOREIGN-TAD\n' > "$SANDBOX/foreign/marker.txt"
   local rc4=0
-  ( cd "$SANDBOX/foreign" && TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.PROBE" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rb.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb.log" 2>&1 ) || rc4=$?
+  ( cd "$SANDBOX/foreign" && TARGET_ROOT="$TARGET" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$rb_bk" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rb.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb.log" 2>&1 ) || rc4=$?
   if [ "$(cat "$TARGET/.tad/data.txt" 2>/dev/null)" = "ORIGINAL-TAD" ]; then
     pass "ac2.8: foreign-cwd rollback restored target via absolute paths"
   else
@@ -631,49 +775,63 @@ case_ac28() {
   else
     fail "ac2.8: foreign cwd polluted"
   fi
+  # Negative control for the new gate: an old-style backup planted INSIDE the
+  # project (no manifest, outside the backup root) must be refused, the target
+  # left exactly as the failed run left it, and the planted dir preserved.
+  rm -f "$SANDBOX/rb.log"
+  printf 'HALF-INSTALLED\n' > "$TARGET/.tad/data.txt"
+  mkdir -p "$TARGET/.tad.backup.PROBE"
+  printf 'FORGED-TAD\n' > "$TARGET/.tad.backup.PROBE/data.txt"
+  ( cd "$SANDBOX/foreign" && TARGET_ROOT="$TARGET" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$TARGET/.tad.backup.PROBE" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rb.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb.log" 2>&1 ) || true
+  if [ "$(cat "$TARGET/.tad/data.txt" 2>/dev/null)" = "HALF-INSTALLED" ] \
+     && [ -d "$TARGET/.tad.backup.PROBE" ] && grep -qF -e 'REFUSED' "$SANDBOX/rb.log"; then
+    pass "ac2.8: in-project forged backup refused (target untouched, backup preserved, REFUSED named)"
+  else
+    fail "ac2.8: in-project forged backup was NOT refused"
+  fi
   guarded_cleanup "$SANDBOX"; SANDBOX=""
 
   # (c) ENOSPC injection: restore under `ulimit -f` → backup preserved +
   # explicit failed-state message (calibrated to the host; fallback fault-shim
   # proves the same branch and is logged as such, never silent).
-  # Backup layout mirrors production (backup_existing creates .tad.backup.TS
-  # UNDER the target) — a sibling-dir backup would trip the under-root guard
-  # and pass vacuously, so the probe must not use one.
+  # Phase 5b (B3, same cause as (b)): the backup used to be a sibling
+  # `.tad.backup.BIG` that the manifest-scoped gate (f9f397bc) now refuses
+  # outright, which made both assertions below pass vacuously (a REFUSED
+  # message also contains "PRESERVED" and nothing was removed). The backup is
+  # now production-shaped (under a sandbox backup root, timestamp name,
+  # manifest listing big.bin) so the restore really starts and really fails on
+  # the size limit; the failed-state message asserted is the restore failure
+  # one ("Rollback FAILED for .tad/big.bin"), not the refusal.
   CURRENT_CASE="ac2.8"
   new_sandbox
-  extract_fn restore_dir_entry "$SANDBOX/rollback.fn.sh" "rollback-staging"
-  extract_fn rollback_on_failure "$SANDBOX/rollback3.fn.sh" "Rollback coverage"
-  cat "$SANDBOX/rollback3.fn.sh" >> "$SANDBOX/rollback.fn.sh"
-  if grep -q -e '^_literal_has_prefix() {' "$TADSH"; then
-    extract_fn _literal_has_prefix "$SANDBOX/rb-h1.fn.sh" "lhp_esc"
-    extract_fn assert_under_root "$SANDBOX/rb-h2.fn.sh" "TARGET_ROOT"
-    cat "$SANDBOX/rb-h1.fn.sh" "$SANDBOX/rb-h2.fn.sh" >> "$SANDBOX/rollback.fn.sh"
-  fi
-  printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb2.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb2.log"; }\nrollback_opencode_projection() { :; }\ncleanup_source_tree() { :; }\n' \
-    "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs2.sh"
-  mkdir -p "$TARGET/.tad" "$TARGET/.tad.backup.BIG"
-  head -c 200000 /dev/zero | tr '\0' 'B' > "$TARGET/.tad.backup.BIG/big.bin"
+  extract_rollback_harness "$SANDBOX/rollback.fn.sh"
+  printf 'log_error() { printf "ERROR: %%s\\n" "$*" >> "%s/rb2.log"; }\nlog_info() { printf "INFO: %%s\\n" "$*" >> "%s/rb2.log"; }\nlog_warn() { printf "WARN: %%s\\n" "$*" >> "%s/rb2.log"; }\nrollback_opencode_projection() { :; }\ncleanup_source_tree() { :; }\n' \
+    "$SANDBOX" "$SANDBOX" "$SANDBOX" > "$SANDBOX/stubs2.sh"
+  local big_bk="$SANDBOX/bk-root/20260101_000000"
+  mkdir -p "$TARGET/.tad" "$big_bk/.tad"
+  head -c 200000 /dev/zero | tr '\0' 'B' > "$big_bk/.tad/big.bin"
+  printf 'big.bin\nversion=3.1.0\n' > "$big_bk/manifest.txt"
   printf 'HALF\n' > "$TARGET/.tad/data.txt"
   local mech="ulimit"
-  if ! ( ulimit -f 20; cp "$TARGET/.tad.backup.BIG/big.bin" "$SANDBOX/probe.bin" 2>/dev/null ); then
+  if ! ( ulimit -f 20; cp "$big_bk/.tad/big.bin" "$SANDBOX/probe.bin" 2>/dev/null ); then
     mech="ulimit"
   else
     mech="fault-shim"
   fi
   rm -f "$SANDBOX/probe.bin"
   if [ "$mech" = "ulimit" ]; then
-    ( cd "$TARGET" && ulimit -f 20; TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.BIG" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
+    ( cd "$TARGET" && ulimit -f 20; TARGET_ROOT="$TARGET" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$big_bk" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
   else
     printf '#!/bin/sh\nexit 1\n' > "$SHIMBIN/cp"
     chmod +x "$SHIMBIN/cp"
-    ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="$TARGET/.tad.backup.BIG" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
+    ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$big_bk" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs2.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >>"$SANDBOX/rb2.log" 2>&1 ) || true
   fi
-  if [ -d "$TARGET/.tad.backup.BIG" ]; then
+  if [ -f "$big_bk/.tad/big.bin" ] && [ -f "$big_bk/manifest.txt" ]; then
     pass "ac2.8: ENOSPC ($mech) → backup preserved"
   else
     fail "ac2.8: ENOSPC ($mech) → backup GONE"
   fi
-  if grep -qF -e 'PRESERVED' "$SANDBOX/rb2.log"; then
+  if grep -qF -e 'Rollback FAILED for .tad/big.bin' "$SANDBOX/rb2.log" && grep -qF -e 'PRESERVED' "$SANDBOX/rb2.log"; then
     pass "ac2.8: ENOSPC ($mech) → explicit failed-state message"
   else
     fail "ac2.8: ENOSPC ($mech) → failed-state message missing"
@@ -1222,19 +1380,28 @@ case_ac217() {
 # ════════════════════════ R1 (scope fence) ════════════════════════
 case_r1() {
   CURRENT_CASE="r1"
-  printf '  fence report (informational — pre-existing track dirt excluded by path):\n'
-  ( cd "$REPO" && git status --porcelain ) || true
-  local bad=0
-  while IFS= read -r line; do
-    [ -n "$line" ] || continue
-    local f
-    f="$(printf '%s' "$line" | sed -e 's/^...//')"
-    case "$f" in
-      tad.sh|.tad/tests/installer-data-safety-fixture.sh|.tad/tests/fixtures/*|.tad/hooks/lib/release-verify.sh|.tad/tests/upgrade-acceptance.sh) ;;
-      *) printf '  ⚠️  out-of-fence change: %s\n' "$line"; bad=1 ;;
-    esac
-  done <<< "$(cd "$REPO" && git status --porcelain)"
-  if [ "$bad" = "0" ]; then pass "r1: working tree matches §7 fence"; else fail "r1: out-of-fence entries present (see above)"; fi
+  # Phase 5b (B5) — what changed and why. r1 was a scope fence hard-coded to
+  # the 2026-09-03 handoff §7 (five allowed paths): any change to ANY other
+  # file made it fail, so it measured the state of the working tree, not the
+  # fixture, and it has been red since the first unrelated edit. The property
+  # worth keeping is the one the fence was a proxy for: "running this fixture
+  # did not dirty the live repo" (every case stages its own sandbox and must
+  # never write into $REPO). So r1 now compares `git status --porcelain`
+  # captured when the fixture started (R1_PORCELAIN_BEFORE, taken before the
+  # first case runs) with the output now; pre-existing dirt is irrelevant,
+  # only a difference fails. Limits: porcelain shows paths and status codes,
+  # not content, so a fixture edit to an already-modified file is not seen, and
+  # edits made by someone else while the fixture runs are indistinguishable
+  # from the fixture's own.
+  local after
+  after="$(cd "$REPO" && git status --porcelain 2>&1)" || true
+  if [ "$after" = "$R1_PORCELAIN_BEFORE" ]; then
+    pass "r1: fixture run left the live repo's git status unchanged"
+  else
+    printf '  diff of git status --porcelain (before -> after this run):\n'
+    diff <(printf '%s\n' "$R1_PORCELAIN_BEFORE") <(printf '%s\n' "$after") | head -20 || true
+    fail "r1: git status changed during the fixture run"
+  fi
 }
 
 # ── Phase 4a: legacy Claude Code install adoption ────────────────────
@@ -1652,6 +1819,7 @@ run_case() {
   SANDBOX=""
 }
 
+R1_PORCELAIN_BEFORE="$(cd "$REPO" && git status --porcelain 2>&1)" || true
 printf '=== installer-data-safety fixture ===\n'
 printf '  repo: %s\n' "$REPO"
 printf '  case: %s\n' "$CASE"

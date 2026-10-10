@@ -1110,6 +1110,23 @@ MFEOF
 # Read ENGINE_VERSION from engine
 ENGINE_VERSION="$(grep -m1 'ENGINE_VERSION=' "$ENGINE" | sed 's/.*="//' | sed 's/"//')"
 
+# amend_hop <src> <body> — put the 0.1.0-to-0.2.0 hop manifest INTO the commit
+# tagged v0.2.0 and move the tag. `release-verify.sh migration` resolves the
+# previous tag from HEAD^ (3f9d386d), so a manifest committed after the tag
+# would shift PREV_TAG to v0.2.0 itself.
+amend_hop() {
+    local src="$1" body="$2"
+    mkdir -p "$src/.tad/migrations"
+    cat > "$src/.tad/migrations/0.1.0-to-0.2.0.yaml" <<MFEOF
+schema_version: 1
+from: "0.1.0"
+to: "0.2.0"
+generated_by: "manual"
+$body
+MFEOF
+    ( cd "$src" && git add -A && git commit -q --amend --no-edit && git tag -f v0.2.0 >/dev/null )
+}
+
 # ══════════════════════════════════════════════════════════════
 # MG1: migration-gate: unmanifested-delete-detected
 # Tests release-verify.sh migration mode: delete without manifest → exit 1,
@@ -1134,14 +1151,23 @@ test_mg1() {
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
+    # Hop manifest (3f9d386d, Epic P2 item 2.9): `release-verify.sh migration`
+    # now asserts the PREV->EXP hop file exists and is well-formed BEFORE it
+    # looks at deletes/renames, so without one it exits 1 with MISSING HOP and
+    # never reaches the finding this test checks. Ship a well-formed hop with
+    # EMPTY delete/rename lists: it satisfies the presence assertion and still
+    # leaves the change below unmanifested.
+    # The hop must be part of the release commit (the gate resolves PREV_TAG
+    # from HEAD^), so it is committed with the tag, not afterwards.
+    amend_hop "$src" "$(printf 'delete: []\nrename: []')"
     # Run migration gate — should detect unmanifested delete → exit 1
     local out rc=0
     out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
     if [ "$rc" -ne 1 ]; then report_fail "MG1a" "exit $rc (expected 1 for unmanifested delete)"; rm -rf "$tmp"; return; fi
     if ! printf '%s' "$out" | grep -q 'UNMANIFESTED DELETE'; then report_fail "MG1a" "no UNMANIFESTED DELETE in output"; rm -rf "$tmp"; return; fi
 
-    # Now create the manifest
-    write_manifest "$src" "0.1.0" "0.2.0" "$(cat <<'BODY'
+    # Now create the manifest (3f9d386d: amended into the release commit, see amend_hop)
+    amend_hop "$src" "$(cat <<'BODY'
 delete:
   - path: ".agents/skills/old-ref.md"
     type: "file"
@@ -1149,6 +1175,7 @@ delete:
 verify:
   - type: "absent"
     path: ".agents/skills/old-ref.md"
+rename: []
 BODY
 )"
 
@@ -1183,7 +1210,16 @@ test_mg2() {
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
-    # No manifest — but active/ is ZERO_TOUCH, so migration gate should pass
+    # Hop manifest (3f9d386d, Epic P2 item 2.9): `release-verify.sh migration`
+    # now asserts the PREV->EXP hop file exists and is well-formed BEFORE it
+    # looks at deletes/renames, so without one it exits 1 with MISSING HOP and
+    # never reaches the finding this test checks. Ship a well-formed hop with
+    # EMPTY delete/rename lists: it satisfies the presence assertion and still
+    # leaves the change below unmanifested.
+    # The hop must be part of the release commit (the gate resolves PREV_TAG
+    # from HEAD^), so it is committed with the tag, not afterwards.
+    amend_hop "$src" "$(printf 'delete: []\nrename: []')"
+    # (no delete/rename is LISTED — but active/ is ZERO_TOUCH, so migration gate should pass)
     local rc=0
     bash "$VERIFIER" migration "$src" "0.2.0" >/dev/null 2>&1 || rc=$?
     if [ "$rc" -ne 0 ]; then report_fail "MG2" "exit $rc (expected 0 — ZERO_TOUCH excluded)"; rm -rf "$tmp"; return; fi
@@ -1211,6 +1247,15 @@ test_mg3() {
     printf '0.2.0\n' > .tad/version.txt
     git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
 
+    # Hop manifest (3f9d386d, Epic P2 item 2.9): `release-verify.sh migration`
+    # now asserts the PREV->EXP hop file exists and is well-formed BEFORE it
+    # looks at deletes/renames, so without one it exits 1 with MISSING HOP and
+    # never reaches the finding this test checks. Ship a well-formed hop with
+    # EMPTY delete/rename lists: it satisfies the presence assertion and still
+    # leaves the change below unmanifested.
+    # The hop must be part of the release commit (the gate resolves PREV_TAG
+    # from HEAD^), so it is committed with the tag, not afterwards.
+    amend_hop "$src" "$(printf 'delete: []\nrename: []')"
     # No manifest — should detect unmanifested rename → exit 1
     local out rc=0
     out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
@@ -1218,6 +1263,31 @@ test_mg3() {
     if ! printf '%s' "$out" | grep -qiE 'UNMANIFESTED RENAME|POSSIBLE RENAME'; then report_fail "MG3" "no rename finding in output"; rm -rf "$tmp"; return; fi
 
     report_pass "MG3 rename-detected"
+    rm -rf "$tmp"
+}
+
+# ══════════════════════════════════════════════════════════════
+# MG5: migration-gate: missing hop manifest (3f9d386d)
+# No PREV->EXP hop file at all → exit 1 with MISSING HOP, even though the
+# change set itself has no deletes/renames.
+# ══════════════════════════════════════════════════════════════
+test_mg5() {
+    local tmp; tmp="$(mktemp -d)"
+    local src="$tmp/source"
+
+    create_source "$src"
+    add_version "$src" "0.1.0" ".agents/skills/blake/SKILL.md" "blake skill"
+    cd "$src"
+    printf '0.2.0\n' > .tad/version.txt
+    printf 'more' >> .agents/skills/blake/SKILL.md
+    git add -A && git commit -q -m "v0.2.0" && git tag "v0.2.0"
+
+    local out rc=0
+    out="$(bash "$VERIFIER" migration "$src" "0.2.0" 2>&1)" || rc=$?
+    if [ "$rc" -ne 1 ]; then report_fail "MG5" "exit $rc (expected 1 for missing hop)"; rm -rf "$tmp"; return; fi
+    if ! printf '%s' "$out" | grep -q 'MISSING HOP'; then report_fail "MG5" "no MISSING HOP in output"; rm -rf "$tmp"; return; fi
+
+    report_pass "MG5 missing-hop-detected"
     rm -rf "$tmp"
 }
 
@@ -1282,6 +1352,7 @@ test_mg1
 test_mg2
 test_mg3
 test_mg4
+test_mg5
 
 printf '\n=== Results ===\n'
 printf 'Passed: %d / %d (18 fixtures + 1 inline AC17 + 4 release gates)\n' "$PASS_COUNT" "$((PASS_COUNT + FAIL_COUNT))"

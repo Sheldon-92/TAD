@@ -86,7 +86,14 @@ make_src_tarball() {
     local tmp="$SANDBOX/srcbuild.$$"
     rm -rf "$tmp"
     mkdir -p "$tmp"
+    # Environment isolation (Phase 5b B6): the real download is a GitHub
+    # archive of TRACKED files, so untracked/ignored local state must not ride
+    # into the fixture source. `node_modules` (e.g. .opencode/node_modules from
+    # a local npm install) holds relative `../` symlinks that the installer's
+    # tar-slip gate rejects by design, and the repo's own `.claude/` is an
+    # untracked, human-owned directory (no tracked file lives there).
     ( cd "$REPO_ROOT" && tar -czf "$tmp/all.tar.gz" \
+        --exclude='node_modules' \
         --exclude='./.git' --exclude='./.worktrees' \
         --exclude='./.tad/active' --exclude='./.tad/archive' \
         --exclude='./.tad/decisions' --exclude='./.tad/dependencies' \
@@ -95,7 +102,7 @@ make_src_tarball() {
         --exclude='./.tad/project-knowledge' \
         --exclude='./.tad/research-notebooks' --exclude='./.tad/skill-library' \
         --exclude='./.tad/skillify-candidates' \
-        --exclude='./.claude/skills/local' --exclude='./.agents/skills/local' \
+        --exclude='./.claude' --exclude='./.agents/skills/local' \
         --exclude='./*.backup.*' --exclude='./.tad-migrate-backup*' \
         --exclude='./TAD-main' \
         --exclude='./assets' --exclude='./bin' --exclude='./codex-tad-bundle' \
@@ -187,10 +194,16 @@ digest_subtree() {
     ( cd "$dir" && find . -type f -print | LC_ALL=C sort | xargs md5 -q | md5 )
 }
 
-# digest of USER-owned OpenCode content only (excludes the TAD-projected command)
+# digest of USER-owned OpenCode content only (excludes the TAD-projected files)
+# Phase 5b (B6): the exclusion list now names both files the installer projects
+# into .opencode/: the updater command and, since Epic P3, the lifecycle hooks
+# plugin plugins/tad-hooks.ts. The plugin used to land in the digest and made
+# "user content byte-identical" fail on every install even though no user byte
+# changed. Every other file under .opencode/ is still digested, so a changed,
+# added or removed user file (including one next to the plugin) still fails.
 digest_opencode_user() {
     local dir="$1"
-    ( cd "$dir" && find . -type f -not -path './commands/tad-update.md' -print         | LC_ALL=C sort | xargs md5 -q | md5 )
+    ( cd "$dir" && find . -type f -not -path './commands/tad-update.md' -not -path './plugins/tad-hooks.ts' -print         | LC_ALL=C sort | xargs md5 -q | md5 )
 }
 
 # ══════════════════════════════════════════════════════════════════
@@ -201,6 +214,12 @@ SRC_TARBALL=""
 setup_sandbox() {
     SANDBOX="$(mktemp -d)"
     mkdir -p "$SANDBOX/bin" "$SANDBOX/proj"
+    # Environment isolation (Phase 5b B6): since f9f397bc the installer writes
+    # its backups to $TAD_BACKUP_ROOT (default $HOME/.tad-backups), not into the
+    # project. Pin the root inside the sandbox, outside every project dir, so a
+    # run can never write to the caller's home and the backup can be inspected.
+    TAD_BACKUP_ROOT="$SANDBOX/backup-root"
+    export TAD_BACKUP_ROOT
     make_mock_curl "$SANDBOX/bin"
     # Standard fixture source tarball (usable by every case; cases that need a
     # corrupted variant build their own with make_src_tarball).
@@ -208,7 +227,11 @@ setup_sandbox() {
     make_src_tarball "$SRC_TARBALL"
 }
 teardown_sandbox() {
-    [ -n "$SANDBOX" ] && rm -rf "$SANDBOX"
+    # `[ -n ... ] && rm` returned 1 for a case that never made a sandbox
+    # (remote-release), and that status became the script's exit code even
+    # though the verdict was PASS. Phase 5b (B6).
+    if [ -n "$SANDBOX" ]; then rm -rf "$SANDBOX"; fi
+    return 0
 }
 trap teardown_sandbox EXIT
 
@@ -313,33 +336,58 @@ case_backup() {
     # (b2) integration-level negative control: run the REAL backup_existing
     # extracted from tad.sh against a symlink-bearing project — a cp -R → cp -r
     # regression inside the installer must turn this red.
+    #
+    # Phase 5b (B6) — what changed and why. backup_existing used to be
+    # self-contained and wrote `<project>/.tad.backup.<ts>`. Since f9f397bc
+    # (2026-10-06, "backups framework-only to ~/.tad-backups, keep latest 2,
+    # manifest-scoped rollback") it resolves a backup root, groups backups per
+    # repo, copies the framework entries listed by the deny-list derivation,
+    # writes manifest.txt and prunes; so the extraction below failed with
+    # "resolve_backup_root: command not found" and, even with the helpers, the
+    # backup lands under $TAD_BACKUP_ROOT, not in the project. The dangling
+    # symlink the case protects now lives in a framework dir (the data dir
+    # .tad/evidence is deliberately NOT backed up any more), so the probe
+    # plants it in .tad/guides/helpers. Same assertion as before: the real
+    # function succeeds and the backup holds the link as a link with its
+    # target text intact. The backup root is a sandbox directory, never $HOME.
     local bext="$SANDBOX/backup-extract.sh"
+    local bkroot="$SANDBOX/bk-root"
     {
         echo 'set -euo pipefail'
         echo "RED='\033[0;31m' GREEN='\033[0;32m' YELLOW='\033[1;33m' BLUE='\033[0;34m' CYAN='\033[0;36m' NC='\033[0m'"
+        echo 'TAD_BACKUP_ROOT_ABS="" BACKUP_GROUP="" BACKUP_PATH=""'
+        sed -n '/^TAD_ZERO_TOUCH="/,/^TAD_REGISTRY_FILE=/p' "$TAD_SH"
         sed -n '/^log_info() {/,/^}/p;/^log_success() {/,/^}/p;/^log_warn() {/,/^}/p;/^log_error() {/,/^}/p' "$TAD_SH"
+        sed -n '/^_literal_has_prefix() {/,/^}/p' "$TAD_SH"
+        sed -n '/^resolve_backup_root() {/,/^}/p;/^repo_group_key() {/,/^}/p;/^prune_backups() {/,/^}/p' "$TAD_SH"
+        sed -n '/^derive_framework_dirs() {/,/^}/p;/^derive_framework_top_files() {/,/^}/p' "$TAD_SH"
         sed -n '/^backup_existing() {/,/^}/p' "$TAD_SH"
         echo 'backup_existing'
     } > "$bext"
     local bp="$SANDBOX/bp"
-    mkdir -p "$bp/.tad/evidence/helpers"
-    ln -s missing "$bp/.tad/evidence/helpers/node_modules"
-    if ( cd "$bp" && bash "$bext" >/dev/null 2>&1 ); then
-        # pipefail-safe glob: an unmatched pattern must not abort the harness.
+    mkdir -p "$bp/.tad/guides/helpers"
+    ln -s missing "$bp/.tad/guides/helpers/node_modules"
+    printf '3.1.0\n' > "$bp/.tad/version.txt"
+    if ( cd "$bp" && TAD_BACKUP_ROOT="$bkroot" bash "$bext" >"$SANDBOX/backup-extract.log" 2>&1 ); then
+        # pipefail-safe: find the (single) timestamped backup dir under the root.
         local bl=""
-        for d in "$bp"/.tad.backup.*; do
-            [ -e "$d" ] || continue
-            bl="$d"
-            break
-        done
-        if [ -n "$bl" ] && [ -L "$bl/evidence/helpers/node_modules" ] \
-           && [ "$(readlink "$bl/evidence/helpers/node_modules")" = "missing" ]; then
+        bl="$(find "$bkroot" -type d -mindepth 2 -maxdepth 2 -name '[0-9]*_[0-9]*' 2>/dev/null | head -1 || true)"
+        if [ -n "$bl" ] && [ -f "$bl/manifest.txt" ] \
+           && [ -L "$bl/.tad/guides/helpers/node_modules" ] \
+           && [ "$(readlink "$bl/.tad/guides/helpers/node_modules")" = "missing" ]; then
             ok "real backup_existing: succeeds and preserves the dangling link"
         else
             bad "real backup_existing: backup missing or link not preserved"
         fi
+        # Zero-trace in the project: nothing is written next to .tad any more.
+        if ls "$bp"/.tad.backup.* >/dev/null 2>&1; then
+            bad "real backup_existing: wrote a backup inside the project"
+        else
+            ok "real backup_existing: no backup dir inside the project"
+        fi
     else
         bad "real backup_existing failed on symlink-bearing project"
+        [ -n "${TAD_DEBUG:-}" ] && cat "$SANDBOX/backup-extract.log"
     fi
 
     # (c) migration fixture begins with a pre-existing .tad-migrate-backup*
@@ -446,8 +494,10 @@ case_states() {
                  bash "$UPDATER" "$@" 2>&1 ) || true
     }
 
-    # v3.0.0: codex is the only target. A leftover downstream .claude tree is
-    # never an install target and never auto-deleted.
+    # Automatic detection only ever resolves to codex (or refuses when the
+    # layout is ambiguous); claude-code is a valid target only when passed
+    # explicitly. A leftover downstream .claude tree is therefore never picked
+    # as the install target by detection and is never auto-deleted.
     rm -rf "$proj/.claude" "$proj/.agents"
     mkdir -p "$proj/.claude/skills/alex"
     out="$(run_updater_platform "$proj" "$fast_installer" --yes)"
@@ -472,16 +522,29 @@ case_states() {
         || bad "explicit --platform not honored"
 
     # Phase 2: claude-code is an accepted explicit platform again and is
-    # forwarded to the installer as-is (automatic detection is a later release).
+    # forwarded to the installer as-is. Detection does not resolve to it: a
+    # forgeable layout must not be able to trigger writes to settings.json /
+    # CLAUDE.md (4a-2 security review), so it stays explicit-only.
     out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform claude-code)"
     printf '%s\n' "$out" | grep -q "platform: claude-code" \
         && ok "explicit --platform claude-code → forwarded to the installer" \
         || bad "explicit --platform claude-code → not forwarded"
 
+    # Phase 5b (B5b): this assertion used to match the v3.0.0 wording "was
+    # removed in TAD v3.0.0". tad-update.sh now rejects every value outside its
+    # target list with "--platform '<value>' is not a valid target. Valid for
+    # this updater: codex, claude-code". What the case protects is unchanged:
+    # `both` must be rejected (never forwarded to the installer) and the
+    # message must name the valid targets so the user can recover. So assert the
+    # rejection wording, the offending value, both valid targets, and that no
+    # "platform: <x>" delegation line was printed.
     out="$(run_updater_platform "$proj" "$fast_installer" --yes --platform both)"
-    printf '%s\n' "$out" | grep -q "was removed in TAD v3.0.0" \
-        && ok "explicit --platform both → removed-error" \
-        || bad "explicit --platform both → no removed-error"
+    printf '%s\n' "$out" | grep -q "is not a valid target" \
+        && printf '%s\n' "$out" | grep -q "'both'" \
+        && printf '%s\n' "$out" | grep -q "codex, claude-code" \
+        && ! printf '%s\n' "$out" | grep -q "platform: " \
+        && ok "explicit --platform both → rejected as not a valid target (names codex, claude-code)" \
+        || bad "explicit --platform both → no invalid-target rejection"
 
     rm -rf "$proj/.claude" "$proj/.agents"
     out="$(run_updater_platform "$proj" "$fast_installer" --yes)"
@@ -735,6 +798,9 @@ case_opencode_preservation() {
         cmp -s "$proj/.opencode/commands/tad-update.md" "$REPO_ROOT/.opencode/commands/tad-update.md" \
             && ok "fresh install → TAD command present and source-identical" \
             || bad "fresh install → TAD command missing/mismatched"
+        cmp -s "$proj/.opencode/plugins/tad-hooks.ts" "$REPO_ROOT/.opencode/plugins/tad-hooks.ts" \
+            && ok "fresh install → hooks plugin present and source-identical" \
+            || bad "fresh install → hooks plugin missing/mismatched"
     else
         bad "fresh install failed"
     fi
@@ -752,6 +818,9 @@ case_opencode_preservation() {
         cmp -s "$proj2/.opencode/commands/tad-update.md" "$REPO_ROOT/.opencode/commands/tad-update.md" \
             && ok "upgrade → TAD command present and source-identical" \
             || bad "upgrade → TAD command missing/mismatched"
+        cmp -s "$proj2/.opencode/plugins/tad-hooks.ts" "$REPO_ROOT/.opencode/plugins/tad-hooks.ts" \
+            && ok "upgrade → hooks plugin present and source-identical" \
+            || bad "upgrade → hooks plugin missing/mismatched"
     else
         bad "upgrade failed"
     fi
@@ -788,30 +857,45 @@ case_opencode_preservation() {
     fi
 
     # injected post-projection failure → rollback restores exact pre-run tree.
+    #
+    # Phase 5b (B6) — what changed and why. The failure used to be injected by
+    # deleting CLAUDE.md from the source tarball so that merge_claude_md failed
+    # AFTER the OpenCode projection. v3.0.0 removed that merge ("no CLAUDE.md
+    # merge — a pre-existing CLAUDE.md is user-owned"), so the installer no
+    # longer reads CLAUDE.md from the source and the install simply succeeded:
+    # the injection was dead, not the rollback. What the case protects is
+    # unchanged: when the installer fails AFTER it has projected into
+    # .opencode/, rollback must restore .opencode to its exact pre-run tree.
+    # The new injection is a plain file at .cursor in the project: the Cursor
+    # hooks projection runs right after the OpenCode projections
+    # (project_opencode_command, project_opencode_hooks_plugin, then
+    # project_cursor_hooks) and its `mkdir -p .cursor` fails, so the install
+    # aborts with both OpenCode files already written. The file at .cursor is
+    # user content and must also survive byte-identical.
     local proj4="$SANDBOX/proj4"
     make_old_project "$proj4" "$OLD_VERSION"
     printf '1.0.0\n' > "$proj4/.tad/version.txt"
+    printf 'user file where a directory is needed\n' > "$proj4/.cursor"
     local op_before
     op_before="$(digest_subtree "$proj4/.opencode")"
-    # Corrupt the source tarball: remove CLAUDE.md so merge_claude_md fails
-    # AFTER projection (the completeness self-check is one-directional and
-    # cannot be tripped by deletion) → rollback must restore .opencode.
-    local bad_src="$SANDBOX/badsrc.tar.gz"
-    local bd="$SANDBOX/badsrc"
-    mkdir -p "$bd"
-    ( cd "$bd" && tar -xzf "$src_tar" )
-    rm -f "$bd/TAD-main/CLAUDE.md"
-    ( cd "$bd" && tar -czf "$bad_src" TAD-main )
     local rc4=0
-    ( cd "$proj4" && PATH="$SANDBOX/bin:$PATH" MOCK_SRC_TARBALL="$bad_src" \
+    ( cd "$proj4" && PATH="$SANDBOX/bin:$PATH" MOCK_SRC_TARBALL="$src_tar" \
         MOCK_INSTALLER="$TAD_SH" MOCK_REMOTE_VERSION="$FIXTURE_VERSION" \
         bash "$TAD_SH" --yes > "$SANDBOX/proj4.log" 2>&1 ) || rc4=$?
     if [ -n "${TAD_DEBUG:-}" ]; then cat "$SANDBOX/proj4.log"; fi
     [ "$rc4" -ne 0 ] && ok "post-projection failure → install failed (as injected)" \
         || bad "post-projection failure did not fail the install"
+    # Positive control: the failure really happened AFTER the OpenCode
+    # projection, otherwise the restore assertion below is vacuous.
+    grep -q "Projected .opencode/plugins/tad-hooks.ts" "$SANDBOX/proj4.log" \
+        && ok "post-projection failure → failed after the OpenCode projection ran" \
+        || bad "post-projection failure → OpenCode projection did not run before the failure"
     [ "$(digest_subtree "$proj4/.opencode")" = "$op_before" ] \
         && ok "post-projection failure → .opencode restored to exact pre-run tree" \
         || bad "post-projection failure → .opencode not restored"
+    [ "$(cat "$proj4/.cursor" 2>/dev/null)" = "user file where a directory is needed" ] \
+        && ok "post-projection failure → user .cursor file untouched" \
+        || bad "post-projection failure → user .cursor file altered"
 }
 
 # ══════════════════════════════════════════════════════════════════
@@ -838,16 +922,50 @@ case_full_upgrade() {
         && ok "upgrade → version.txt is $FIXTURE_VERSION" \
         || bad "upgrade → version.txt is $(cat "$proj/.tad/version.txt")"
 
-    # user evidence + dangling symlink survive in the announced backup
+    # user evidence + dangling symlink survive the upgrade.
+    #
+    # Phase 5b (B6) — what changed and why. This used to look for
+    # `<project>/.tad.backup.*` and require the user's evidence handoff and the
+    # dangling symlink INSIDE that backup. Since f9f397bc (2026-10-06) the
+    # installer backs up only the framework surface (derived from the deny
+    # list), to $TAD_BACKUP_ROOT/<repo>/<ts>/ with a manifest; project data
+    # (.tad/active, .tad/evidence, ...) is never copied because the installer
+    # never writes it. The guarantee the case exists for, "an upgrade does not
+    # lose or break the user's evidence or a dangling link in it", is therefore
+    # asserted where it now lives: the data stays in place, untouched (the
+    # snapshot-based upgrade-acceptance.sh check below covers the whole tree).
+    # The backup is asserted for what it now promises: it exists under the
+    # sandbox root, is complete (manifest.txt), records the pre-upgrade version
+    # and holds none of the data surfaces.
+    [ -L "$proj/.tad/evidence/helpers/node_modules" ] \
+        && [ "$(readlink "$proj/.tad/evidence/helpers/node_modules")" = "missing" ] \
+        && ok "upgrade → dangling symlink in user evidence untouched in place" \
+        || bad "upgrade → dangling symlink in user evidence lost or changed"
     local backup_dir
-    backup_dir="$(ls -d "$proj"/.tad.backup.* 2>/dev/null | head -1 || true)"
-    if [ -n "$backup_dir" ]; then
-        [ -L "$backup_dir/evidence/helpers/node_modules" ] \
-            && ok "backup → dangling symlink preserved in backup" \
-            || bad "backup → dangling symlink missing from backup"
-        [ -f "$backup_dir/active/handoffs/user.md" ] \
-            && ok "backup → user evidence preserved" \
-            || bad "backup → user evidence missing"
+    backup_dir="$(find "$TAD_BACKUP_ROOT" -type d -mindepth 2 -maxdepth 2 -name '[0-9]*_[0-9]*' 2>/dev/null | head -1 || true)"
+    if [ -n "$backup_dir" ] && [ -f "$backup_dir/manifest.txt" ]; then
+        ok "upgrade → complete backup under the (sandbox) backup root"
+        # Rework R4: a framework file the old install really had (version.txt,
+        # a top-level framework file) must be in the backup byte-identical to
+        # the pre-upgrade snapshot taken above.
+        if [ -f "$backup_dir/.tad/version.txt" ] && cmp -s "$snapshot/.tad/version.txt" "$backup_dir/.tad/version.txt"; then
+            ok "backup → old framework file (.tad/version.txt) present and byte-identical"
+        else
+            bad "backup → old framework file .tad/version.txt missing or different"
+        fi
+        # (make_old_project seeds data dirs only, so there is no framework
+        # surface to find in this backup; its manifest still records the
+        # version the project was upgraded FROM.)
+        if grep -qx "version=$OLD_VERSION" "$backup_dir/manifest.txt"; then
+            ok "backup → manifest records the pre-upgrade version"
+        else
+            bad "backup → manifest does not record version=$OLD_VERSION"
+        fi
+        if [ ! -e "$backup_dir/.tad/active" ] && [ ! -e "$backup_dir/.tad/evidence" ]; then
+            ok "backup → data surfaces excluded (framework only)"
+        else
+            bad "backup → contains data surfaces"
+        fi
     else
         bad "upgrade → no backup directory created"
     fi
@@ -892,60 +1010,93 @@ case_release_gates() {
     setup_sandbox
     local log="$SANDBOX/release-gates.log"
     : > "$log"
+    local RV="$REPO_ROOT/.tad/hooks/lib/release-verify.sh"
 
-    # 1. parity
-    if bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" parity "$REPO_ROOT" >> "$log" 2>&1; then
-        printf '1 parity\n' >> "$log"
-        ok "gate 1: parity PASS"
+    # Phase 5b (B6) — what changed and why. Each gate below appends one line
+    # "<n> <name> <PASS|FAIL|SKIP>" to the log WHETHER OR NOT it passed, and the
+    # order assertion reads those lines. It used to read only the lines of
+    # passing gates, so one red gate also produced a bogus "order wrong" failure
+    # (and could never prove order while any gate was red). Pass/fail of each
+    # gate is still asserted separately by ok/bad.
+
+    # 1. parity. The `parity` subcommand (Claude<->Codex dual skill-tree diff)
+    # was deleted from release-verify.sh by 20223774 (v3.0.0) together with the
+    # second tree it compared; Claude Code's .claude/skills is now only links
+    # into .agents/skills. The gate runs when the verifier still offers it, and
+    # is a SKIP with the reason when it does not; it can never be silently
+    # dropped while it exists.
+    if bash "$RV" 2>&1 | grep -q 'release-verify.sh parity'; then
+        if bash "$RV" parity "$REPO_ROOT" >> "$log" 2>&1; then
+            printf '1 parity PASS\n' >> "$log"
+            ok "gate 1: parity PASS"
+        else
+            printf '1 parity FAIL\n' >> "$log"
+            bad "gate 1: parity FAIL"
+        fi
     else
-        bad "gate 1: parity FAIL"
+        printf '1 parity SKIP\n' >> "$log"
+        echo "  SKIP: gate 1: parity subcommand retired in 20223774 (v3.0.0); release-verify.sh no longer offers it"
     fi
 
     # 2. derive-sync-set report + version zero-stale
     if bash "$REPO_ROOT/.tad/hooks/lib/derive-sync-set.sh" --report "$REPO_ROOT" >> "$log" 2>&1 \
-       && bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" version "$REPO_ROOT" "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log" 2>&1; then
-        printf '2 derive-sync-set + version %s/%s\n' "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log"
+       && bash "$RV" version "$REPO_ROOT" "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log" 2>&1; then
+        printf '2 derive-sync-set + version %s/%s PASS\n' "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log"
         ok "gate 2: derive-sync-set report + version PASS"
     else
+        printf '2 derive-sync-set + version FAIL\n' >> "$log"
         bad "gate 2: derive-sync-set/version FAIL"
     fi
 
     # 3. version-sweep
-    if bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" version-sweep "$REPO_ROOT" "$FIXTURE_VERSION" >> "$log" 2>&1; then
-        printf '3 version-sweep\n' >> "$log"
+    if bash "$RV" version-sweep "$REPO_ROOT" "$FIXTURE_VERSION" >> "$log" 2>&1; then
+        printf '3 version-sweep PASS\n' >> "$log"
         ok "gate 3: version-sweep PASS"
     else
+        printf '3 version-sweep FAIL\n' >> "$log"
         bad "gate 3: version-sweep FAIL"
     fi
 
-    # 4. migration
-    if bash "$REPO_ROOT/.tad/hooks/lib/release-verify.sh" migration "$REPO_ROOT" >> "$log" 2>&1; then
-        printf '4 migration\n' >> "$log"
+    # 4. migration. The gate verifies the hop manifest from the latest tag to
+    # the current version. When the current version IS the latest tag (the
+    # state between a release and the next version bump) there is no hop to
+    # verify, and the gate reports "MISSING HOP <v>-to-<v>.yaml". That is a
+    # precondition that does not hold, not a failing migration: SKIP with the
+    # reason in that state only; any other state runs the gate for real.
+    local prev_tag=""
+    prev_tag="$(git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null || true)"
+    if [ -n "$prev_tag" ] && [ "$prev_tag" = "v$FIXTURE_VERSION" ]; then
+        printf '4 migration SKIP\n' >> "$log"
+        echo "  SKIP: gate 4: migration: current version $FIXTURE_VERSION is already the latest tag $prev_tag, so there is no hop to verify until the next version bump"
+    elif bash "$RV" migration "$REPO_ROOT" >> "$log" 2>&1; then
+        printf '4 migration PASS\n' >> "$log"
         ok "gate 4: migration PASS"
     else
+        printf '4 migration FAIL\n' >> "$log"
         bad "gate 4: migration FAIL"
     fi
 
     # 5. pack-registry driftcheck (advisory — recorded, not blocking)
     if bash "$REPO_ROOT/.tad/hooks/lib/pack-registry-driftcheck.sh" >> "$log" 2>&1; then
-        printf '5 pack-registry driftcheck (advisory)\n' >> "$log"
+        printf '5 pack-registry driftcheck (advisory) PASS\n' >> "$log"
         ok "gate 5: pack-registry driftcheck PASS (advisory recorded)"
     else
-        printf '5 pack-registry driftcheck ADVISORY-FAIL (recorded)\n' >> "$log"
+        printf '5 pack-registry driftcheck (advisory) ADVISORY-FAIL (recorded)\n' >> "$log"
         ok "gate 5: pack-registry driftcheck advisory recorded (non-blocking)"
     fi
 
     # 6. tad.sh denylist drift
     if bash "$TAD_SH" --verify-denylist >> "$log" 2>&1; then
-        printf '6 tad.sh denylist\n' >> "$log"
+        printf '6 tad.sh denylist PASS\n' >> "$log"
         ok "gate 6: tad.sh --verify-denylist PASS"
     else
+        printf '6 tad.sh denylist FAIL\n' >> "$log"
         bad "gate 6: tad.sh --verify-denylist FAIL"
     fi
 
-    # order assertion: 1..6 each present in sequence
+    # order assertion: 1..6 each recorded once, in sequence (pass, fail or skip)
     local seq
-    seq="$(grep -oE '^[1-6]' "$log" | tr -d '\n')"
+    seq="$(grep -E '^[1-6] ' "$log" | grep -oE '^[1-6]' | tr -d '\n')"
     [ "$seq" = "123456" ] && ok "gates ran in canonical order" \
         || bad "gate order wrong: '$seq'"
 }
