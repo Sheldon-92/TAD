@@ -31,15 +31,15 @@ if [ ! -f "$CODEX_LEDGER" ]; then
   echo "GATE: runtime-freshness exit=2"
   exit 2
 fi
-# v3.0.0: the Claude Code runtime path was removed. Its ledger is retained as a
-# retired record (see J6) and is NOT gated: missing ledger or a RETIRED header
-# means skip (INFO), never exit 2 — otherwise the gate would wiring-BLOCK forever.
+# The Claude Code ledger is gated like the other platforms: it is skipped (INFO) only when the
+# ledger file is absent or carries a RETIRED/DEPRECATED marker, never exit 2 for that — otherwise
+# the gate would wiring-BLOCK forever on a retired ledger. The current ledger has neither, so it is checked.
 SKIP_CLAUDE=0
 if [ ! -f "$CLAUDE_LEDGER" ]; then
-  echo "INFO: retired ledger $CLAUDE_LEDGER absent — skipping (v3.0.0 removal)"
+  echo "INFO: ledger $CLAUDE_LEDGER absent — skipping Claude Code check"
   SKIP_CLAUDE=1
 elif grep -qE 'RETIRED|DEPRECATED' "$CLAUDE_LEDGER" 2>/dev/null; then
-  echo "INFO: ledger $CLAUDE_LEDGER is retired — skipping (v3.0.0 removal)"
+  echo "INFO: ledger $CLAUDE_LEDGER is marked RETIRED/DEPRECATED — skipping Claude Code check"
   SKIP_CLAUDE=1
 fi
 if [ ! -f "$OPENCODE_LEDGER" ]; then

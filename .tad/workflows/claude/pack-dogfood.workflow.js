@@ -1,6 +1,6 @@
 export const meta = {
   name: 'pack-dogfood',
-  description: 'Blind A/B dogfood across a list of capability packs. Per pack: extract the fixture scenario as the task → generate a CONTROL answer (task text only, never touches the pack dir) + a WITH-PACK answer → an independent BLIND judge scores both on a quality rubric, WebSearch-verifies specific claims, and flags any specific-but-wrong claim. Blind order is set by index parity so the judge cannot infer which answer used the pack. Tests real answer quality, not just discrimination. Generalized from the proven dogfood-all workflow; evidence dir is parameterized. Input via args={packs, evidence_dir} or the top-of-file CONSTs. Resumable.',
+  description: 'Blind A/B dogfood across a list of capability packs. Per pack: extract the fixture scenario as the task → generate a CONTROL answer (task text only, never touches the pack dir) + a WITH-PACK answer → an independent BLIND judge scores both on a quality rubric, WebSearch-verifies specific claims, and flags any specific-but-wrong claim. Blind order is set by index parity so the judge cannot infer which answer used the pack. Tests real answer quality, not just discrimination. Generalized from the proven dogfood-all workflow; evidence dir is parameterized. Input via args={packs, evidence_dir}; packs has no default and must be passed explicitly. Resumable.',
   whenToUse: 'When validating that upgraded packs produce genuinely better answers than a strong generalist control — winner on CORRECT specifics is real quality; CONTROL/TIE or wrong_claims is a real gap to fix.',
   phases: [
     { title: 'Snapshot', detail: 'Copy existing dogfood baselines to .prev.md for regression comparison' },
@@ -12,7 +12,7 @@ export const meta = {
 }
 
 // ── Args parsing (Object.keys loop — canonical convention) ──────────────────
-// args: injected as an object (measured 2026-10-09 on claude 2.1.295, inline and scriptPath). The DEFAULT_* constant below remains as a fallback.
+// args: injected as an object (measured 2026-10-09 on claude 2.1.295, inline and scriptPath). packs has NO default: a run that selects packs by itself is unsafe, so it must be passed explicitly.
 
 let packs = null
 let evidenceDir = null
@@ -25,13 +25,10 @@ if (args) {
   }
 }
 
-// ── Defaults — EDIT THESE FOR YOUR RUN (or pass via args) ───────────────────
+// ── Defaults ────────────────────────────────────────────────────────────────
 
-// List of pack names to dogfood.
-const DEFAULT_PACKS = [
-  // EXAMPLE — replace with the packs you want to dogfood (or pass via args={packs:[...]}).
-  'rag-retrieval', 'code-security',
-]
+// Deliberately empty: pass the packs via args={packs:[...]}. No pack is selected by default.
+const DEFAULT_PACKS = []
 // Evidence output dir — where each per-pack judgment (dogfood-<pack>.md) is persisted.
 const DEFAULT_EVIDENCE_DIR = '.tad/evidence/pack-dogfood'
 
@@ -40,12 +37,21 @@ if (!evidenceDir) evidenceDir = DEFAULT_EVIDENCE_DIR
 
 // Fail loud on missing input rather than silently no-op.
 if (!Array.isArray(packs) || packs.length === 0) {
-  log('ERROR: no packs. Edit DEFAULT_PACKS at top of file, or pass args={packs:["name",...]}.')
+  log('ERROR: no packs. Packs must be passed explicitly: args={packs:["name",...]}. There is no default.')
   return { error: 'no packs', evidence_dir: evidenceDir }
 }
 
 const EV = evidenceDir
 log(`pack-dogfood: ${packs.length} packs — ${packs.join(', ')} → ${EV}`)
+
+// Whole-entry (trimmed, lower-cased, trailing punctuation removed) matches only: a judge that has
+// nothing to report sometimes writes a note into wrong_claims. No prefix matching, so a real claim
+// such as "No rate limit exists; actual is 100/min" is kept.
+const NO_FINDING_SENTINELS = ['', 'none', 'n/a', 'no wrong claims', 'no errors found', '未发现明确错误', '未发现错误', '无']
+const realClaims = (arr) => (Array.isArray(arr) ? arr : []).filter((c) => {
+  const k = String(c).trim().toLowerCase().replace(/[\s.,;:!。，；：！]+$/, '')
+  return NO_FINDING_SENTINELS.indexOf(k) === -1
+})
 
 // ── Schemas (preserved verbatim from the proven workflow) ───────────────────
 
@@ -64,7 +70,7 @@ const JUDGE_SCHEMA = {
     control_correctness: { type: 'number', description: 'leave 0; filled by conductor' },
     answer1_score: { type: 'object', properties: { correctness: { type: 'number' }, actionability: { type: 'number' }, specificity: { type: 'number' }, completeness: { type: 'number' } } },
     answer2_score: { type: 'object', properties: { correctness: { type: 'number' }, actionability: { type: 'number' }, specificity: { type: 'number' }, completeness: { type: 'number' } } },
-    wrong_claims: { type: 'array', items: { type: 'string' }, description: 'specific-but-WRONG claims in EITHER answer, with which answer + correct value (WebSearch-verified)' },
+    wrong_claims: { type: 'array', items: { type: 'string' }, description: 'specific-but-WRONG claims in EITHER answer, with which answer + correct value (WebSearch-verified). If there are none this MUST be [] - never put a note such as "no errors found" here.' },
     rationale: { type: 'string' },
   },
 }
@@ -136,7 +142,7 @@ const results = await pipeline(
     `Score each 1-5 on correctness, actionability, specificity, completeness. ⚠️ WebSearch-verify the key specific claims (numbers, tool/model names, versions, thresholds, APIs) in BOTH answers against current primary docs; list EVERY specific-but-wrong claim (which answer + correct value). A wrong specific tanks that answer's correctness. Then pick winner (1/2/tie) + margin + rationale (did the winner win on CORRECT specifics or just verbosity?).\n` +
     `Write full judgment to ${EV}/dogfood-${pack}.md`,
     { label: `judge:${pack}`, phase: 'Judge', schema: JUDGE_SCHEMA }
-  ).then((j) => ({ pack, pack_is: b.pack_is, task: b.task, verdict: j || { winner: 'tie', wrong_claims: ['judge failed'] } })),
+  ).then((j) => ({ pack, pack_is: b.pack_is, task: b.task, verdict: j || null, judge_failed: !j })),
   // Stage 5: regression check (uses .prev.md baseline from snapshot)
   (judged, pack) => agent(
     `REGRESSION CHECK for capability pack "${pack}".\n\n` +
@@ -158,12 +164,22 @@ const results = await pipeline(
     pack_is: judged.pack_is,
     task: judged.task,
     verdict: judged.verdict,
+    judge_failed: !!judged.judge_failed,
     regression: reg || { regression_found: false, lost_knowledge: [] },
   }))
 )
 
 const clean = results.filter(Boolean)
-const rows = clean.map((r) => {
+// A failed judge is reported on its own: it is not a tie, a win, or a wrong claim.
+const judgeFailures = clean.filter((r) => r.judge_failed || !r.verdict).map((r) => ({ pack: r.pack, reason: 'judge failed' }))
+// A pack whose pipeline produced no result at all (a stage threw, or the agent was skipped) is reported too,
+// so total === judged + judge_failures.length always holds.
+const seen = new Set(clean.map((r) => r.pack))
+packs.forEach((p, i) => {
+  const name = typeof p === 'string' ? p : p.name
+  if (!results[i] && !seen.has(name)) judgeFailures.push({ pack: name, reason: 'no result' })
+})
+const rows = clean.filter((r) => !r.judge_failed && r.verdict).map((r) => {
   const v = r.verdict
   const packWon = v.winner === r.pack_is
   const s1 = v.answer1_score || {}, s2 = v.answer2_score || {}
@@ -173,18 +189,20 @@ const rows = clean.map((r) => {
     result: v.winner === 'tie' ? 'TIE' : (packWon ? 'WITH-PACK' : 'CONTROL'),
     margin: v.margin || '',
     pack_score: packScore,
-    wrong_claims: v.wrong_claims || [],
+    wrong_claims: realClaims(v.wrong_claims),
     regression: r.regression || {},
   }
 })
 return {
   evidence_dir: EV,
-  total: rows.length,
+  total: packs.length,
+  judged: rows.length,
+  judge_failures: judgeFailures,
   pack_wins: rows.filter((r) => r.result === 'WITH-PACK').length,
   ties: rows.filter((r) => r.result === 'TIE').length,
   control_wins: rows.filter((r) => r.result === 'CONTROL').length,
   packs_with_wrong_claims: rows.filter((r) => r.wrong_claims.length > 0).map((r) => r.pack),
   packs_with_regression: rows.filter((r) => r.regression && r.regression.regression_found).map((r) => r.pack),
   rows,
-  note: 'WITH-PACK wins on correct specifics = real quality. CONTROL/TIE or wrong_claims = a real gap to fix. regression_found = knowledge lost in upgrade. Conductor must read dogfood-*.md before judging.',
+  note: 'WITH-PACK wins on correct specifics = real quality. CONTROL/TIE or wrong_claims = a real gap to fix. regression_found = knowledge lost in upgrade. judge_failures = packs whose judge returned nothing (not counted anywhere else). Conductor must read dogfood-*.md before judging.',
 }

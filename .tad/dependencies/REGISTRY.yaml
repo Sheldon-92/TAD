@@ -192,6 +192,7 @@ dependencies:
         - ".claude/settings.json"
         - ".claude/settings.local.json"
         - ".claude/skills/"
+        - ".claude/agents/"
         - ".claude/workflows/"
         - ".tad/hooks/"
       integration_context: "Runtime platform for TAD — all agent behavior, hook enforcement, sub-agent orchestration, and tool access flows through Claude Code's harness."

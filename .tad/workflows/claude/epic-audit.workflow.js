@@ -57,16 +57,9 @@ const SYNTHESIS_SCHEMA = {
           key_insight: { type: 'string' }
         }
       }
-    },
-    workflow_meta: {
-      type: 'object',
-      properties: {
-        total_agents_spawned: { type: 'number' },
-        pattern_used: { type: 'string' }
-      }
     }
   },
-  required: ['summary', 'epics', 'workflow_meta']
+  required: ['summary', 'epics']
 }
 
 // args: string[] of Epic file paths, OR undefined (auto-detect from .tad/active/epics/)
@@ -74,7 +67,11 @@ let epicPaths = []
 if (args) {
   for (let i = 0; i < args.length; i++) { epicPaths.push(args[i]) }
 }
+// total_agents_spawned is computed here from what was dispatched (not from what returned, and not
+// reported by the synthesis agent, which can only guess).
+let probeRan = false
 if (epicPaths.length === 0) {
+  probeRan = true
   const detected = await agent(
     'List all .md files in .tad/active/epics/ (excluding .gitkeep). Return ONLY a JSON object {"paths": [...]} whose paths array holds the file paths relative to project root, e.g. {"paths": [".tad/active/epics/EPIC-20260403-foo.md"]}. No explanation.',
     { label: 'detect-epics', schema: { type: 'object', properties: { paths: { type: 'array', items: { type: 'string' } } }, required: ['paths'] } }
@@ -84,7 +81,7 @@ if (epicPaths.length === 0) {
 
 if (epicPaths.length === 0) {
   log('No active Epics found. Nothing to audit.')
-  return { summary: 'No active Epics found', epics: [], workflow_meta: { total_agents_spawned: 1, pattern_used: 'none' } }
+  return { summary: 'No active Epics found', epics: [], total_agents_spawned: probeRan ? 1 : 0 }
 }
 
 log('Auditing ' + epicPaths.length + ' Epic(s): ' + epicPaths.join(', '))
@@ -156,4 +153,10 @@ const result = await agent(
   { label: 'synthesis', phase: 'Synthesize', schema: SYNTHESIS_SCHEMA }
 )
 
+// probe (if it ran) + one analyst per Epic + one challenger per returned analysis + the synthesizer
+const totalAgentsSpawned = (probeRan ? 1 : 0) + epicPaths.length + validAnalyses.length + 1
+if (!result) {
+  return { summary: 'Synthesis agent failed; see analyst and challenger findings', epics: [], analyses: validAnalyses, challenges: validChallenges, total_agents_spawned: totalAgentsSpawned }
+}
+result.total_agents_spawned = totalAgentsSpawned
 return result

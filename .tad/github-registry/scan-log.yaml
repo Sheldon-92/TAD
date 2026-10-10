@@ -4,7 +4,12 @@
 # Single-writer principle: this file is the ONLY output of the routine.
 # REGISTRY.yaml last_checked is updated separately (by *research-github refresh or Alex consuming scan-log).
 version: 1.0.0
-last_scan: "2026-09-04"
+# Routine scan PAUSED 2026-10-09. The previous value was last_scan: "2026-09-04". The 43 pending
+# candidates below are kept. To resume, run `*research-github scan` once. On that first scan the
+# previous last_scan is null, so the cleanup of rejected entries is skipped (the cleanup rule in the
+# research-github SKILL does not cover null). While last_scan is null the research-github skill
+# reports "No scan results yet" even though the pending candidates below are kept.
+last_scan: null
 scan_results:
   updates:
     - repo: Shubhamsaboo/awesome-llm-apps

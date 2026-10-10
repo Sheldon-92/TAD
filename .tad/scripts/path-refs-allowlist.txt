@@ -1,0 +1,67 @@
+# Dangling .tad/... and .claude/... references that are correct as written.
+# Format: <file><TAB><ref><TAB><reason>. One row per (file, ref); matching is exact equality, no prefixes
+# and no wildcards. Every row needs a reason. A row that matches no reference is reported by
+# check-path-refs.mjs as STALE-ALLOW: delete it. A reference that is genuinely stale does not belong
+# here: fix the reference instead.
+.agents/skills/alex-lite/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.agents/skills/alex/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.agents/skills/alex/SKILL.md	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.agents/skills/alex/references/accept-command.md	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.agents/skills/alex/references/handoff-creation-protocol.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.agents/skills/alex/references/handoff-creation-protocol.md	.tad/hooks/lib/bar.sh	Example filename in the handoff-creation protocol
+.agents/skills/alex/references/handoff-creation-protocol.md	.tad/hooks/lib/foo.sh	Example filename in the handoff-creation protocol
+.agents/skills/blake-lite/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.agents/skills/blake/SKILL.md	.tad/active/handoffs/user-auth.md	Example filename inside a fenced illustration in the blake skill
+.agents/skills/blake/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.agents/skills/capability-upgrade/references/legacy-pack-research.md	.claude/plugins/	Describes Claude Code's own plugin directory in a legacy research note
+.agents/skills/tad-init/SKILL.md	.tad/project-knowledge/testing.md	Project knowledge file that tad-init or the first accumulated learning creates in a downstream project; optional by design
+.agents/skills/tad-init/SKILL.md	.tad/project-knowledge/ux.md	Project knowledge file that tad-init or the first accumulated learning creates in a downstream project; optional by design
+.agents/skills/tad-test-brief/SKILL.md	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.gitignore	.claude/projects/	Ignore rule in .gitignore for a Claude Code runtime directory
+.gitignore	.claude/worktrees/	Ignore rule in .gitignore for a Claude Code runtime directory
+.gitignore	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.gitignore	.tad/memory/MEMORY.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/memory/feedback_share-mode-and-deflation.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/memory/project_co-thinking-workshop-seed.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/memory/project_tad-evolution-directions.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/memory/project_tad-universal-method.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/memory/reference_claude-code-source.md	Ignore rule in .gitignore for the maintainer's local memory file; the file is deliberately not committed
+.gitignore	.tad/sync-registry.yaml	Local maintainer file that .gitignore deliberately excludes; the ignore rule must name it
+.tad/TAD-POINTER.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/TAD-POINTER.md	.tad/templates/local/chain-manifest-template.md	Template lives in another repository (the pointer file says so), not in this one
+.tad/agents/agent-b-executor.md	.tad/tasks/develop-task.md	Illustration of how a task filename maps to a path; develop-task.md does not exist
+.tad/config-workflow.yaml	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.tad/discipline-floor.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/gates/gate-execution-guide.md	.tad/working/gates/	Gate working directory created at run time in a downstream project; only .tad/working/ has committed content, not gates/
+.tad/gates/quality-gate-checklist.md	.tad/working/gates/	Gate working directory created at run time in a downstream project; only .tad/working/ has committed content, not gates/
+.tad/guides/yolo-recovery.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/hooks/post-write-sync.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/hooks/startup-health.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/mcp-registry.yaml	.tad/mcp-config.json	User-created MCP config; the registry tells users to create it, so it is absent by design
+.tad/project-knowledge/README.md	.tad/hooks/lib/router.sh	Historical provenance note in a grounding list; router.sh was removed and the line records where a fact came from
+.tad/project-knowledge/README.md	.tad/project-knowledge/archive/	Archive directory the knowledge README says is created on demand
+.tad/project-knowledge/frontend-design.md	.tad/active/handoffs/HANDOFF-20260425-phase5-evolve-data-capture.md	Provenance note: handoff that produced this knowledge entry, archived since
+.tad/project-knowledge/frontend-design.md	.tad/domains/web-ui-design.yaml	Provenance note: the file the knowledge entry was distilled from, deleted when domains/ was retired
+.tad/references/openharness-architecture.md	.claude/projects/-path-hash/memory/	Describes Claude Code's own per-user memory layout (-path-hash is a placeholder)
+.tad/scripts/yolo-recovery.mjs	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/tasks/parallel-execution.md	.tad/agents/product-expert.md	Counter-example in a WRONG/RIGHT illustration; the file is not meant to exist
+.tad/tasks/requirement-elicitation.md	.tad/context/PROJECT.md	Optional file ('if exists') the requirement-elicitation task reads in a downstream project
+.tad/templates/pair-test-report-template.md	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.tad/templates/test-brief-template.md	.tad/pair-testing/SESSIONS.yaml	Session ledger created in a downstream project by the pair-testing flow; has no committed copy
+.tad/workflows/claude/epic-audit.workflow.js	.tad/active/epics/EPIC-20260403-foo.md	Example id in a workflow prompt, not a real epic
+.tad/workflows/claude/handoff-review.workflow.js	.tad/active/handoffs/HANDOFF-20260613-example.md	Example id in a workflow prompt, not a real handoff
+.tad/workflows/claude/surplus-execute.workflow.js	.tad/active/SURPLUS-REPORT-	Filename prefix the surplus workflow completes with a date at run time
+.tad/workflows/claude/surplus-execute.workflow.js	.tad/active/epics/EPHEMERAL-surplus-	Filename prefix the surplus workflow completes with a run id at run time
+.tad/workflows/claude/surplus-execute.workflow.js	.tad/active/handoffs/COMPLETION-surplus-	Filename prefix the surplus workflow completes with a run id at run time
+.tad/workflows/claude/surplus-execute.workflow.js	.tad/active/handoffs/HANDOFF-surplus-	Filename prefix the surplus workflow completes with a run id at run time
+.tad/workflows/claude/surplus-scan.workflow.js	.tad/active/SURPLUS-PLAN-	Filename prefix the surplus workflow completes with a date at run time
+AGENTS.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+AGENTS.md	.tad/project-knowledge/api-integration.md	Optional routing target: AGENTS.md says 'if it exists'; created per project
+AGENTS.md	.tad/project-knowledge/mobile-platform.md	Optional routing target: AGENTS.md says 'if it exists'; created per project
+AGENTS.md	.tad/project-knowledge/performance.md	Optional routing target: AGENTS.md says 'if it exists'; created per project
+AGENTS.md	.tad/project-knowledge/testing.md	Project knowledge file that tad-init or the first accumulated learning creates in a downstream project; optional by design
+AGENTS.md	.tad/project-knowledge/ux.md	Project knowledge file that tad-init or the first accumulated learning creates in a downstream project; optional by design
+tad.sh	.tad/.agents/root-file/.opencode	Hypothetical path in an installer comment describing a failure case; not a repo path
+tad.sh	.tad/codex/schemas/	Quoted as an example of a legitimate ledger entry in an installer comment; the directory does not exist
+tad.sh	.tad/migrations/genesis.yaml	Guarded by an existence test in tad.sh before use; the file is optional
+NEXT.md	.tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-package.md	parked capability-builder entry kept verbatim at the human's request; the handoff now lives under .tad/archive/handoffs/

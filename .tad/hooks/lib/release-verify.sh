@@ -145,6 +145,7 @@ usage() {
   echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
   echo "  release-verify.sh provenance <repo_root>" >&2
   echo "  release-verify.sh state-surface [<repo_root>]" >&2
+  echo "  release-verify.sh path-refs [<repo_root>]" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -882,6 +883,30 @@ VERSION_SWEEP_EOF
     SS_REPO="$SCRIPT_DIR/../../.."
     if [ $# -eq 2 ]; then SS_REPO="$2"; fi
     exec bash "$SCRIPT_DIR/state-surface-check.sh" --repo "$SS_REPO"
+    ;;
+
+  # ───────────────────────── path-refs ─────────────────────────
+  path-refs)
+    # Dangling-reference check: .tad/... and .claude/... paths named in tracked text files that
+    # point at nothing. All logic lives in .tad/scripts/check-path-refs.mjs (allow-list beside it).
+    # Not wired into any aggregate gate; run it on demand.
+    if [ $# -gt 2 ]; then usage; exit 2; fi
+    PR_REPO="$SCRIPT_DIR/../../.."
+    if [ $# -eq 2 ]; then PR_REPO="$2"; fi
+    PR_TOOL="$SCRIPT_DIR/../../scripts/check-path-refs.mjs"
+    if [ ! -f "$PR_TOOL" ]; then echo "ERROR: check-path-refs.mjs not found at $PR_TOOL" >&2; exit 2; fi
+    if ! command -v node >/dev/null 2>&1; then echo "ERROR: node is required for path-refs" >&2; exit 2; fi
+    echo "========================================="
+    echo "PATH-REFS (dangling .tad/ and .claude/ references)"
+    echo "  REPO: $PR_REPO"
+    echo "========================================="
+    pr_rc=0
+    node "$PR_TOOL" --root "$PR_REPO" || pr_rc=$?
+    case "$pr_rc" in
+      0) echo "VERDICT: path-refs PASS (exit 0)"; exit 0 ;;
+      1) echo "VERDICT: path-refs FAIL — dangling reference(s) listed above (exit 1)"; exit 1 ;;
+      *) echo "VERDICT: path-refs ERROR — check-path-refs.mjs exited $pr_rc (exit 2)"; exit 2 ;;
+    esac
     ;;
 
   *)

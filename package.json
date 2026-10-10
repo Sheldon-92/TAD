@@ -7,11 +7,14 @@
     "tad-install": "bin/tad-install.mjs"
   },
   "scripts": {
-    "test": "echo \"No tests yet\""
+    "test": "bash .tad/tests/run-all.sh"
   },
   "keywords": [
     "tad",
     "codex",
+    "claude-code",
+    "opencode",
+    "cursor",
     "ai",
     "development",
     "framework",

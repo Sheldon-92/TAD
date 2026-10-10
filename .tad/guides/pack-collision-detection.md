@@ -61,7 +61,8 @@ Every collision `ref` (file:line) is recorded against **`.agents/skills/`** — 
 scans `.agents/skills/` too, so **scanner output, schema refs in `pack-collisions.yaml`,
 and acceptance hand-re-derivation all anchor to the SAME physical files**.
 
-`.tad/capability-packs/` is a **`*sync`-maintained source copy** — it is NOT the ref
+`.tad/capability-packs/` is the pack-authoring tree (CAPABILITY.md, install.sh, pack-registry.yaml);
+its reference files can differ from the runtime-loaded `.agents/skills/` tree. It is NOT the ref
 anchor. Never record collision refs against `.tad/capability-packs/`.
 
 ---

@@ -1,6 +1,6 @@
 export const meta = {
   name: 'surplus-scan',
-  description: 'Surplus Burn Mode Phase 1: scan TAD backlog sources + OBJECTIVES-driven generator, rank candidates value-first (expected_value = value x confidence; density tiebreaker), tag risk/safety, write ranked SURPLUS-PLAN markdown + JSON sidecar. Read-only: writes exactly two plan artifacts, mutates no backlog source.',
+  description: 'Surplus Burn Mode Phase 1: scan TAD backlog sources + OBJECTIVES-driven generator, rank candidates value-first (expected_value = value x confidence; density tiebreaker), tag risk/safety, render a ranked SURPLUS-PLAN markdown and JSON sidecar and return them with their target paths. The script itself writes nothing: the caller persists the returned plan and JSON. Mutates no backlog source.',
   whenToUse: 'Invoked by *surplus --plan to surface highest-value backlog work. Read-only scan + rank; NO execution (Phase 2).',
   phases: [
     { title: 'Scan', detail: 'Parallel readers, one per backlog source, extract candidates' },

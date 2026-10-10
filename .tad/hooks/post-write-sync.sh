@@ -284,6 +284,8 @@ if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
   exit 0
 fi
 
+# Dispatch for one written path (reads FILE_PATH).
+handle_written_path() {
 # Pattern matching against TAD-managed files
 # Patterns use *.tad/* to match both absolute (/path/.tad/) and relative (.tad/) paths
 case "$FILE_PATH" in
@@ -359,6 +361,29 @@ case "$FILE_PATH" in
     ;;
   *)
     output_empty
+    ;;
+esac
+}
+
+# Codex apply_patch can touch several files in one call (HOOK_FILE_PATHS, set by
+# hook-envelope.sh only for that case). Run the same dispatch per path and print one
+# response: the first non-empty one, else {}. Every other envelope is a single path
+# and goes straight through, output unchanged.
+case "${HOOK_FILE_PATHS:-}" in
+  *"
+"*)
+    _first_out=""
+    while IFS= read -r FILE_PATH; do
+      [ -n "$FILE_PATH" ] || continue
+      _out=$(handle_written_path)
+      if [ -z "$_first_out" ] && [ "$_out" != "{}" ]; then _first_out="$_out"; fi
+    done <<EOF_PATHS
+$HOOK_FILE_PATHS
+EOF_PATHS
+    if [ -n "$_first_out" ]; then printf '%s\n' "$_first_out"; else output_empty; fi
+    ;;
+  *)
+    handle_written_path
     ;;
 esac
 

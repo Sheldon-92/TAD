@@ -77,8 +77,8 @@ if [ -n "$PLATFORM_ARG" ]; then
     case "$PLATFORM_ARG" in
         codex|claude-code) ;;
         both|*claude*)
-            echo "tad-update: --platform '$PLATFORM_ARG' was removed in TAD v3.0.0. Re-run with --platform codex." >&2; exit 2 ;;
-        *) echo "tad-update: --platform must be codex or claude-code (got: $PLATFORM_ARG)" >&2; exit 2 ;;
+            echo "tad-update: --platform '$PLATFORM_ARG' is not a valid target. Valid for this updater: codex, claude-code" >&2; exit 2 ;;
+        *) echo "tad-update: --platform '$PLATFORM_ARG' is not a valid target. Valid for this updater: codex, claude-code" >&2; exit 2 ;;
     esac
 fi
 
@@ -113,13 +113,20 @@ ver_cmp() {
 # ============================================
 # Platform detection (deterministic precedence)
 # ============================================
-# v3.0.0: codex is the only target. .agents/skills/alex present → codex.
+# All four harnesses (Codex, Claude Code, Cursor, OpenCode) share the .agents/skills tree, so the
+# presence of .agents/skills/alex says nothing about which one a project was installed for. This
+# function therefore reports only "codex" for it, and nothing else.
 # A leftover downstream .claude tree is NEVER auto-deleted and never
 # re-detected as an install target (see tad.sh tombstone).
 # else → ambiguous/absent (check may report; apply REQUIRES --platform)
-# NOTE: a project installed with --platform claude-code is currently detected as
-# codex here (it has .agents/skills/alex too). When upgrading such a project,
-# pass --platform claude-code explicitly; automatic detection is a later release.
+# This updater's --platform accepts only codex and claude-code. tad.sh and bin/tad-install.mjs
+# accept four (codex, opencode, cursor, claude-code); that difference is known and intentional.
+# Platform stickiness: for a project installed with --platform claude-code and updated without
+# --platform, tad.sh keeps the Claude Code skill links that already exist up to date, but does not
+# redo the rest of the Claude Code projection. To refresh the whole projection, pass
+# --platform claude-code explicitly. Detection is deliberately not extended to recognise Claude Code
+# projects: a fact that can be forged inside the project must not decide whether settings.json or
+# CLAUDE.md gets written.
 detect_platform() {
     if [ -d "$PROJECT_ROOT/.agents/skills/alex" ]; then
         echo "codex"

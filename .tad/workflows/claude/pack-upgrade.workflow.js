@@ -14,7 +14,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 export const meta = {
   name: 'pack-upgrade',
-  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (Local Wiki / WebSearch research → cited report + UNVERIFIED list → upgrade plan whose Layer-B additions each cite a report source) → Upgrade (apply Layer A structure + Layer B research-grounded depth; every load-bearing specific traces to a source OR is flagged estimate/convention/UNVERIFIED) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit} or the top-of-file CONSTs.',
+  description: 'Upgrade a list of capability packs to a dual-layer quality bar via a per-pack 4-stage pipeline: Plan (Local Wiki / WebSearch research → cited report + UNVERIFIED list → upgrade plan whose Layer-B additions each cite a report source) → Upgrade (apply Layer A structure + Layer B research-grounded depth; every load-bearing specific traces to a source OR is flagged estimate/convention/UNVERIFIED) → Eval (behavioral discriminative eval) → Review (3-lens adversarial review, fact/API WebSearch-verified, findings persisted to disk). Any-refute → validate-then-fix (a single lens refute can be a real P0; the fix agent validates each finding first and skips false positives). Generalized from the proven batch-upgrade workflow; evidence output dir + label are parameterized so it is not tied to any one epic. No Codex. Input via args={packs, evidence_dir, label, quality_bar, baseline_audit}; packs has no default and must be passed explicitly (this workflow rewrites canonical pack directories).',
   whenToUse: 'When raising one or more capability packs to a structure+depth quality bar with research-grounded specifics and adversarial review. Conductor re-reads persisted evidence + judges a gate before accepting.',
   phases: [
     { title: 'Plan', detail: 'Per-pack research (agent: Local Wiki query → WebSearch fallback) → cited report + UNVERIFIED list → structured upgrade plan with each Layer-B addition citing a report source' },
@@ -25,7 +25,7 @@ export const meta = {
 }
 
 // ── Args parsing (Object.keys loop — canonical convention) ──────────────────
-// args: injected as an object (measured 2026-10-09 on claude 2.1.295, inline and scriptPath). The DEFAULT_* constant below remains as a fallback.
+// args: injected as an object (measured 2026-10-09 on claude 2.1.295, inline and scriptPath). packs has NO default (this workflow rewrites canonical packs, so it must never pick them on its own); the other DEFAULT_* constants are fallbacks.
 
 let packs = null
 let evidenceDir = null
@@ -44,14 +44,11 @@ if (args) {
   }
 }
 
-// ── Defaults — EDIT THESE FOR YOUR RUN (or pass via args) ───────────────────
+// ── Defaults ────────────────────────────────────────────────────────────────
 
-// List of packs to upgrade. needs_fixture=true means the pack has NO fixture yet
-// and the plan MUST author a new one (fixture_action=author-new).
-const DEFAULT_PACKS = [
-  { name: 'rag-retrieval', needs_fixture: false },
-  { name: 'web-deployment', needs_fixture: false },
-]
+// Deliberately empty: pass args={packs:[{name, needs_fixture}]}. needs_fixture=true means the pack
+// has NO fixture yet and the plan MUST author a new one (fixture_action=author-new).
+const DEFAULT_PACKS = []
 // Evidence output dir — where eval + review + fix findings are persisted.
 const DEFAULT_EVIDENCE_DIR = '.tad/evidence/pack-upgrade'
 // Run label — used as the filename prefix for persisted artifacts (e.g. eval-<label>-<pack>.md).
@@ -81,7 +78,7 @@ if (args) {
 
 // Fail loud on missing input rather than silently no-op.
 if (!Array.isArray(packs) || packs.length === 0) {
-  log('ERROR: no packs. Edit DEFAULT_PACKS at top of file, or pass args={packs:[{name,needs_fixture}]}.')
+  log('ERROR: no packs. Packs must be passed explicitly: args={packs:[{name,needs_fixture}]}. There is no default.')
   return { error: 'no packs', evidence_dir: evidenceDir, label }
 }
 // Normalize string entries → {name, needs_fixture:false}

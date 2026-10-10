@@ -44,6 +44,15 @@ if [ -f "NEXT.md" ] && grep -q "## Blocked" NEXT.md 2>/dev/null; then
   HAS_BLOCKED=" | has blocked items"
 fi
 
+# Claude Code reads CLAUDE.md instead of AGENTS.md when both exist, so a CLAUDE.md that does not pull
+# AGENTS.md in silently switches TAD routing off. Read-only warning; a symlinked CLAUDE.md (usually
+# CLAUDE.md -> AGENTS.md) is left alone. The wording names Claude Code because this hook runs on every
+# harness and cannot tell which one it is on. Uses the same own-line @AGENTS.md pattern as the installer (tad.sh).
+CLAUDE_MD_WARN=""
+if [ -f "AGENTS.md" ] && [ -f "CLAUDE.md" ] && [ ! -L "CLAUDE.md" ] && ! grep -Eq '^@AGENTS\.md[[:space:]]*$' CLAUDE.md 2>/dev/null; then
+  CLAUDE_MD_WARN=" | CLAUDE.md has no @AGENTS.md line: Claude Code will not load AGENTS.md"
+fi
+
 # Read TAD version
 VERSION="unknown"
 if [ -f ".tad/config.yaml" ]; then
@@ -56,7 +65,7 @@ if [ -f ".tad/config.yaml" ]; then
 fi
 
 # Build summary
-SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active"
+SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active${CLAUDE_MD_WARN}"
 
 output_response "SessionStart" "$SUMMARY"
 exit 0

@@ -1,4 +1,5 @@
 #!/bin/bash
+# HISTORICAL FILE (moved from the repo root): the TAD v1.4 CLI. It references files that no longer exist and is no longer maintained.
 
 # TAD Framework CLI v1.4
 # Simple command-line interface for TAD management (v1.4 compatible)
