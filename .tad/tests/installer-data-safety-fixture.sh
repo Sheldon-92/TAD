@@ -1595,7 +1595,7 @@ case_ac228() {
   ( cd "$REPO" && git archive v2.44.6 .claude/settings.json ) | tar -x -C "$TARGET"
   local rc
   rc="$(run_install_cc claude-code "$SANDBOX/install.log")"
-  if [ "$rc" = "0" ] && grep -qF 'Legacy Claude Code install detected' "$SANDBOX/install.log" && grep -qF 'hooks only the old file registered' "$SANDBOX/install.log"; then
+  if [ "$rc" = "0" ] && grep -qF 'Possible legacy Claude Code install' "$SANDBOX/install.log" && grep -qF 'hooks only the old file registered' "$SANDBOX/install.log"; then
     pass "ac2.28: notice appears for a settings.json-only legacy install and names the hook replacement"
   else
     fail "ac2.28: notice missing for a settings-only install (rc=$rc)"

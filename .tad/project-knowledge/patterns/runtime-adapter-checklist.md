@@ -63,6 +63,6 @@
 | R-CC-3 | post-write-sync.sh 对 TAD 受管路径有副作用；非受管路径输出空 JSON（只测了 Write 工具与两条路径，Edit 与其余受管路径未测） | 已成立（D2 实测，partial） | Epic EPIC-20261008 Phase 1 |
 | R-CC-4 | 登录态失效信号、超时形态、沙箱形态未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |
 | R-CC-5 | 交互面、同步副本跨机符号链接存活、上级目录链指令文件影响未测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 1 |
-| R-CC-6 | 会话在项目的子目录启动时，上级目录的 `.claude/settings.json` 根本不被加载（项目 hook 一个都不触发），hook 命令的相对路径写法因此在子目录下无从谈起；会话在项目根启动时，项目 hook 以项目根为工作目录，相对写法与 `$CLAUDE_PROJECT_DIR` 锚定写法都能解析 | 已成立（Alex 2026-10-08 实测，`claude` 2.1.295 无头面，各 1 次；Phase 2 冒烟子目录一次复核） | Epic EPIC-20261008 Phase 2 |
+| R-CC-6 | 会话在项目的子目录启动时，上级目录的 `.claude/settings.json` 根本不被加载（项目 hook 一个都不触发），hook 命令的相对路径写法因此在子目录下无从谈起；会话在项目根启动时，项目 hook 以项目根为工作目录，相对写法与 `$CLAUDE_PROJECT_DIR` 锚定写法都能解析；会话中途 `cd` 后相对写法会跑到子目录里的脚本，模板因此已锚定到 `$CLAUDE_PROJECT_DIR`（变量为空时不执行任何脚本） | 已成立（Alex 2026-10-08 实测，`claude` 2.1.295 无头面，各 1 次；Phase 2 冒烟子目录一次复核） | Epic EPIC-20261008 Phase 2 |
 | R-CC-7 | 顶层按保存名调用 Workflow 与 `/workflows` 列表可见性未提供；会话在项目子目录启动时相对 `scriptPath` 的解析未测，协议改为「非项目根不启动 workflow，先切到项目根」（子目录会话里证据会落在会话目录下是推断，未实测）；子代理不能调用 Workflow 工具来自早先项目观察，Phase 3 未重新实测 | 未测（unmeasured） | Epic EPIC-20261008 Phase 3 |
 | R-CC-8 | 迁移引擎拒绝路径中含符号链接的清单条目，`--platform claude-code` 之后 `.claude/skills/<名>` 是符号链接，所以今后的迁移清单不得再列 `.claude/skills/**` 路径（旧镜像目录由安装器的旧安装接管负责） | 已成立（Phase 4 grounding 第 17 节沙箱实测） | Epic EPIC-20261008 Phase 4a |

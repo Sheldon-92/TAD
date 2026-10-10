@@ -161,10 +161,10 @@ cleanup_installer_temp() {
     # only a regular, non-symlink file with the expected temp name is removed.
     claude_adopt_cleanup_work
     local _ct
-    for _ct in "${CLAUDE_MD_TMP:-}" "${CLAUDE_PTR_TMP:-}"; do
+    for _ct in "${CLAUDE_MD_TMP:-}" "${CLAUDE_PTR_TMP:-}" "${CLAUDE_AGENT_TMP:-}"; do
         [ -n "$_ct" ] || continue
         case "${_ct##*/}" in
-            .tad-claude-md.*|.tad-pointer.*)
+            .tad-claude-md.*|.tad-pointer.*|.tad-agent.*)
                 if [ -f "$_ct" ] && [ ! -L "$_ct" ]; then
                     rm -f -- "$_ct" || true # RM-OK:claude-interrupt-temp
                 fi ;;
@@ -358,6 +358,17 @@ CLAUDE_MD_REASON=""
 CLAUDE_MD_SNAP_MODE=""         # octal permission bits of CLAUDE.md captured at snapshot time
 CLAUDE_MD_TMP=""                # path of the in-flight CLAUDE.md temp file (removed by the EXIT-trap cleanup if interrupted)
 CLAUDE_PTR_TMP=""               # path of the in-flight pointer temp file (same purpose)
+# Phase 4a-2: sub-agent definitions and platform stickiness (top level for the same reason).
+CLAUDE_STICKY=0                # 1 = a run for another platform that only maintains the skill links
+CLAUDE_AGENTS_DIR_CREATED=0    # this run created .claude/agents (set BEFORE mkdir)
+CLAUDE_CREATED_AGENTS=""       # definition file names this run created in .claude/agents, newline-separated
+CLAUDE_AGENT_KEPT_NAMES=""     # space-delimited definition file names kept as they were (for the self-check)
+CLAUDE_AGENT_TMP=""            # path of the in-flight definition temp file (removed by the EXIT-trap cleanup if interrupted)
+CLAUDE_AGENTS_STATE=""         # done | skipped | "" (not run or nothing to project)
+CLAUDE_AGENTS_REASON=""
+CLAUDE_AGENTS_NEW=0
+CLAUDE_AGENTS_CURRENT=0
+CLAUDE_AGENTS_KEPT=0
 # Legacy Claude Code install adoption (Phase 4a). Top level for the same reason:
 # the EXIT trap can reach rollback_claude_adoption on any platform under set -u.
 CLAUDE_ADOPT_ARG=""            # --claude-adopt value as given on the command line
@@ -1804,6 +1815,7 @@ HOOKS_EOF
     project_claude_skills
     project_claude_md_ref
     project_claude_hooks "$src"
+    project_claude_agents "$src"
 
     # --- AC3: post-install completeness self-check ---
     verify_install_complete "$src"
@@ -2024,6 +2036,22 @@ EOF
                 log_warn "    ✗ ADOPTED CLAUDE.md carries no @AGENTS.md reference"
                 missing=$((missing + 1))
             fi
+        fi
+        # (2c) sub-agents: each valid source definition is identical in the target,
+        #      was kept as it was, or the whole stage was skipped. Not checked under sticky.
+        if [ "${CLAUDE_STICKY:-0}" != "1" ] && [ "$CLAUDE_AGENTS_STATE" = "done" ]; then
+            local _cv_af _cv_an
+            for _cv_af in "$src"/.tad/agents/claude/*.md; do
+                if [ -L "$_cv_af" ] || [ ! -f "$_cv_af" ]; then continue; fi
+                _cv_an="${_cv_af##*/}"
+                claude_skill_name_ok "${_cv_an%.md}" || continue
+                case " $CLAUDE_AGENT_KEPT_NAMES" in *" $_cv_an "*) continue ;; esac
+                checked=$((checked + 1))
+                if [ -L ".claude/agents/$_cv_an" ] || ! cmp -s "$_cv_af" ".claude/agents/$_cv_an"; then
+                    log_warn "    ✗ MISSING Claude agent definition: .claude/agents/$_cv_an"
+                    missing=$((missing + 1))
+                fi
+            done
         fi
         # (3) CLAUDE.md reference: only when not skipped, CLAUDE.md and AGENTS.md are regular files
         if [ "$CLAUDE_MD_STATE" != "skipped" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ] \
@@ -2419,7 +2447,7 @@ take_rollback_snapshot() {
     # separately and put back by rollback_claude_projection. Nothing under
     # .claude/ is snapshotted: the projection never modifies an existing entry
     # there. A symlinked or non-regular CLAUDE.md is never touched, so not snapped.
-    if [ "$CLAUDE_PROJECTION" = "1" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ]; then
+    if [ "$CLAUDE_PROJECTION" = "1" ] && [ "${CLAUDE_STICKY:-0}" != "1" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ]; then
         CLAUDE_MD_SNAP_MODE=$(claude_file_mode "CLAUDE.md") || CLAUDE_MD_SNAP_MODE=""
         snap_one "CLAUDE.md"
     fi
@@ -3316,39 +3344,49 @@ claude_file_mode() {
     return 1
 }
 
+# claude_skill_name_ok <name> — the allow-list for names that become Claude
+# entries (skills here, definition file names in project_claude_agents): ASCII
+# letters, digits, ".", "_", "-", starting with a letter or digit, at most 64
+# characters. A `case` on purpose: grep matches per line, so a name holding a
+# newline could slip past it. Shared by every place that builds a Claude skill
+# name set.
+claude_skill_name_ok() {
+    local LC_ALL=C _n="$1"
+    case "$_n" in
+        ''|[!A-Za-z0-9]*|*[!A-Za-z0-9._-]*) return 1 ;;
+    esac
+    [ "${#_n}" -le 64 ] || return 1
+    return 0
+}
+
 # claude_skill_set [warn] — print, one per line, the skills that get an entry:
 # directories under the TARGET's .agents/skills that are not symlinks and carry
-# a regular (non-symlink) SKILL.md. Target-based on purpose: project-owned and
-# `local` skills get entries too; `_archived*` (no SKILL.md) fall out by
-# themselves; packs left out by --packs are simply not in the target. Names
-# that start with "." or contain whitespace are skipped (warned when asked).
+# a regular (non-symlink) SKILL.md, and whose name passes claude_skill_name_ok.
+# Target-based on purpose: project-owned and `local` skills get entries too;
+# `_archived*` (no SKILL.md) fall out by themselves; packs left out by --packs
+# are simply not in the target. Dot-directories are never matched by the glob
+# and are not reported. The name is judged last, so only a real skill directory
+# with a bad name is reported (warn mode only: the one call from
+# project_claude_skills; every other caller stays quiet).
 # The projection, the self-check, the stale prune and the same-version hint all
 # call THIS function so that they agree on the set.
 claude_skill_set() {
     local _d _n
-    # Warnings go to stderr: this function runs inside $(...) and anything on
-    # stdout would become a bogus skill name. Dot-directories are not matched by
-    # the main glob, so they get their own warn-only loop.
-    if [ "${1:-}" = "warn" ]; then
-        for _d in .agents/skills/.[!.]*/; do
-            [ -d "${_d%/}" ] || continue
-            log_warn "CLAUDE-SKILL-NAME-SKIPPED name not projected (starts with a dot): ${_d%/}" >&2
-        done
-    fi
     for _d in .agents/skills/*/; do
         _d="${_d%/}"
         _n="${_d##*/}"
         if [ -L "$_d" ]; then continue; fi
         if [ ! -d "$_d" ]; then continue; fi
-        case "$_n" in
-            .*|*[[:space:]]*)
-                if [ "${1:-}" = "warn" ] && [ -f "$_d/SKILL.md" ]; then
-                    log_warn "CLAUDE-SKILL-NAME-SKIPPED name not projected (contains whitespace): $_n" >&2
-                fi
-                continue ;;
-        esac
         if [ -L "$_d/SKILL.md" ]; then continue; fi
         if [ ! -f "$_d/SKILL.md" ]; then continue; fi
+        if ! claude_skill_name_ok "$_n"; then
+            # Warnings go to stderr: this function runs inside $(...) and anything on
+            # stdout would become a bogus skill name.
+            if [ "${1:-}" = "warn" ]; then
+                log_warn "CLAUDE-SKILL-SKIPPED $(claude_adopt_clean "$_n") (name not allowed)" >&2
+            fi
+            continue
+        fi
         printf '%s\n' "$_n"
     done
 }
@@ -3379,6 +3417,7 @@ EOF
 # exit of the same-version gates. Never changes the exit code or flow.
 claude_hint_if_incomplete() {
     [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    [ "$(_tad_ver_cmp "${CURRENT_VERSION:-}" "${TARGET_VERSION:-}")" = "0" ] || return 0
     if claude_projection_incomplete; then
         echo "CLAUDE-HINT: this project has TAD v${CURRENT_VERSION:-?} but no Claude Code projection yet — re-run with --platform claude-code --force to add it."
     fi
@@ -3591,6 +3630,7 @@ EOF
 # actually executes (the test is "is there an @AGENTS.md line").
 project_claude_md_ref() {
     [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    [ "${CLAUDE_STICKY:-0}" != "1" ] || return 0   # sticky run: CLAUDE.md is neither read nor written
     local _tmp _mode _last
     CLAUDE_MD_STATE=""
     if [ -L "CLAUDE.md" ]; then
@@ -3664,6 +3704,8 @@ project_claude_md_ref() {
 project_claude_hooks() {
     [ "$CLAUDE_PROJECTION" = "1" ] || return 0
     local src="$1" _tpl="$1/.tad/templates/claude/settings.json" _s=".claude/settings.json"
+    # Sticky run: read-only. Writes nothing; may only say the file is an older template.
+    if [ "${CLAUDE_STICKY:-0}" = "1" ]; then claude_sticky_hooks_stale "$src"; return 0; fi
     CLAUDE_HOOKS_STATE=""
     if [ -L ".claude" ]; then
         CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON=".claude is a symlink"
@@ -3714,12 +3756,118 @@ project_claude_hooks() {
     return 0
 }
 
+# project_claude_agents <src> — sub-agent definition projection (Phase 4a-2). Gate:
+# explicit claude-code only (CLAUDE_STICKY=1 never gets here). Creates
+# .claude/agents/<f>.md for each regular definition under .tad/agents/claude/
+# when the target slot is free; an existing entry of any kind (different bytes,
+# symlink, directory) is kept and reported. No overwrite branch, no ledger kind.
+# Writes go through a same-directory temp file (prefix .tad-agent.) that is
+# compared with the source and then renamed into place, so a symlink that shows
+# up mid-run is replaced, never followed.
+project_claude_agents() {
+    [ "$CLAUDE_PROJECTION" = "1" ] || return 0
+    [ "${CLAUDE_STICKY:-0}" != "1" ] || return 0
+    local _sd="$1/.tad/agents/claude" _f _fn _base _t _tmp _any=0
+    CLAUDE_AGENTS_STATE=""
+    if [ -L "$1/.tad/agents" ] || [ ! -d "$1/.tad/agents" ]; then return 0; fi
+    if [ -L "$_sd" ] || [ ! -d "$_sd" ]; then return 0; fi
+    for _f in "$_sd"/*.md; do
+        if [ ! -L "$_f" ] && [ -f "$_f" ]; then _any=1; break; fi
+    done
+    [ "$_any" = "1" ] || return 0
+
+    if [ -L ".claude" ]; then claude_agents_skip ".claude is a symlink"; return 0; fi
+    if [ ! -e ".claude" ]; then claude_agents_skip ".claude does not exist"; return 0; fi
+    if [ ! -d ".claude" ]; then claude_agents_skip ".claude is not a directory"; return 0; fi
+    if [ -L ".claude/agents" ]; then claude_agents_skip ".claude/agents is a symlink"; return 0; fi
+    if [ -e ".claude/agents" ] && [ ! -d ".claude/agents" ]; then claude_agents_skip ".claude/agents is not a directory"; return 0; fi
+    if ! claude_adopt_path_ok ".claude/agents" p; then claude_agents_skip "path check failed for .claude/agents"; return 0; fi
+    if [ ! -e ".claude/agents" ]; then
+        CLAUDE_AGENTS_DIR_CREATED=1
+        if ! mkdir ".claude/agents"; then
+            log_error "CLAUDE-AGENTS-FAILED could not create .claude/agents (is .claude writable?)"; return 1
+        fi
+        if ! claude_adopt_path_ok ".claude/agents" d; then
+            log_error "CLAUDE-AGENTS-FAILED .claude/agents is not a plain directory after creation"; return 1
+        fi
+    fi
+
+    for _f in "$_sd"/*.md; do
+        if [ -L "$_f" ] || [ ! -f "$_f" ]; then continue; fi
+        _fn="${_f##*/}"; _base="${_fn%.md}"
+        if ! claude_skill_name_ok "$_base"; then
+            log_warn "CLAUDE-AGENT-KEPT $(claude_adopt_clean "$_fn") (name not allowed)"
+            CLAUDE_AGENTS_KEPT=$((CLAUDE_AGENTS_KEPT + 1)); continue
+        fi
+        _t=".claude/agents/$_fn"
+        if [ -L "$_t" ] || { [ -e "$_t" ] && [ ! -f "$_t" ]; }; then
+            log_warn "CLAUDE-AGENT-KEPT $_fn (not a regular file)"
+            CLAUDE_AGENT_KEPT_NAMES="${CLAUDE_AGENT_KEPT_NAMES}${_fn} "
+            CLAUDE_AGENTS_KEPT=$((CLAUDE_AGENTS_KEPT + 1)); continue
+        fi
+        if [ -f "$_t" ]; then
+            if cmp -s "$_f" "$_t"; then
+                CLAUDE_AGENTS_CURRENT=$((CLAUDE_AGENTS_CURRENT + 1))
+            else
+                log_warn "CLAUDE-AGENT-KEPT $_fn (differs from the TAD definition; delete it and re-run (a same-version re-run needs --force) to take the TAD version)"
+                CLAUDE_AGENT_KEPT_NAMES="${CLAUDE_AGENT_KEPT_NAMES}${_fn} "
+                CLAUDE_AGENTS_KEPT=$((CLAUDE_AGENTS_KEPT + 1))
+            fi
+            continue
+        fi
+        # Absent (not a symlink, nothing there): create through a temp file.
+        if ! claude_adopt_path_ok "$_t" p; then claude_agents_skip "path check failed for $_t"; return 0; fi
+        if ! _tmp=$(mktemp ".claude/agents/.tad-agent.XXXXXX"); then
+            log_error "CLAUDE-AGENTS-FAILED could not create a temp file in .claude/agents (is it writable?)"; return 1
+        fi
+        CLAUDE_AGENT_TMP="$_tmp"   # removed by the EXIT-trap cleanup if interrupted before the mv
+        if ! claude_adopt_path_ok ".claude/agents" d; then
+            rm -f -- "$_tmp" # RM-OK:claude-agent-tmp-pathcheck-fail
+            CLAUDE_AGENT_TMP=""
+            claude_agents_skip "path check failed for .claude/agents before writing $_fn"; return 0
+        fi
+        if ! cp -- "$_f" "$_tmp" || ! cmp -s "$_f" "$_tmp"; then
+            rm -f -- "$_tmp" # RM-OK:claude-agent-tmp-copy-fail
+            CLAUDE_AGENT_TMP=""
+            log_error "CLAUDE-AGENTS-FAILED could not write $_fn (copy or compare failed)"; return 1
+        fi
+        if ! chmod 644 "$_tmp"; then
+            rm -f -- "$_tmp" # RM-OK:claude-agent-tmp-chmod-fail
+            CLAUDE_AGENT_TMP=""
+            log_error "CLAUDE-AGENTS-FAILED could not set the mode of $_fn"; return 1
+        fi
+        # Recorded before the rename so a signal in between still rolls the file back
+        # (rollback tolerates a recorded name that does not exist).
+        CLAUDE_CREATED_AGENTS="${CLAUDE_CREATED_AGENTS}${_fn}"$'\n'
+        if ! mv -f -- "$_tmp" "$_t"; then # RM-OK:claude-agent-install-mv
+            rm -f -- "$_tmp" # RM-OK:claude-agent-tmp-mv-fail
+            CLAUDE_AGENT_TMP=""
+            log_error "CLAUDE-AGENTS-FAILED could not move $_fn into .claude/agents"; return 1
+        fi
+        CLAUDE_AGENT_TMP=""
+        CLAUDE_AGENTS_NEW=$((CLAUDE_AGENTS_NEW + 1))
+        log_success "CLAUDE-AGENT-NEW $_fn"
+    done
+    CLAUDE_AGENTS_STATE="done"
+    return 0
+}
+
+# claude_agents_skip <reason> — whole stage skipped, never an error.
+claude_agents_skip() {
+    CLAUDE_AGENTS_STATE="skipped"; CLAUDE_AGENTS_REASON="$1"
+    log_warn "CLAUDE-AGENTS-SKIPPED $1 (left untouched)"
+}
+
 # claude_print_summary — closing summary (handoff section 4.5). Printed after
 # the self-check passed and before the success banner. Must not fail.
 claude_print_summary() {
     [ "$CLAUDE_PROJECTION" = "1" ] || return 0
     echo ""
-    echo "CLAUDE-SUMMARY (Claude Code projection)"
+    if [ "${CLAUDE_STICKY:-0}" = "1" ]; then
+        echo "CLAUDE-SUMMARY (Claude Code projection) (sticky: links only)"
+    else
+        echo "CLAUDE-SUMMARY (Claude Code projection)"
+    fi
     if [ "$CLAUDE_SKILLS_SKIPPED" = "1" ]; then
         echo "  skills: projection SKIPPED as a whole (${CLAUDE_SKILLS_SKIP_REASON})"
     else
@@ -3730,6 +3878,15 @@ claude_print_summary() {
         fi
         if [ -n "$CLAUDE_KEPT_LIST" ]; then echo "  kept: ${CLAUDE_KEPT_LIST}"; fi
     fi
+    if [ "${CLAUDE_STICKY:-0}" = "1" ]; then echo ""; return 0; fi
+    case "$CLAUDE_AGENTS_STATE" in
+        skipped) if [ "$CLAUDE_AGENTS_NEW" -gt 0 ]; then
+                     echo "  agents: stopped after ${CLAUDE_AGENTS_NEW} created (${CLAUDE_AGENTS_REASON})"
+                 else
+                     echo "  agents: skipped"
+                 fi ;;
+        done)    echo "  agents: ${CLAUDE_AGENTS_NEW} new, ${CLAUDE_AGENTS_CURRENT} current, ${CLAUDE_AGENTS_KEPT} kept" ;;
+    esac
     case "$CLAUDE_HOOKS_STATE" in
         registered)
             if [ "$CLAUDE_ADOPT_SETTINGS_DONE" = "1" ]; then
@@ -3763,6 +3920,14 @@ claude_print_summary() {
     case "$CLAUDE_HOOKS_STATE" in
         registered|current)
             echo "  .claude/settings.json 通常会被提交；它注册了 4 条在会话开始、写文件后、压缩前、提问后运行的 .tad/hooks/ 脚本。" ;;
+    esac
+    case "$CLAUDE_HOOKS_STATE" in
+        registered|current)
+            echo "Registered hooks write session data inside this project:"
+            echo "  .tad/active/precompact/                                   (compaction snapshots)"
+            echo "  .tad/evidence/hooks/precompact-snapshot/last-stdin.json   (session id, transcript path, compact instructions)"
+            echo "  .tad/evidence/decisions/<date>.jsonl                      (questions asked and the options chosen)"
+            echo "If this project is a git repository, consider adding these three paths to .gitignore." ;;
     esac
     echo ""
     return 0
@@ -3798,9 +3963,9 @@ claude_prune_stale() {
             if [ -e ".agents/skills/$_x" ] || [ -L ".agents/skills/$_x" ]; then continue; fi
             if ! assert_under_root "${TARGET_ROOT:-}/.claude/skills/$_name"; then continue; fi
             if rm -f -- "$_e" 2>/dev/null; then # RM-OK:claude-stale-link
-                log_info "CLAUDE-STALE-REMOVED $_name"
+                log_info "CLAUDE-STALE-REMOVED $(claude_adopt_clean "$_name")"
             else
-                log_warn "could not remove stale entry .claude/skills/$_name"
+                log_warn "could not remove stale entry .claude/skills/$(claude_adopt_clean "$_name")"
             fi
         elif [ -d "$_e" ]; then
             if ! claude_is_tad_pointer "$_e" "$_name"; then continue; fi
@@ -3810,12 +3975,12 @@ claude_prune_stale() {
             if ! assert_under_root "${TARGET_ROOT:-}/.claude/skills/$_name"; then continue; fi
             if rm -f -- "$_e/SKILL.md" 2>/dev/null; then # RM-OK:claude-stale-pointer-file
                 if rmdir -- "$_e" 2>/dev/null; then # RM-OK:claude-stale-pointer-dir
-                    log_info "CLAUDE-STALE-REMOVED $_name"
+                    log_info "CLAUDE-STALE-REMOVED $(claude_adopt_clean "$_name")"
                 else
-                    log_warn "could not remove stale pointer directory .claude/skills/$_name"
+                    log_warn "could not remove stale pointer directory .claude/skills/$(claude_adopt_clean "$_name")"
                 fi
             else
-                log_warn "could not remove stale pointer file in .claude/skills/$_name"
+                log_warn "could not remove stale pointer file in .claude/skills/$(claude_adopt_clean "$_name")"
             fi
         fi
     done
@@ -3864,6 +4029,20 @@ EOF
             rm -f -- "$_e" || log_warn "could not remove created .claude/settings.json" # RM-OK:rollback-claude-created-settings
         fi
     fi
+    # Definitions this run created: no comparison with the source (a downloaded
+    # source tree is already gone when the EXIT trap gets here).
+    while IFS= read -r _n; do
+        [ -n "$_n" ] || continue
+        _e="$_t/.claude/agents/$_n"
+        if assert_under_root "$_e" && [ ! -L "$_e" ] && [ -f "$_e" ]; then
+            rm -f -- "$_e" || log_warn "could not remove created Claude agent definition" # RM-OK:rollback-claude-created-agent
+        fi
+    done <<EOF
+$CLAUDE_CREATED_AGENTS
+EOF
+    if [ "$CLAUDE_AGENTS_DIR_CREATED" = "1" ] && [ ! -L "$_t/.claude/agents" ]; then
+        rmdir -- "$_t/.claude/agents" 2>/dev/null || true # RM-OK:rollback-claude-created-agents-dir
+    fi
     if [ "$CLAUDE_SKILLS_DIR_CREATED" = "1" ] && [ ! -L "$_t/.claude/skills" ]; then
         rmdir -- "$_t/.claude/skills" 2>/dev/null || true # RM-OK:rollback-claude-created-skills-dir
     fi
@@ -3872,6 +4051,90 @@ EOF
     fi
     if [ -n "$CLAUDE_MD_SNAP_MODE" ] && [ ! -L "$_t/CLAUDE.md" ] && [ -f "$_t/CLAUDE.md" ]; then
         chmod "$CLAUDE_MD_SNAP_MODE" "$_t/CLAUDE.md" 2>/dev/null || log_warn "could not restore CLAUDE.md permission bits"
+    fi
+    return 0
+}
+
+# ============================================
+# Platform stickiness (Epic multi-harness-restore, Phase 4a-2)
+# ============================================
+# tad-update.sh always calls the installer with --platform codex, so a project
+# that already carries a TAD Claude Code projection would never get entries for
+# new skills. When claude_projection_present holds, a run for another platform
+# maintains the skill links under .claude/skills (create missing, prune dangling)
+# and nothing else: no CLAUDE.md, no settings.json, no sub-agents, no adoption.
+# TAD_CLAUDE_STICKY=off switches it off. The predicate reads the target project
+# only (no source tree, no ledger), and every path goes through
+# claude_adopt_path_ok so a symlinked parent is never walked.
+
+# claude_sticky_entry_ok <name> — 0 when .claude/skills/<name> is a TAD-made entry:
+# the standard relative link, or a TAD pointer directory.
+claude_sticky_entry_ok() {
+    local _n="$1" _e=".claude/skills/$1"
+    claude_adopt_path_ok "$_e" p || return 1
+    if [ -L "$_e" ]; then
+        [ "$(readlink "$_e" 2>/dev/null || true)" = "../../.agents/skills/$_n" ]
+        return $?
+    fi
+    if [ -d "$_e" ]; then
+        claude_is_tad_pointer "$_e" "$_n"
+        return $?
+    fi
+    return 1
+}
+
+# claude_projection_present — read-only. All of: TAD installed, canonical alex
+# skill present, .claude/skills a real directory, alex entry is TAD-made, and
+# either the managed CLAUDE.md block exists or at least 3 other TAD-made entries.
+claude_projection_present() {
+    local _e _n _c=0
+    claude_adopt_path_ok ".tad/version.txt" f || return 1
+    claude_adopt_path_ok ".agents/skills/alex/SKILL.md" f || return 1
+    claude_adopt_path_ok ".claude/skills" d || return 1
+    claude_sticky_entry_ok "alex" || return 1
+    if claude_adopt_path_ok "CLAUDE.md" f \
+       && grep -Fxq -e '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' CLAUDE.md 2>/dev/null; then
+        return 0
+    fi
+    for _e in .claude/skills/*; do
+        _n="${_e##*/}"
+        [ "$_n" != "alex" ] || continue
+        if claude_sticky_entry_ok "$_n"; then
+            _c=$((_c + 1))
+            if [ "$_c" -ge 3 ]; then return 0; fi
+        fi
+    done
+    return 1
+}
+
+# claude_sticky_eval — called from main() right before claude_adopt_preflight,
+# i.e. after the "Nothing to do" gates, the prompt and the source download.
+claude_sticky_eval() {
+    [ "$CLAUDE_PROJECTION" != "1" ] || return 0
+    [ "${TAD_CLAUDE_STICKY:-}" != "off" ] || return 0
+    claude_projection_present || return 0
+    CLAUDE_PROJECTION=1
+    CLAUDE_STICKY=1
+    CLAUDE_ADOPT_MODE="off"
+    CLAUDE_MD_STATE="skipped"; CLAUDE_MD_REASON="sticky run"
+    CLAUDE_HOOKS_STATE="skipped"; CLAUDE_HOOKS_REASON="sticky run"
+    log_info "CLAUDE-STICKY: this project has a TAD Claude Code projection; keeping its skill links up to date (platform for this run: $PLATFORM). Legacy entries are not adopted in this run. Set TAD_CLAUDE_STICKY=off to skip."
+}
+
+# claude_sticky_hooks_stale <src> — read-only. Under a sticky run, say so when
+# .claude/settings.json is a regular file that holds an older TAD hook template.
+# The ledger is not loaded when the adopt mode is off, so load it here.
+claude_sticky_hooks_stale() {
+    local _tpl="$1/.tad/templates/claude/settings.json" _s=".claude/settings.json" _id
+    if [ -L ".claude" ] || { [ -e ".claude" ] && [ ! -d ".claude" ]; }; then return 0; fi
+    if [ -L "$_s" ] || [ ! -f "$_s" ]; then return 0; fi
+    if [ -L "$_tpl" ] || [ ! -f "$_tpl" ]; then return 0; fi
+    if cmp -s "$_tpl" "$_s"; then return 0; fi
+    claude_provenance_ready "$1"
+    [ -n "$CLAUDE_LEDGER" ] || return 0
+    _id=$(claude_blob_id "$_s") || return 0
+    if claude_adopt_in_ledger settings "$_id" "-"; then
+        log_warn "CLAUDE-HOOKS-STALE .claude/settings.json holds an older TAD hook template; re-run with --platform claude-code --force to move to the current one"
     fi
     return 0
 }
@@ -4296,8 +4559,8 @@ claude_adopt_pred_set() {
         if [ -n "$PACKS" ] && is_pack_skill "$_n" "$_src"; then
             if ! is_selected_pack "$_n"; then continue; fi
         fi
-        case "$_n" in .*|*[[:space:]]*) continue ;; esac
         if [ -L "$_d/SKILL.md" ] || [ ! -f "$_d/SKILL.md" ]; then continue; fi
+        claude_skill_name_ok "$_n" || continue
         printf '%s\n' "$_n"
     done
 }
@@ -4389,9 +4652,9 @@ claude_adopt_notice_md() {
 
 # claude_adopt_notice_print <settings 0|1>
 claude_adopt_notice_print() {
-    echo "Legacy Claude Code install detected. Entries under .claude/ and the TAD part of CLAUDE.md that are byte-identical to files TAD shipped will be archived outside the project and replaced by the current version; entries that differ are left as they are."
+    echo "Possible legacy Claude Code install. Only entries under .claude/ and the TAD part of CLAUDE.md that are byte-identical to files TAD shipped are archived outside the project and replaced by the current version; anything that differs is left as it is."
     if [ "$1" = "1" ]; then
-        echo "An old .claude/settings.json that matches a shipped version is replaced by the current template, so the hooks only the old file registered stop running."
+        echo "If .claude/settings.json is exactly a file TAD shipped (whitespace aside) it is archived and replaced by the current template, so the hooks only the old file registered stop running; a file you wrote or edited is kept."
     fi
     echo "Preview without changing anything: add --claude-adopt=plan"
     echo ""
@@ -5333,6 +5596,8 @@ main() {
     opencode_preflight "$TAD_SRC"
     opencode_hooks_preflight "$TAD_SRC"
     cursor_hooks_preflight "$TAD_SRC"
+    # Platform stickiness: decided here, after the gates, the prompt and the download.
+    claude_sticky_eval
     # Legacy Claude Code adoption: read-only classification (plan mode prints and exits here).
     claude_adopt_preflight "$TAD_SRC"
 

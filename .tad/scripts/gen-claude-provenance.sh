@@ -117,6 +117,10 @@ LC_ALL=C awk -F'\t' '$1 == "claudemd" { print $2 }' "$TMP/raw" | LC_ALL=C sort -
   esac
 done >> "$TMP/rows"
 
+# Pinned rows: the Phase 2 hook template (commit af97b99a, never in a tag). Literal ids, so a squash merge
+# or a clone without that commit cannot drop them. settings-ws = sha1 of the blob with ' ' TAB CR LF removed.
+printf 'settings\t2cdede5eed8686345e3beee792da9c230daa2eb3\t-\nsettings-ws\td94c5a368ddbb1cd0cff1d10142eaa75e695c59e\t-\n' >> "$TMP/rows"
+
 LC_ALL=C sort -u "$TMP/rows" > "$TMP/data"
 rows="$(wc -l < "$TMP/data" | tr -d ' ')"
 mkdir -p "$OUT_DIR"

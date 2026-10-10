@@ -29,7 +29,7 @@
 | 1 | Claude Code 实例声明与探活 spike | ✅ Done | HANDOFF-2026-10-08-claude-code-instance-spike.md（已归档） | 四个未知项的真机实测结论＋`runtime-adapter-instance-claude-code.md` |
 | 2 | 安装器与投影落地 | ✅ Done | HANDOFF-2026-10-08-claude-code-installer-projection.md（已归档） | `--platform claude-code` 可装：skill 投影、hook 注册、CLAUDE.md 引用块、平台探测 |
 | 3 | 编排能力恢复 | ✅ Done | HANDOFF-2026-10-09-workflow-restore.md（已归档） | 10 workflow＋2 子代理恢复并翻新；8 个有真实运行记录，2 个仅装载校验 |
-| 4 | 下游升级路径与四家真机回归 | 🔄 Active | 分 4a（存量接管，✅ 2026-10-09）、4a-2（安装器收尾，Gate 2 已过，待派发）、4b（四家真机回归）三张 handoff | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
+| 4 | 下游升级路径与四家真机回归 | 🔄 Active | 分 4a（存量接管，✅ 2026-10-09）、4a-2（安装器收尾，✅ 2026-10-09）、4b（四家真机回归）三张 handoff | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
 | 5 | 残余清理 | ⬚ Planned | — | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
 | 6 | v3.3.0 发版 | ⬚ Planned | — | 发版清单全绿、CHANGELOG、tag |
 
@@ -183,7 +183,7 @@ Phase 2
 ### Phase 4: 下游升级路径与四家真机回归
 
 **Status:** 🔄 Active
-**Progress（2026-10-09）:** 4a ✅ Gate 3/4 PASS（验收脚本 139 ok／0 FAIL，两份实现审查 0 P0；报告 `phase4a-gate-report.md`，其第五节列出转入 Phase 5／6 的事项）。4a-2 handoff 第 3 版已过 Gate 2（两轮，0 P0），范围：hook 锚定、子代理定义投影（只新建）、平台粘性（只维护 skill 链接）、名字允许清单、摘要数据落点；原「会话启动告警」「基线 5 项 fixture 失败调查」挪到 Phase 5；迁移清单挪到 Phase 6。4b 未开始。
+**Progress（2026-10-09）:** 4a ✅ Gate 3/4 PASS（验收脚本 139 ok／0 FAIL，两份实现审查 0 P0；报告 `phase4a-gate-report.md`，其第五节列出转入 Phase 5／6 的事项）。4a-2 handoff 第 3 版已过 Gate 2（两轮，0 P0），范围：hook 锚定、子代理定义投影（只新建）、平台粘性（只维护 skill 链接）、名字允许清单、摘要数据落点；原「会话启动告警」「基线 5 项 fixture 失败调查」挪到 Phase 5；迁移清单挪到 Phase 6。4a-2 ✅ Gate 3/4 PASS（验收脚本 214 ok，保留 1 个 FAIL：并行的 Phase 5a 批 2 提交改了 `.tad/hooks/lib/parity-criterion.md`，不属于本任务；Phase 4a 脚本「hook 模板未改」一行因 FR1 按设计改模板而不再成立；两份实现审查 0 P0、1 P1 已修；报告 `phase4a2-gate-report.md`，其第七节列出转入 Phase 4b／5b／6 的事项）。4b 未开始。
 **Execution:** YOLO（Conductor 手动派发）；拆为 4a、4b（2026-10-09，Conductor 裁定，依据 `phase4-grounding.md` 与 epic-audit 建议）
 
 #### Scope

@@ -24,6 +24,11 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 > `.claude/skills/<名>` 符号链接（指向 `.agents/skills/<名>`，不是副本）、在**已存在**的 `CLAUDE.md` 末尾追加一个
 > 只含 `@AGENTS.md` 的受管块，并在目标没有 `.claude/settings.json` 时放入 TAD 的 hook 注册（已有且不同的原样保留，
 > 结尾汇总会写明「TAD hooks are NOT registered」）。其他平台不会向 `.claude/`、`CLAUDE.md` 投放或追加内容（既有的弃用清理行为不变）。
+> **hook 命令锚定到项目根**：模板里每条命令形如 `test -n "$CLAUDE_PROJECT_DIR" && { cd -- "$CLAUDE_PROJECT_DIR" || exit 1; } && bash .tad/hooks/<脚本>`（实测会话里 `cd` 之后，相对路径的 hook 会跑到子目录里的另一份脚本）。`CLAUDE_PROJECT_DIR` 未设置或为空时，命令以退出码 1 结束且不运行任何脚本；指向不存在的目录时，`cd` 会打印一条 `cd:` 错误，同样以退出码 1 结束、不运行脚本（都不是阻断码 2）。该命令串已在 sh、bash、zsh、dash 下实测；在 Claude Code 里的工作目录探针只覆盖 SessionStart 与 PostToolUse。
+> **子代理**：`.tad/agents/claude/*.md`（目前是 `spec-compliance-reviewer`）会被投影到 `.claude/agents/`，**只新建**：同名文件已存在（内容不同、符号链接、目录）一律原样保留并打印 `CLAUDE-AGENT-KEPT`；想换成 TAD 版本，删掉它再重跑。`.claude` 或 `.claude/agents` 是符号链接时整体跳过。
+> **平台粘性（只维护链接）**：已装有 TAD Claude 投影的项目（`.tad/version.txt`、`.agents/skills/alex/SKILL.md` 存在，`.claude/skills/alex` 是指向 `.agents/skills/alex` 的标准链接或 TAD 指路目录，另有 `CLAUDE.md` 里的受管块或至少 3 个同样的条目），即使用别的平台参数升级（`tad-update.sh` 永远传 `--platform codex`），安装器也会打印 `CLAUDE-STICKY` 并为新 skill 建 `.claude/skills/<名>` 链接、清掉悬空的标准链接。此时**不**建或改 `.claude/settings.json`、不写 `CLAUDE.md`、不投影子代理、不接管旧安装；`.claude/settings.json` 若是旧版 TAD 模板，只打印 `CLAUDE-HOOKS-STALE`。要换新 hook 模板或补 `CLAUDE.md` 引用块，请显式 `--platform claude-code --force`。设 `TAD_CLAUDE_STICKY=off` 可整体关闭粘性。这是对「非 claude-code 平台不碰 `.claude/`」的有条件放宽；判据只看目标目录的现状，克隆来的仓库可以带着这些现状，所以粘性成立时安装器只做上述两件事。
+> **会话数据落点**：注册的 hook 会在项目内写 `.tad/active/precompact/`、`.tad/evidence/hooks/precompact-snapshot/last-stdin.json`、`.tad/evidence/decisions/<日期>.jsonl`（会话 ID、转录路径、提问与所选项）。安装摘要会列出这三处；若项目是 git 仓库，建议把它们加入 `.gitignore`（安装器不改你的 `.gitignore`）。
+> **skill 名允许清单**：只有以字母或数字开头、仅含 ASCII 字母数字与 `.` `_` `-`、不超过 64 字符的 skill 目录名才会得到 `.claude/skills/` 入口；其余打印 `CLAUDE-SKILL-SKIPPED`。
 > 给**已装同版本 TAD** 的项目加装 Claude Code，请用 `--platform claude-code --force`（不带 `--force` 时安装器照旧什么都不做，但会打印这条提示）。
 > v2.x 时代留下的 `.claude/skills/<名>` **镜像目录**：只要逐字节证明是 TAD 发过的文件，`--platform claude-code` 会先存档再替换成新链接；证明不了的原样保留（详见下方「从旧版 Claude Code 安装升级」）。
 > 从 2.43 之前的版本升级到 `claude-code` 时，旧迁移清单里按路径删除 `.claude/skills/...` 的条目会因路径经过 TAD 刚建的符号链接而被迁移引擎整体拒绝（退出码 2，仅告警）：该版本步骤里的其余删除一并跳过，旧版本遗留的陈旧文件会留在原处，需要时请手工清理。
