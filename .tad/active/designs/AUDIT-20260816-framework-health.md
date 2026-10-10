@@ -665,7 +665,7 @@ research_first:
 
 > ⚠️ **编号权威边界（2026-08-16 立 Epic 后收口）**
 > - **发现编号（F-xx / S-xx）的权威源是本报告**，Epic 与 handoff 只引用、不重编。
-> - **Phase 编号的权威源是 `.tad/active/epics/EPIC-20260816-framework-health-repair.md`**，本节**不再**定义 Phase 编号。
+> - **Phase 编号的权威源是 `.tad/archive/epics/EPIC-20260816-framework-health-repair.md`**，本节**不再**定义 Phase 编号。
 > - 本节下表是**工作包清单与去向登记**：说明每条发现被哪个 Epic 吸收、或仍在待立项状态。
 > - 之所以这样切：一个概念两套编号必然漂移 —— 这正是 F-17（Gate 3 有四个"权威"家）的同一种病，不在立项第一天就重犯。
 

@@ -1,9 +1,9 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 3.2.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 25 capability packs + brain-native knowledge search + Claude Science skill architecture, Codex hook-enabled + OpenCode/Cursor supported + Claude Code (≥2.1.277) via native AGENTS.md)
-- **Last Updated**: 2026-09-16
-- **Framework**: TAD v3.2.0 + Full-default/Lite-frozen + 25 Capability Packs + Codex hook-enabled + OpenCode/Cursor supported + Claude Code via AGENTS.md + Local Wiki Research + Compact Recovery
+- **Version**: 3.2.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
+- **Last Updated**: 2026-10-09
+- **Framework**: TAD v3.2.0 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - **EPIC: Capability Builder v1** — Phase 1/4 Gate 4 accepted on 2026-09-02 at `2d7e359b`. TAD now provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof. Phase 2 `evolve` is planned but parked; it requires separate human authorization and a concrete evolution signal.
@@ -12,7 +12,7 @@
 - ~~EPIC: Self-Evolution Pruning~~ — **COMPLETE + ARCHIVED 2026-06-10** (3/3 phases same-day). dream/evolve/optimize/skillify retired by measurement; 3-tier skill formalization live (T1 ceremony dogfooded in Colin, T2 skill-library ×2 refs, T3 via *harvest collisions); Alex SKILL -1872 lines; layer2-audit fail-closed. L2: "Claims Need Carriers".
 - ~~EPIC: Pack System Unification~~ — **COMPLETE + ARCHIVED 2026-06-11** (3/3 phases same-day). Domain Packs retired as active runtime/sync mechanism; installers single-sourced from prebuilt `SKILL.md`; `release-verify.sh platform-skills` now verifies framework-owned `.claude/skills` ↔ `.agents/skills` symmetry with FR7 local-skill INFO exceptions.
 - **EPIC: Upgrade Lifecycle System** (20260609) — **Phase 1/6 ✅ accepted 2026-06-09** (Migration Manifest Schema v1 + 3 DRs + example manifest, commit eab1fd8, Gate 4 15/15). Phase 2 next: migration-engine.sh + fixture harness. Goal: 远程升级无垃圾、不误删、深入骨髓.
-- **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 *sync to 14 projects** (deferred, outward-facing) outstanding
+- **EPIC: Goal-Driven Research Director** (20260504) — P1/P2/P4/P5 done; **P3 Research-Decision Loop** (⬚ Planned, `--caller` flag) + **P6.3 outward sync to the maintainer's projects** (deferred, outward-facing; the `*sync` command is retired) outstanding
 - **EPIC: Security Domain Pack Chain** (20260403) — 2/5 (paused; needs real-project security audit to validate value)
 - **EPIC: ml-training Pack** (20260529) — parked
 - Capability packs: 11 auto-match-active / 14 frozen (status on CAPABILITY + registry; files stay). Behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending; remaining eval is a follow-up

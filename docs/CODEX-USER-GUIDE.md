@@ -14,9 +14,9 @@ TAD (Triangle Agent Development) 是一套让 AI 写代码更靠谱的方法论�
 
 ### TAD 在 Codex 上的定位
 
-Codex 是 TAD 自 v3.0.0 起的运行时。SKILL 文件、质量门禁、协议全部只有一套，
-唯一源是 `.agents/skills/`。Claude Code 路径已在 v3.0.0 移除（见 `CHANGELOG.md`
-`### Removed`；升级不会删除你既有的 `.claude/`）：
+Codex 是 TAD 的默认安装目标（`--platform codex`）。SKILL 文件、质量门禁、协议全部只有一套，
+唯一源是 `.agents/skills/`。Claude Code、OpenCode、Cursor 同样是受支持的安装目标（见
+[MULTI-PLATFORM.md](MULTI-PLATFORM.md#current-status)）。`--platform codex|opencode|cursor` 不会改你的 `CLAUDE.md` 与 `.claude/settings.json`，也不动你自己放在 `.claude/` 下的文件。唯一例外：项目里已经有 TAD 的 Claude Code 投影时，安装器会顺带维护 `.claude/skills/` 下的链接（为新 skill 补链接、清理悬空链接），不做别的；设 `TAD_CLAUDE_STICKY=off` 可关闭。`--platform claude-code` 只归档（存到项目之外，可恢复）并替换能逐字节证明是旧版 TAD 装进去的文件；你自己的 hook、权限、MCP 配置和 `CLAUDE.md` 正文原样保留。已存在的 `.claude/settings.json` 保留不动，TAD 的 hook 不会写进去。下表是 Codex 一侧的能力面：
 
 | | Codex CLI |
 |---|---|---|
@@ -37,13 +37,13 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 这会安装：
 - `.tad/` — 框架核心（配置、模板、钩子、migration 引擎、12 个历史 manifest）
-- `.agents/skills/` — Alex/Blake 角色 + 25 个 capability packs
+- `.agents/skills/` — Alex/Blake 角色 + 26 个 capability packs
 - `.codex/hooks.json` — 生命周期钩子
 - `AGENTS.md` — 角色路由文件
 - `tad.sh` — 升级脚本（以后升级也用它）
 
-> `--platform both` / `--platform claude-code` 自 v3.0.0 起被拒绝（改动任何文件前报错，
-> 并打印恢复命令）。旧脚本请改传 `--platform codex`。
+> `--platform both` 仍被拒绝（改动任何文件前报错，并打印恢复命令）。要装其他目标请显式传
+> `--platform claude-code|codex|opencode|cursor` 之一。
 
 ### 交互式安装（可选 packs）
 
@@ -147,8 +147,7 @@ Alex: "验收通过，已归档。"
 
 | 命令 | 用途 |
 |------|------|
-| `*publish` | 推送 TAD 更新到 GitHub |
-| `*sync` | 同步 TAD 到注册项目 |
+| `*publish` | 推送 TAD 更新到 GitHub（`*sync` 已退役：项目用安装命令自行拉取更新） |
 
 ---
 
@@ -189,7 +188,7 @@ Gate 4: 业务需求满足了吗？   ← Alex 负责（人类确认）
 
 ## Capability Packs（能力包）
 
-TAD 内置 25 个 capability pack，为不同领域提供专业知识：
+TAD 内置 26 个 capability pack，为不同领域提供专业知识：
 
 ### Web 开发
 - `web-frontend` — React/Vue 前端工程
@@ -260,7 +259,7 @@ TAD 自动积累项目经验到 `.tad/project-knowledge/`：
 3. ⭐ Migration 引擎介入:
    - 删除旧版本废弃的文件（有备份）
    - 重命名被移动的文件
-   - 预先存在的用户文件（如旧 `.claude/`、旧 `CLAUDE.md`）原样保留，不合并、不改写
+   - 非 claude-code 平台不改你的 `CLAUDE.md` 与 `.claude/settings.json`（已有 TAD Claude Code 投影时仅顺带维护 `.claude/skills/` 链接，`TAD_CLAUDE_STICKY=off` 可关）；claude-code 平台只归档并替换能逐字节证明是旧版 TAD 装的文件，其余原样保留
    - 验证升级完整性
 4. 完成
 
@@ -271,16 +270,17 @@ TAD 自动积累项目经验到 `.tad/project-knowledge/`：
 
 ---
 
-## Claude Code 路径（v3.0.0 已移除）
+## 其他目标与你已有的 `.claude/`
 
-Claude Code install target、hooks、workflows 与模型绑定已随 v3.0.0 删除。
-升级**不会删除**你既有的 `.claude/`（hooks / MCP / 权限配置字节不变），旧树只是不再更新。
-如需清理请手动删除（TAD 不会代删）。Codex 侧的能力面保持不变：
+`--platform codex|opencode|cursor` 不会改你的 `CLAUDE.md` 与 `.claude/settings.json`，也不动你自己放在 `.claude/` 下的文件。唯一例外：项目里已经有 TAD 的 Claude Code 投影时，安装器会顺带维护 `.claude/skills/` 下的链接（为新 skill 补链接、清理悬空链接），不做别的；设 `TAD_CLAUDE_STICKY=off` 可关闭。`--platform claude-code` 只归档（存到项目之外，可恢复）并替换能逐字节证明是旧版 TAD 装进去的文件；你自己的 hook、权限、MCP 配置和 `CLAUDE.md` 正文原样保留。已存在的 `.claude/settings.json` 保留不动，TAD 的 hook 不会写进去。
+`--platform claude-code` 会在 `.claude/skills/` 下为每个 skill 建指向 `.agents/skills/` 的链接；
+已有 `CLAUDE.md` 的项目，安装器在其中维护一个带标记的 `@AGENTS.md` 引用块，不新建 `CLAUDE.md`。
+各平台的验证深度见 [MULTI-PLATFORM.md](MULTI-PLATFORM.md#current-status)。Codex 侧的能力面：
 
 | 方面 | Codex CLI |
 |------|-----------|
 | 角色激活 | `$alex` `$blake`（skill 引用） |
-| Workflow 工具 | 不支持（用 Alex *analyze 替代） |
+| Workflow 工具 | 不支持（Workflow 脚本只在 Claude Code 主会话可用；这里走手动编排，用 Alex *analyze 替代） |
 | MCP 服务器 | `.codex/config.toml`（待激活） |
 | 上下文压缩 | 自动 + `/compact` |
 | 权限模型 | Codex sandbox profiles |
@@ -456,9 +456,7 @@ Packs 按需加载 — 只有当任务关键词匹配时才会激活。可以在
 
 下次做相似任务时，Alex 会自动读取相关历史经验，避免重复踩坑。你不需要手动管理。
 
-### 9. 用户文件在升级中原样保留（v3.0.0 起无 marker 合并）
+### 9. 你的 `.claude/` 与 `CLAUDE.md` 在升级中的处理
 
-`<!-- TAD:PROJECT-CONTENT-BELOW -->` marker 合并机制随 `CLAUDE.md` 合并一并移除。
-预先存在的用户文件（旧 `CLAUDE.md`、旧 `.claude/` 树）升级时原样保留、不合并、不改写；
+`--platform codex|opencode|cursor` 不会改你的 `CLAUDE.md` 与 `.claude/settings.json`，也不动你自己放在 `.claude/` 下的文件。唯一例外：项目里已经有 TAD 的 Claude Code 投影时，安装器会顺带维护 `.claude/skills/` 下的链接（为新 skill 补链接、清理悬空链接），不做别的；设 `TAD_CLAUDE_STICKY=off` 可关闭。`--platform claude-code` 只归档（存到项目之外，可恢复）并替换能逐字节证明是旧版 TAD 装进去的文件；你自己的 hook、权限、MCP 配置和 `CLAUDE.md` 正文原样保留。已存在的 `.claude/settings.json` 保留不动，TAD 的 hook 不会写进去。
 如需清理请手动操作（TAD 不会代删）。
-

@@ -1,7 +1,7 @@
 # TAD process tax cut (P2) — copy-paste checklists
 
 **Status**: *discuss land 2026-09-12. Not a Gate 2/3/4 substitute.  
-**Epic**: `.tad/active/epics/EPIC-20260912-p2-process-tax-cut.md`  
+**Epic**: `.tad/archive/epics/EPIC-20260912-p2-process-tax-cut.md`  
 **Teeth**: Gate 2 dual independent review stays. Alex ≠ Blake stays.
 
 Alex/Blake: paste the blocks into the relevant handoff sections. Do not invent a fourth “skip review” checklist.

@@ -1,6 +1,6 @@
 # Roadmap
 
-> Strategic direction for TAD. Updated 2026-10-06 for v3.2.0.
+> Strategic direction for TAD. Updated 2026-10-09 for v3.2.0.
 > See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) for current state and
 > [NEXT.md](./NEXT.md) for the tactical queue.
 
@@ -11,7 +11,7 @@
 ### Stable foundation
 
 - **Full TAD is the default path.** Alex owns requirements and acceptance; Blake owns implementation and technical verification.
-- **Codex is a first-class runtime.** Codex, OpenCode, and Cursor share the same durable `.tad/` project state and the single `.agents/skills/` tree. Codex is the hook-enabled runtime; OpenCode/Cursor lifecycle hooks remain a known gap (P2).
+- **Four harnesses are supported install targets.** Claude Code, Codex, OpenCode, and Cursor share the same durable `.tad/` project state and the single `.agents/skills/` tree, and each ships a lifecycle-hook projection over the shared hook scripts. Verification depth differs per harness (see [Multi-Platform](./docs/MULTI-PLATFORM.md#current-status)); one harness's adapter failure must not block the others.
 - **TAD Lite is frozen, not removed.** Existing Lite workflows remain available when explicitly invoked, but new framework work targets Full TAD.
 - **Quality remains evidence-based.** Four gates, the Ralph Loop, independent review, and honest partial outcomes remain the default safeguards.
 
@@ -21,11 +21,11 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 
 | Capability | Status | Product boundary |
 |---|---|---|
-| YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek adapters are experimental and qualify on first real use. Default-on remains deferred. |
+| YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek YOLO2 adapters are experimental and qualify on first real use. Default-on remains deferred. |
 | Local Wiki research | Complete | File-is-truth research, stdlib FTS5 retrieval, and native rendered-page capture are accepted. Public YouTube captions remain experimental; Whisper/vector retrieval wait for measured need. |
 | Capability Builder `create` | Phase 1 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills. Evolution and packaging remain separate phases. |
 | v3.0.0 release | Published | Runtime consolidated on a single `.agents/skills/` tree. See [CHANGELOG](./CHANGELOG.md). |
-| Platform Adapters P1+P3 | Complete | Installer accepts `codex\|opencode\|cursor`; P2 (lifecycle hooks) and P4 (live regression) remain Known Gaps. |
+| Platform Adapters P1+P3 | Complete | Installer accepts `claude-code\|codex\|opencode\|cursor`; P2 (lifecycle hooks) has an adapter on all four (Claude Code: only when the project has no `.claude/settings.json`; Codex: no PreCompact). P4 (live regression) is partial: see AGENTS.md Known Gaps. |
 
 ## Active and parked work
 
@@ -37,14 +37,14 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 
 ### Framework health repair
 
-**Status:** Active backlog; execute only from a current, explicitly accepted scope.
+**Status:** Completed Epic, archived; remaining follow-ups are tracked in [NEXT.md](./NEXT.md).
 
-The repository still carries older framework-health follow-ups and verifier hygiene work. Before starting any item, revalidate it against current code because several historical “urgent” entries were already fixed when re-audited. The authoritative tactical queue is [NEXT.md](./NEXT.md).
+Before starting any remaining item, revalidate it against current code because several historical “urgent” entries were already fixed when re-audited. The authoritative tactical queue is [NEXT.md](./NEXT.md).
 
 ## Revisit when evidence appears
 
 - **YOLO2 default-on:** reconsider only after a new human-authorized real-work evaluation demonstrates enough reliability and acceptable cost.
-- **Experimental harnesses:** OpenCode and Cursor qualify via P4 live behavioral regression (see AGENTS.md Known Gaps); one adapter failure must not block the verified Codex core.
+- **Per-harness verification:** extend live regression to every harness whose baseline is missing or failed (see AGENTS.md Known Gaps); one adapter failure must not block the verified core.
 - **Capability evolution:** add `evolve` only when a concrete regression fixture or explicit new requirement exists.
 - **Local Wiki media retrieval:** add audio download/Whisper or persisted/vector retrieval only when current text and FTS5 paths show a measured gap.
 - **Remaining capability-pack evals:** expand behavioral evaluation as real projects exercise the packs, rather than creating a speculative all-pack campaign.

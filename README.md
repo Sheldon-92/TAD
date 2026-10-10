@@ -1,12 +1,14 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.2.0 — Codex / OpenCode / Cursor Supported · Claude Code via AGENTS.md**
+**Version 3.2.0 — Claude Code · Codex · OpenCode · Cursor**
 
-> v3.0.0: runtime support consolidated on `.agents/skills/` as the shared skill source; install targets `codex|opencode|cursor` (default `codex`); upgrades never delete your `.claude/` — see [CHANGELOG](CHANGELOG.md#300---2026-09-16).
+> Roles, gates and capability packs ship as one skill tree, `.agents/skills/`. Install targets: `--platform claude-code|codex|opencode|cursor` (default `codex`). Codex, OpenCode and Cursor read `.agents/skills/` natively; Claude Code reads `.claude/skills/`, which the installer fills with per-skill links into `.agents/skills/`. TAD writes a lifecycle-hook configuration for each of the four, all calling the same `.tad/hooks/` scripts (for Claude Code only when the project has no `.claude/settings.json`; Codex wires no PreCompact hook); what has been verified on each harness, and the known limits, are in the status table of [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md#current-status).
 >
-> Claude Code ≥ 2.1.277 reads `AGENTS.md` natively, so TAD's roles and gates load there directly at instruction level (no separate installer target).
+> With `--platform codex|opencode|cursor` the installer does not change your `CLAUDE.md` or `.claude/settings.json`, and it leaves your own files under `.claude/` alone. One exception: in a project that already carries a TAD Claude Code projection, it keeps the `.claude/skills/` links current (adds links for new skills, removes dangling ones) and does nothing else there; `TAD_CLAUDE_STICKY=off` turns that off. With `--platform claude-code` it archives (outside the project, restorable) and replaces only files it can prove byte-for-byte were shipped by an earlier TAD; everything else, including your own hooks, permissions, MCP config and `CLAUDE.md` text, stays byte-identical. An existing `.claude/settings.json` is kept and TAD's hooks are not added to it. The [3.0.0 CHANGELOG entry](CHANGELOG.md#300---2026-09-16) records the earlier removal of the Claude Code target, which this release restores.
+>
+> Claude Code loads `AGENTS.md` by itself only when the project has no `CLAUDE.md`; for a project that already has one, the installer keeps a marked `@AGENTS.md` reference block inside it.
 
-> 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Specialized Tools Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
+> 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
 
 ---
 
@@ -56,7 +58,7 @@ This is why "fully autonomous AI development" is a false premise — **not becau
 
 TAD is a **capability acquisition methodology**. It is a repeatable way for one
 human, working with AI agents and a set of persistent documents (handoffs,
-project-knowledge, capability packs, research notebooks), to acquire and compound
+project-knowledge, capability packs, a local research wiki), to acquire and compound
 working capability over time — the documents carry what was learned from each
 task into the next, so capability accumulates instead of resetting every session.
 
@@ -66,20 +68,20 @@ runtimes that do the work for you; TAD ships a method that makes a human + AI
 pair progressively more capable, with human judgment kept at the checkpoints
 where it matters.
 
-The evidence is cross-domain, not just software: 14 registered downstream
-projects use TAD, spanning voice and podcast production, a reading companion,
-academic research methodology, and a 24-pack capability library — every claim
+The evidence is cross-domain, not just software: the projects the maintainer runs
+with TAD span voice and podcast production, a reading companion,
+academic research methodology, and a 26-pack capability library — every claim
 cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposition.md)**.
 
 ---
 
-## 🔄 Supported Harnesses (Codex · OpenCode · Cursor)
+## 🔄 Supported Harnesses (Claude Code · Codex · OpenCode · Cursor)
 
-TAD runs on Codex, OpenCode, and Cursor — all three discover `.agents/skills/` + `AGENTS.md` open-box. Use `$alex` / `$blake` on Codex and `/alex` / `/blake` on OpenCode/Cursor (skills also model-selectable). Lifecycle hooks ship on Codex only (Platform Adapters P2 — known gap).
+TAD runs on Claude Code, Codex, OpenCode and Cursor. Codex, OpenCode and Cursor discover `.agents/skills/` + `AGENTS.md` directly; Claude Code reaches the same skills through `.claude/skills/` links. Use `$alex` / `$blake` on Codex and `/alex` / `/blake` on Claude Code, OpenCode and Cursor (skills also model-selectable). Each harness gets a lifecycle-hook configuration over the same scripts (Claude Code: only when the project has no `.claude/settings.json`; Codex: no PreCompact hook); see the status table for coverage and limits.
 
 ```bash
-bash tad.sh --platform codex|opencode|cursor --yes  # default: codex
-# Codex: $alex or $blake; OpenCode/Cursor: /alex or /blake (auto-discovered via .agents/skills/)
+bash tad.sh --platform claude-code|codex|opencode|cursor --yes  # default: codex
+# Codex: $alex or $blake; Claude Code/OpenCode/Cursor: /alex or /blake (via .claude/skills/ links or .agents/skills/)
 ```
 
 See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
@@ -168,10 +170,9 @@ See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-一行命令，默认安装（codex 目标）+ 全部 25 个 capability packs。首次安装与升级用同一命令；旧项目升级不会删除既有文件，项目数据不变。
+一行命令，默认安装（codex 目标）+ 全部 26 个 capability packs。首次安装与升级用同一命令；项目数据不变。
 
-`--platform codex|opencode|cursor` 均可（默认 codex）。`--platform claude-code` / `--platform both`
-自 v3.0.0 起不再提供（安装器会在改动任何文件前停下并打印说明）；选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+`--platform claude-code|codex|opencode|cursor` 均可（默认 codex）。`--platform both` 仍被拒绝（安装器会在改动任何文件前停下并打印说明）。`--platform codex|opencode|cursor` 不会改你的 `CLAUDE.md` 与 `.claude/settings.json`，也不动你自己放在 `.claude/` 下的文件。唯一例外：项目里已经有 TAD 的 Claude Code 投影时，安装器会顺带维护 `.claude/skills/` 下的链接（为新 skill 补链接、清理悬空链接），不做别的；设 `TAD_CLAUDE_STICKY=off` 可关闭。`--platform claude-code` 只归档（存到项目之外，可恢复）并替换能逐字节证明是旧版 TAD 装进去的文件；你自己的 hook、权限、MCP 配置和 `CLAUDE.md` 正文原样保留。已存在的 `.claude/settings.json` 保留不动，TAD 的 hook 不会写进去。已有旧版 Claude Code 安装的项目，可先加 `--claude-adopt=plan` 只看清单、不改任何文件。选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
 
 > 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
 
@@ -179,11 +180,12 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 Installed projects ship one shared update entrypoint: `$tad-update` in Codex,
 and `/tad-update` in OpenCode (**updater-only projection in addition** — OpenCode/Cursor also receive
-Alex/Blake/Gate roles via `.agents/skills/` open-box, but no lifecycle hooks (P2)). All three delegate
+Alex/Blake/Gate roles via `.agents/skills/` open-box). All of them delegate
 to `.tad/scripts/tad-update.sh`, which checks current/remote versions read-only,
 refuses downgrades, and applies only after explicit human confirmation. The helper
 backs up the project before the first mutation and delegates installation to the
 official tagged installer; it never runs unattended.
+The updater does not auto-detect Claude Code projects: run `bash tad.sh --platform claude-code` (or pass the flag to the updater) to update one.
 
 ### Verify Installation
 
@@ -493,7 +495,7 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 - [Changelog](CHANGELOG.md) — every version, what changed and what did not land
 - [Installation Guide](INSTALLATION_GUIDE.md)
-- [Multi-Platform Guide](docs/MULTI-PLATFORM.md) — Codex-first, multi-harness neutral
+- [Multi-Platform Guide](docs/MULTI-PLATFORM.md) — install targets, per-harness status and limits
 - [Codex User Guide](docs/CODEX-USER-GUIDE.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
 - [Value Proposition](docs/value-proposition.md) — every claim cited to an on-disk artifact
@@ -505,6 +507,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v3.2.0 — Codex / OpenCode / Cursor**
+**Welcome to TAD v3.2.0 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

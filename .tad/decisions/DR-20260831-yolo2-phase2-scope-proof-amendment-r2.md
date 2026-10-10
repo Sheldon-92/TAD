@@ -71,7 +71,7 @@ Delete all generic allowances for:
 - `.tad/brain-index.md`;
 - `.tad/eval/judge/bundles/**`;
 - `PROJECT_CONTEXT.md`;
-- `.tad/active/epics/EPIC-20260816-framework-health-repair.md`;
+- `.tad/archive/epics/EPIC-20260816-framework-health-repair.md`;
 - any other non-YOLO path not named by the original Phase-2 handoff or a signed amendment carrier.
 
 The isolated candidate must replay only included Phase-2 commits. Its final diff may contain the

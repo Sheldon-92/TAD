@@ -606,7 +606,7 @@
   `HANDOFF-20260816-gate3-check8-audible.md` §1.2 引用的原始 18/20 表
 
 ### 判据范围 ≠ 问题范围：代理指标当本体（11 次同形错误的蒸馏）- 2026-08-16
-- **Context**: EPIC-20260816-framework-health-repair 的审计与出单过程中，Alex 在同一形状上连续犯错 **11 次**，全部由外部 reviewer 或设计期空跑抓出，无一次由自查发现。全部错误可归约为一句话：**量了 A，却用来回答 B，而 A 的范围窄于（或宽于）B。**
+- **Context**: EPIC-20260816-framework-health-repair（已归档：`.tad/archive/epics/framework-health-repair/EPIC.md`）的审计与出单过程中，Alex 在同一形状上连续犯错 **11 次**，全部由外部 reviewer 或设计期空跑抓出，无一次由自查发现。全部错误可归约为一句话：**量了 A，却用来回答 B，而 A 的范围窄于（或宽于）B。**
 - **Discovery**: 十一例按范围错位的方向分为三类。
   **(一) 搜索范围窄于问题范围（5 例）**：
   ① 「3 条禁令从未生效」← 只 grep `alex/SKILL.md` **正文**，而禁令活在 `references/`（经 `load_when` 正常送达）。
@@ -638,7 +638,7 @@
 - **Discovery**: **阈值会被本工单自己要求产出的文件撞破。** 根因不是余量算错，而是 **8 MB 这个数从未从需求推导** —— 它是审计阶段随手取的圆整数。真实需求（F-18）是「用户不该下载维护者的调试记录」，而相对原始基线 31,659,251 的降幅已达 **74%**，那个目的早已达成。继续守 8 MB 只会逼出两种坏结果：(a) 为了让 AC 通过而压缩交付物本身（把 reviewer 证据挪出被跟踪区、少写 completion）；(b) 判 FAIL 一个正确的实现。
 - **Action**: 写数值型 AC 前，先回答「这个数是从哪个需求推出来的」。答不上来就不要用绝对阈值，改用**直接断言意图的主判据** + **相对基线的辅助度量**。本例改为：主判据 `git ls-files '.tad/evidence/*' | wc -l == 0 && archive == 0`（直接断言「调试记录不再随包发布」），辅助度量「相对审计基线降幅 ≥70%」。
   **症状识别（可机械检查）**：当你发现「为了让某条 AC 通过，必须约束本次交付物自身的体积/数量」时，该阈值已经错了 —— 它在度量巧合而非目标。
-- **Grounded in**: `.tad/active/handoffs/HANDOFF-20260816-phase4-distribution-slimming.md` §4.0d；`COMPLETION-20260816-phase4-distribution-slimming.md` §4；`EPIC-20260816-framework-health-repair.md` SC3 修订记录
+- **Grounded in**: `.tad/active/handoffs/HANDOFF-20260816-phase4-distribution-slimming.md` §4.0d；`COMPLETION-20260816-phase4-distribution-slimming.md` §4；`.tad/archive/epics/framework-health-repair/EPIC.md` SC3 修订记录
 - **failure_mode**: Naive default: 用一个"看起来整齐"的绝对阈值（< 8 MB、< 100 行、≤ 5 个文件）作为验收标准。Why wrong: 该阈值与真实需求之间没有推导关系，因此其余量是偶然的。当余量小于本次交付物自身的体积时，AC 会把「正确实现 + 完整证据」判成 FAIL，从而系统性地激励删减证据——即用验收标准去侵蚀验收质量。
 
 ### 判据本身失败 ≠ 被测条件不成立（工具缺失的伪装） - 2026-08-16

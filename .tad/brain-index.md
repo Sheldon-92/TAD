@@ -69,7 +69,6 @@ Generated: 2026-10-06 14:46
 ## Active Epics
 | File | Summary |
 |------|---------|
-| EPIC-20260816-framework-health-repair.md |  |
 | EPIC-20260831-capability-builder-v1.md |  |
 | EPIC-20261006-tad-self-optimization.md | **Epic ID**: EPIC-20261006-tad-self-optimization |
 

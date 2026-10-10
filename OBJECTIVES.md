@@ -18,7 +18,7 @@
 | KR3 | Capability gaps identified with severity assessment | 5+ found (Round 2-3) | ≥5 gaps with impact rating | 🔄 |
 
 **Research needed:** Competitive landscape (Devin, OpenHands, Cursor, Jules, Amazon Q, Windsurf); multi-agent frameworks (LangGraph, CrewAI, MetaGPT); Anthropic ecosystem (Agent SDK, Managed Agents, Agent Teams); academic research on multi-agent software dev.
-**Anthropic ecosystem: ✅ Covered 2026-07-12** — notebook 'claude-native-capabilities' (b07a6598, 23 sources), overlap matrix `.tad/evidence/research/claude-native-capabilities/2026-07-12-overlap-matrix.md` (TAD × native factual mapping, verdicts deliberately deferred).
+**Anthropic ecosystem: ✅ Covered 2026-07-12** — notebook 'claude-native-capabilities' (b07a6598, 23 sources; NotebookLM, since retired), overlap matrix `.tad/evidence/research/claude-native-capabilities/2026-07-12-overlap-matrix.md` (TAD × native factual mapping, verdicts deliberately deferred).
 
 ---
 
@@ -39,13 +39,13 @@
 
 ## O3: Establish a persistent research knowledge base for TAD continuous evolution
 
-**Why:** One-shot web searches produce shallow, non-reusable findings. A persistent NotebookLM notebook with curated sources (papers, reports, official docs, conference talks) enables iterative deepening — each question builds on accumulated context.
+**Why:** One-shot web searches produce shallow, non-reusable findings. A persistent, file-based research knowledge base with curated sources (papers, reports, official docs, conference talks) enables iterative deepening — each question builds on accumulated context. (Until 2.44.6 this was a NotebookLM notebook; the NotebookLM layer is retired and the knowledge base is now the Local Wiki, `research/`.)
 **Timeline:** Ongoing
 
 | # | Key Result | Current | Target | Status |
 |---|-----------|---------|--------|--------|
-| KR1 | High-quality sources in NotebookLM notebook | 45 sources | ≥30 sources (papers + reports + docs + videos) | ✅ |
-| KR2 | Persistent queryable asset, not one-shot report | notebook active (37cfefa5) | notebook active + REGISTRY tracked | ✅ |
+| KR1 | High-quality sources in the research knowledge base | NotebookLM era: 45 sources, achieved, layer retired 2.44.6 (archived locally). Local Wiki: 11 raw sources, 8 canon files, 6 wiki pages (`research/raw`, `research/canon`, `research/wiki`) | ≥30 sources (papers + reports + docs + videos) | ✅ achieved (NotebookLM era); 🔄 Local Wiki |
+| KR2 | Persistent queryable asset, not one-shot report | NotebookLM registry frozen as archive; Local Wiki is the live asset (raw → canon → wiki, FTS5 retrieval, `research/AGENTS.md` Iron Rule) | Local Wiki tracked in the repo and queryable | ✅ |
 | KR3 | Cross-source synthesis findings documented | 5 rounds saved (r4 staleness-trap + r5 human-skill-growth, 2026-07-05) | ≥5 deep-ask findings saved | ✅ |
 
 **Research needed:** This objective IS the research infrastructure — it supports O1 and O2 by providing a curated, queryable knowledge base.

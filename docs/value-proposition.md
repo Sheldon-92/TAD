@@ -10,7 +10,7 @@
 
 TAD is a **capability acquisition methodology**: a repeatable way for one human,
 working with AI agents and a set of persistent documents (handoffs,
-project-knowledge, capability packs, research notebooks), to acquire and compound
+project-knowledge, capability packs, a local research wiki), to acquire and compound
 working capability in domains they did not previously have.
 
 The mechanism, deflated:
@@ -28,12 +28,12 @@ The mechanism, deflated:
 
 The compounding effect is the point: each project completed through TAD makes the
 next project in that domain (or an adjacent one) cheaper, because the distilled
-knowledge, packs, and research notebooks persist.
+knowledge, packs, and the local research wiki persist.
 
 ## The Evidence
 
 Each entry follows the shape: domain — one-line outcome — on-disk path. Every path
-below was verified with `test -e` at the repository root on 2026-07-05.
+below was re-checked with `test -e` at the repository root on 2026-10-09.
 
 1. **Cross-domain adoption (breadth)** — TAD has been used to build across
    food apps, agent labs, fitness tracking, voice production, and more. Since
@@ -44,26 +44,26 @@ below was verified with `test -e` at the repository root on 2026-07-05.
 
 2. **AI voice production (non-code domain)** — a full judgment pack for TTS tool
    selection, voice cloning, audiobook/podcast/dubbing pipelines, distilled from
-   real production iterations: `.claude/skills/ai-voice-production/SKILL.md`.
+   real production iterations: `.agents/skills/ai-voice-production/SKILL.md`.
 
 3. **AI podcast production (non-code domain)** — script writing, large-chunk TTS,
    dual-BGM arrangement with envelope-follower ducking, show notes — production
    judgment captured as a reusable pack:
-   `.claude/skills/ai-podcast-production/SKILL.md`.
+   `.agents/skills/ai-podcast-production/SKILL.md`.
 
 4. **Reading companion (consumer product, stdlib-only)** — EPUB to annotatable
    HTML reading surface with durable highlights that survive regeneration, built
    and reviewed through a 4-phase TAD Epic:
-   `.claude/skills/reading-companion/SKILL.md`.
+   `.agents/skills/reading-companion/SKILL.md`.
 
 5. **Academic research (non-dev domain)** — PRISMA systematic reviews, citation
    integrity, and literature evaluation methodology, ported and piloted on a real
-   study: `.claude/skills/academic-research/SKILL.md`.
+   study: `.agents/skills/academic-research/SKILL.md`.
 
 6. **Capability pack library (scale)** — 24+ research-grounded capability packs
    (RAG, guardrails, observability, data engineering, ML training, video, and
    more), each built through a plan/upgrade/eval/review pipeline with adversarial
-   review: `.claude/skills/` (browse the directory; each pack is a SKILL.md with
+   review: `.agents/skills/` (browse the directory; each pack is a SKILL.md with
    references).
 
 7. **Knowledge compounding (the mechanism itself, working)** — 15 distilled
@@ -81,7 +81,7 @@ below was verified with `test -e` at the repository root on 2026-07-05.
    that adversarially challenged TAD's own differentiators.
 
 What the evidence does NOT show, stated plainly: no multi-user deployment, no
-third-party adoption beyond this operator's 14 projects, and no controlled
+third-party adoption beyond the projects this operator runs, and no controlled
 comparison against alternative methodologies. Those remain directions, not facts.
 
 ## What TAD Is Not
