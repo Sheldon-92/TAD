@@ -7,7 +7,7 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：3.2.0（已发布版本）｜ **在途**：EPIC-20261008 恢复 Claude Code 支持，目标 3.3.0，尚未发版 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：3.3.0（发版提交已在本地准备好，等待人确认后推送并打标签）｜ **在途**：EPIC-20261008 恢复 Claude Code 支持，收尾阶段，未推送、未打标签 ｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
@@ -17,11 +17,11 @@
 
 - Epic: `.tad/active/epics/EPIC-20261008-multi-harness-restore-and-cleanup.md` (Phase Map there is authoritative; branch `epic/multi-harness-restore`, local commits only)
 - Decision record: `.tad/decisions/DR-20261008-claude-code-runtime-restore.md`
-- Done: Phase 1 (instance spike), 2 (installer and projection), 3 (workflows), 4a (legacy install adoption), 4a-2 (installer hardening: hook anchoring, sub-agent projection, platform stickiness)
-- In flight: Phase 5a residue cleanup (skill-text batch committed; documents and state-surface batch being written 2026-10-09); 5b (installer docs, scans, fixture baseline) follows
-- Not started: 4b four-harness live regression (Epic SC2, SC6; also absorbs the Codex ledger ticket), Phase 6 release (version bump, migration manifest, CHANGELOG)
-- Open carry: C1 interactive-surface AGENTS.md loading (needs a human `/memory` look)
-- Stop point: push and tag in Phase 6 require human confirmation.
+- Done: Phase 1 (instance spike), 2 (installer and projection), 3 (workflows), 4a (legacy install adoption), 4a-2 (installer hardening), 4b (four-harness live measurement), 5 (residue cleanup: 5a docs and skill text, 5b code and tests), 6a (evidence into ledgers and docs, release-gate hardening)
+- In flight: Phase 6b, the 3.3.0 release commit is prepared locally (version tokens, migration manifest, CHANGELOG, release records); gates are run after the commit
+- Not done: push and tag. Nothing is pushed and no tag exists; both wait for the human, and the main push and the tag push go together
+- Open carry: C1 interactive-surface AGENTS.md loading (needs a human `/memory` look); downstream version scan (`scan-downstream-versions.sh`) was not run and needs a human waiver
+- Stop point: push and tag require human confirmation.
 
 ### 🟡 OPEN 2026-09-16. Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
 

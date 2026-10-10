@@ -5,6 +5,104 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-10-10
+
+3.0.0 stopped offering Claude Code as an install target (see the 3.0.0 entry below). 3.3.0 restores it. Claude Code, Codex, OpenCode and Cursor are now four install targets that share one skill tree, `.agents/skills/`. Claude Code does not read that directory, so for it the installer adds one link per skill under `.claude/skills/`.
+
+How far the evidence goes: two kinds of run were made on one local machine on 2026-10-09, both before this version bump (the installer still reported 3.2.0). Targeted checks ran on the then-current working tree (HEAD moving from `ba56cdef` to `9c2ad3bb`, with other uncommitted edits, before the Codex hook fix was committed). One fixed-task chain per harness ran on commit `e6485404` plus the working tree of that moment (one modified file, a skill reference file). Each chain was single-agent: one agent did the fixed task and reviewed its own work, with no Alex to Blake dispatch. The release commit itself was not re-run. The evidence files cited in the ledgers sit under the git-ignored `.tad/evidence/` and are not in a public clone. Every harness has its own evidence level and limits; they are listed under Known limits and in the status table of `docs/MULTI-PLATFORM.md`.
+
+### Added
+- **`--platform claude-code` is accepted again** by `tad.sh`, `npx github:Sheldon-92/TAD` and `tad-update.sh`.
+  - `both` and every other spelling that contains `claude` are still rejected before any change is made.
+- **What the Claude Code projection does, and under which condition**
+  - Skills: one relative link per skill, `.claude/skills/<name>` into `.agents/skills/<name>`. A generated pointer `SKILL.md` is the fallback; `TAD_CLAUDE_SKILL_MODE=pointer` asks for pointers for new entries.
+  - Instructions: a marked `@AGENTS.md` reference block is kept inside a `CLAUDE.md` that **already exists**. The installer never creates a `CLAUDE.md`. Auto-load of `AGENTS.md` without a `CLAUDE.md` was seen in headless runs only; interactive loading is unmeasured (see Known limits).
+  - Hooks: `.claude/settings.json` is written, with four scripts under `.tad/hooks/` (session start, after file writes, before compaction, after questions), **only when the project has no `.claude/settings.json`** (a `settings.json` that the takeover proves an earlier TAD shipped is the one exception: it is archived and replaced, see Takeover). Each hook command is anchored to the project root through `$CLAUDE_PROJECT_DIR`.
+  - Sub-agent: `.tad/agents/claude/spec-compliance-reviewer.md` is projected to `.claude/agents/`. It is only created, never overwritten.
+- **Takeover of an older Claude Code install.** The installer proves, from a ledger (`.tad/provenance/claude-legacy.tsv`), which files under `.claude/` an earlier TAD shipped byte for byte. It copies those files to an archive outside the project, then replaces them. Everything it cannot prove is left in place, one `CLAUDE-ADOPT-LEFT` line per item. `--claude-adopt=apply|plan|off` (default `apply`) selects the behaviour; `plan` prints the plan and changes nothing; `TAD_CLAUDE_ADOPT` does the same through the environment.
+- **Platform stickiness.** A project that already carries a TAD Claude Code projection keeps its `.claude/skills/` links current when the installer runs for another platform (links for new skills added, dangling links removed) and changes nothing else under `.claude/`. `TAD_CLAUDE_STICKY=off` turns this off.
+- **Ten workflow scripts** in `.tad/workflows/claude/`, started from a Claude Code main session with the Workflow tool through `scriptPath`. The installer does not project them into `.claude/workflows/`. Codex, Cursor and OpenCode have no Workflow tool; for them `.agents/skills/alex/references/yolo-manual-conductor-protocol.md` describes manual orchestration.
+- **Startup hint for `CLAUDE.md`.** The session-start health check now warns when the project has a regular-file `CLAUDE.md` without an own-line `@AGENTS.md` (`.tad/hooks/startup-health.sh`).
+- **Maintainer checks.** `npm test` now runs `.tad/tests/run-all.sh`. `release-verify.sh path-refs` checks references to repository paths; it is not part of an aggregate gate. The release gate `provenance` now checks every skill file in the git index and that the ledger is committed. `version-sweep` now also checks `.tad/TAD-VERSION`, `pack-registry.yaml` and both handoff templates.
+- A capability pack `agent-computer-interface` and the runtime-freshness ledgers for OpenCode, Cursor and Claude Code (the `freshness` gate now covers four ledgers).
+
+### Changed
+- **A project already on the same version needs `--force` to gain the Claude Code projection.** Without it the installer still does nothing and prints a `CLAUDE-HINT` line that says so.
+- **Deprecation cleanup.** With `--platform claude-code`, entries under `.claude/` and `.codex/hooks.json` are skipped (`CLAUDE-DEPRECATION-SKIPPED`). For other platforms, a deprecated `.claude/commands/*` file is deleted only when the provenance ledger shows TAD shipped exactly those bytes.
+- **Documentation** (`README.md`, `INSTALLATION_GUIDE.md`, `docs/MULTI-PLATFORM.md`, `AGENTS.md`) describes four install targets. Skill text and paths use `.agents/skills` on every harness.
+- **`tad-update.sh`** rejects an unsupported `--platform` value with a message that names the valid values, `codex` and `claude-code`.
+- **Installer changes that were already on `main` after 3.2.0** (commit `4b4f305a`; they were never released under a version number):
+  - The post-install completeness check no longer misjudges a dangling symlink in a shipped directory as a failure.
+  - Rollback after a failed install now removes entries that the failed run created at any depth under `.tad/`, judged against a full listing taken when the backup was made. Before, only top-level entries were swept. Since the Claude Code work, a failed run also removes empty directories that it created.
+
+### Fixed
+- **Codex: the write-time hook left no trace.** Codex does call the PostToolUse hook after `apply_patch`, but the event carries only the patch text and no file path, so `hook-envelope.sh` got an empty path and `post-write-sync.sh` stopped early. The path is now read from the patch header lines (`*** Add File:`, `*** Update File:`, `*** Move to:`); a patch that touches several files is handled file by file. Absolute paths, `..` segments and control characters are dropped, at most 20 paths are taken, and only the first 200 header lines are scanned.
+  - How it was checked: in one-off sandbox projects with the hook trust review bypassed (`--dangerously-bypass-hook-trust`). Two dedicated retest runs (a one-file patch gave one trace row, a two-file patch gave two rows, a control file gave none) and the second run of the fixed-task regression (one row). The runs under default trust left no trace row; a completed trust review was not tested, and a second explanation for the default-trust result than a missing trust review was not excluded.
+- **Hook commands are anchored to the project root** (Claude Code). In a test session, after a `cd` into a subdirectory, a relative hook command ran another copy of the script from that subdirectory. The working-directory check covered only the session-start and post-write hooks.
+- **Installer output.** The final GitHub link line printed the colour codes as literal text; the Claude Code summary line about `.claude/settings.json` is now English.
+- **Workflow scripts.** `pack-dogfood` and `pack-upgrade` no longer fall back to a built-in example pack list when `packs` is omitted; they return a no-packs result. In `pack-dogfood`, a failed judge is reported as a judge failure and no longer counts as a wrong claim. `epic-audit` reports the number of agents it actually started. The `surplus-scan` description now says it writes nothing itself.
+- **Maintainer tests.** The installer data-safety fixture passes 178 of 178; five long-standing failures were stale tests. It now pins its own backup root instead of writing into the real `~/.tad-backups`.
+
+### Known limits
+- **Scope of the evidence.** Two trees, both before this version bump. The four fixed-task chains ran on `e6485404` plus the working tree of that moment; the targeted checks (skill by name, session start, compaction, existing `settings.json`, the Codex default-trust and bypass runs) ran earlier, on a tree between `ba56cdef` and `9c2ad3bb`, before the Codex post-write fix was committed; the dedicated Codex retest ran on the fix in the working tree. Each chain was single-agent (the agent reviewed its own work); the release commit was not re-run. All 2026-10-09 results are from one local machine and from these CLI versions: claude 2.1.295, codex-cli 0.159.3, cursor-agent 2026.09.26-dd393fe, opencode 1.18.32. Interactive sessions were not measured on any harness.
+- **Codex: hook trust review.** In the one default-trust run, `.codex/hooks.json` had no observed effect (no session-start summary, no write-time trace row); in runs with the review bypassed (`--dangerously-bypass-hook-trust`, sandbox only) the hooks ran. Codex documents a hook trust review and its completion is the step to try, but a run through a completed review was not exercised, and all Codex hook results come from `codex exec`.
+- **Codex: no PreCompact hook.** TAD wires only session start and post-write for Codex. Whether Codex would deliver a compaction hook was not measured.
+- **Claude Code and an existing `settings.json`.** If the project already has a `.claude/settings.json` that differs from the template, and is not a file an earlier TAD shipped, the installer keeps it untouched and registers no TAD hooks (the summary says "TAD hooks are NOT registered"; merge by hand if you want them). A file that an earlier TAD shipped is archived and replaced (see Takeover). A file identical to the current template was not tested.
+- **Claude Code in a subdirectory.** A session started in a project subdirectory does not load the project-level hooks.
+- **Claude Code, interactive use.** Whether an interactive session loads `AGENTS.md`, the skills and the hooks was not measured; the runs were headless (`claude -p`). One interactive session on 2026-10-08 did not show `AGENTS.md` in its opening context; this was never reconciled with the headless result.
+- **Ask-user capture.** On Claude Code the after-questions hook (`AskUserQuestion`) was registered but never run; headless sessions have no such tool. OpenCode and Cursor have no ask-user capture point, and on Codex its mapping may not fire.
+- **Compaction.** Natural compaction was not measured on any harness. On Claude Code a manual `/compact` made the PreCompact hook write a snapshot, but the CLI reported too few messages to compact, so nothing was compacted.
+- **OpenCode.** The session-start hook has no effect that the model or a file shows, and session start could not be measured. The skill check was the model reading `SKILL.md` itself, not a harness skill load.
+- **Skill by name.** Evidence strength differs: Claude Code is strong (the tool set was limited to the Skill tool and an empty-directory control did not get the text); Codex and Cursor each rest on one run, and in an empty-directory control the model reached the text only through visible searches; OpenCode is the model reading the file.
+- **Hook files written for every platform.** Any platform's install writes `.cursor/hooks.json` and `.opencode/plugins/tad-hooks.ts`.
+- **`tad-update.sh`** accepts `--platform codex` and `--platform claude-code` only, and does not detect Claude Code by itself; pass the flag. It has no `--force` (a project already on 3.3.0 cannot gain the projection through it) and no `--claude-adopt` flag; `--check` shows versions only, and `--yes` runs the takeover without a further prompt.
+- **Takeover of old installs** was run only on sandbox fixtures built from historical versions, never on a real downstream project.
+- **Projects that track `.claude/` in git** will see deletions and new links after a takeover and must commit them themselves.
+- **After a `SIGKILL`** two things can remain: a takeover archive that is complete but has no report file (the next run then only reports and prints manual steps), and temporary `.claude/agents/.tad-agent.*` files that later runs do not clean up.
+- **The ledger's `MANIFEST.sha1`** guards against accidental damage only, not against a deliberately altered source tree.
+- **Platform stickiness** can be triggered by two hand-made files; the effect is limited to skill links.
+- **Speed.** Proving old files by hash is slow for a project with many old skills: about 72 seconds for 64 skills (about 23 seconds before the takeover existed).
+- **Sync tools.** How a file synchronisation tool such as Syncthing treats the symlinks was not tested. The installer gives no warning when the backup root lies inside a synchronised folder.
+- **Archive groups.** Two projects with the same name and no ordinary backup share one takeover archive group. An archived item that changed after the pre-check is archived but left in place.
+- **Pointer mode.** In `TAD_CLAUDE_SKILL_MODE=pointer`, a pointer `SKILL.md` counts as TAD's only if it is a regular file of at most 40 lines, carries the `tad_pointer: true` marker and its text after the front matter is unchanged. An edited marker or body makes it your file and it is kept and reported. An edit that only changes other front-matter lines, such as `description:`, is not detected, and the next install regenerates the file without an archive.
+- **Hook template replacement.** A `settings.json` that equals the earlier hook template of this Epic (Phase 2) can now be replaced by the current template, and the prompt before confirmation does not announce that. Conversely, the "will be replaced" hint can appear for a `settings.json` that you wrote yourself and that is in fact kept.
+- **Installer closing text.** The quick-start text printed at the end of an install is the same for all four platforms; it does not mention the Claude Code links or the Codex trust review.
+- **Download install.** The Claude Code projection through the download paths was not covered by any test; all installer tests used `--source`. The `curl`, `npx` and `tad-update.sh` commands below all download.
+- **Upgrades from before 2.43** to `claude-code`: older migration manifests that delete `.claude/skills/...` by path are refused as a whole by the migration engine (it rejects paths that pass through TAD's symlinks), so that step's other deletions are skipped as well and stale files stay until you remove them.
+- **Workflows.** `pack-upgrade` and `surplus-execute` were never run with agents; `yolo-epic` ran only its design step. The manual orchestration for the other three harnesses was not rehearsed on them. That sub-agents cannot call the Workflow tool is an earlier observation and was not re-measured; a top-level call by saved name was not verified and a nested call by name failed, so use `scriptPath`.
+- **Takeover, degraded mode.** With no SHA-1 tool, a missing or damaged ledger, an unresolvable backup root, a `.claude` that is a symlink, or a leftover `.tad-adopt-tomb.*`, the takeover only reports (`CLAUDE-ADOPT-DEGRADED`) and replaces nothing; the install itself succeeds.
+- **No refresh later.** A `settings.json` and sub-agent definitions already installed are never refreshed by later releases (create-only; a sticky run only prints `CLAUDE-HOOKS-STALE`). Use `--platform claude-code --force` and remove a differing agent file to get the new version.
+- **`*save-skill` and `*save-workflow`** still write to `.claude/skills/local/` on every harness, which only Claude Code reads.
+- **Hook envelope reader.** Directory-like names and odd spacing in a patch path are accepted, a patch with CRLF line endings is ignored, a multi-file patch returns only the first reminder, and without `jq` the tool name can be misread.
+- **Path-reference checker.** Known misses: references written directly against `**`, `<`, `>`, `|`, CJK characters, `./` or `$VAR/`.
+- **`npm test`** leaves out three stale tests (`gate-exercise.sh`, `yolo-recovery.test.mjs`, `yolo-round.test.mjs`) and the two installer fixtures unless `TAD_TEST_FULL=1` is set.
+
+### Upgrade notes
+- **Migration chain.** The migration chain resolves to 3.3.0 from installed 3.2.0, 3.1.0, 3.0.2 and 3.0.1; the migration engine's dry-run confirmed it. From 3.0.0 and from every earlier version that has no outgoing manifest (2.43.1 and all 2.44.x included) there is a gap in the chain: migrations are skipped with a warning and the install continues (consider a clean reinstall). Nobody ran real upgrades with `tad.sh` for this release, so the chain resolving is all that was checked.
+- **Claude Code users with an older `.claude/` install:** with `tad.sh` or `npx`, add `--platform claude-code` (and `--force` if the project is already on 3.3.0). Preview first: `--claude-adopt=plan` with `tad.sh`, or the environment variable `TAD_CLAUDE_ADOPT=plan` (accepted values `apply`, `plan`, `off`) with `npx` or `tad-update.sh`; a plan run changes nothing (through `npx` it still ends with the wrapper's "installation complete"). `--yes` and `npx` apply the takeover without a further prompt. `--claude-adopt=off` switches the takeover off. `tad-update.sh` has no `--force`: it applies only when a newer version exists. On other platforms the installer only prints `CLAUDE-LEGACY-DETECTED`. The archive lands in `<backup root>/<project>/claude-adopt/<timestamp>/` (default backup root `~/.tad-backups`) and is not cleaned up by the retention policy.
+- **What is kept.** Your `settings.json`, your own `CLAUDE.md` text and your own hooks, permissions and MCP configuration are kept byte for byte, except files the ledger proves an earlier TAD shipped, which are archived and replaced. A replaced old `settings.json` took its blocking `PreToolUse` checks (`pre-accept-check.sh`, `pre-gate-check.sh`) with it; the scripts stay in `.tad/hooks/` but are no longer registered.
+- **Codex users:** in the one default-trust run the TAD hooks did not take effect (no session-start summary, no write-time trace row). Codex has a hook trust review; complete it, then check that `.tad/evidence/traces/` receives rows. A run through a completed review was not tested.
+- **Install commands** (checked against `tad.sh --help`, `bin/tad-install.mjs` and the `tad-update.sh` usage text):
+  - `curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes --platform claude-code` (an available way to install; all three commands use the download path, see Known limits)
+  - `npx github:Sheldon-92/TAD --platform claude-code` (download path, see Known limits)
+  - `bash .tad/scripts/tad-update.sh --platform claude-code --yes` (download path; `--check` shows versions only, not the takeover plan)
+
+## [3.2.0] - 2026-10-06
+
+Epic EPIC-20261006 unified closeout: runtime adapters (OpenCode and Cursor lifecycle hooks), size triage with a brain-index generator fix, and a `tad.sh` backup rework (framework-only backups to `~/.tad-backups`, keep the latest 2, manifest-scoped rollback). No framework file was deleted or renamed. (entry added retrospectively in 3.3.0)
+
+## [3.1.0] - 2026-10-06
+
+Epic Phase 2 measurement layer. No framework file was deleted or renamed. (entry added retrospectively in 3.3.0)
+
+## [3.0.2] - 2026-10-06
+
+Epic Phase 1 clearance batch. Its migration manifest was supplied afterwards by Epic Phase 2; no framework file was deleted or renamed. (entry added retrospectively in 3.3.0)
+
+## [3.0.1] - 2026-10-05
+
+Closeout batch of seven items: the authoritative-order section brought into the release, a scope note in the ledger header, the project-added-slot contract in the release runbook, the research-methodology projection completed with a pointer line, a `scan-packs` assertion tying registry to projections, a discipline for unique capture paths in evidence collection, and the gate skill count line aligned with the canonical seven items. Version strings on the machine-read surfaces were normalised to 3.0.1. (entry added retrospectively in 3.3.0)
+
 ## [3.0.0] - 2026-09-16
 
 ### Changed

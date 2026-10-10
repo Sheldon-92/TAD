@@ -1,6 +1,6 @@
 # TAD Method - Triangle Agent Development
 
-**Version 3.2.0 — Claude Code · Codex · OpenCode · Cursor**
+**Version 3.3.0 — Claude Code · Codex · OpenCode · Cursor**
 
 > Roles, gates and capability packs ship as one skill tree, `.agents/skills/`. Install targets: `--platform claude-code|codex|opencode|cursor` (default `codex`). Codex, OpenCode and Cursor read `.agents/skills/` natively; Claude Code reads `.claude/skills/`, which the installer fills with per-skill links into `.agents/skills/`. TAD writes a lifecycle-hook configuration for each of the four, all calling the same `.tad/hooks/` scripts (for Claude Code only when the project has no `.claude/settings.json`; Codex wires no PreCompact hook; on Codex the hook configuration did not take effect in a default-trust run and did in a run with the hook trust review bypassed (codex-cli 0.159.3, one machine, `codex exec`); a run through a completed trust review was not tested); what has been verified on each harness, and the known limits, are in the status table of [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md#current-status).
 >
@@ -191,7 +191,7 @@ The updater does not auto-detect Claude Code projects: run `bash tad.sh --platfo
 
 ```bash
 cat .tad/version.txt
-# Should show: 3.2.0
+# Should show: 3.3.0
 
 # Check migration engine installed
 test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
@@ -507,6 +507,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**Welcome to TAD v3.2.0 — Claude Code · Codex · OpenCode · Cursor**
+**Welcome to TAD v3.3.0 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

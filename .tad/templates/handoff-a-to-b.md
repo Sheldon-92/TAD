@@ -34,7 +34,7 @@ gate4_delta: []
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 3.2.0
+**Handoff Version:** 3.3.0
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md — cite previous handoff if this one supersedes. Enables /tad-maintain drift check (Phase 1 P1.2.c) to propose archiving the superseded one. -->
 
@@ -696,4 +696,4 @@ Blake完成后填写：
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 3.2.0
+**Version**: 3.3.0

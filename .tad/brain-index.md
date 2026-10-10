@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-06 14:46
+Generated: 2026-10-10 00:44
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -40,6 +40,7 @@ Generated: 2026-10-06 14:46
 | Runtime Adapter Instance — Codex | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 |
 | Runtime Adapter Instance — Cursor | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 |
 | Runtime Adapter Instance — OpenCode | OpenCode](runtime-adapter-instance-opencode.md) — OpenCode 实例六维声明：opencode 1.18.33 run 无头面与 stdin 关闭前置、.opencode/plugins/tad-hooks.ts 四点位映射、permission 配置面实测 deny、事件总线状态信号、R-OC-1/R-OC-2 残项 | OpenCode](runtime-adapter-instance-opencode.md) — OpenCode 实例六维声明：opencode 1.18.33 run 无头面与 stdin 关闭前置、.opencode/plugins/tad-hooks.ts 四点位映射、permission 配置面实测 deny、事件总线状态信号、R-OC-1/R-OC-2 残项 |
+| Runtime Adapter Instance — Claude Code | Claude Code](runtime-adapter-instance-claude-code.md) — Claude Code 实例六维声明：claude 2.1.295 -p 无头面、AGENTS.md 加载/压制/@引用条件、skill 符号链接与指路文件、四个 hook 点位实测、D1 定案 A、R-CC-1..5 残项 | Claude Code](runtime-adapter-instance-claude-code.md) — Claude Code 实例六维声明：claude 2.1.295 -p 无头面、AGENTS.md 加载/压制/@引用条件、skill 符号链接与指路文件、四个 hook 点位实测、D1 定案 A、R-CC-1..5 残项 |
 
 ## Project Knowledge
 | File | Keywords | Summary |
@@ -53,41 +54,35 @@ Generated: 2026-10-06 14:46
 ## AGENTS.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| Role Switching | role switching | Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = OpenCode / Cursor invocation (skills als |
+| Role Switching | role switching | Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocati |
 | Knowledge Ingress (read on activation) | knowledge ingress read on activation  | - Every role activation reads `.tad/project-knowledge/principles.md` and |
 | Critical Rules | critical rules | - Reading `HANDOFF-*` requires Blake plus Gate 3/4; `/tad-maintain` CHECK/SYNC is exempt. |
 | Default Behavior (no role specified) | default behavior no role specified  | If no role is requested, act as a general TAD assistant: |
 | Capability Packs (Domain Expertise) | capability packs domain expertise  | When a user's task matches a capability pack's keywords, announce a pointer — never Read the pack file up front. These |
-| Codex-Specific Notes (Codex harness only — not applicable to OpenCode/Cursor) | codex-specific notes codex harness only not applicable to opencode cursor  | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
+| Codex-Specific Notes (Codex harness only — not applicable to Claude Code/OpenCode/Cursor) | codex-specific notes codex harness only not applicable to claude code opencode cursor  | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
 | Known Gaps (OpenCode / Cursor) | known gaps opencode cursor  | - **P2 — Hook adapters (implemented 2026-10-06, Epic Phase 3)**: OpenCode lifecycle hooks ship as the tad.sh-projected |
 | Frozen Channel: TAD Lite (Explicit Invocation Only) | frozen channel tad lite explicit invocation only  | TAD Lite is a frozen experiment since 2026-08-13: no new work is started there, in-flight `LITE-*.md` contracts run to c |
 
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-2026-10-09-four-harness-live-regression.md | unknown |  |
+| HANDOFF-2026-10-09-release-3.3.0-commit.md | unknown | \| 事项 \| 裁定 \| |
+| HANDOFF-2026-10-09-release-evidence-and-gates.md | unknown | \| 事项 \| 裁定 \| |
+| HANDOFF-2026-10-09-residue-cleanup-code-and-tests.md | unknown | \| 事项 \| 裁定 \| 理由 \| |
+| HANDOFF-2026-10-09-residue-cleanup-docs-and-skills.md | docs | Claude Code 支持恢复之后，把仓里还在说「Claude Code 已移除／只有三家／hooks 仍是缺口」的文 |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261006-tad-self-optimization.md | **Epic ID**: EPIC-20261006-tad-self-optimization |
+| EPIC-20261008-multi-harness-restore-and-cleanup.md | **Epic ID**: EPIC-20261008-multi-harness-restore-and-cleanup |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
 |------|-----------|---------|
 | HANDOFF-20260804-lite-pricing-gate.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260804-full-reviewer-tier-rule.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-surplus-tad-self-test-agent.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-session-health-check.md | code | Handoff: session-health.sh — Framework Component Integrity Check |
-| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-o1-landscape-refresh-2026q3.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-codex-adapter-yaml.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260816-phase2-installer-data-safety.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260816-privacy-scanner-and-trace-relpath.md | code | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260815-english-unification.md | unknown | HANDOFF: 先修被中文字面量绑架的纪律，再谈英文化 |
-| HANDOFF-20260804-gate-loop-circuit-breaker.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
@@ -125,19 +120,30 @@ Generated: 2026-10-06 14:46
 | HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
 | HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
+| HANDOFF-20260831-capability-builder-phase1-create.md | mixed | Handoff: Capability Builder v1 — Phase 1 Create |
+| HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
+| HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
+| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
+| HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |
+| HANDOFF-20260818-lazy-by-floor.md | unknown | HANDOFF: 按地板表懒加载 —— 可达性记录取代计数，实测定目标 |
+| HANDOFF-20260817-activation-ondemand.md | unknown | HANDOFF: 激活按需化 —— 启动扫描从「整读文件」改成「跑命令读输出」 |
+| HANDOFF-20260816-trace-relative-path.md | code | Handoff: 让 trace 写仓库相对路径（止住绝对路径的源头） |
+| HANDOFF-20260816-gate3-check8-audible.md | code | Quality Chain Metadata (Alex 必填) |
+| HANDOFF-20260816-discipline-floor.md | unknown | HANDOFF: 地板表 —— 30 条纪律的载体该常驻还是按需 |
+| HANDOFF-20260815-discipline-floor.md | unknown | HANDOFF: 地板表 —— 每条纪律的载体该常驻还是按需 |
 
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
-| evidence/acceptance-tests/ | 642 | acceptance-tests |
+| evidence/acceptance-tests/ | 647 | acceptance-tests |
 | evidence/activation-packages/ | 25 | activation-packages |
 | evidence/audits/ | 3 | audits |
 | evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
 | evidence/codex-regression/ | 10 | codex-regression |
 | evidence/codex-validation/ | 4 | codex-validation |
-| evidence/completions/ | 118 | completions |
+| evidence/completions/ | 121 | completions |
 | evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 52 | designs |
+| evidence/designs/ | 54 | designs |
 | evidence/discuss/ | 4 | discuss |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
@@ -154,10 +160,10 @@ Generated: 2026-10-06 14:46
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 39 | journal |
+| evidence/journal/ | 42 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
-| evidence/live-regression/ | 5 | live-regression |
+| evidence/live-regression/ | 9 | live-regression |
 | evidence/maintenance/ | 1 | maintenance |
 | evidence/metrics/ | 1 | metrics |
 | evidence/overrides/ | 0 | overrides |
@@ -168,22 +174,24 @@ Generated: 2026-10-06 14:46
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 146 | pm |
+| evidence/pm/ | 155 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 15 | ralph-loops |
-| evidence/regression-runs/ | 15 | regression-runs |
+| evidence/ralph-loops/ | 16 | ralph-loops |
+| evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 6 | releases |
+| evidence/releases/ | 10 | releases |
 | evidence/research/ | 187 | research |
-| evidence/reviews/ | 825 | reviews |
-| evidence/risk-cards/ | 4 | risk-cards |
+| evidence/reviews/ | 844 | reviews |
+| evidence/risk-cards/ | 9 | risk-cards |
+| evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
+| evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 805 | yolo |
+| evidence/yolo/ | 912 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
@@ -211,6 +219,7 @@ Generated: 2026-10-06 14:46
 | DR-20260901-yolo2-phase4-remain-opt-in.md | DR-20260901 — YOLO2 Phase 4 Remains Opt-In |
 | DR-20260902-local-wiki-browser-ingest-bridge.md | DR-20260902 — Local Wiki Browser Ingest Bridge |
 | DR-20260902-local-wiki-native-browser-capture.md | DR-20260902 — Native Chrome Capture for Local Wiki |
+| DR-20261008-claude-code-runtime-restore.md | Decision Record: 恢复 Claude Code 为一等运行时的方式 |
 
 ## Config Files
 | File | Contains |

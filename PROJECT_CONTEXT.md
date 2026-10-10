@@ -1,9 +1,9 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 3.2.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
-- **Last Updated**: 2026-10-09
-- **Framework**: TAD v3.2.0 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
+- **Version**: 3.3.0 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
+- **Last Updated**: 2026-10-10
+- **Framework**: TAD v3.3.0 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - **EPIC: Capability Builder v1** — Phase 1/4 Gate 4 accepted on 2026-09-02 at `2d7e359b`. TAD now provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof. Phase 2 `evolve` is planned but parked; it requires separate human authorization and a concrete evolution signal.

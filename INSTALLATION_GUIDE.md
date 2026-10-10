@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 3.2.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
+**Version 3.3.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
 
 ## 安装方式
 
@@ -10,7 +10,7 @@
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-默认安装（Codex）+ 全部 25 个 packs。无需 Node.js，只需 bash + curl。首次安装与后续升级用同一命令；升级不会删除你的既有文件，项目数据（handoffs、evidence、project-knowledge）保持不变。
+默认安装（Codex）+ 全部 26 个 packs。无需 Node.js，只需 bash + curl。首次安装与后续升级用同一命令；升级不会删除你的既有文件，项目数据（handoffs、evidence、project-knowledge）保持不变。
 
 平台参数（显式覆盖默认值）：
 
@@ -62,7 +62,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 3.2.0
+cat .tad/version.txt          # 应显示 3.3.0
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）
@@ -146,13 +146,13 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 安装会把项目根的 `AGENTS.md` 换成 TAD 的版本；如果原来的 `AGENTS.md` 内容与 TAD 的不同，会先备份为 `AGENTS.md.pre-tad.<YYYYmmdd-HHMMSS>`（同一秒重名时再加 `.<n>`）。这记录的是当前行为。
 
-`TAD_CLAUDE_SKILL_MODE=pointer` 为新增的 skill 生成指路目录，其 `SKILL.md` 带 `tad_pointer: true`。未被改动的生成物每次安装都会重新生成（内容相同则不写）；只要你改过其中任何一行（哪怕一行），它就不再通过所有权判定，被视为你自己的文件，原样保留并在安装摘要中报告，不会被覆盖。
+`TAD_CLAUDE_SKILL_MODE=pointer` 为新增的 skill 生成指路目录，其 `SKILL.md` 带 `tad_pointer: true`。未被改动的生成物每次安装都会重新生成（内容相同则不写）。所有权判定只看：`SKILL.md` 是不超过 40 行的普通文件、front matter 里有 `tad_pointer: true` 标记行、front matter 之后的正文与生成内容逐字节相同。改动标记行或正文，它就被视为你自己的文件，原样保留并在安装摘要中报告。只改 front matter 里其他行（例如 `description:`）不会被识别，下一次安装会就地重新生成该文件，且没有存档。
 
 Codex 用户可以用更少的 context 跑 TAD 工作流。详见 [Codex CLI 指南](#codex-cli)。
 
 ## Capability Packs
 
-TAD 包含 25 个 capability packs，每个提供特定领域的判断规则：
+TAD 包含 26 个 capability packs，每个提供特定领域的判断规则：
 
 | 类别 | Packs |
 |------|-------|

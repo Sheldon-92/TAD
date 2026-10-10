@@ -23,7 +23,7 @@ NC='\033[0m'
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="3.2.0"
+TARGET_VERSION="3.3.0"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -890,7 +890,7 @@ KNOWN_PLATFORMS="codex opencode cursor claude-code"
 # v3.1: `opencode` / `cursor` are accepted targets — the installer body is
 # platform-agnostic (same .agents/skills tree, same packs, same .tad/ core),
 # so these values only relax the fail-before-mutation gate.
-# v3.2 (Epic multi-harness-restore, Phase 2): `claude-code` is accepted again,
+# v3.3 (Epic multi-harness-restore, Phase 2): `claude-code` is accepted again,
 # EXACT match only. It is the one platform that gets a gated projection into
 # .claude/ and CLAUDE.md (see CLAUDE_PROJECTION below).
 # v3.2 (Epic P3): lifecycle hooks now land for both — the OpenCode hooks
@@ -3915,11 +3915,11 @@ claude_print_summary() {
     claude_adopt_summary
     case "$CLAUDE_HOOKS_STATE" in
         kept|skipped)
-            echo "  TAD hooks are NOT registered. Template: .tad/templates/claude/settings.json — you can merge it by hand; automatic merging will come in a later release (可手工并入；自动合并随后续版本提供)." ;;
+            echo "  TAD hooks are NOT registered. Template: .tad/templates/claude/settings.json — you can merge it by hand; automatic merging will come in a later release." ;;
     esac
     case "$CLAUDE_HOOKS_STATE" in
         registered|current)
-            echo "  .claude/settings.json 通常会被提交；它注册了 4 条在会话开始、写文件后、压缩前、提问后运行的 .tad/hooks/ 脚本。" ;;
+            echo "  .claude/settings.json is usually committed; it registers 4 scripts under .tad/hooks/ that run at session start, after file writes, before compaction and after questions." ;;
     esac
     case "$CLAUDE_HOOKS_STATE" in
         registered|current)
@@ -4058,7 +4058,7 @@ EOF
 # ============================================
 # Platform stickiness (Epic multi-harness-restore, Phase 4a-2)
 # ============================================
-# tad-update.sh always calls the installer with --platform codex, so a project
+# tad-update.sh forwards an explicit --platform codex|claude-code; without it, detection yields codex (or stops as ambiguous), so a project
 # that already carries a TAD Claude Code projection would never get entries for
 # new skills. When claude_projection_present holds, a run for another platform
 # maintains the skill links under .claude/skills (create missing, prune dangling)
@@ -5953,7 +5953,7 @@ NEXTEOF
     echo -e "  2. ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
 
     echo ""
-    echo "Learn more: ${BLUE}${REPO_URL}${NC}"
+    echo -e "Learn more: ${BLUE}${REPO_URL}${NC}"
     echo ""
 }
 

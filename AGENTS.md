@@ -6,7 +6,7 @@ TAD (Triangle Agent Development) uses two specialized roles:
 
 Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 
-> **Runtime status (v3.2.0)**: TAD supports **Claude Code**, **Codex**, **OpenCode**, and **Cursor**
+> **Runtime status (v3.3.0)**: TAD supports **Claude Code**, **Codex**, **OpenCode**, and **Cursor**
 > (install targets `claude-code|codex|opencode|cursor`, default `codex`). `AGENTS.md` is read natively
 > by Codex, OpenCode, and Cursor, and `.agents/skills/` is their discovery path, so roles, gates, and
 > capability packs load open-box. Claude Code reads skills from `.claude/skills/` (the installer links

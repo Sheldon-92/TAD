@@ -137,6 +137,7 @@ case_F() {
   for h in 'Added' 'Changed' 'Fixed' 'Known limits' 'Upgrade notes'; do DESC="3.3.0 has section $h"; yes_ hasE "$WORK/e.md" "^### $h"; done
   DESC="3.3.0 entry has no banned support claim"; no_ grep -qiE -- "$BANNED" "$WORK/e.md"
   awk '/^### Known limits/{f=1;next} f&&/^### /{exit} f' "$WORK/e.md" > "$WORK/k.md"
+  awk '/^### Upgrade notes/{f=1;next} f&&/^### /{exit} f' "$WORK/e.md" > "$WORK/u.md"
   for kw in '[Tt]rust' 'settings\.json' 'subdirectory|sub-directory' '[Ii]nteractive' 'OpenCode' 'PreCompact' 'tad-update' 'SIGKILL' 'MANIFEST' 'symlink|symbolic link' 'sandbox' 'compaction' 'cursor/hooks\.json|\.cursor/hooks' '72' 'curl|download' 'quick-start|quick start' '[Pp]ointer' 'one run' 'sync'; do
     DESC="Known limits covers /$kw/"; yes_ hasE "$WORK/k.md" "$kw"
   done
@@ -147,7 +148,6 @@ case_F() {
   DESC="3.3.0 Changed mentions --force for same-version projects"; yes_ has "$WORK/e.md" -- '--force'
   DESC="Upgrade notes speak of the migration chain, not of tested upgrades"; yes_ hasE "$WORK/u.md" '[Mm]igration chain'
   DESC="3.0.2 retrospective entry is not sourced from the docs commit"; no_ hasE $C 'chain records' 
-  awk '/^### Upgrade notes/{f=1;next} f&&/^### /{exit} f' "$WORK/e.md" > "$WORK/u.md"
   for kw in 'claude-adopt' 'plan' '3\.0\.0' '2\.44' 'npx github:Sheldon-92/TAD' 'trust'; do DESC="Upgrade notes covers /$kw/"; yes_ hasE "$WORK/u.md" "$kw"; done
   DESC="CHANGELOG does not advertise the unverified npm package name"; no_ has "$WORK/e.md" 'npx tad-framework'
   DESC="3.3.0 entry relates itself to 3.0.0"; yes_ hasE "$WORK/e.md" '3\.0\.0'
@@ -231,7 +231,12 @@ case_F() {
   DESC="registration records the downstream scan was not run"; yes_ hasE $REL/3.3.0-step3f-registration.md 'scan-downstream|下游'
   /bin/bash $RV state-surface . > "$WORK/ss.log" 2>&1 && ok "state-surface PASS" || { bad "state-surface: $(tail -1 "$WORK/ss.log")"; grep -E '^FAIL' "$WORK/ss.log" | head -4; }
   DESC="brain-index age is 0 days (check7)"; yes_ grep -qE 'check7.*age 0d' "$WORK/ss.log"
-  DESC="brain-index is valid UTF-8"; yes_ iconv -f UTF-8 -t UTF-8 .tad/brain-index.md
+  iconv -f UTF-8 -t UTF-8 .tad/brain-index.md >/dev/null 2>&1 && ok "brain-index is valid UTF-8" || bad "brain-index is not valid UTF-8"
+  for sec in 'Principles' 'Patterns' 'Project Knowledge' 'AGENTS.md Sections' 'Active Handoffs' 'Active Epics' 'Archived Handoffs' 'Evidence Directories' 'Decision Records' 'Config Files' 'Skills'; do
+    grep -q "^## $sec" .tad/brain-index.md || bad "brain-index is missing the section: $sec"
+  done; ok "brain-index sections checked (11)"
+  ( D=$(mktemp -d) && cp -R .tad "$D/.tad" 2>/dev/null && cp AGENTS.md "$D/" 2>/dev/null; cd "$D" && /bin/bash .tad/hooks/lib/brain-index-gen.sh >/dev/null 2>&1; echo $? > "$WORK/big.rc"; rm -rf "$D" )
+  [ "$(cat "$WORK/big.rc")" = 0 ] && ok "brain-index-gen.sh exits 0 on a copy of this tree" || bad "brain-index-gen.sh exit $(cat "$WORK/big.rc") on a copy of this tree"
   DESC="registration records the install source commit"; yes_ has $REL/3.3.0-step3f-registration.md 'e6485404'
   DESC="registration records the human's uncommitted file in the install source"; yes_ has $REL/3.3.0-step3f-registration.md 'secret-detection-rules'
   DESC="closeout record skeleton exists"; yes_ test -f $REL/3.3.0-closeout.md
@@ -242,8 +247,8 @@ case_F() {
     ch=$( { git diff --name-only "$BASE" -- "$p"; git status --porcelain -- "$p" | cut -c4-; } | sort -u )
     [ -z "$ch" ] && ok "unchanged since base: $p" || bad "changed since base: $p ($(echo "$ch" | head -3 | tr '\n' ' '))"
   done
-  ch=$( { git diff --name-only "$BASE" -- .tad/hooks; git status --porcelain -- .tad/hooks | cut -c4-; } | grep -v 'lib/state-surface-check\.sh$' | sort -u )
-  [ -z "$ch" ] && ok "hooks: only state-surface-check.sh changed" || bad "hooks: unexpected changes ($ch)"
+  ch=$( { git diff --name-only "$BASE" -- .tad/hooks; git status --porcelain -- .tad/hooks | cut -c4-; } | grep -v -e 'lib/state-surface-check\.sh$' -e 'lib/brain-index-gen\.sh$' | sort -u )
+  [ -z "$ch" ] && ok "hooks: only state-surface-check.sh and brain-index-gen.sh changed" || bad "hooks: unexpected changes ($ch)"
   ch=$( { git diff --name-only "$BASE" -- .agents/skills; git status --porcelain -- .agents/skills | cut -c4-; } | grep -v 'secret-detection-rules\.md$' | grep -v -e '^\.agents/skills/alex/SKILL\.md$' -e '^\.agents/skills/blake/SKILL\.md$' -e '^\.agents/skills/tad-help/SKILL\.md$' | sort -u )
   [ -z "$ch" ] && ok "skills: only the three version markers changed" || bad "skills: unexpected changes ($ch)"
   for f in alex blake tad-help; do
@@ -252,7 +257,7 @@ case_F() {
   done
   git diff --cached --quiet && ok "nothing staged" || bad "something is staged"
   DESC="HEAD unchanged (no commit by the implementer)"; yes_ test "$(git rev-parse HEAD)" = "$(git rev-parse "$BASE")"
-  allowed='^(\.tad/version\.txt|\.tad/TAD-VERSION|\.tad/config\.yaml|package\.json|README\.md|INSTALLATION_GUIDE\.md|PROJECT_CONTEXT\.md|AGENTS\.md|NEXT\.md|ROADMAP\.md|CHANGELOG\.md|tad\.sh|docs/MULTI-PLATFORM\.md|docs/CODEX-USER-GUIDE\.md|\.agents/skills/(alex|blake|tad-help)/SKILL\.md|\.tad/capability-packs/pack-registry\.yaml|\.tad/templates/(handoff-a-to-b|deliverable-handoff)\.md|\.tad/migrations/3\.2\.0-to-3\.3\.0\.yaml|\.tad/hooks/lib/state-surface-check\.sh|\.tad/brain-index\.md)$'
+  allowed='^(\.tad/version\.txt|\.tad/TAD-VERSION|\.tad/config\.yaml|package\.json|README\.md|INSTALLATION_GUIDE\.md|PROJECT_CONTEXT\.md|AGENTS\.md|NEXT\.md|ROADMAP\.md|CHANGELOG\.md|tad\.sh|docs/MULTI-PLATFORM\.md|docs/CODEX-USER-GUIDE\.md|\.agents/skills/(alex|blake|tad-help)/SKILL\.md|\.tad/capability-packs/pack-registry\.yaml|\.tad/templates/(handoff-a-to-b|deliverable-handoff)\.md|\.tad/migrations/3\.2\.0-to-3\.3\.0\.yaml|\.tad/hooks/lib/state-surface-check\.sh|\.tad/brain-index\.md|\.tad/hooks/lib/brain-index-gen\.sh|\.tad/active/handoffs/HANDOFF-2026-10-09-release-3\.3\.0-commit\.md)$'
   extra=$( { git diff --name-only "$BASE"; git ls-files -o --exclude-standard; } | grep -vE "$allowed" | grep -v -e 'secret-detection-rules\.md$' -e '^docs/pm/status\.md$' -e '^\.claude/' | sort -u )
   [ -z "$extra" ] && ok "only in-scope files changed" || bad "out-of-scope changes: $(echo "$extra" | head -4 | tr '\n' ' ')"
   DESC="no file under .claude/ is tracked"; no_ test -n "$(git ls-files .claude | head -1)"

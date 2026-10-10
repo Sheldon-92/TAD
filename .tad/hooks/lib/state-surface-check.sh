@@ -126,7 +126,7 @@ DECL_PAT='Version\*{0,2}:?\*{0,2} ?v?[0-9]+\.[0-9]+(\.[0-9]+)?'
 # the new major\.minor([^0-9.]|$) form; patch bumps leave it unchanged. It is
 # written in escaped form, so version-literal scans cannot see it: verify it by
 # hand at every minor closeout per publish-ops §3.1 (incl. the paired controls).
-OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.1([^0-9.]|$)'
+OLD_PAT='(Version|v)\*{0,2}:?\*{0,2} ?3\.3([^0-9.]|$)'
 # P1 — self-anchored parenthesized declaration: "(Version 9.9)" / "(Version: v9.9)"
 PAREN_VER_PAT='\(Version:? ?v?[0-9]+\.[0-9]+(\.[0-9]+)?\)'
 # P2 — bare parenthesized token: "(v9.9)" / "(9.9)" (line-qualified, see delta §2)
@@ -215,9 +215,9 @@ for f in $DECL_FILES; do
   c4_count=$((c4_count + n))
 done
 if [ "$c4_count" -eq 0 ]; then
-  pass check4 "no '3.1' edition-number forms in state-file list"
+  pass check4 "no '3.3' edition-number forms in state-file list"
 else
-  fail check4 "'3.1' edition-number forms remain: $c4_count line(s) in state-file list"
+  fail check4 "'3.3' edition-number forms remain: $c4_count line(s) in state-file list"
 fi
 
 # ---- Check 5: session-state index block path existence --------------------

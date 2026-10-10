@@ -10,6 +10,10 @@ set -euo pipefail
 TAD_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 TAD_DIR="$TAD_ROOT/.tad"
 OUT="$TAD_DIR/brain-index.md"
+# Written to a temp file and moved into place only on success, so a failed run
+# can never leave a truncated index behind.
+OUT_TMP="$OUT.tmp.$$"
+trap 'rm -f "$OUT_TMP"' EXIT
 AGENTS_MD="$TAD_ROOT/AGENTS.md"
 
 escape_pipe() { sed 's/|/\\|/g'; }
@@ -38,7 +42,7 @@ utcut() {
 utstrip_title() {
   perl -pe 's/ *(?:-|\xe2\x80\x94) *(?:inception|AMENDED )?[0-9]{4}-[0-9]{2}-[0-9]{2}$//'
 }
-first_sentence() { head -1 | sed 's/[[:space:]]*$//' | utcut 120 | escape_pipe; }
+first_sentence() { sed -n '1p' | sed 's/[[:space:]]*$//' | utcut 120 | escape_pipe; }
 slug_keywords() { echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/ /g' | tr -s ' '; }
 
 file_count=0
@@ -103,7 +107,7 @@ if [ -f "$PATTERNS_INDEX" ]; then
     if [[ "$line" =~ ^-\ \[ ]]; then
       fname=$(echo "$line" | sed 's/^- \[\([^]]*\)\].*/\1/' | escape_pipe)
       hook=$(echo "$line" | sed 's/^[^—]*— //' | escape_pipe)
-      kw=$(echo "$hook" | tr ',' '\n' | head -5 | tr '\n' ',' | sed 's/,$//')
+      kw=$(echo "$hook" | tr ',' '\n' | sed -n '1,5p' | tr '\n' ',' | sed 's/,$//')
       echo "| $fname | $kw | $hook |"
       file_count=$((file_count + 1))
     fi
@@ -121,7 +125,7 @@ find "$TAD_DIR/project-knowledge" -maxdepth 1 -name "*.md" -not -name "README.md
   while IFS= read -r -d '' file; do
     fname=$(basename "$file")
     summary=$({ grep -m1 '^## \|^### ' "$file" 2>/dev/null || true; } | sed 's/^#* //' | utcut 120 | escape_pipe)
-    [ -z "$summary" ] && summary=$(sed -n '/^[^#>@!-]/p' "$file" 2>/dev/null | head -1 | utcut 120 | escape_pipe)
+    [ -z "$summary" ] && summary=$(sed -n '/^[^#>@!-]/p' "$file" 2>/dev/null | sed -n '1p' | utcut 120 | escape_pipe)
     kw=$(slug_keywords "${fname%.md}")
     echo "| $fname | $kw | $summary |"
     file_count=$((file_count + 1))
@@ -165,7 +169,7 @@ if [ -d "$ACTIVE_DIR" ]; then
       task_type=$({ grep -m1 '^task_type:' "$file" 2>/dev/null || true; } | sed 's/task_type: *//' | tr -d '[:space:]')
       task_type="${task_type:-unknown}"
       # Get first line of §1.1
-      summary=$(sed -n '/^### 1.1/,/^###/{/^### 1.1/d;/^###/d;/^$/d;p;}' "$file" 2>/dev/null | head -1 | utcut 120 | escape_pipe)
+      summary=$(sed -n '/^### 1.1/,/^###/{/^### 1.1/d;/^###/d;/^$/d;p;}' "$file" 2>/dev/null | sed -n '1p' | utcut 120 | escape_pipe)
       echo "| $fname | $task_type | $summary |"
       file_count=$((file_count + 1))
     done
@@ -183,7 +187,7 @@ if [ -d "$EPIC_DIR" ]; then
   find "$EPIC_DIR" \( -name "EPIC-*.md" -o -name "epic-*.md" \) -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       fname=$(basename "$file")
-      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | head -1 | utcut 120 | escape_pipe)
+      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | sed -n '1p' | utcut 120 | escape_pipe)
       echo "| $fname | $summary |"
       file_count=$((file_count + 1))
     done
@@ -198,7 +202,7 @@ if [ -d "$ARCHIVE_DIR" ]; then
   echo "## Archived Handoffs (recent 50)"
   echo "| File | Task Type | Summary |"
   echo "|------|-----------|---------|"
-  find "$ARCHIVE_DIR" \( -name "HANDOFF-*.md" -o -name "handoff-*.md" \) 2>/dev/null | sort -r | head -50 | \
+  find "$ARCHIVE_DIR" \( -name "HANDOFF-*.md" -o -name "handoff-*.md" \) 2>/dev/null | sort -r | sed -n '1,50p' | \
     while IFS= read -r file; do
       fname=$(basename "$file")
       task_type=$({ grep -m1 '^task_type:' "$file" 2>/dev/null || true; } | sed 's/task_type: *//;s/ *#.*//' | tr -d '[:space:]')
@@ -255,7 +259,7 @@ echo "|------|---------|"
 find "$TAD_DIR" -maxdepth 1 -name "config*.yaml" -print0 2>/dev/null | sort -z | \
   while IFS= read -r -d '' file; do
     fname=$(basename "$file")
-    contains=$({ grep '^ *- ' "$file" 2>/dev/null || true; } | head -5 | tr '\n' ',' | sed 's/^ *- //g;s/,$//' | utcut 120 | escape_pipe)
+    contains=$({ grep '^ *- ' "$file" 2>/dev/null || true; } | sed -n '1,5p' | tr '\n' ',' | sed 's/^ *- //g;s/,$//' | utcut 120 | escape_pipe)
     echo "| $fname | $contains |"
     file_count=$((file_count + 1))
   done
@@ -276,7 +280,7 @@ if [ -n "$SKILLS_DIR" ]; then
   find "$SKILLS_DIR" -name "SKILL.md" -print0 2>/dev/null | sort -z | \
     while IFS= read -r -d '' file; do
       skill_name=$(echo "$file" | sed "s|$SKILLS_DIR/||" | sed 's|/SKILL.md||')
-      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | head -1 | utcut 80 | escape_pipe)
+      summary=$({ grep -m1 '^[^#>|!-]' "$file" 2>/dev/null || true; } | sed -n '1p' | utcut 80 | escape_pipe)
       echo "| $skill_name | $summary |"
       file_count=$((file_count + 1))
   done
@@ -290,7 +294,8 @@ fi
 echo "---"
 echo "Total indexed entries: (see above tables)"
 
-} > "$OUT"
+} > "$OUT_TMP"
+mv -f "$OUT_TMP" "$OUT"
 
 lines=$(wc -l < "$OUT")
 echo "brain-index.md generated: $lines lines at $OUT"

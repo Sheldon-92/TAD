@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 3.2.0 (Claude Code, Codex, OpenCode and Cursor are install targets)
+**Version**: 3.3.0 (Claude Code, Codex, OpenCode and Cursor are install targets)
 
 TAD runs on **Claude Code, Codex, OpenCode, and Cursor as supported install targets**, with a shared protocol.
 There is a single skill tree (`.agents/skills/`, the shared source of truth) and four install targets
@@ -243,4 +243,4 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
-*TAD v3.2.0 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*
+*TAD v3.3.0 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*

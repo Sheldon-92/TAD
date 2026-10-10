@@ -1,0 +1,15 @@
+schema_version: 1
+from: "3.2.0"
+to: "3.3.0"
+generated_by: "manual"
+note: |
+  Minor release v3.3.0 — Epic EPIC-20261008 multi-harness restore and cleanup:
+  Claude Code is an install target again, alongside Codex, OpenCode and Cursor,
+  and leftover items were cleaned up. No framework file that the installer ships
+  is deleted or renamed in this release, so the delete/rename lists are empty.
+  Taking over an older Claude Code install under .claude/ is not done by this
+  manifest. The installer does it: it archives outside the project first, can be
+  restored, and replaces only files it can prove byte for byte were shipped by
+  an earlier TAD. Nothing under .claude/, CLAUDE.md or .codex/hooks.json is listed here.
+delete: []
+rename: []

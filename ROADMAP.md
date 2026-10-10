@@ -1,6 +1,6 @@
 # Roadmap
 
-> Strategic direction for TAD. Updated 2026-10-09 for v3.2.0.
+> Strategic direction for TAD. Updated 2026-10-10 for v3.3.0.
 > See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) for current state and
 > [NEXT.md](./NEXT.md) for the tactical queue.
 
