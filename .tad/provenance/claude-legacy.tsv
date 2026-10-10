@@ -1,4 +1,4 @@
-# schema=1 rows=1814
+# schema=1 rows=1817
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1020,6 +1020,7 @@ skill	76e3113001ad70f55e34a5ca9bec3aabf3696f95	tad-help/SKILL.md
 skill	771608c70289758fe59dea08aa3750d3c5bf7b92	blake/SKILL.md
 skill	7739dec49e6c31d0809f43b18ade1880ea6d4dd9	web-frontend/examples/design-token-consumption.md
 skill	779d15565b521390734f399bd7b9d9ee58088302	ml-training/SKILL.md
+skill	77af02b435a171d44988b3283565fb210afc5ccc	alex/SKILL.md
 skill	78050872c471ea8c28ddba3cdebe9a396f7d2c27	alex/references/publish-protocol.md
 skill	7864329f46b51884790959e1014836c3596de1b8	reading-companion/fixtures/make_fixture.py
 skill	787ba0f0440b169bad9163cd9acb19d42e5526f3	research-github/SKILL.md
@@ -1633,6 +1634,7 @@ skill	e7b76632edf33efaf728f9227fa908c6516848f1	ml-training/examples/lora-config-
 skill	e7ceda11150384407f6fe0b513edeb78a537a5b3	alex/references/accept-command.md
 skill	e80f47213474916d99a80b6d8ebcaac1360f2905	web-frontend/references/testing.md
 skill	e8126fc3d378fa15f8aa610faf2d33874bc265cc	alex/references/learn-path-protocol.md
+skill	e854a5ec9e736dc16f74fe26de5511c6b96d7026	tad-help/SKILL.md
 skill	e8589b93b3f16ea827bef767e74910e513838dca	blake/references/completion-protocol.md
 skill	e88844a90ca39f943786c9d416cc3515958b5be0	alex/references/yolo-execution-protocol.md
 skill	e8ac606940d6212180711d0e9cf19aeb83a598be	_archived/testing-strategy.md
@@ -1668,6 +1670,7 @@ skill	ec6d52320b57f82713403f84ee75f64f402bbc0d	agent-computer-interface/referenc
 skill	ed31bc369d35c2ea5e6a73d8f541dc06c590343f	web-deployment/references/ci-cd-pipeline-rules.md
 skill	ed414f7ca6a68faf7262421a858a26facc8fb6b4	alex/references/idea-list-protocol.md
 skill	ee0687fd67f071e615663908dcfe785b51fc31e9	tad-help/SKILL.md
+skill	ee58b2491927a493e4723dd7c875b2ac1eb057f7	blake/SKILL.md
 skill	ee7214db1ca5225adb3f0a79aff353eba6c1a5e3	blake/SKILL.md
 skill	eeaa52117c50ae349f8c07d64aef37ca70249529	alex/SKILL.md
 skill	eeb1c9d20dfd2e6c3353d6925eed419fea6e29fb	mobile-release/references/privacy-policy.md
