@@ -1,4 +1,4 @@
-# schema=1 rows=1812
+# schema=1 rows=1814
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -764,6 +764,7 @@ skill	483a8d032267cdb08c1a3335e4fc2b82f6c3ba9b	alex/references/adaptive-complexi
 skill	484dd7297b1ec0fb1c1c4e8832e7ab4f3ac9055f	research-methodology/LICENSE
 skill	48b9d0a7477fb27341dc6783a229f8e6b5021f2f	product-thinking/SKILL.md
 skill	48bd81e5867d956cddf4cfc56b21bb18990df097	web-ui-design/checklists/accessibility.md
+skill	494b390ddb30b47d3123a9682ccdd8a6cc6b9690	release-runbook/references/publish-ops.md
 skill	4964b83e8f1aa1c6db88570d5edaa4c847ac807f	knowledge-graph/references/graph-database.md
 skill	49c14f71b8898cdda32bfeb48d1f2db065628cbc	alex/SKILL.md
 skill	49cd368e52e30c1490f23c5e035722dd53d211e5	blake/SKILL.md
@@ -1686,6 +1687,7 @@ skill	f0ba84893474da994eaca16b99743e8860a27596	alex/references/acceptance-protoc
 skill	f0be7158b93dbd8b7679abc9773975bb5117bf2c	alex/SKILL.md
 skill	f113d23191a8fa3253d684d91179dc9b506c4157	gate/SKILL.md
 skill	f1226d52f5b9675c7dea6481e6128543072c5c5c	rag-retrieval/references/graphrag-rules.md
+skill	f191a6b2b7f6047495bb851c064975235b64f69e	alex/references/publish-protocol.md
 skill	f1b3eb711595986382f2a753963079083a9f24d8	alex/references/research-plan-protocol.md
 skill	f1d75ba15aba214feb797105e469abe5e7f3d366	_archived/code-review-standalone.md
 skill	f1d75ba15aba214feb797105e469abe5e7f3d366	code-review/SKILL.md
