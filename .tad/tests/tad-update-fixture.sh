@@ -1019,23 +1019,13 @@ case_release_gates() {
     # (and could never prove order while any gate was red). Pass/fail of each
     # gate is still asserted separately by ok/bad.
 
-    # 1. parity. The `parity` subcommand (Claude<->Codex dual skill-tree diff)
-    # was deleted from release-verify.sh by 20223774 (v3.0.0) together with the
-    # second tree it compared; Claude Code's .claude/skills is now only links
-    # into .agents/skills. The gate runs when the verifier still offers it, and
-    # is a SKIP with the reason when it does not; it can never be silently
-    # dropped while it exists.
-    if bash "$RV" 2>&1 | grep -q 'release-verify.sh parity'; then
-        if bash "$RV" parity "$REPO_ROOT" >> "$log" 2>&1; then
-            printf '1 parity PASS\n' >> "$log"
-            ok "gate 1: parity PASS"
-        else
-            printf '1 parity FAIL\n' >> "$log"
-            bad "gate 1: parity FAIL"
-        fi
+    # 1. structural: .agents/skills is self-consistent (the sole skill tree).
+    if bash "$RV" structural "$REPO_ROOT" "$REPO_ROOT" >> "$log" 2>&1; then
+        printf '1 structural PASS\n' >> "$log"
+        ok "gate 1: structural PASS"
     else
-        printf '1 parity SKIP\n' >> "$log"
-        echo "  SKIP: gate 1: parity subcommand retired in 20223774 (v3.0.0); release-verify.sh no longer offers it"
+        printf '1 structural FAIL\n' >> "$log"
+        bad "gate 1: structural FAIL"
     fi
 
     # 2. derive-sync-set report + version zero-stale
@@ -1076,28 +1066,61 @@ case_release_gates() {
         bad "gate 4: migration FAIL"
     fi
 
-    # 5. pack-registry driftcheck (advisory — recorded, not blocking)
+    # 5. installer-destructive-guard
+    if bash "$RV" installer-destructive-guard "$REPO_ROOT" >> "$log" 2>&1; then
+        printf '5 installer-destructive-guard PASS\n' >> "$log"
+        ok "gate 5: installer-destructive-guard PASS"
+    else
+        printf '5 installer-destructive-guard FAIL\n' >> "$log"
+        bad "gate 5: installer-destructive-guard FAIL"
+    fi
+
+    # 6. freshness. The result changes with the date (a row can age into BLOCK),
+    # so only assert that the gate ran and did not hit a wiring error: exit 0 or 1.
+    local fresh_rc=0
+    bash "$RV" freshness "$REPO_ROOT" >> "$log" 2>&1 || fresh_rc=$?
+    if [ "$fresh_rc" -eq 0 ]; then
+        printf '6 freshness PASS\n' >> "$log"
+        ok "gate 6: freshness PASS"
+    elif [ "$fresh_rc" -eq 1 ]; then
+        printf '6 freshness BLOCK\n' >> "$log"
+        ok "gate 6: freshness ran (exit 1: a ledger row is stale; date-dependent, recorded)"
+    else
+        printf '6 freshness FAIL\n' >> "$log"
+        bad "gate 6: freshness exit $fresh_rc (wiring failure)"
+    fi
+
+    # 7. provenance (after freshness, as in the procedure documents; legacy Claude Code ledger, reads the git index)
+    if bash "$RV" provenance "$REPO_ROOT" >> "$log" 2>&1; then
+        printf '7 provenance PASS\n' >> "$log"
+        ok "gate 7: provenance PASS"
+    else
+        printf '7 provenance FAIL\n' >> "$log"
+        bad "gate 7: provenance FAIL"
+    fi
+
+    # 8. pack-registry driftcheck (advisory — recorded, not blocking)
     if bash "$REPO_ROOT/.tad/hooks/lib/pack-registry-driftcheck.sh" >> "$log" 2>&1; then
-        printf '5 pack-registry driftcheck (advisory) PASS\n' >> "$log"
-        ok "gate 5: pack-registry driftcheck PASS (advisory recorded)"
+        printf '8 pack-registry driftcheck (advisory) PASS\n' >> "$log"
+        ok "gate 8: pack-registry driftcheck PASS (advisory recorded)"
     else
-        printf '5 pack-registry driftcheck (advisory) ADVISORY-FAIL (recorded)\n' >> "$log"
-        ok "gate 5: pack-registry driftcheck advisory recorded (non-blocking)"
+        printf '8 pack-registry driftcheck (advisory) ADVISORY-FAIL (recorded)\n' >> "$log"
+        ok "gate 8: pack-registry driftcheck advisory recorded (non-blocking)"
     fi
 
-    # 6. tad.sh denylist drift
+    # 9. tad.sh denylist drift
     if bash "$TAD_SH" --verify-denylist >> "$log" 2>&1; then
-        printf '6 tad.sh denylist PASS\n' >> "$log"
-        ok "gate 6: tad.sh --verify-denylist PASS"
+        printf '9 tad.sh denylist PASS\n' >> "$log"
+        ok "gate 9: tad.sh --verify-denylist PASS"
     else
-        printf '6 tad.sh denylist FAIL\n' >> "$log"
-        bad "gate 6: tad.sh --verify-denylist FAIL"
+        printf '9 tad.sh denylist FAIL\n' >> "$log"
+        bad "gate 9: tad.sh --verify-denylist FAIL"
     fi
 
-    # order assertion: 1..6 each recorded once, in sequence (pass, fail or skip)
+    # order assertion: 1..9 each recorded once, in sequence (pass, fail or skip)
     local seq
-    seq="$(grep -E '^[1-6] ' "$log" | grep -oE '^[1-6]' | tr -d '\n')"
-    [ "$seq" = "123456" ] && ok "gates ran in canonical order" \
+    seq="$(grep -E '^[1-9] ' "$log" | grep -oE '^[1-9]' | tr -d '\n')"
+    [ "$seq" = "123456789" ] && ok "gates ran in canonical order" \
         || bad "gate order wrong: '$seq'"
 }
 

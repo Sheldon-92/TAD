@@ -104,9 +104,13 @@
 #       count; (3) the blob id of the current .tad/templates/claude/settings.json is a
 #       `settings` row (this is the upgrade channel for a new hook template); (4) the blob
 #       id of the current .agents/skills/alex/SKILL.md is a `skill` row keyed alex/SKILL.md
-#       (sample proof that the ledger kept up with HEAD). Fix: run
+#       (sample proof that the ledger kept up with HEAD); (5) whole-tree membership: every
+#       index entry the generator would record under .agents/skills (mode 100644/100755,
+#       unquoted path, at least one directory below the skills root) is a `skill` row keyed
+#       (blob, path relative to .agents/skills/), and the hook template blob is a `settings`
+#       row. Reads the git index, not the working tree; a non-git repo_root exits 2. Fix: run
 #       .tad/scripts/gen-claude-provenance.sh. Exit 0 = pass; exit 1 = ledger stale or
-#       damaged (each failed check NAMED); exit 2 = usage / no SHA-1 tool.
+#       damaged (each failed check NAMED); exit 2 = usage / no SHA-1 tool / not a git repo.
 #
 #   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
 #       nothing to mirror). Replaced by `structural` (.agents/skills byte-identity).
@@ -607,6 +611,12 @@ MIG_REN_EOF
       "package.json|\"version\": \"${VER_RE}\""
       "PROJECT_CONTEXT.md|Version.*: ${VER_RE}"
       "docs/MULTI-PLATFORM.md|Version.*: ${VER_RE}"
+      ".tad/TAD-VERSION|^${VER_RE}$"
+      ".tad/capability-packs/pack-registry.yaml|synced_from_version: \"${VER_RE}\""
+      ".tad/templates/handoff-a-to-b.md|\*\*Handoff Version:\*\* ${VER_RE}"
+      ".tad/templates/handoff-a-to-b.md|^\*\*Version\*\*: ${VER_RE}"
+      ".tad/templates/deliverable-handoff.md|\*\*Handoff Version:\*\* ${VER_RE}"
+      ".tad/templates/deliverable-handoff.md|^\*\*Version\*\*: ${VER_RE}"
     )
 
     l1_fails=0
@@ -838,6 +848,14 @@ VERSION_SWEEP_EOF
     }
     pvfails=0
     pv_fail() { echo "  ❌ $*" >&2; pvfails=$((pvfails + 1)); }
+    # Check (5) reads the git index (staged or committed content), never working-tree files,
+    # so uncommitted edits to unstaged files do not matter; a staged-but-uncommitted skill
+    # change makes this gate red until it is committed and the ledger regenerated.
+    # The probe runs before the ledger-exists check: no git repo is a wiring failure (exit 2).
+    if ! PV_INDEX="$(git -C "$PV_REPO" -c core.quotepath=false ls-files -s -- .agents/skills .tad/templates/claude/settings.json 2>/dev/null)"; then
+      echo "ERROR: provenance needs a git repository (git ls-files failed in $PV_REPO)" >&2
+      exit 2
+    fi
     if [ ! -f "$PV_LEDGER" ] || [ ! -f "$PV_MANIFEST" ]; then
       pv_fail "ledger or MANIFEST.sha1 missing under $PV_DIR (run .tad/scripts/gen-claude-provenance.sh)"
     else
@@ -863,6 +881,40 @@ VERSION_SWEEP_EOF
         if grep -qxF -e "$(printf 'skill\t%s\talex/SKILL.md' "$pv_id")" "$PV_LEDGER"; then echo "  ✓ current alex/SKILL.md is a skill row ($pv_id)"
         else pv_fail "current .agents/skills/alex/SKILL.md ($pv_id) is not a skill row; regenerate the ledger"; fi
       else pv_fail "sample file missing: $PV_ALEX"; fi
+      # (5) whole-tree membership, mirroring gen-claude-provenance.sh's selection rules:
+      # mode 100644/100755, unquoted path, a directory below .agents/skills/ for skill rows.
+      # One awk pass builds the missing list; no per-file process is spawned.
+      pv_missing="$(printf '%s\n' "$PV_INDEX" | LC_ALL=C awk -F'\t' -v ledger="$PV_LEDGER" '
+        BEGIN {
+          while ((getline line < ledger) > 0) { if (line !~ /^#/) have[line] = 1 }
+          close(ledger)
+        }
+        NF >= 2 {
+          split($1, m, " "); mode = m[1]; id = m[2]; p = $2
+          if (mode != "100644" && mode != "100755") next
+          if (substr(p, 1, 1) == "\"") next
+          if (p == ".tad/templates/claude/settings.json") {
+            if (!(("settings\t" id "\t-") in have)) print p "\t" id
+            next
+          }
+          if (substr(p, 1, 15) != ".agents/skills/") next
+          base = substr(p, 16)
+          s = index(base, "/")
+          if (s == 0 || s == 1 || s == length(base)) next
+          if (!(("skill\t" id "\t" base) in have)) print p "\t" id
+        }')"
+      # (6) the ledger must be committed: a regenerated but uncommitted ledger would not ship.
+      if [ -n "$(git -C "$PV_REPO" status --porcelain -- .tad/provenance 2>/dev/null)" ]; then
+        pv_fail ".tad/provenance has uncommitted changes; commit .tad/provenance/claude-legacy.tsv and MANIFEST.sha1 so the ledger ships with the release"
+      else echo "  ✓ .tad/provenance is committed"; fi
+      if [ -n "$pv_missing" ]; then
+        pv_n="$(printf '%s\n' "$pv_missing" | wc -l | tr -d ' ')"
+        printf '%s\n' "$pv_missing" | head -n 20 | while IFS="$(printf '\t')" read -r pv_p pv_b; do
+          echo "  not in ledger: $pv_p ($pv_b)" >&2
+        done
+        [ "$pv_n" -gt 20 ] && echo "  ... and $((pv_n - 20)) more not in ledger" >&2
+        pv_fail "$pv_n index entr(ies) not in the ledger; regenerate it with .tad/scripts/gen-claude-provenance.sh after committing"
+      else echo "  ✓ every index skill file and the hook template is in the ledger"; fi
     fi
     echo "-----------------------------------------"
     if [ "$pvfails" -eq 0 ]; then

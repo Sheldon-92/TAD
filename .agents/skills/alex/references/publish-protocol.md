@@ -212,6 +212,30 @@ publish_protocol:
       blocking: true
       detect_only: true  # reads only — never edits manifests
 
+    step3d2:
+      name: "Installer Guard, Runtime Freshness, Provenance (BLOCKING)"
+      action: |
+        Runs after step3d and before step3e. Each gate is one command; record exit codes
+        (1 = block, 2 = hard block / wiring failure; both stop the release):
+          bash .tad/hooks/lib/release-verify.sh installer-destructive-guard "$PWD"
+          bash .tad/hooks/lib/release-verify.sh freshness "$PWD"
+          bash .tad/hooks/lib/release-verify.sh provenance "$PWD"
+        Order constraints:
+        1. After the version-bump commit exists, run `.tad/scripts/gen-claude-provenance.sh`,
+           commit its output (stage .tad/provenance/claude-legacy.tsv and
+           .tad/provenance/MANIFEST.sha1 by explicit path), then re-run version-sweep and
+           provenance. The provenance gate
+           reads the git index, so a staged-but-uncommitted skill change keeps it red.
+        2. All gates must complete before the tag; a commit made after the tag makes the migration gate look for an X-to-X hop.
+        The commit to tag is the last one, the one that contains the regenerated ledger;
+        re-run provenance on that commit immediately before the publish step, after any
+        closeout commits.
+        freshness exit 1: re-verify the flagged row for real (never edit only the date), or
+        record a human waiver in the release record. A high-volatility row becomes BLOCK on
+        day 31 after last_verified, whether or not any file changed.
+      blocking: true
+      detect_only: true  # reads only; the generator run in item 1 is the one write
+
     step3e:
       name: "State-Surface Closeout （机制 3 — TASK-20261004, ALWAYS blocking)"
       action: |

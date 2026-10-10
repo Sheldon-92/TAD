@@ -27,8 +27,7 @@ Work from `repo_root`; never use remembered versions or an inherited relative `$
 
 Run every command from the physical root, record stdout/stderr/exit code, and branch on the exact
 exit code. A missing tool, malformed invocation, or exit `2` is a wiring failure and always blocks.
-The normative order is: structural → derived sync-set report + version → version-sweep → migration
-→ supporting checks. Do not parallelize, defer, or reorder these gates; stop at the first blocker.
+The normative order is: structural → derived sync-set report + version → version-sweep → migration → installer-destructive-guard → freshness → supporting checks. Do not parallelize, defer, or reorder these gates; stop at the first blocker.
 
 ### 2.1 Canonical skill integrity (structural)
 
@@ -84,6 +83,18 @@ bash "$repo_root/.tad/hooks/lib/release-verify.sh" migration "$repo_root"
 - `2`: hard block for every release type.
 
 Do not create an inline migration or verifier wrapper. The existing CLI is the authority.
+
+### 2.4a Installer-destructive-guard and runtime-freshness gates
+
+```bash
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" installer-destructive-guard "$repo_root"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" freshness "$repo_root"
+```
+
+- `0`: continue. `1`: block. `2`: hard block (wiring failure).
+- `freshness` exit `1`: re-verify the flagged ledger row for real (never change only the date), or
+  record a human waiver in the release record. A high-volatility row becomes BLOCK on day 31 after
+  `last_verified`, whether or not any file changed.
 
 在船断言（Epic P2 件 2.9）：上述命令对 PREV→NEW 的 hop 文件存在且良构另有断言，缺失/畸形输出 `MISSING HOP:`/`MALFORMED HOP:` 并 exit 1——此分支对全部 release 类型（含 patch）HARD BLOCK，与 D/R 漂移的 patch advisory 分支不同。
 
@@ -150,6 +161,21 @@ current edition row as an escaped literal — on every minor bump, update it to 
 `major\.minor([^0-9.]|$)` row (patch bumps: leave it) and re-run the paired controls before
 closing: a bare `Version <major.minor>` sample must FAIL check4 and the full
 `Version <major.minor.patch>` sample must PASS.
+
+### 3.2 After the bump: provenance
+
+Once the version-bump commit exists, regenerate the legacy ledger and gate on it:
+
+```bash
+bash "$repo_root/.tad/scripts/gen-claude-provenance.sh"
+git -C "$repo_root" add .tad/provenance/claude-legacy.tsv .tad/provenance/MANIFEST.sha1 && git -C "$repo_root" commit -m "chore(provenance): regenerate the ledger"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" version-sweep "$repo_root" "$NEW"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" provenance "$repo_root"
+```
+
+All gates must complete before the tag; a commit made after the tag makes the migration gate look for an X-to-X hop.
+The provenance gate reads the git index: a staged-but-uncommitted skill change keeps it red.
+The commit to tag is the last one, the one that contains the regenerated ledger; re-run `provenance` on that commit immediately before the publish step, after any closeout commits. The gate is also red while `.tad/provenance` has uncommitted changes.
 
 The release commit is local preparation, not publish authority. Verify its staged diff and final commit
 hash against the accepted mandate before any remote action.
