@@ -29,9 +29,9 @@
 | 1 | Claude Code 实例声明与探活 spike | ✅ Done | HANDOFF-2026-10-08-claude-code-instance-spike.md（已归档） | 四个未知项的真机实测结论＋`runtime-adapter-instance-claude-code.md` |
 | 2 | 安装器与投影落地 | ✅ Done | HANDOFF-2026-10-08-claude-code-installer-projection.md（已归档） | `--platform claude-code` 可装：skill 投影、hook 注册、CLAUDE.md 引用块、平台探测 |
 | 3 | 编排能力恢复 | ✅ Done | HANDOFF-2026-10-09-workflow-restore.md（已归档） | 10 workflow＋2 子代理恢复并翻新；8 个有真实运行记录，2 个仅装载校验 |
-| 4 | 下游升级路径与四家真机回归 | 🔄 Active | 分 4a（存量接管，✅ 2026-10-09）、4a-2（安装器收尾，✅ 2026-10-09）、4b（四家真机回归）三张 handoff | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
-| 5 | 残余清理 | ⬚ Planned | — | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
-| 6 | v3.3.0 发版 | ⬚ Planned | — | 发版清单全绿、CHANGELOG、tag |
+| 4 | 下游升级路径与四家真机回归 | ✅ Done（2026-10-10） | 4a、4a-2（已归档）；4b 测量协议 `HANDOFF-2026-10-09-four-harness-live-regression.md`，结果落账在 6a 工作包 D | 3.2.0→3.3.0 迁移清单、存量 `.claude/` 合并安全、四家 transcript PASS |
+| 5 | 残余清理 | ✅ Done（2026-10-10） | 5a `HANDOFF-2026-10-09-residue-cleanup-docs-and-skills.md`、5b `HANDOFF-2026-10-09-residue-cleanup-code-and-tests.md` | 悬空引用清零、红门转绿、口径一致、状态面瘦身 |
+| 6 | v3.3.0 发版 | 🔄 Active | 6a `HANDOFF-2026-10-09-release-evidence-and-gates.md`（✅ 2026-10-10）、6b `HANDOFF-2026-10-09-release-3.3.0-commit.md`（进行中）；推送与打标签须人确认 | 发版清单全绿、CHANGELOG、tag |
 
 ### Phase Dependencies
 顺序执行。Phase 2 依赖 Phase 1 的实测结论（链接可用性决定走 A 还是 B 路径）；Phase 3 依赖 Phase 2（workflow/子代理的装载点由安装器投影）；Phase 4 依赖 Phase 2+3（回归对象齐备）；Phase 5 必须排在 1–4 之后（人裁定「先恢复再清理」，避免把恢复所需的引用当残余删掉）；Phase 6 依赖全部。
@@ -327,3 +327,18 @@ Phase 4a：存量 Claude Code 安装的接管（旧 skill 实体目录、旧 set
 - 2026-10-08（Phase 2 Gate 2 期间）人两次明示：「后面整个 Epic 的执行我全都授权你自己做决策，你自己把它跑完」「整个 epic 我都授权你」。此前同场已书面预授权：两轮设计审查后仍有遗留 P0 时，Conductor 可自行选「缩小范围」并记录。Conductor 据此就全 Epic 的执行自行决策，每次决策落盘（handoff §9.2/§11 或各 Phase gate-report）。
 - 2026-10-08 人授权 Conductor 自行裁定各 Phase 验收并把 Epic 跑完。Conductor 自定边界：每 Phase 在分支 `epic/multi-harness-restore` 本地提交一次；**推送与打 tag 不在自裁范围，Phase 6 到该步停下等人确认**；工作区原有的 3 个非本链改动不提交。
 - 2026-10-08 立项。人在 *analyze 中裁定 Full 流程、建 Epic、先归档自优化 Epic、先恢复后清理。
+
+### 2026-10-10 Conductor 修订：验收口径与事实不符之处的改写
+
+以下各条按实测改写；原文保留在上文，以本节为准。依据均在 `.tad/evidence/yolo/multi-harness-restore-and-cleanup/` 下的各阶段 gate 报告。
+
+- **Objective 里的「一等公民」**：这是立项时的目标说法。对外文档和 CHANGELOG 不使用这个词，改为逐家列出实测到的能力与限制（见 `docs/MULTI-PLATFORM.md` 状态表）。
+- **SC2（Claude Code 真机）**：实测的是非交互运行（`claude -p`）。`AGENTS.md` 加载、skill 调用、SessionStart 与 PostToolUse 有事件流和落盘证据；PreCompact 只在手动 `/compact`（当时无内容可压缩）下观察到，自然压缩未测；交互式会话未测，须人确认。
+- **SC4**：用户已有且与模板不同的 `.claude/settings.json` 逐字节保留，TAD **不**往里合并管辖块，也不注册 hook（Phase 2 的范围裁定）。「只多出 TAD 管辖块」只对已有的 `CLAUDE.md` 成立。
+- **SC6**：四份 2026-10-09 的固定任务回归记录均在盘，任务链均完成。形态是单代理执行固定任务并自审，不含 Alex→Blake 派发。Codex 在默认信任下写后留痕没有出现，绕过 hook 信任审查的运行里出现；走完真实信任审查的路径没有测。这些运行是在版本提升之前的树上做的。
+- **SC7 与 Phase 5「悬空引用清零」**：5068 处路径引用里真悬空的只有 57 处，原条文「历史归档面之外零不存在」按字面无法验证。改为：`node .tad/scripts/check-path-refs.mjs` 退出 0（被跟踪的文本文件里没有未豁免的悬空引用；豁免清单每行有理由；检查器已知的漏检形态写在脚本头部）。
+- **Phase 4 验收里的 `freshness` 与 Codex `context_compaction`**：该行按 2026-10-09 在 codex-cli 0.159.3 上的复核改为 `accepted_limitation`（TAD 未接 PreCompact，平台是否投递未测）。不是 verified。
+- **Phase 5「依赖扫描」**：`last_scan` 须在验收当日前 7 天内，由 `bash .tad/hooks/lib/deps-scan.sh .` 联网生成（2026-10-10 已重跑）。GitHub Registry 扫描明确暂停（`last_scan: null`，43 条候选保留，可恢复）。
+- **Phase 6「`version . 3.3.0 3.2.0` exit 0」**：按字面无法满足——`docs/pm/**` 的历史记录、`AGENTS.md` 里一句关于 3.2.0 的历史事实、CHANGELOG 正文都会命中。沿用 3.2.0 的先例：以覆盖 100% 命中的分诊记录放行。
+- **Phase 6「tag」与推送**：发版规程要求人确认。Conductor 把发版提交在本地准备到位并跑完全部发版门，不推送、不打标签。
+- **下游版本扫描（规程 step3e 第 3 项）**：未运行（它会读本机其他项目），须人确认豁免或自行运行。
