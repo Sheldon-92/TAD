@@ -10,7 +10,7 @@ Claude Code does not: it reads `.claude/skills/`, so `tad.sh --platform claude-c
 project has no `CLAUDE.md`; for a project that already has one, the installer keeps a marked `@AGENTS.md`
 reference block inside it and never creates a `CLAUDE.md`.
 
-Every harness gets a lifecycle-hook configuration over the same `.tad/hooks/*.sh` scripts (for Claude Code only when the project has no `.claude/settings.json`; Codex wires no PreCompact hook). Coverage and verification
+Every harness gets a lifecycle-hook configuration over the same `.tad/hooks/*.sh` scripts (for Claude Code only when the project has no `.claude/settings.json`; Codex wires no PreCompact hook; on Codex the hook configuration did not take effect in a default-trust run and did in a run with the hook trust review bypassed (codex-cli 0.159.3, one machine, `codex exec`); a run through a completed trust review was not tested). Coverage and verification
 differ per harness; the status table below is the one place that records them.
 
 With `--platform codex|opencode|cursor` the installer does not change your `CLAUDE.md` or `.claude/settings.json`, and it leaves your own files under `.claude/` alone. One exception: in a project that already carries a TAD Claude Code projection, it keeps the `.claude/skills/` links current (adds links for new skills, removes dangling ones) and does nothing else there; `TAD_CLAUDE_STICKY=off` turns that off.
@@ -24,12 +24,20 @@ byte-for-byte were shipped by an earlier TAD; everything else, including your ow
 
 | Platform | Install target | Skill discovery | Lifecycle hooks (shipped) | Workflow tool | Verification status |
 |----------|----------------|-----------------|---------------------------|---------------|---------------------|
-| **Claude Code** | `--platform claude-code` | `.claude/skills/<name>` links into `.agents/skills/` | `.claude/settings.json`: SessionStart, PostToolUse, PreCompact, commands anchored to `$CLAUDE_PROJECT_DIR`; written only if the project has no `settings.json` | Yes, main session only (`.tad/workflows/claude/`, `scriptPath`) | Headless runs only (ledger: `verified_partial`); interactive surface, subdirectory sessions and ask-user capture not measured; live full-chain regression not yet run |
-| **Codex** | `--platform codex` (default) | `.agents/skills/` | `.codex/hooks.json`: SessionStart, PostToolUse; PreCompact not wired | No (sequential sub-agent path) | Hook schema verified against the ledger; live full-chain run failed 2026-10-06 (provider quota), no current-cycle PASS baseline |
-| **OpenCode** | `--platform opencode` | `.agents/skills/` | `.opencode/plugins/tad-hooks.ts`: session start, post write/edit, compacting, compacted | No | Live full-chain PASS 2026-10-06 (on v3.1.0; compaction hooks proven at handler level only, no live compaction; session start proven by fixture capture); no session-start context injection, ask-user capture not available |
-| **Cursor** | `--platform cursor` | `.agents/skills/` | `.cursor/hooks.json` + shims: sessionStart, postToolUse(Write), preCompact | No | Live full-chain PASS 2026-10-06 (on v3.1.0; preCompact envelope proven, no live compaction); ask-user capture not available |
+| **Claude Code** | `--platform claude-code` | `.claude/skills/<name>` links into `.agents/skills/` | `.claude/settings.json`: SessionStart, PostToolUse, PreCompact, commands anchored to `$CLAUDE_PROJECT_DIR`; written when the project has no `settings.json` (an existing file that differs from the template is kept untouched) | Yes, main session only (`.tad/workflows/claude/`, `scriptPath`) | Headless only. 2026-10-08 ledger probes (claude 2.1.295, machine not recorded) and 2026-10-09 local run (claude 2.1.295): `AGENTS.md` (project without a `CLAUDE.md`), SessionStart, write-time trace row, sub-agent definition visible, skill answer with only the Skill tool enabled (absent in an empty-directory control); fixed-task chain PASS (1). Compaction (3) and an existing `settings.json` (4) as noted; interactive surface, subdirectory sessions and ask-user capture not measured |
+| **Codex** | `--platform codex` (default) | `.agents/skills/` | `.codex/hooks.json`: SessionStart, PostToolUse; PreCompact not wired; did not run under default trust in the one run measured, ran with the trust review bypassed; completed trust review untested | No (sequential sub-agent path) | 2026-10-06: schema review against vendor documentation and help output (codex-cli 0.149.0); a live full-chain attempt on the remote host (codex-cli 0.159.3) failed on the provider usage limit before any tool use. 2026-10-09 local (codex-cli 0.159.3): fixed-task chain PASS, two runs (1). Hooks: see (2). Not tested: completed trust review, interactive use, compaction delivery |
+| **OpenCode** | `--platform opencode` | `.agents/skills/` | `.opencode/plugins/tad-hooks.ts`: session start, post write/edit, compacting, compacted | No | Two sets of evidence, kept apart. 2026-10-06 remote host (opencode 1.18.33): live full-chain PASS (on v3.1.0; compaction hooks proven at handler level only, no live compaction; session start proven by fixture capture). 2026-10-09 local machine (opencode 1.18.32, an older version): fixed-task chain PASS (one agent runs the task and reviews itself); `AGENTS.md` returned; write-time trace row with a control file; the skill check was the model reading `SKILL.md` itself, not a harness skill load; session start could not be measured. No session-start context injection, ask-user capture not available |
+| **Cursor** | `--platform cursor` | `.agents/skills/` | `.cursor/hooks.json` + shims: sessionStart, postToolUse(Write), preCompact | No | Two sets of evidence, kept apart. 2026-10-06 remote host (agent 2026.10.01-e373342): live full-chain PASS (on v3.1.0; preCompact envelope proven, no live compaction). 2026-10-09 local machine (agent 2026.09.26, an older version): fixed-task chain PASS (one agent runs the task and reviews itself); `AGENTS.md` returned; session-start summary recited; write-time trace row with a control file; a skill answer, one run, where an empty-directory control reached the text only through visible searches. Compaction not run; ask-user capture not available |
+
+Notes to the table:
+1. Fixed-task chain: one agent runs the fixed task and reviews itself; there is no Alex to Blake dispatch. On Codex a default-trust run left no write-time trace row; a second run with the trust review bypassed did.
+2. Codex hooks, all through `codex exec` (non-interactive): the default-trust run got no session-start summary; the run with `--dangerously-bypass-hook-trust` did. After the `apply_patch` path fix the write-time trace row was seen in two sandbox runs with the review bypassed. The bypass flag is not the interactive trust review, and a run through a completed trust review was not tested.
+3. Claude Code compaction: a manual `/compact` made the PreCompact hook write a snapshot, but the CLI reported too few messages to compact, so nothing was compacted; natural compaction was not measured.
+4. Claude Code with an existing `.claude/settings.json`: tested with a file that differs from the template (no hook registered, file untouched); an identical file was not tested.
 
 The OpenCode and Cursor hook files are written by every platform install; only `.codex/hooks.json` and the Claude Code projection depend on the platform flag.
+
+The 2026-10-09 results come from one local machine and the CLI versions named in the table. The 2026-10-06 results come from a different machine (the remote host for the live runs); their CLI versions are named in the table, and for Codex the live attempt used the same codex-cli 0.159.3 as 2026-10-09. The two sets are not merged. Interactive sessions were not measured on any harness.
 
 Codex native config (`.codex/config.toml`) and custom agents (`.codex/agents/`) are **draft-only** — candidate files exist under `.tad/evidence/designs/codex-runtime-candidates/` but are **not active** until activation criteria are met (see below).
 
@@ -59,6 +67,8 @@ Claude Code Adapter                     Codex Adapter
 Runtime Freshness Layer
 ├── .tad/runtime-compat/codex.md       (active)
 ├── .tad/runtime-compat/claude-code.md (active)
+├── .tad/runtime-compat/opencode.md    (active)
+├── .tad/runtime-compat/cursor.md      (active)
 └── Release/sync freshness gate        (active)
 ```
 
@@ -109,7 +119,7 @@ SKILL.md Capability Packs are the only active pack system.
 | Existing installs | An earlier TAD install is adopted by default: files provably shipped by TAD are archived outside the project and replaced; `--claude-adopt=plan` lists them without changing anything, `--claude-adopt=off` skips adoption |
 | Updates | The updater does not auto-detect this platform: pass `--platform claude-code`. An already-installed project at the same version needs `--force` to gain the projection |
 
-Evidence level is in the status table above: headless runs only, live full-chain regression not yet run.
+Evidence level is in the status table above: headless runs only; the 2026-10-09 fixed-task run passed on the local machine, and the interactive surface is not measured.
 
 ---
 
@@ -121,7 +131,7 @@ Codex is a supported install target (`--platform codex`, the default) with nativ
 |---------|---------------|
 | Skill loading | `.agents/skills/` via `$skill` or implicit matching; progressive disclosure (2% context budget cap) |
 | Role activation | `AGENTS.md` routes `$alex` / `$blake` to `.agents/skills/{role}/SKILL.md` |
-| Hooks | `.codex/hooks.json`; the Codex platform offers 10 events (PreToolUse, PostToolUse, SessionStart, PreCompact, PostCompact, UserPromptSubmit, SubagentStart, SubagentStop, PermissionRequest, Stop), of which TAD wires SessionStart and PostToolUse; trust-review required |
+| Hooks | `.codex/hooks.json`; the Codex platform offers 10 events (PreToolUse, PostToolUse, SessionStart, PreCompact, PostCompact, UserPromptSubmit, SubagentStart, SubagentStop, PermissionRequest, Stop), of which TAD wires SessionStart and PostToolUse; trust-review required. That event list is taken from vendor documentation retrieved 2026-10-06; the codex-cli 0.159.3 help and feature-list probes of 2026-10-09 could not confirm an event list. Hook configuration is not in effect before the trust review is completed (one default-trust run against one bypass run) |
 | Subagents | Built-in default/worker/explorer; custom agents via `.codex/agents/*.toml` (not yet active for TAD) |
 | MCP | `.codex/config.toml` `[mcp_servers.*]` with STDIO/HTTP support (not yet active for TAD) |
 | Sandbox | Permission profiles with filesystem (read/write/deny) + network (domain rules) |
@@ -176,6 +186,8 @@ Platform capabilities change over time. Codex is high-volatility.
 Runtime freshness ledgers:
 - `.tad/runtime-compat/codex.md` — compatibility ledger with `last_verified`, volatility, recheck triggers (**active**)
 - `.tad/runtime-compat/claude-code.md` — compatibility ledger for the Claude Code adapter (**active**, gated by `freshness`)
+- `.tad/runtime-compat/opencode.md` — compatibility ledger for the OpenCode adapter (**active**, gated by `freshness`)
+- `.tad/runtime-compat/cursor.md` — compatibility ledger for the Cursor adapter (**active**, gated by `freshness`)
 - Release/sync freshness gate: `runtime-freshness-verify.sh`
 
 **Current policy**: Before any cross-platform architectural decision, do a fresh capability audit of the target platform's current state. Never rely on assumptions older than 2 months for fast-evolving CLI tools.
@@ -204,7 +216,7 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 | Gate pre-checks | `pre-accept-check.sh` / `pre-gate-check.sh` run manually | Same scripts, run manually | Same scripts, run manually | Codex hooks require trust review |
 | Workflows | None; prompt-driven subagent orchestration (sequential path) | `.tad/workflows/claude/` called via `scriptPath` from the main session only (sub-agents cannot call the Workflow tool: from earlier project observation, not re-measured in Phase 3) | None; prompt-driven subagent orchestration (sequential path) | Workflow scripts are Claude Code only; see `.tad/workflows/README-claude.md` |
 | Release | `*publish` runs from the repo with any harness | same | same | The former `*sync` command is retired; projects pull updates with the installer. Install targets `claude-code\|codex\|opencode\|cursor` (default `codex`) |
-| Evidence capture | Hook-driven (same scripts via `.codex/hooks.json`) | Hook-driven where hooks are installed; ask-user capture not measured | Hook-driven; ask-user capture not available | `ask_user_question`: accepted limitation on Codex — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
+| Evidence capture | Hook-driven once the Codex hook trust review is completed (same scripts via `.codex/hooks.json`); the write-time trace was seen only in sandbox runs with the trust review bypassed | Hook-driven where hooks are installed; ask-user capture not measured | Hook-driven; ask-user capture not available | `ask_user_question`: accepted limitation on Codex — `codex exec` batch mode lacks interactive `request_user_input`; interactive Codex can ask via text |
 
 ---
 

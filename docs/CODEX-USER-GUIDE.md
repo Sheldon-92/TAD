@@ -38,7 +38,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 这会安装：
 - `.tad/` — 框架核心（配置、模板、钩子、migration 引擎、12 个历史 manifest）
 - `.agents/skills/` — Alex/Blake 角色 + 26 个 capability packs
-- `.codex/hooks.json` — 生命周期钩子
+- `.codex/hooks.json` — 生命周期钩子（Codex 要等你完成它的 hook 信任审查后才会执行这些钩子；2026-10-09 在 codex-cli 0.159.3 上，默认信任的一次运行没有收到会话启动摘要，绕过信任审查的一次收到了，走完真实信任审查的情形没有测过）
 - `AGENTS.md` — 角色路由文件
 - `tad.sh` — 升级脚本（以后升级也用它）
 

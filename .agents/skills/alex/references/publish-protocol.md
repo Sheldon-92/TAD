@@ -243,8 +243,10 @@ publish_protocol:
       name: "Live Regression Transcripts (BLOCKING, graded)"
       action: |
         Runtime set (frozen in this text; membership changes require editing
-        this step and a note in the release record): {codex, opencode, cursor}
-        — the same runtime set as AGENTS.md Known Gaps P4.
+        this step and a note in the release record):
+        {claude-code, codex, opencode, cursor} (claude-code added 2026-10-09:
+        restored as an install target) — the same runtime set as AGENTS.md
+        Known Gaps P4.
 
         A live-regression transcript is one file per runtime per cycle at
         `.tad/evidence/live-regression/<runtime>-<YYYYMMDD>.md` with exactly
@@ -271,8 +273,12 @@ publish_protocol:
           an unregistered absence is judged RED exactly like a missing
           transcript （未登记即红）.
         Fallback (written into this step): from the first minor release after
-        Epic Phase 3 closes, all three runtimes are HARD regardless of the
+        Epic Phase 3 closes, all four runtimes are HARD regardless of the
         baseline rule above — whichever takes effect first governs.
+        claude-code's first baseline transcript is dated 2026-10-09, so under
+        the baseline rule it is HARD from the first release whose tree
+        contains it, which is the release that follows 2026-10-09, like the
+        other three.
 
         Adjudication ownership: the release executor checks field presence,
         currency, and pointer existence; Gate/closeout rechecks the pointers.
@@ -283,7 +289,8 @@ publish_protocol:
         Interface with Epic Phase 3: this step defines only the checklist
         entry and its adjudication. Transcript production and the live
         execution surface belong to Epic Phase 3 item 3.3; at Phase 3
-        closeout all three baseline transcripts must exist (its ACs govern),
+        closeout all three baseline transcripts (three runtimes at that time)
+        must exist (its ACs govern),
         and grading turns fully HARD from that point per the fallback above.
       blocking: true
 
