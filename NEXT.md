@@ -25,12 +25,11 @@
   - Downstream version scan was waived for this release and not run.
   - Design questions left open: `*save-skill` / `*save-workflow` write to `.claude/skills/local/`, which only Claude Code reads; whether replacing the root `AGENTS.md` (after a backup) is the intended long-term contract.
 
-### 🟡 OPEN 2026-09-16. Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
+### ✅ CLOSED 2026-10-12（原 OPEN 2026-09-16). Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
 
 - Task ID: `TASK-20260916-CODEX-LEDGER-REVERIFY` (owner Blake)
 - Ticket: `.tad/active/TICKET-20260916-codex-ledger-reverification.md`
-- Waiver: `.tad/evidence/reviews/2026-09-16-gate3-rework-r3-waiver.md` (AC21 本批 WAIVED，仅"日期陈旧"子句)
-- Scope: codex ledger 12 条（≥6 BLOCK）真实 re-verification（live codex-cli + 官方文档）后刷新日期，恢复 freshness `exit 0`。禁止空 bump；本单动作不进移除批 commit/AC 证据。
+- 关票：2026-10-09 真实重验 12 条完成（Epic EPIC-20261008 链），2026-10-12 PM 验盘 freshness Total 42 全 PASS、exit 0，Gate 4 验收 PASS 关票；裁定 `.tad/evidence/pm/2026-10-12-p3-condition1-task20260916-closeout.md`。waiver 随验收失效。
 
 ### 🟡 PENDING HUMAN CHECK 2026-09-15. TAD Research 机制 (RG1–RG4 wrapper) — Gate 2/3/4 PASS
 
@@ -41,12 +40,12 @@
 - Gate 4 PASS: `.tad/evidence/reviews/2026-09-15-gate4-acceptance-tad-research-mechanism.md` (fuse-not-fork; 3人决策点; 14/14 AC; 双平台 cmp=0)
 - Human next: CHECK（设计方向 / 三个待定问题 / 是否记为正式机制）→ 通过后 `*accept` 归档。
 
-### 🔄 ACTIVE 2026-09-03. **EPIC-20260831-capability-builder-v1** — Phase 1 accepted; Phase 2+3 handoff READY
+### 🧊 PARKED 2026-10-10. **EPIC-20260831-capability-builder-v1** — Phases 1–3 accepted; only Phase 4 left
 
-- **Epic**: `.tad/active/epics/EPIC-20260831-capability-builder-v1.md`
-- **Phase 1**: Gate 4 PASS on 2026-09-02 at implementation `2d7e359b`; project-owned Skill create/validate/project/behavioral-proof path is available.
-- **Phase 2+3**: human 2026-09-03 authorized merged single handoff (signal = elevated P2 eval-regex bounds as explicit new requirement, option A; target = example-skill; Phase 4 deferred). Handoff `.tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-package.md`, Gate 2 PASS. Awaiting Blake.
-- **Accepted P2s remaining**: conservative stale-lock recovery, large-tree hash process cost (regex bounds now in flight).
+- **Epic**: `.tad/active/epics/capability-builder-v1/EPIC.md`
+- **Phases 1–3**: done. Phase 1 Gate 4 PASS 2026-09-02 (`2d7e359b`); Phase 2+3 Gate 4 PASS 2026-09-03 (`bba6ce84`, merged handoff, record `.tad/archive/handoffs/GATE4-20260903-capability-builder-phase23-evolve-package.md`). The human confirmed the Phase 2+3 acceptance on 2026-10-10; until then this entry still said "handoff READY, awaiting Blake".
+- **Phase 4 (Voice Studio dogfood)**: parked; it is started by the human from the Voice Studio project, not from here.
+- **Leftovers**: see the "Capability Builder Phase 2+3" line under "Carried from completed sections" below.
 
 ### Carried from completed sections (2026-10-09)
 
