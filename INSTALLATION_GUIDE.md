@@ -112,11 +112,11 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ### 从 3.x 升级到 v4.0.0（新增 Cora）
 
-- 重新运行安装命令（按你的平台加 `--platform`）。安装后出现 `/cora`（Codex 用 `$cora`）。
+- 重新运行安装命令（按你的平台加 `--platform`）。安装器会从你已装的版本起，按顺序应用各版本的迁移清单（3.0 至 3.2 的项目会逐跳经过），最后应用 4.0.0 的清单。安装后出现 `/cora`（Codex 用 `$cora`）。
 - `/alex`、`/blake` 和已有的 handoff 照常可用。
 - 没有 `**Conductor**: Cora` 行的 Epic 归 Alex；Cora 接手前会先问你。
 - `.tad/migrations/` 下的 4.0.0 迁移清单删除 `alex/references/yolo-manual-conductor-protocol.md` 和 `alex/references/update-roadmap-protocol.md`，并把 `alex/references/status-panoramic-protocol.md` 改名为 `cora/references/status-roadmap-protocol.md`；不动 `.claude/`、`CLAUDE.md`、`.codex/hooks.json`。
-- 新项目不带本仓库自己的 `.tad/project-knowledge/principles.md` 和 `patterns/_index.md`；Cora 激活时会报告缺失并继续。
+- 新项目不带本仓库自己的 `.tad/project-knowledge/principles.md` 和 `patterns/_index.md`；Cora 激活时把缺失的知识文件视为空，一句话说明后继续（4.0.0 之前，Codex 上会判为激活未完成）。
 
 ### 升级到 v3.0.0（平台支持整合）
 

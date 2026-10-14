@@ -19,15 +19,16 @@ Major release. TAD now has three roles, not two. **Cora** is the human's entry p
 - **Per-round verdict files.** A re-dispatched review or gate writes a `-r<k>` file; no verdict file is overwritten.
 - **Epic template** gained a `Closed - PARTIAL` status that counts as closed, not as done.
 - **Distillation** gets its own dispatch id form (`p<N>-distill-<n>`), output path and pointer rule.
+- **Fresh-install activation.** A knowledge file in a role's activation read list that does not exist yet counts as read and empty; the role says so in one line and continues. Before this, Codex declared Cora's activation incomplete in a fresh project. The installer is unchanged.
 - **The installer ships Cora on all four targets** (Claude Code, Codex, OpenCode, Cursor) and prints `/cora` in its quick-start line. `AGENTS.md`, `README.md`, `INSTALLATION_GUIDE.md`, `docs/MULTI-PLATFORM.md` and the help skills introduce TAD as three roles.
 
 ### Upgrading from 3.x
 
-1. Re-run the installer for your harness (`--platform claude-code|codex|opencode|cursor`; Codex is the default). `/cora` (`$cora` on Codex) appears.
+1. Re-run the installer for your harness (`--platform claude-code|codex|opencode|cursor`; Codex is the default). It applies the migration manifests in order from the version you have installed (a 3.0 to 3.2 project passes through each hop), then the 4.0.0 manifest. `/cora` (`$cora` on Codex) appears.
 2. `/alex`, `/blake` and your existing handoffs work unchanged.
 3. Epics without a `**Conductor**: Cora` line are Alex's. Cora asks before taking one over.
 4. The 4.0.0 migration manifest under `.tad/migrations/` removes `alex/references/yolo-manual-conductor-protocol.md` and `alex/references/update-roadmap-protocol.md` and renames `alex/references/status-panoramic-protocol.md` to `cora/references/status-roadmap-protocol.md`. It touches nothing under `.claude/`, `CLAUDE.md` or `.codex/hooks.json`.
-5. A freshly installed project does not ship the TAD repository's own `.tad/project-knowledge/principles.md` or `patterns/_index.md`; Cora's activation reports them missing and carries on (seen in both local fresh-install checks below).
+5. A freshly installed project does not ship the TAD repository's own `.tad/project-knowledge/principles.md`, `patterns/_index.md`, session-state or rulings file. Before the fix, the first fresh-install check measured two behaviours: Claude Code reported the files missing and continued; Codex declared activation incomplete and did nothing (`phase4d-install-codex.md`, first run). In 4.0.0 activation treats an absent knowledge file as empty and continues (rule in `AGENTS.md` and the cora, alex and blake skill files). Re-checked on both harnesses from `git archive` of the release commit; see the fresh-install records in `What was run on each harness`.
 
 ### What was run on each harness
 
@@ -36,6 +37,8 @@ Facts only. Fixtures are scripted headless runs (`claude -p`, `codex exec`), not
 - **Claude Code:** Cora smoke fixtures 6/6 and queue fixtures 5/5 pass, no P0 (`phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`). One live conducted run: a real Claude Code session conducting a real Epic in this repository (the carry-forward fixes). That run closed PARTIAL (`phase3-gate-report.md`); its open P0, acceptance and archiving asked as one question, was fixed in this release and re-checked on the scripted fixtures only (queue scenario q3 passes). Local fresh install from the local tree, `/cora you are Cora.`: install exit 0, session exit 0, Cora described her five actions (`phase4d-install-claude.md`). Fixed-task regression chain: PASS on 2026-10-14 (`live-regression/claude-code-20261014.md`).
 - **Codex:** the same fixtures, 6/6 and 5/5, no P0. In the live run the journal records that Codex resumed an Epic from its pointer (the words given to it are not on disk) and conducted steps Y1 to Y5 only. Local fresh install, `$cora you are Cora.`: install exit 0, session exit 0 (`phase4d-install-codex.md`). Fixed-task chain: PASS on 2026-10-14; under default trust no write-time trace row appeared, with the hook trust review bypassed it did (`live-regression/codex-20261014.md`).
 - **OpenCode, Cursor:** Cora was not run. The fixed-task chain (no Cora) passed on 2026-10-14 on both (`live-regression/opencode-20261014.md`, `cursor-20261014.md`).
+
+The four fixed-task chains ran on `6f41ce3a` plus the uncommitted release edits. After them the activation rule in `AGENTS.md` and the cora, alex and blake skill files changed (Rework 1: an absent knowledge file counts as empty), and the chains were not repeated. The two fresh-install checks ran from `git archive` of the release commit.
 
 ### Known limits
 

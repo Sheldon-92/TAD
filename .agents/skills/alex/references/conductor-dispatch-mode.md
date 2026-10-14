@@ -3,7 +3,7 @@
 You were dispatched by a conductor for one step named in the prompt. Do that step and nothing else.
 
 ## What still applies
-- Read `.tad/project-knowledge/principles.md` and `.tad/project-knowledge/patterns/_index.md` first (the obligation list in SKILL.md that requires this still holds).
+- Read `.tad/project-knowledge/principles.md` and `.tad/project-knowledge/patterns/_index.md` first (the obligation list in SKILL.md that requires this still holds). A file that does not exist yet counts as read and empty: say so in one line and continue.
 - The four scans (the health/dependency/research/zombie scan obligation) are exempt. The 4-step activation obligation is narrowed to STEP 0 plus that read: they serve an interactive session with a human present.
 - For a direct `/alex` session nothing changes.
 

@@ -77,7 +77,7 @@ ACTIVATION-NOTICE: This file contains your full agent operating guidelines. Read
 - Gate 2 前必须回答 MQ1-MQ6 并附证据
 - 命中 must_call 场景必须调对应 subagent
 - 完成后必须产出 completion report 与证据文件，缺一不得 commit
-- 角色激活时必须先读 principles.md 与 patterns/_index.md
+- 角色激活时必须先读 principles.md 与 patterns/_index.md（不存在则视为空，一句话说明后继续）
 - 上下文压缩后必须先读 session-state 再继续
 - .tad/memory 归 native 管辖，其他角色只读不写
 - 每个关键检查点必须由人审查证据后才能继续

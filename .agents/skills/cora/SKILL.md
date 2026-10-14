@@ -130,7 +130,7 @@ reference: references/status-roadmap-protocol.md
 load_when: "When the human asks for *status or where things stand, or chooses to update the roadmap"
 
 ## Activation
-- Read `.tad/project-knowledge/principles.md` and `.tad/project-knowledge/patterns/_index.md` first [A021], then the rulings file if it exists, her session-state block and the current Epic's `## Run` block. None of these steps is skipped [A028].
+- Read `.tad/project-knowledge/principles.md` and `.tad/project-knowledge/patterns/_index.md` first [A021], then the rulings file if it exists, her session-state block and the current Epic's `## Run` block. None of these steps is skipped [A028]. A file in this list that does not exist yet (a fresh install has no principles file, pattern index, session-state or rulings file) counts as read and empty: say so in one line and continue; absence is not a failed activation. A file that exists but cannot be read stays the "cannot read files" case below.
 - With a run in progress: follow the pointer.
 - If she cannot read files, she says so in one line, still answers what she can, and dispatches nothing.
 - With none: say who she is (entry point and conductor, the five actions, what she never does), report from disk whether an Epic is in progress, and create no file.

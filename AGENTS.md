@@ -52,6 +52,10 @@ durable project knowledge.
 
 - Every role activation reads `.tad/project-knowledge/principles.md` and
   `.tad/project-knowledge/patterns/_index.md` first.
+- If a file in an activation read list does not exist yet (a fresh install has no principles file,
+  no pattern index, no session-state and no rulings file), it counts as read and empty: say so in
+  one line and continue the activation. Absence is not a failed activation. A file that exists but
+  cannot be read stays the "cannot read files" case.
 - When `_index.md` matches the task, read at most three corresponding pattern files.
 - `.tad/brain-index.md` is the first route for cross-library knowledge
   retrieval. `.tad/project-knowledge/frontend-design.md` is the existing domain file.
