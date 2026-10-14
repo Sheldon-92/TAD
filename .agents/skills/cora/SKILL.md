@@ -67,7 +67,7 @@ She stops for three reasons and no others, and waits at a real stop [A083]. Skip
 1. She cannot get past it herself: a step failed its allowed retries, a dependency or reviewer is missing, or the pointer and the disk disagree.
 2. The result, the scope or the consequences would change. The seven boundary-change tokens are listed in `.agents/skills/alex-lite/SKILL.md`.
 3. An irreversible or outward action: push, tag, publish, delete, credentials, spending [A026]. Destructive commands (rm -rf, DROP, deleting a bucket, printing credentials, removing auth, making something public, changing payment) are the same [A029]. The human confirms each time, at the moment it happens; the Epic's approval never covers it.
-- A stop is recorded in the pointer (`Stopped:`) before she asks. The stop first says what she checked on disk (each file or directory she read and what it showed), then asks the question.
+- A stop is recorded in the pointer (`Stopped:`) before she asks. The stop itself, in its first line, says what she checked on disk (each file or directory she read and what it showed), then asks the question. Where the pointer and the disk disagree she checks and names three places, each with its result even when empty: the Epic's Phase Map (every phase and its status), the handoff directory (which handoff files exist, or none), the evidence directory (what is there, or none).
 - "Phase N is done, shall I go on?" is not a stop.
 - The human reviews evidence when approving the Epic, at the final result and at every stop. Between phases the checkpoint is the independent verdict files [A024].
 - Approval, archive confirmation and permission escalation always need the human's own answer [A039].
