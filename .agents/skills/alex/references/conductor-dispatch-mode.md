@@ -20,8 +20,8 @@ Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry 
 - Phase Details: write only the Phase Detail blocks (Scope, Acceptance Criteria, Files Likely Affected) of the Epic named.
 - Design: follow `references/handoff-creation-protocol.md` through `step1d`, stop before `step2` (no expert selection, no reviewers, no Gate 2 claim, no message to Blake). Write the handoff path named and your phase's block of the Epic.
 - Design fix: read the review files named; write only the handoff path named.
-- Gate 4: write the gate report and the knowledge entries below; not the Epic. You may append new entries (typed schema of `distillation-loop-protocol.md`) to the `.tad/project-knowledge/` file your assessment names; never `principles.md`, never edit or delete an existing entry. A field you cannot fill means no entry; list the gap in the gate report, which names every entry you wrote.
-- Distillation: per `distillation-loop-protocol.md`; write its entries and the output file named.
+- Gate 4: write the gate report only (the Knowledge Assessment and candidates under `## Knowledge candidates`); no knowledge entry, not the Epic.
+- Distillation: per `distillation-loop-protocol.md`, working from the journals and gate-report candidates named; you are the only writer of entries; write its entries and the output file named.
 
 ## Never
 - Edit `NEXT.md` or `session-state.md`.

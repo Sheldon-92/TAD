@@ -31,6 +31,10 @@ yolo_execution_protocol:
     ---
     Cora routes on this header only. A file with no header, or a missing file, means the step did not return.
 
+  dispatch_id_rule: |
+    Every dispatched output file (handoff and each revision, completion report, review, verdict, gate report, intake details, distillation output) carries `dispatch_id: <id>` in its first lines: as a key inside the verdict header or frontmatter block where the file has one, otherwise as line 1. Each prompt that writes a file says: "put `dispatch_id: {id}` in your file's first lines".
+    An output counts as the result of the recorded dispatch only if its dispatch_id equals the pointer's; otherwise it is "output not on disk". A re-dispatch takes the next <n>.
+
   questions_file: |
     A subagent that cannot go on without the human writes `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry per question:
     `class: <1 | 2 | 3 | design>`  /  `question: <one sentence>`  /  `options: <the choices, if any>`.
@@ -94,7 +98,7 @@ yolo_execution_protocol:
         3. Read the grounding file: .tad/evidence/yolo/{epic-slug}/phase{N}-grounding.md
         4. Read the handoff template: .tad/templates/handoff-a-to-b.md for section structure
         5. Write a HANDOFF to: {handoff_path}. Follow the template's section numbering exactly.
-           Include YAML frontmatter (task_type, e2e_required, research_required).
+           Include YAML frontmatter (task_type, e2e_required, research_required) and `dispatch_id: {id}` in it.
         6. Do these checks yourself and record the results in the handoff:
            a. Frontmatter: task_type, e2e_required, research_required are filled.
            b. Packs: check .agents/skills/*/SKILL.md for matching packs; inject their quality criteria into the ACs.
@@ -130,17 +134,17 @@ yolo_execution_protocol:
         2. Dispatch a code-reviewer subagent (MANDATORY) [A106]:
            prompt: "Review {handoff_path}. Focus on file list completeness + AC verifiability.
                    Check for AR-001 pattern ('this P0 is not important' = VIOLATION) [A107]. Report P0/P1/P2.
-                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-design-review-cr.md and start your file with the verdict header."
+                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-design-review-cr.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Dispatch a domain-expert subagent (select from the handoff scope using Files Likely Affected:
            >50% frontend files → frontend-specialist, >50% API/service/DB files → backend-architect, auth/secrets → security-auditor):
            prompt: "Review {handoff_path}. Focus on architecture/design quality. Report P0/P1/P2.
-                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-design-review-{domain}.md and start your file with the verdict header."
+                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-design-review-{domain}.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         4. Each reviewer writes its own file. Cora reads both headers from disk, not from memory or from the chat reply [A109][A131].
         5. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
-           a. Dispatch an Alex subagent with the two review file paths. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: design fix. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it." It fixes the handoff (writes v2 to {handoff_path}).
+           a. Dispatch an Alex subagent with the two review file paths. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: design fix. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it." It fixes the handoff (writes v2 to {handoff_path}, with `dispatch_id: {id}` in its first lines).
            b. Re-dispatch the code reviewer on v2 to verify the fix.
            c. Circuit breaker: max 2 fix-review rounds, then stop (reason 1), reported as it is [A108].
-        6. No P0 → proceed.
+        6. Neither a P0 nor a FAIL → proceed.
         7. Write the pointer: step Y4.
         → Proceed to step_Y5.
       output: "2 review files on disk + HANDOFF.md (v2 if fixed)"
@@ -157,7 +161,7 @@ yolo_execution_protocol:
         2. Implement all tasks described in the handoff
         3. Run the verification commands listed in the handoff (Layer 1).
         4. Write a completion report to: {completion_path}
-           Include: files changed, tsc result, test result, AC verification table.
+           Include: files changed, the results of the handoff's verification rows, AC verification table, and `dispatch_id: {id}` in the first lines.
            Leave `gate3_verdict:` empty; you do not judge your own work.
         5. Git commit with message: "feat({scope}): {description} [YOLO Phase {N}]"
 
@@ -185,10 +189,10 @@ yolo_execution_protocol:
         2. Dispatch a code-reviewer subagent (MANDATORY) [A117]:
            prompt: "Review implementation at {completion_path}. Check code diff.
                    Verify ACs are met. Check for AR-001 pattern ('this P0 is not important' = VIOLATION) [A118].
-                   Report P0/P1/P2. Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-cr.md and start your file with the verdict header."
+                   Report P0/P1/P2. Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-cr.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Dispatch a domain-expert subagent (same type as Y4):
            prompt: "Review implementation diff. Focus on architecture quality + blast radius. Report P0/P1/P2.
-                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-{domain}.md and start your file with the verdict header."
+                   Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-{domain}.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         4. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
            a. Re-dispatch a Blake subagent with the handoff path and the review file path:
               "Read {handoff_path} for original spec. Read {impl-review-cr.md} for P0 findings.
@@ -207,7 +211,7 @@ yolo_execution_protocol:
         1. Gate 3: dispatch an independent verifier (middle tier; not the implementer, not a reviewer of this phase).
            prompt: "Read {handoff_path} and {completion_path}. Run every AC verification command yourself.
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md: the verdict header first, then an AC table (AC, command, result).
-                   Start your file with the verdict header."
+                   Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         2. Gate 4: dispatch an Alex subagent that took no part in this phase.
            prompt: "You are Alex, dispatched by the conductor (Cora) for one step: Gate 4 for Phase {N}. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it. Read {handoff_path}, {completion_path}, the design and implementation reviews, and phase{N}-gate3-verdict.md.
                    Record the gate4_delta (design intent vs. what was built, surprises, deviations) and the knowledge assessment.
@@ -215,8 +219,8 @@ yolo_execution_protocol:
                    Never default to 'no new knowledge' [A007][A088]; a gate report without a Knowledge Assessment section is incomplete [A007].
                    Check every gate row one by one; no paper acceptance [A005]. Every conclusion carries an evidence pointer; a self-report that disagrees with disk counts as failed [A037].
                    If a Blake PARTIAL is in play, recompute from the raw files before accepting it [A089].
-                   You write the knowledge entry yourself: you may append new entries (typed schema of alex/references/distillation-loop-protocol.md) to the .tad/project-knowledge/ file your assessment names; never principles.md, never edit or delete an existing entry. A field you cannot fill means no entry; list the gap in the gate report. The gate report names every entry you wrote.
-                   Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md (not the Epic) and start your file with the verdict header."
+                   Write no knowledge entry. In the gate report keep the Knowledge Assessment and list candidate discoveries under `## Knowledge candidates`.
+                   Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md (not the Epic) put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Cora reads the two headers. A gate report with no Knowledge Assessment section is incomplete: re-dispatch the Gate 4 subagent, never fill it in herself [A007].
         4. A step is not done without a completion report and its evidence files; never route forward on a step that lacks them [A020]. A Blake self-report that disagrees with the disk counts as failed [A037].
         5. Both PASS (or CONDITIONAL with no P0):
@@ -234,7 +238,7 @@ yolo_execution_protocol:
     step_Y8:
       name: "Knowledge Assessment (done by the Gate 4 subagent) and next phase"
       action: |
-        1. The Gate 4 subagent has recorded the knowledge assessment and written any entries (the gate report names them). Cora adds one line to her journal carrying the gate-report path, and goes on.
+        1. The Gate 4 subagent has recorded the knowledge assessment and its `## Knowledge candidates` in the gate report. Cora adds one line to her journal carrying the gate-report path, and goes on.
         2. Write the pointer: step Y8.
         → If more ⬚ Planned Phases exist → step_Y1 of the next phase, without asking.
         → If none → epic_completion.
@@ -247,7 +251,7 @@ yolo_execution_protocol:
          Include: per-Phase summary, total files changed, total commits, all review references
       2. Run .tad/hooks/lib/audit-yolo.sh {epic-slug} (skip if the script is not available)
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
-      3b. Dispatch the distillation: an Alex subagent that did not conduct, on Cora's journal. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
+      3b. Dispatch the distillation: an Alex subagent that did not conduct, on Blake's journals, Cora's journal and every gate report's `## Knowledge candidates`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
           (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance message. Announce the result and ask the human to accept.
           Nothing is archived before the human has accepted.
       4. After the human accepts: archive the Epic .tad/active/epics/ → .tad/archive/epics/

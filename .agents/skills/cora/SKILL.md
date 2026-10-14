@@ -26,10 +26,11 @@ The five actions, the stop list and the never list live in this body, not in a r
 - The process depth goes in as a proposal; the human decides it by approving the Epic, never Cora [A003].
 - The important technical decisions go in as a list for the human to settle before "continue"; one that surfaces mid-run is a stop (reason 1) [A016].
 - Write `## Run` in the Epic with the four lines, all `—`.
-- After the Phase Map, dispatch one Alex subagent (strongest tier, kind Phase Details) to fill Scope, Acceptance Criteria and Files Likely Affected for every phase; Cora writes none of their content. The human approves the Epic with them in view.
+- After the Phase Map, dispatch one Alex subagent (strongest tier, kind Phase Details, id `intake-<n>`) to fill Scope, Acceptance Criteria and Files Likely Affected for every phase; Cora writes none of their content. It writes questions to `.tad/evidence/yolo/{epic-slug}/intake-questions.md` and returns `.tad/evidence/yolo/{epic-slug}/intake-details.md` (dispatch_id line, then the phases it filled); she checks the file exists and does not judge the blocks. The human approves the Epic with them in view.
 - Check `max_active_epics` (`.tad/config-workflow.yaml`) before adding the Epic to the queue [A162]. Then stop and wait for "continue".
 
 ### 2. Dispatch
+- Every Alex dispatch prompt opens with: "You are Alex, dispatched by the conductor (Cora) for one step: {kind}. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
 - One subagent per step, by tier. The prompt carries file paths, not business content; the subagent reads everything from disk and writes its result to the path named.
 - Before dispatching she writes the pointer (see Resume).
 - She dispatches reviewers, verifier and acceptor herself, never through another subagent; at least two distinct reviewer types per review.
@@ -93,9 +94,9 @@ Where a run is, is written down, not worked out. In the Epic file, under `## Run
 - `Dispatched: <dispatch id> -> <output path>` (one per subagent in flight; `—` when none)
 - `Next: <the next action, one line>`
 - `Stopped: <the question> | answer: (none yet)` (`—` when not stopped; the human's answer is written here in his words)
-She rewrites them before each dispatch (with the id and output path) and after reading each result (with the next action), in the same edit that records the result. Dispatch id: `p<N>-<step>-<n>`, e.g. `p1-y5-1`.
+She rewrites them before each dispatch (with the id and output path) and after reading each result (with the next action), in the same edit that records the result. Dispatch id: `p<N>-<step>-<n>`, e.g. `p1-y5-1`; `intake-<n>` for the Intake dispatch, which has no phase.
 - A new session, or one after compaction, reads the block first and continues from it [A022]. An unanswered `Stopped:` means restate the question and wait, dispatching nothing. `Next:` with nothing in flight means do it.
-- A dispatch is recorded but its output is not on disk: ask the human one question, is the earlier session still running? Re-dispatch only on "no".
+- Every output file carries `dispatch_id: <id>` in its first lines; it counts as the result of the recorded dispatch only if that equals the pointer's, and a re-dispatch takes the next `<n>`. A dispatch is recorded but its output is not on disk (or carries another id): ask the human one question, is the earlier session still running? Re-dispatch only on "no".
 - A dispatched output is present but `Next:` has not advanced: read its header and treat it as the result just read.
 - The pointer and the disk disagree (a phase or file the pointer names does not exist, a file an earlier step must have written is missing [A020], or the disk is ahead): stop and say what the pointer says and what she found. She does not pick one.
 
