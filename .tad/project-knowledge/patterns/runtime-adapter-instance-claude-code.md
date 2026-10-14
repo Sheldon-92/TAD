@@ -21,3 +21,9 @@
 **R-CC-7**: 顶层按保存名调用 `Workflow({name})` 与 `/workflows` 列表可见性未提供（未测）；会话在项目子目录启动时相对 `scriptPath` 的解析未测。协议因此规定：会话工作目录不是项目根时不启动 workflow，先切换到 `git rev-parse --show-toplevel` 的输出（或请用户在项目根重开会话）再按相对路径调用——脚本内部的证据、模板与 args 路径都以项目根为基准；子目录会话里「证据会落在会话目录下」是推断，未实测。子代理不能调用 Workflow 工具：来自早先的项目观察，Phase 3 未重新实测。`spec-compliance-reviewer` 在 Phase 4 投影前不是已注册的子代理类型：此时派生通用子代理，并把 `.tad/agents/claude/spec-compliance-reviewer.md` 的正文作为其任务说明。派生子代理的真实运行见 `.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase3-gate-report.md`。
 
 **R-CC-8**: 迁移引擎拒绝路径中含符号链接的清单条目（`.tad/hooks/lib/migration-engine.sh` 的 `check_containment` 逐段检查，含最后一段），而 `--platform claude-code` 之后 `.claude/skills/<名>` 是指向 `.agents/skills/<名>` 的符号链接；所以今后的迁移清单不得再列 `.claude/skills/**` 路径，否则该版本步骤的其余删除会被整体拒绝（退出码 2，仅告警）。旧版镜像目录的清理改由安装器的旧安装接管负责（Phase 4a，`.tad/provenance/claude-legacy.tsv`）。来源：Phase 4 grounding 第 17 节。
+
+**R-CC-9（② 认证，2026-10-14 实测）**: 在同一台机器上，从一个 Codex 会话里启动 `claude -p` 跑三个行为测试格，三次都以退出码 1 结束，输出只有厂商原文 `Your organization has disabled Claude subscription access for Claude Code · Use an Anthropic API key instead, or ask your admin to enable access`；同样三个格改由 Claude Code 会话内的子代理启动，三次退出码 0。原因 **unmeasured**：是 Codex 沙箱环境拿不到本机登录态、还是组织策略只拒绝某种登录方式，盘上证据都不能区分（记录里「独立登录被拒」是推断，已被核查标为不可证）。
+- **Source confidence**: 实测
+- **failure_mode**: 朴素默认：看到这条厂商报错就判定「账号权限没了」，停下来请人去恢复权限。为什么错：同一账号、同一机器从 Claude Code 会话里启动就能跑；该报错只说明「从这个外层 harness 里启动不行」，正确的路由是换到 Claude Code 会话里跑这些格，或在外层 harness 里先做一个最小 `claude -p` 探针再派发。
+- **validator**: 跨 harness 派发 `claude` 格之前，在发起方会话里跑一次最小 `claude -p` 探针并记录退出码；出现上述报错时，记录写「从 {外层 harness} 启动被拒」，不写原因推断。
+- **Grounded in**: `.tad/evidence/yolo/cora-carry-forward-fixes/phase2-codex-session-not-run/`（三份 exit 1 转录与 not-run 文件）；`phase2-queue/transcript-claude-q1..q3.md`（exit 0）；`phase2-record-check.md` 第 3 条；`phase2-gate-report.md` KC-P2-5。
