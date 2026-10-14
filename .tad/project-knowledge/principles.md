@@ -8,10 +8,12 @@
 
 ## Principles
 
-### Two-Agent System - inception
-- **Alex (Solution Lead)**: Design, planning, requirements, business acceptance
+### Three Roles, Independent Judgment - inception (amended 2026-10-14)
+- **Cora (Conductor)**: The human's entry point: agrees the result, writes it as an Epic, runs it by dispatching subagents. Writes no implementation, edits no handoff, gives no verdict
+- **Alex (Solution Lead)**: Technical design, handoffs, design review, acceptance (Gate 4)
 - **Blake (Execution Master)**: Implementation, testing, technical quality
-- **failure_mode**: Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective — the designer cannot objectively evaluate their own design, leading to blind spots (the 4 P0s found on the 2026-04-14 express edit are an instance).
+- **Independence of judgment is the rule**: no one judges their own work; every verdict comes from a party that did not do the work and does not carry its context. Separate terminals with the human as the bridge are one way to get this; a fresh subagent dispatched by Cora is another (patterns/gate-design.md, "Independent Perspective Lives in Clean Context")
+- **failure_mode**: Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective — the designer cannot objectively evaluate their own design, leading to blind spots (the 4 P0s found on the 2026-04-14 express edit are an instance). The same failure one level up: a conductor that judges or fixes the work it routed.
 
 ### Four-Gate Quality System - inception
 - Gate 1: Requirements Clarity
@@ -113,13 +115,13 @@
   diary no zero-context reader can use (voice-studio 12-iteration audio knowledge + 14 downstream
   projects, all empirically). Every SOTA agent-memory system (Mem0, Letta, AWM, Anthropic Skills)
   separates CAPTURE (doer writes raw journal) from DISTILL (a structural stranger forges the entry)
-  from MAINTAIN (cheap rule-driven). TAD's terminal isolation is an ASSET here: Alex lacks Blake's
-  execution context by construction, which makes Alex a genuine stranger — the distiller who can see
+  from MAINTAIN (cheap rule-driven). TAD's separation of contexts is an ASSET here: Alex (in his own
+  session, or as a fresh subagent) lacks Blake's execution context by construction, which makes Alex a genuine stranger — the distiller who can see
   the gaps the doer cannot. The typed entry's required `failure_mode` field is the gap detector: any
   field the stranger cannot fill from the journal becomes a specific question routed back to the doer.
 - **Action**: Do NOT let the doer write finished knowledge at task end. Blake writes a raw journal
   (what happened). A structural stranger (Alex by default; Codex for high-stakes) distills it into a
-  typed entry; unfillable fields become questions handed back across the human bridge. Knowledge that
+  typed entry; unfillable fields become questions handed back to the doer. Knowledge that
   passes the variabilize test enters the playbook; one-off material stays journal. Reusability is a
   mechanical test (can you variabilize the episode-specific values?), not the author's judgment.
 - ⚠️ SAFETY ENTRY — requires human review for any modification

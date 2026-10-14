@@ -1,10 +1,10 @@
 # TAD Brain Index
-Generated: 2026-10-10 09:51
+Generated: 2026-10-14 11:35
 
 ## Principles
 | Entry | Keywords | Summary |
 |-------|----------|---------|
-| Two-Agent System - inception | two-agent system - inception | Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective |
+| Three Roles, Independent Judgment - inception (amended 2026-10-14) | three roles independent judgment - inception amended 2026-10-14  | Naive default: one agent does everything (design + implement + review). Why wrong: self-review has no second perspective |
 | Four-Gate Quality System - inception | four-gate quality system - inception | Naive default: ship after implementation passes tests, skipping design review and business acceptance. Why wrong: tests  |
 | Measure Before Optimizing | measure before optimizing | TAD's context loading is already well-optimized (~8.5% session start overhead). @import zero-cost for non-existent files |
 | Judgment-Only Skill Files: Constraint Rules Are NOT Mechanical | judgment-only skill files constraint rules are not mechanical | v2.7 slim skills removed constraint rules alongside mechanical logic → quality chain failure. Constraint rules (MUST/M |
@@ -54,7 +54,7 @@ Generated: 2026-10-10 09:51
 ## AGENTS.md Sections
 | Section | Keywords | Summary |
 |---------|----------|---------|
-| Role Switching | role switching | Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocati |
+| Role Switching | role switching | Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `/alex` / `/blake` = Claude Code / OpenCo |
 | Knowledge Ingress (read on activation) | knowledge ingress read on activation  | - Every role activation reads `.tad/project-knowledge/principles.md` and |
 | Critical Rules | critical rules | - Reading `HANDOFF-*` requires Blake plus Gate 3/4; `/tad-maintain` CHECK/SYNC is exempt. |
 | Default Behavior (no role specified) | default behavior no role specified  | If no role is requested, act as a general TAD assistant: |
@@ -66,17 +66,34 @@ Generated: 2026-10-10 09:51
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
+| HANDOFF-2026-10-13-cora-conductor-role-phase1.md | mixed#skilltext(newrole+re-homedprotocols)plusmeasuredharnessprobesandbehaviourruns | A third TAD role, **Cora**: the one the human talks to and the one who dispatches. Phase 1 builds Cora herself: |
+| HANDOFF-2026-10-13-cora-phase1-slim-addendum-1.md | code |  |
+| HANDOFF-2026-10-13-cora-phase1-slim-addendum-2.md | code |  |
+| HANDOFF-2026-10-13-cora-phase1-slim.md | code |  |
+| HANDOFF-2026-10-14-cora-phase2-slim.md | code |  |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
+| EPIC-20261013-cora-conductor-role.md | **Epic ID**: EPIC-20261013-cora-conductor-role |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
 |------|-----------|---------|
 | HANDOFF-20260804-lite-pricing-gate.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260804-full-reviewer-tier-rule.md | yaml | Handoff Document for Agent B (Blake) |
+| HANDOFF-surplus-tad-self-test-agent.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-session-health-check.md | code | Handoff: session-health.sh — Framework Component Integrity Check |
+| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-o1-landscape-refresh-2026q3.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-surplus-codex-adapter-yaml.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20260816-phase2-installer-data-safety.md | code | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260816-privacy-scanner-and-trace-relpath.md | code | Quality Chain Metadata (Alex 必填) |
+| HANDOFF-20260815-english-unification.md | unknown | HANDOFF: 先修被中文字面量绑架的纪律，再谈英文化 |
+| HANDOFF-20260804-gate-loop-circuit-breaker.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
@@ -114,17 +131,6 @@ Generated: 2026-10-10 09:51
 | HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
 | HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
-| HANDOFF-20260831-capability-builder-phase1-create.md | mixed | Handoff: Capability Builder v1 — Phase 1 Create |
-| HANDOFF-20260828-local-wiki-research-framework.md | code | HANDOFF-20260828-local-wiki-research-framework |
-| HANDOFF-20260827-yolo2-phase2-completion.md | code | HANDOFF-20260827-yolo2-phase2-completion |
-| HANDOFF-20260825-yolo2-phase2-bounded-quality-loop.md | mixed | Handoff: YOLO 2.0 Phase 2 — 质量保持的有界执行闭环 |
-| HANDOFF-20260824-yolo2-phase1-recovery-slice.md | mixed | Handoff: YOLO 2.0 Phase 1 — 真实恢复纵向切片 |
-| HANDOFF-20260818-lazy-by-floor.md | unknown | HANDOFF: 按地板表懒加载 —— 可达性记录取代计数，实测定目标 |
-| HANDOFF-20260817-activation-ondemand.md | unknown | HANDOFF: 激活按需化 —— 启动扫描从「整读文件」改成「跑命令读输出」 |
-| HANDOFF-20260816-trace-relative-path.md | code | Handoff: 让 trace 写仓库相对路径（止住绝对路径的源头） |
-| HANDOFF-20260816-gate3-check8-audible.md | code | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260816-discipline-floor.md | unknown | HANDOFF: 地板表 —— 30 条纪律的载体该常驻还是按需 |
-| HANDOFF-20260815-discipline-floor.md | unknown | HANDOFF: 地板表 —— 每条纪律的载体该常驻还是按需 |
 
 ## Evidence Directories
 | Directory | Files | Topic |
@@ -137,7 +143,7 @@ Generated: 2026-10-10 09:51
 | evidence/codex-validation/ | 4 | codex-validation |
 | evidence/completions/ | 121 | completions |
 | evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 54 | designs |
+| evidence/designs/ | 56 | designs |
 | evidence/discuss/ | 4 | discuss |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
@@ -154,7 +160,7 @@ Generated: 2026-10-10 09:51
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 42 | journal |
+| evidence/journal/ | 44 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 9 | live-regression |
@@ -168,7 +174,7 @@ Generated: 2026-10-10 09:51
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 156 | pm |
+| evidence/pm/ | 158 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
 | evidence/ralph-loops/ | 16 | ralph-loops |
@@ -185,7 +191,7 @@ Generated: 2026-10-10 09:51
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 912 | yolo |
+| evidence/yolo/ | 989 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
@@ -224,7 +230,7 @@ Generated: 2026-10-10 09:51
 | config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
 | config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics     |
-| config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, human),      - interaction_protocol,      -  |
+| config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, agent_c, human),      - interaction_protocol |
 
 ## Skills
 | Skill | Summary |
@@ -248,6 +254,7 @@ Generated: 2026-10-10 09:51
 | capability-builder | name: capability-builder |
 | capability-upgrade | name: capability-upgrade |
 | code-security | name: code-security |
+| cora | name: cora |
 | data-engineering | name: data-engineering |
 | dependency-ops | name: dependency-ops |
 | gate | name: gate |
