@@ -27,8 +27,8 @@ Give any TAD-enabled subproject a TAD-native way to create, evolve, and optional
 | # | Phase | Status | Handoff | Key Deliverable |
 |---|-------|--------|---------|-----------------|
 | 1 | Create | ✅ Done | `HANDOFF-20260831-capability-builder-phase1-create.md` | Project-local Agent Skill creation, validation, projection, and WITH/CONTROL proof |
-| 2 | Evolve | ⬚ Planned | — | Signal-driven, fixture-first Skill evolution with regression protection |
-| 3 | Package | ⬚ Planned | — | Explicit one-Skill/one-Plugin packaging and isolated validation |
+| 2 | Evolve | ✅ Done | `HANDOFF-20260903-capability-builder-phase23-evolve-package.md` | Signal-driven, fixture-first Skill evolution with regression protection |
+| 3 | Package | ✅ Done | `HANDOFF-20260903-capability-builder-phase23-evolve-package.md` | Explicit one-Skill/one-Plugin packaging and isolated validation |
 | 4 | Voice Studio Dogfood | ⬚ Planned | — | Real `eval-page-generator` Candidate → Skill → Plugin proof |
 
 ### Phase Dependencies
@@ -97,8 +97,8 @@ Completed: 2026-09-02, Handoff: `HANDOFF-20260831-capability-builder-phase1-crea
 
 ### Phase 2: Evolve
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done
+**Execution:** Gate 4 accepted on 2026-09-03 (merged Phase 2+3 handoff, YOLO); acceptance confirmed by the human on 2026-10-10. Commit `bba6ce84`. Record: `.tad/archive/handoffs/GATE4-20260903-capability-builder-phase23-evolve-package.md`. The checkboxes below were not re-ticked one by one in the 2026-10-10 ledger correction; per-AC evidence is in that record.
 
 #### Scope
 
@@ -136,8 +136,8 @@ External research is conditional evidence gathering, never a calendar-driven mai
 
 ### Phase 3: Package
 
-**Status:** ⬚ Planned
-**Execution:** pending
+**Status:** ✅ Done
+**Execution:** Gate 4 accepted on 2026-09-03 together with Phase 2 (same merged handoff, commit `bba6ce84`, same record); acceptance confirmed by the human on 2026-10-10. The checkboxes below were not re-ticked one by one in the 2026-10-10 ledger correction; per-AC evidence is in that record.
 
 #### Scope
 
@@ -226,6 +226,10 @@ Phase 4 is executed from the Voice Studio project under its own TAD boundary. If
 - Phase 1 Create is Gate 4 accepted. TAD can now create one project-owned Agent Skill,
   validate its canonical `.agents` tree, project it safely to `.claude`, and prove value
   with fresh discriminative WITH/CONTROL evidence.
+- Phase 2 Evolve and Phase 3 Package are Gate 4 accepted (2026-09-03, commit `bba6ce84`,
+  one merged handoff). `$capability-builder evolve` and `$capability-builder package`
+  are available; the human authorized the merged handoff on 2026-09-03, which lifted the
+  2026-09-02 park for these two phases only.
 
 ### Decisions Made So Far
 
@@ -243,8 +247,9 @@ Phase 4 is executed from the Voice Studio project under its own TAD boundary. If
 
 ### Next Phase Scope
 
-Phase 2 `evolve` remains planned but parked. It requires a separate human decision and
-a concrete evolution signal; Phase 1 acceptance does not authorize automatic start.
+Phase 4 (Voice Studio dogfood) is the only remaining phase and stays parked. It runs from
+the Voice Studio project under its own TAD boundary and needs the human to start it there;
+acceptance of Phases 1–3 does not authorize an automatic start.
 
 ---
 
@@ -255,3 +260,6 @@ The user explicitly rejected a TAD-wide architecture change. Every phase is cons
 **Parked by Human — 2026-09-02:** Phase 1 already provides the usable core capability.
 Keep this Epic in `active/epics/` as parked context; do not start Phases 2–4 until
 real downstream use creates a concrete need and the Human explicitly resumes it.
+
+**Update — 2026-10-10 (ledger correction):** the Human resumed Phases 2+3 on 2026-09-03
+and they were accepted that day; this file had not been updated. Only Phase 4 is still parked.
