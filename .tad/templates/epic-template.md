@@ -30,6 +30,7 @@
 Status and progress are computed from the Phase Map:
 - **Status**: If all ⬚ → Planning | If any 🔄 or ✅ → In Progress | If all ✅ → Complete
 - **Progress**: Count of ✅ Done / Total phases
+- Status `✅ Closed — PARTIAL` exists for a phase whose gate verdict was PARTIAL and which the human accepted as is. A phase closed PARTIAL counts as closed, not as done: progress is `<done> done, <partial> closed PARTIAL / <total>`, and the Epic is Complete only when every phase is ✅ Done.
 
 ---
 

@@ -4,7 +4,7 @@
 - Blake's completion report indicates a journal path (evidence/journal/{slug}-{date}.md)
 - If journal does not exist or Q1=No → skip distillation, KA writes "No journal material to distill"
 - If journal exists but content is too short (<3 lines) → skip distillation, leave journal
-- Conductor exception: at a conductor Epic close (Cora's epic_completion step 3b) the skips above do not apply while any `phase*-gate-report.md` of the Epic has entries under `## Knowledge candidates`; the distiller works from those candidates even with no journal.
+- Conductor exception: at a conductor Epic close (Cora's epic_completion step 3b) the skips above do not apply while any `phase*-gate-report.md` of the Epic has entries under `## Knowledge candidates`, or the conductor journal is non-empty; the distiller works from those candidates and that journal even with no Blake journal.
 
 ## Step 1: Read journal
 Read evidence/journal/{slug}-{date}.md. Alex at this point has NO Blake session context —
@@ -100,7 +100,7 @@ At the same *accept trigger, ALSO scan the native auto-memory capture layer:
 - The entire loop is advisory/human-gated; no hooks registered (L1 reject-mechanical-enforcement)
 
 ## When the journal was written by a conductor (Cora)
-- The doer is the conductor, not Blake. Inputs, as the dispatch names them: Blake's journals (`.tad/evidence/journal/{epic-slug}-phase{N}-{date}.md`), the conductor's journal `.tad/evidence/journal/conductor-{epic-slug}-{date}.md` (human corrections, failed steps, surprises), and the `## Knowledge candidates` of each `phase*-gate-report.md`.
+- The doer is the conductor, not Blake. Inputs, as the dispatch names them: Blake's journals (selected only by every `Journal:` line in each completion report; a rework section adds its own), the conductor's journal `.tad/evidence/journal/conductor-{epic-slug}-{date}.md` (human corrections, failed steps, surprises), and the `## Knowledge candidates` of each `phase*-gate-report.md`.
 - The trigger is the Epic-close dispatch in Cora's conductor-protocol (step 3b of epic_completion), not an *accept.
 - The distiller must be a session that did not conduct that Epic. It reads these inputs, then runs Steps 2 to 4 above unchanged; gate-report candidates go through the same variabilize test.
 - A gap the distiller cannot fill is not answered by the conductor: no entry is written, the material stays in the journal, and the gap is listed in `{ev}distillation-report.md` under "Gaps" for the conductor's acceptance message to the human.

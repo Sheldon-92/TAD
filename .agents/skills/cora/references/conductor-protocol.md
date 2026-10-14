@@ -15,12 +15,15 @@ yolo_execution_protocol:
     - "Cora never fills a verdict field and never writes a gate verdict: an independent subagent writes each one"
 
   pointer: |
-    Before every dispatch and after reading every result, rewrite the four lines under `## Run` in the Epic file:
+    Before every dispatch and after reading every result, rewrite the five lines under `## Run` in the Epic file:
     Pointer: phase <N> | step <step name>
     Dispatched: <id> -> <output path>   (one per subagent in flight; "—" when none)
     Next: <next action, one line>
     Stopped: <question> | answer: (none yet)   ("—" when not stopped)
-    Dispatch id: p<N>-<step>-<n>, e.g. p1-y5-1. Wherever a step below says "write the pointer", this is the block it means.
+    Owner: <harness> <YYYY-MM-DD HH:MM>   ("—" when no session holds the run; absent reads as "—")
+    Owner rule: on taking up a run (first dispatch or a resume) with Owner "—" or absent she writes her own token (harness name plus `date '+%Y-%m-%d %H:%M'`); she clears it to "—" at any Stopped: and at IDLE. Before each write to `## Run` she re-reads Owner. If it names another session, or she cannot tell after a compaction, she is not the owner. A session that is not the owner writes nothing, says which session holds the run, and asks the human one question: is that session closed? On "yes" she writes her own token and continues; otherwise she stops.
+    Distillation pointer: `Pointer: phase <N> | step distill` while it is in flight (N = the Epic's last phase).
+    Dispatch id: p<N>-<step>-<n>, e.g. p1-y5-1; the distillation uses `p<N>-distill-<n>` (N = the Epic's last phase). Wherever a step below says "write the pointer", this is the block it means.
 
   verdict_header: |
     Every review, verdict and gate file starts with this block. Each reviewer, verifier and acceptor prompt says: "start your file with the verdict header".
@@ -31,11 +34,12 @@ yolo_execution_protocol:
     judged: <path of the file judged, or commit:<sha> for code>
     ---
     Cora routes on this header only. A file with no header, or a missing file, means the step did not return.
+    CONDITIONAL: no P0, with findings the next step must carry; routed like PASS, and the file's path goes into the next dispatch prompt.
 
   dispatch_id_rule: |
     Every dispatched output file (handoff and each revision, completion report, review, verdict, gate report, intake details, distillation output) carries `dispatch_id: <id>` in its first lines: as a key inside the verdict header or frontmatter block where the file has one, otherwise as line 1. Each prompt that writes a file says: "put `dispatch_id: {id}` in your file's first lines".
     An output counts as the result of the recorded dispatch only if its dispatch_id equals the pointer's; otherwise it is "output not on disk". A re-dispatch takes the next <n>; a retry of a review-round id keeps the round (step_Y6 4b).
-    The freshness check applies only to an output named on a current `Dispatched:` line; a result the pointer already records as read (its step is behind `Pointer:`/`Next:` and no `Dispatched:` line names it) is not re-checked and is not a stop.
+    The freshness check applies only to an output named on a current `Dispatched:` line; a result the pointer already records as read (its step is behind `Pointer:`/`Next:` and no `Dispatched:` line names it): its dispatch_id is not checked again and it is not a stop; its header is still re-read before routing.
 
   questions_file: |
     A subagent that cannot go on without the human writes `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry per question:
@@ -54,6 +58,7 @@ yolo_execution_protocol:
       - "phase{N}-gate3-verdict.md"
       - "phase{N}-gate-report.md"
       - "phase{N}-questions.md (only when a subagent asked)"
+    review_rounds: "Round 1 writes the path as named; round k ≥ 2 writes the same name with `-r<k>` before `.md` (e.g. `phase{N}-impl-review-cr-r2.md`); no verdict file is overwritten. The pointer's `Dispatched:` line names the round's own path."
     epic_level:
       - "EPIC-COMPLETION.md"
 
@@ -145,7 +150,7 @@ yolo_execution_protocol:
         4. Each reviewer writes its own file. Cora reads both headers from disk, not from memory or from the chat reply [A109][A131].
         5. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
            a. Write the pointer first (design-fix id `p{N}-y4-<n>`, output {handoff_path}), then dispatch an Alex subagent with the two review file paths. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: design fix. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it." It fixes the handoff (writes v2 to {handoff_path}, with `dispatch_id: {id}` in its first lines).
-           b. Write the pointer first with the next round's reviewer ids (`p{N}-y4-r<k>-cr`, `p{N}-y4-r<k>-dom`; never equal to the design-fix id or an earlier round's) and the same two review paths, then re-dispatch both reviewers on v2 with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 FAIL at the same path is never read as the new result. A retry inside a round follows step_Y6 4b (same k, suffix `-t<m>`).
+           b. Write the pointer first with the next round's reviewer ids (`p{N}-y4-r<k>-cr`, `p{N}-y4-r<k>-dom`; never equal to the design-fix id or an earlier round's) and the round's own two review paths (round 1 writes the path as named; round k ≥ 2 writes the same name with `-r<k>` before `.md`; no verdict file is overwritten), then re-dispatch both reviewers on v2 with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 FAIL at the same path is never read as the new result. A retry inside a round follows step_Y6 4b (same k, suffix `-t<m>`).
            c. Circuit breaker: max 2 fix-review rounds, then stop (reason 1), reported as it is [A108].
         6. Neither a P0 nor a FAIL → proceed.
         7. Write the pointer: step Y4.
@@ -166,7 +171,7 @@ yolo_execution_protocol:
         4. Write a completion report to: {completion_path}
            Include: files changed, the results of the handoff's verification rows, AC verification table, and `dispatch_id: {id}` in the first lines.
            Leave `gate3_verdict:` empty; you do not judge your own work.
-           Journal: if you have human corrections, failed steps or surprises to note, write them to .tad/evidence/journal/{epic-slug}-phase{N}-{date}.md and put the line `Journal: <that path>` in the report; otherwise write no journal and put `Journal: No discoveries`.
+           Journal: if you have human corrections, failed steps or surprises to note, write them to .tad/evidence/journal/{epic-slug}-phase{N}-{date}.md and put the line `Journal: <that path>` in the report; otherwise write no journal and put `Journal: No discoveries`. A rework forced by a review or gate verdict counts as a failed step: the Blake subagent doing the rework writes it in its journal. Cora's journal records only the routing line.
         5. Git commit with message: "feat({scope}): {description} [YOLO Phase {N}]"
 
         LIMITS:
@@ -200,9 +205,9 @@ yolo_execution_protocol:
         4. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
            a. Re-dispatch a Blake subagent with the handoff path and the review file path. Write the pointer first (id p{N}-y6-<n>, output {completion_path}). Prompt:
               "Read {handoff_path} for the original spec. Read {impl-review-cr.md} for the P0 findings.
-               Fix and re-commit. Then update {completion_path}: set its `dispatch_id:` line to `{id}` and add a `## Rework <n>` section listing the new commits."
+               Fix and re-commit. Then update {completion_path}: set its `dispatch_id:` line to `{id}` and add a `## Rework <n>` section listing the new commits and its own `Journal:` line. A rework forced by a review or gate verdict counts as a failed step: you write it in your journal. Cora's journal records only the routing line."
               (Both paths are file references — no inline content.) Cora never fixes code herself.
-           b. Write the pointer first with the next round's reviewer ids (`p{N}-y6-r<k>-cr`, `p{N}-y6-r<k>-dom`, k = round number; never equal to the rework id or an earlier round's) and the same two review paths, then re-dispatch the reviewers on the result with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 file at the same path never satisfies the check. Rework output present and the pointer still names the rework: dispatch the reviewers. Pointer names the reviewers: apply the pointer rule (ids match: read the headers; otherwise ask whether the earlier session still runs). If the human answers "no" for a reviewer of round k, its retry keeps k and takes `p{N}-y6-r<k>-cr-t<m>` (or `p{N}-y6-r<k>-dom-t<m>`), m = 2, 3, …, written into the pointer before the retry is dispatched. A retry does not start a new round: the circuit breaker in 4c counts rounds, not retries.
+           b. Write the pointer first with the next round's reviewer ids (`p{N}-y6-r<k>-cr`, `p{N}-y6-r<k>-dom`, k = round number; never equal to the rework id or an earlier round's) and the round's own two review paths (round 1 writes the path as named; round k ≥ 2 writes the same name with `-r<k>` before `.md`, e.g. `phase{N}-impl-review-cr-r2.md`; no verdict file is overwritten), then re-dispatch the reviewers on the result with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 file at the same path never satisfies the check. Rework output present and the pointer still names the rework: dispatch the reviewers. Pointer names the reviewers: apply the pointer rule (ids match: read the headers; otherwise ask whether the earlier session still runs). If the human answers "no" for a reviewer of round k, its retry keeps k and takes `p{N}-y6-r<k>-cr-t<m>` (or `p{N}-y6-r<k>-dom-t<m>`), m = 2, 3, …, written into the pointer before the retry is dispatched. A retry does not start a new round: the circuit breaker in 4c counts rounds, not retries.
            c. Circuit breaker: if the re-dispatch also fails on P0 → stop (reason 1), reported as it is [A119].
         5. Re-read the review files' headers from disk before routing (not from memory) [A120].
         6. Write the pointer: step Y6.
@@ -212,6 +217,7 @@ yolo_execution_protocol:
     step_Y7:
       name: "Gate 3 and Gate 4 (two independent dispatches; Cora writes no verdict)"
       action: |
+        0. Before dispatching Gate 3, bring the books up to date: the Epic Phase Map row, her `NEXT.md` entry and her session-state block show the state after Y6.
         1. Gate 3: dispatch an independent verifier (middle tier; not the implementer, not a reviewer of this phase).
            prompt: "Read {handoff_path} and {completion_path}. Run every AC verification command yourself.
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md: the verdict header first, then an AC table (AC, command, result).
@@ -249,24 +255,28 @@ yolo_execution_protocol:
       output: "journal line"
 
   epic_completion:
-    trigger: "All phases ✅ Done"
+    trigger: "All phases ✅ Done (or closed PARTIAL)"
     action: |
+      Per Epic:
       1. Write the final report: .tad/evidence/yolo/{epic-slug}/EPIC-COMPLETION.md
          Include: per-Phase summary, total files changed, total commits, all review references
       2. Run .tad/hooks/lib/audit-yolo.sh {epic-slug} (skip if the script is not available)
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
-      3b. Dispatch the distillation: an Alex subagent that did not conduct, on the paths its prompt names: Blake's journals (`.tad/evidence/journal/{epic-slug}-phase*-*.md`, from each completion report's `Journal:` line), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) and the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
-          (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance message. Announce the result and ask the human to accept.
-          Nothing is archived before the human has accepted.
-      4. After the human accepts: archive the Epic .tad/active/epics/ → .tad/archive/epics/
-         (two-phase safety: copy first, verify, then delete source)
-      4b. Residue check: ls .tad/active/handoffs/*{epic-slug}* 2>/dev/null
-          Archive the Epic's handoffs and completion reports to .tad/archive/handoffs/ (both HANDOFF-*-{slug}.md AND COMPLETION-*-{slug}.md).
-          If any file remains: WARN "⚠️ {N} files remain in active/ for this Epic" and list them.
-      5. Announce to the user:
+      3b. Dispatch the distillation: an Alex subagent that did not conduct. Write the pointer first (`Pointer: phase <N> | step distill`, N = the Epic's last phase; id `p<N>-distill-<n>`; output `.tad/evidence/yolo/{epic-slug}/distillation-report.md`). Its inputs, named in the prompt: Blake's journals (selected only by every `Journal:` line in each completion report (a rework section adds its own)), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) and the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
+          (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance question.
+      3c. Read the distillation report. In the same edit that records the distillation result, mark the Epic `done` in the queue block and move `current` to the next approved Epic. If an approved Epic is waiting, start it with no question.
+      Queue-wide, when no Epic is waiting:
+      4. Write `Conductor status: IDLE` (and clear `Owner:` to "—"), then ask acceptance alone: one question; each Epic of the queue listed with its result, every phase closed PARTIAL and every open P0 named, distillation gaps listed. Record the question in the `Stopped:` line of every Epic it covers.
+      5. After the human accepts: ask archiving as its own question, after acceptance, recorded the same way. Nothing is archived before both answers.
+      6. On yes, archive each accepted Epic:
+         a. Archive the Epic .tad/active/epics/ → .tad/archive/epics/ (two-phase safety: copy first, verify, then delete source)
+         b. Residue check: ls .tad/active/handoffs/*{epic-slug}* 2>/dev/null
+            Archive the Epic's handoffs and completion reports to .tad/archive/handoffs/ (both HANDOFF-*-{slug}.md AND COMPLETION-*-{slug}.md).
+            If any file remains: WARN "⚠️ {N} files remain in active/ for this Epic" and list them.
+      7. Announce to the user:
          "Epic {name} is complete. {N} phases, {M} files, {K} commits.
           Audit report: .tad/evidence/yolo/{epic-slug}/EPIC-COMPLETION.md"
-      Queue block (`.tad/active/session-state.md`): in the same edit that marks an Epic done she moves `current` to the next approved Epic; with no `current` and no `waiting` line left she writes `Conductor status: IDLE`. With a queue: announce, start the next approved Epic, and ask for acceptance of all of them when the queue is empty.
+      Queue block (`.tad/active/session-state.md`): in the same edit that marks an Epic done she moves `current` to the next approved Epic; with no `current` and no `waiting` line left she writes `Conductor status: IDLE`.
 
   workflow_path:
     note: "The yolo-epic Workflow is not enabled in this version; the contract is preserved here."

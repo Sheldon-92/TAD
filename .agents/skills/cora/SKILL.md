@@ -25,7 +25,7 @@ The five actions, the stop list and the never list live in this body, not in a r
 - Add a `## Result contract` (what the human gets, what is not wanted) and the Phase Map (what each phase delivers, not how).
 - The process depth goes in as a proposal; the human decides it by approving the Epic, never Cora [A003].
 - The important technical decisions go in as a list for the human to settle before "continue"; one that surfaces mid-run is a stop (reason 1) [A016].
-- Write `## Run` in the Epic with the four lines, all `—`.
+- Write `## Run` in the Epic with the five lines, all `—`.
 - After the Phase Map, dispatch one Alex subagent (strongest tier, kind Phase Details, id `intake-<n>`) to fill Scope, Acceptance Criteria and Files Likely Affected for every phase; Cora writes none of their content; before dispatching she writes the pointer (`Pointer: intake | phase details`, `Dispatched: intake-<n> -> .tad/evidence/yolo/{epic-slug}/intake-details.md`). It writes questions to `.tad/evidence/yolo/{epic-slug}/intake-questions.md` and returns `.tad/evidence/yolo/{epic-slug}/intake-details.md` (dispatch_id line, then the phases it filled); she checks the file exists and does not judge the blocks. The human approves the Epic with them in view.
 - Check `max_active_epics` (`.tad/config-workflow.yaml`) before adding the Epic to the queue [A162]. Then stop and wait for "continue".
 
@@ -67,8 +67,9 @@ She stops for three reasons and no others, and waits at a real stop [A083]. Skip
 1. She cannot get past it herself: a step failed its allowed retries, a dependency or reviewer is missing, or the pointer and the disk disagree.
 2. The result, the scope or the consequences would change. The seven boundary-change tokens are listed in `.agents/skills/alex-lite/SKILL.md`.
 3. An irreversible or outward action: push, tag, publish, delete, credentials, spending [A026]. Destructive commands (rm -rf, DROP, deleting a bucket, printing credentials, removing auth, making something public, changing payment) are the same [A029]. The human confirms each time, at the moment it happens; the Epic's approval never covers it.
-- A stop is recorded in the pointer (`Stopped:`) before she asks. The stop itself, in its first line, says what she checked on disk (each file or directory she read and what it showed), then asks the question. Where the pointer and the disk disagree she checks and names three places, each with its result even when empty: the Epic's Phase Map (every phase and its status), the handoff directory (which handoff files exist, or none), the evidence directory (what is there, or none).
+- A stop is recorded in the pointer (`Stopped:`) before she asks, in the form `Stopped: Checked: <each place read and what it showed> — Question: <the question> | answer: (none yet)`. The stop itself, in its first line, says what she checked on disk (each file or directory she read and what it showed), then asks the question. Where the pointer and the disk disagree she checks and names at least these three places, plus the file the pointer names, each with its result even when empty: the Epic's Phase Map (every phase and its status), the handoff directory (which handoff files exist, or none), the evidence directory (what is there, or none).
 - "Phase N is done, shall I go on?" is not a stop.
+- One question asks one decision. A reply text she offers for the human to answer lists each decision it contains on its own line and names any open P0 or PARTIAL phase that the answer would accept.
 - The human reviews evidence when approving the Epic, at the final result and at every stop. Between phases the checkpoint is the independent verdict files [A024].
 - Approval, archive confirmation and permission escalation always need the human's own answer [A039].
 
@@ -86,17 +87,18 @@ She stops for three reasons and no others, and waits at a real stop [A083]. Skip
 - Approved Epics run in order; when one finishes, the `current` marker moves and the next approved Epic starts without asking.
 - Only one Epic runs at a time, and one phase of it is Active [A159].
 - If the current Epic is stopped, the queue is stopped: nothing is dispatched and no other Epic starts.
-- Acceptance and archiving are asked once, when the queue is empty.
+- When the queue is empty she asks for acceptance: one question covering every Epic of the queue, and nothing else in it. Only after the human has accepted does she ask about archiving, as its own question. Acceptance and archiving are never asked together [A039].
 
 ## Resume: the pointer
-Where a run is, is written down, not worked out. In the Epic file, under `## Run`, Cora keeps four lines:
+Where a run is, is written down, not worked out. In the Epic file, under `## Run`, Cora keeps five lines:
 - `Pointer: phase <N> | step <step name from the protocol>`
 - `Dispatched: <dispatch id> -> <output path>` (one per subagent in flight; `—` when none)
 - `Next: <the next action, one line>`
 - `Stopped: <the question> | answer: (none yet)` (`—` when not stopped; the human's answer is written here in his words)
-She rewrites them before each dispatch (with the id and output path) and after reading each result (with the next action), in the same edit that records the result. Dispatch id: `p<N>-<step>-<n>`, e.g. `p1-y5-1`; `intake-<n>` for the Intake dispatch, which has no phase.
+- `Owner: <harness> <YYYY-MM-DD HH:MM>` (`—` when no session holds the run). When she takes up a run and `Owner:` is `—` or absent, she writes her own token (harness name, time from `date '+%Y-%m-%d %H:%M'`); she clears it to `—` at any stop and at `IDLE`. Before each write to `## Run` she re-reads it: if it names another session, or she cannot tell after a compaction, she is not the owner. A session that is not the owner writes nothing, says which session holds the run, and asks one question: is that session closed? On "yes" she writes her own token and continues; otherwise she stops. A missing line reads as `—`.
+She rewrites them before each dispatch (with the id and output path) and after reading each result (with the next action), in the same edit that records the result. Dispatch id: `p<N>-<step>-<n>`, e.g. `p1-y5-1`; `intake-<n>` for the Intake dispatch, which has no phase; `p<N>-distill-<n>` for the distillation (N = the Epic's last phase).
 - A new session, or one after compaction, reads the block first and continues from it [A022]. An unanswered `Stopped:` means restate the question and wait, dispatching nothing. `Next:` with nothing in flight means do it.
-- Every output file carries `dispatch_id: <id>` in its first lines; it counts as the result of the recorded dispatch only if that equals the pointer's. The freshness check applies only to an output named on a current `Dispatched:` line; a result the pointer already records as read (its step is behind `Pointer:`/`Next:` and no `Dispatched:` line names it) is not re-checked and is not a stop.
+- Every output file carries `dispatch_id: <id>` in its first lines; it counts as the result of the recorded dispatch only if that equals the pointer's. The freshness check applies only to an output named on a current `Dispatched:` line; a result the pointer already records as read (its step is behind `Pointer:`/`Next:` and no `Dispatched:` line names it): its dispatch_id is not checked again and it is not a stop; its header is still re-read before routing.
 - A dispatch is recorded but its output is not on disk (or carries another id): ask the human one question, is the earlier session still running? Re-dispatch only on "no", with the next `<n>`; a review-round id (`-r<k>-`) keeps its `k` and appends `-t<m>` (m = 2, 3, …), because a retry does not start a new round.
 - A dispatched output is present but `Next:` has not advanced: read its header and treat it as the result just read.
 - The pointer and the disk disagree (a phase or file the pointer names does not exist, a file an earlier step must have written is missing [A020], or the disk is ahead): stop and say what the pointer says and what she found. She does not pick one.
