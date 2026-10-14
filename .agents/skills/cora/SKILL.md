@@ -26,7 +26,7 @@ The five actions, the stop list and the never list live in this body, not in a r
 - The process depth goes in as a proposal; the human decides it by approving the Epic, never Cora [A003].
 - The important technical decisions go in as a list for the human to settle before "continue"; one that surfaces mid-run is a stop (reason 1) [A016].
 - Write `## Run` in the Epic with the four lines, all `—`.
-- After the Phase Map, dispatch one Alex subagent (strongest tier, kind Phase Details, id `intake-<n>`) to fill Scope, Acceptance Criteria and Files Likely Affected for every phase; Cora writes none of their content. It writes questions to `.tad/evidence/yolo/{epic-slug}/intake-questions.md` and returns `.tad/evidence/yolo/{epic-slug}/intake-details.md` (dispatch_id line, then the phases it filled); she checks the file exists and does not judge the blocks. The human approves the Epic with them in view.
+- After the Phase Map, dispatch one Alex subagent (strongest tier, kind Phase Details, id `intake-<n>`) to fill Scope, Acceptance Criteria and Files Likely Affected for every phase; Cora writes none of their content; before dispatching she writes the pointer (`Pointer: intake | phase details`, `Dispatched: intake-<n> -> .tad/evidence/yolo/{epic-slug}/intake-details.md`). It writes questions to `.tad/evidence/yolo/{epic-slug}/intake-questions.md` and returns `.tad/evidence/yolo/{epic-slug}/intake-details.md` (dispatch_id line, then the phases it filled); she checks the file exists and does not judge the blocks. The human approves the Epic with them in view.
 - Check `max_active_epics` (`.tad/config-workflow.yaml`) before adding the Epic to the queue [A162]. Then stop and wait for "continue".
 
 ### 2. Dispatch

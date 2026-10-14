@@ -25,6 +25,7 @@ yolo_execution_protocol:
   verdict_header: |
     Every review, verdict and gate file starts with this block. Each reviewer, verifier and acceptor prompt says: "start your file with the verdict header".
     ---
+    dispatch_id: <id>
     verdict: PASS | CONDITIONAL | FAIL | PARTIAL
     p0_count: <number>
     judged: <path of the file judged, or commit:<sha> for code>
@@ -39,6 +40,7 @@ yolo_execution_protocol:
     A subagent that cannot go on without the human writes `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry per question:
     `class: <1 | 2 | 3 | design>`  /  `question: <one sentence>`  /  `options: <the choices, if any>`.
     Class 1, 2, 3 are Cora's stop reasons. Class `design` is a technical decision for the designer, not for Cora or the human.
+    Line 1 of the file is `dispatch_id: <id>` of the dispatch that wrote it; a questions file with another id is stale.
 
   evidence_structure:
     base: ".tad/evidence/yolo/{epic-slug}/"
@@ -194,9 +196,9 @@ yolo_execution_protocol:
            prompt: "Review implementation diff. Focus on architecture quality + blast radius. Report P0/P1/P2.
                    Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-{domain}.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         4. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
-           a. Re-dispatch a Blake subagent with the handoff path and the review file path:
-              "Read {handoff_path} for original spec. Read {impl-review-cr.md} for P0 findings.
-               Fix and re-commit."
+           a. Re-dispatch a Blake subagent with the handoff path and the review file path. Write the pointer first (id p{N}-y6-<n>, output {completion_path}). Prompt:
+              "Read {handoff_path} for the original spec. Read {impl-review-cr.md} for the P0 findings.
+               Fix and re-commit. Then update {completion_path}: set its `dispatch_id:` line to `{id}` and add a `## Rework <n>` section listing the new commits."
               (Both paths are file references — no inline content.) Cora never fixes code herself.
            b. Re-dispatch the reviewers on the result.
            c. Circuit breaker: if the re-dispatch also fails on P0 → stop (reason 1), reported as it is [A119].
@@ -220,7 +222,7 @@ yolo_execution_protocol:
                    Check every gate row one by one; no paper acceptance [A005]. Every conclusion carries an evidence pointer; a self-report that disagrees with disk counts as failed [A037].
                    If a Blake PARTIAL is in play, recompute from the raw files before accepting it [A089].
                    Write no knowledge entry. In the gate report keep the Knowledge Assessment and list candidate discoveries under `## Knowledge candidates`.
-                   Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md (not the Epic) put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
+                   Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md (not the Epic). Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Cora reads the two headers. A gate report with no Knowledge Assessment section is incomplete: re-dispatch the Gate 4 subagent, never fill it in herself [A007].
         4. A step is not done without a completion report and its evidence files; never route forward on a step that lacks them [A020]. A Blake self-report that disagrees with the disk counts as failed [A037].
         5. Both PASS (or CONDITIONAL with no P0):
