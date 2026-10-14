@@ -1,0 +1,13 @@
+schema_version: 1
+from: "4.0.0"
+to: "4.0.1"
+generated_by: "manual"
+note: |
+  Patch v4.0.1 - upgrade cleanup fix. No entries here on purpose: with from 4.0.0
+  the engine has no git baseline for the three old Alex protocol files, and the
+  engine never deletes on download installs (the source is a tarball, not a git
+  tree; every entry reports skipped-detection-unavailable). The cleanup is the
+  .tad/deprecation.yaml key "3.0.0" entry, applied by the installer. This hop
+  exists so the engine chain 3.3.0 -> 4.0.0 -> 4.0.1 has no gap.
+delete: []
+rename: []

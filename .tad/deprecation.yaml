@@ -177,3 +177,16 @@ deprecations:
       Capability Packs (SKILL.md in .claude/skills/ or .agents/skills/) are the only active pack format.
       T2 references in .tad/skill-library/ preserve hw and supply-chain learnings for migrate-on-demand.
     date: "2026-06-11"
+
+  # Floor key: applies to every target whose pre-upgrade version is >= 3.0.0 (all 3.x and 4.0.0).
+  # 2.x projects are not covered (cross-major path, unsupported as an upgrade source for 4.x).
+  # These three paths must never be shipped again by the source tree (AC F2 checks this).
+  "3.0.0":
+    description: "Cora release cleanup - remove the three Alex protocol files whose content moved to the Cora skill (v4.0.0), cleaned without needing a git source"
+    files:
+      - .agents/skills/alex/references/yolo-manual-conductor-protocol.md
+      - .agents/skills/alex/references/update-roadmap-protocol.md
+      - .agents/skills/alex/references/status-panoramic-protocol.md
+    note: |
+      A customised copy is removed too; the installer keeps a backup under .tad-backup/.
+    date: "2026-10-14"

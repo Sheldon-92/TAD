@@ -440,6 +440,44 @@ EOF
     fi
     echo "  HOP: present and well-formed (${PREV_VER}-to-${EXP_VER})"
 
+    # ── 4.0.1: engine validity of every in-scope manifest ──
+    # A manifest the engine rejects (e.g. a rename/delete entry without `type:`) is
+    # silently skipped at upgrade time, so the old files stay. Run the engine's own
+    # validator (--dry-run, empty target) for every manifest whose `from` major is
+    # >= (expected major - 1), derived from EXP_VER (not hard-coded). Older manifests
+    # are out of scope (2.42.0-to-2.43.0.yaml is known to fail validation).
+    ENGINE="$REPO/.tad/hooks/lib/migration-engine.sh"
+    if [ ! -f "$ENGINE" ]; then
+      echo "VERDICT: migration FAIL — migration-engine.sh missing (exit 1)"
+      exit 1
+    fi
+    MIN_MAJOR=$(( ${EXP_VER%%.*} - 1 ))
+    ENG_FAIL=0
+    ENG_COUNT=0
+    for mf in "$REPO"/.tad/migrations/*-to-*.yaml; do
+      [ -f "$mf" ] || continue
+      mb="$(basename "$mf" .yaml)"
+      mfrom="${mb%%-to-*}"
+      mto="${mb#*-to-}"
+      [ "${mfrom%%.*}" -ge "$MIN_MAJOR" ] 2>/dev/null || continue
+      ENG_DIR="$(mktemp -d)"
+      mkdir -p "$ENG_DIR/.tad"
+      ENG_RC=0
+      ENG_OUT="$(bash "$ENGINE" --from "$mfrom" --to "$mto" --target "$ENG_DIR" --source "$REPO" --dry-run 2>&1)" || ENG_RC=$?
+      rm -rf "$ENG_DIR"
+      ENG_COUNT=$((ENG_COUNT + 1))
+      if [ "$ENG_RC" -ne 0 ]; then
+        echo "ENGINE REJECT: $mb (exit $ENG_RC)"
+        printf '%s\n' "$ENG_OUT" | grep -i 'reject\|error' | head -3 | sed 's/^/    /'
+        ENG_FAIL=$((ENG_FAIL + 1))
+      fi
+    done
+    if [ "$ENG_FAIL" -gt 0 ]; then
+      echo "VERDICT: migration FAIL — $ENG_FAIL manifest(s) rejected by the migration engine (exit 1)"
+      exit 1
+    fi
+    echo "  ENGINE: $ENG_COUNT in-scope manifest(s) validate (major >= $MIN_MAJOR)"
+
     # Manifest path
     MANIFEST="$REPO/.tad/migrations/${PREV_VER}-to-${EXP_VER}.yaml"
 

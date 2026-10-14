@@ -5,14 +5,19 @@ generated_by: "manual"
 note: |
   Major release v4.0.0 - Epic EPIC-20261013 Cora conductor role. Cora is a third
   role and the human's entry point; the Epic-conducting protocol moved out of Alex
-  into the Cora skill. Three framework files are removed or renamed:
-  the manual YOLO conductor protocol and the roadmap-update protocol are deleted
-  (their content lives in .agents/skills/cora/references/conductor-protocol.md and
-  status-roadmap-protocol.md), and the panoramic status protocol is renamed to the
-  Cora status-roadmap protocol. Nothing under .claude/, CLAUDE.md or
-  .codex/hooks.json is listed here; the installer handles those. Epic files that
-  the project itself keeps under .tad/active/epics/ are project data and are not
-  touched by this manifest.
+  into the Cora skill. Three framework files are deleted from the Alex skill:
+  the manual YOLO conductor protocol, the roadmap-update protocol and the
+  panoramic status protocol (their content lives in
+  .agents/skills/cora/references/conductor-protocol.md and
+  status-roadmap-protocol.md).
+  Corrected in 4.0.1: the status protocol was a rename here, but the installer
+  copies the Cora file before the engine runs, so a rename would overwrite it with
+  the 3.x Alex content; it is now a delete. The engine only deletes when it can
+  compare against git history of the source tree, which download installs do not
+  have, so download installs are cleaned by .tad/deprecation.yaml (key "3.0.0").
+  Nothing under .claude/, CLAUDE.md or .codex/hooks.json is listed here; the
+  installer handles those. Epic files that the project itself keeps under
+  .tad/active/epics/ are project data and are not touched by this manifest.
 delete:
   - path: ".agents/skills/alex/references/yolo-manual-conductor-protocol.md"
     type: "file"
@@ -20,7 +25,7 @@ delete:
   - path: ".agents/skills/alex/references/update-roadmap-protocol.md"
     type: "file"
     reason: "Roadmap and status updates are Cora's; the protocol lives in cora/references/status-roadmap-protocol.md."
-rename:
-  - from: ".agents/skills/alex/references/status-panoramic-protocol.md"
-    to: ".agents/skills/cora/references/status-roadmap-protocol.md"
-    reason: "The status and roadmap protocol moved from Alex to Cora."
+  - path: ".agents/skills/alex/references/status-panoramic-protocol.md"
+    type: "file"
+    reason: "The status and roadmap protocol moved from Alex to Cora (cora/references/status-roadmap-protocol.md)."
+rename: []
