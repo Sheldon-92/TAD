@@ -7,11 +7,21 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：3.3.0（已发布版本，2026-10-10，标签 `v3.3.0`）｜ **默认通道**：full（`/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.0（发布准备完成，未 push、未打标签，等人确认；上一已发布版本见 CHANGELOG）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
+
+### ✅ ACCEPTED 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
+
+- Epic: `.tad/active/epics/EPIC-20261014-cora-carry-forward-fixes.md` (Conductor: Cora; 2 phases: Protocol gaps / Queue and run record)
+- Approved 2026-10-14 ("继续"). [x] Phase 1 Protocol gaps — Gate 4 PASS (`.tad/evidence/yolo/cora-carry-forward-fixes/phase1-gate-report.md`). [x] Phase 2 Queue and run record — closed as PARTIAL by the human ("选2"): Gate 4 PARTIAL p0 1 (`phase2-gate-report.md`; open P0 = acceptance and archiving asked as one question → parent Phase 4, CF-1). Completion: `.tad/evidence/yolo/cora-carry-forward-fixes/EPIC-COMPLETION.md`; distillation wrote 5 pattern entries (uncommitted). Accepted by the human 2026-10-14 ("继续我要把整个流程整个都完成啊"); archiving asked once at the parent Epic's end.
+
+### 🔄 RUNNING 2026-10-14 (Cora conducting). EPIC-20261013 Cora — a third role: the human's entry point and the conductor (A-B-C)
+
+- Epic: `.tad/active/epics/EPIC-20261013-cora-conductor-role.md` (4 phases). [x] 1 Cora herself (Gate 4 PASS). [x] 2 Wiring (Gate 4 PASS). [x] 3 Real run — closed PARTIAL (Gate 4 `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md`, open P0 CF-1 carried). [ ] 4 Release — active, waiting for 4 human decisions before design; scope includes the carry-forward fixes (CF-1..CF-10, C-1..C-8).
+- Conductor: Cora since 2026-10-14 (the human: "继续我要把整个流程整个都完成啊"). Human stops left: README opening, push, release. Where the run is: the Epic's `## Run` block.
 
 ### ✅ DONE 2026-10-10. EPIC-20261008 multi-harness restore & cleanup (released as v3.3.0)
 

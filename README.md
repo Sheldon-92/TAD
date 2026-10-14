@@ -1,6 +1,6 @@
 # TAD - Triangle Agent Development
 
-**Version 3.3.0 — Claude Code · Codex · OpenCode · Cursor**
+**Version 4.0.0 — Claude Code · Codex · OpenCode · Cursor**
 
 **You talk to Cora. She gets the work done and shows you the result.**
 
@@ -83,7 +83,7 @@ Facts only. Nothing unrun is described as verified. Fixtures are scripted headle
 
 | Harness | Run | Not run |
 |---------|-----|---------|
-| **Claude Code** | Cora headless smoke fixtures (6/6) and queue fixtures (5/5), no P0; one live conducted run on a real Epic. | No interactive live session is on disk. |
+| **Claude Code** | Cora headless smoke fixtures (6/6) and queue fixtures (5/5), no P0; one live conducted run (a real Claude Code session conducting a real Epic in this repository), which closed PARTIAL; its open P0 was fixed afterwards and re-checked on the scripted fixtures only. | No interactive live session is on disk. Several paths were checked by text only; they are listed under known limits in the [4.0.0 changelog entry](CHANGELOG.md). |
 | **Codex** | The same fixtures, 6/6 and 5/5, no P0; in the live run, Steps Y1 to Y5 only. | Gates, acceptance and distillation were not run on Codex; conducting a run whose fixtures need `claude -p` was blocked. |
 | **Cursor** | Nothing. | Cora was not run on Cursor. |
 | **OpenCode** | Nothing. | Cora was not run on OpenCode. |
@@ -109,7 +109,7 @@ Details: [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md). Claude Code loads `AGEN
 To check an install:
 
 ```bash
-cat .tad/version.txt     # 3.3.0
+cat .tad/version.txt     # 4.0.0
 ```
 
 Installed projects update with `$tad-update` (Codex) or `/tad-update` (OpenCode); it checks versions read-only, refuses downgrades, backs up first, and applies only after you confirm. It does not detect Claude Code projects: run `bash tad.sh --platform claude-code` there.
@@ -157,6 +157,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**TAD v3.3.0 — Claude Code · Codex · OpenCode · Cursor**
+**TAD v4.0.0 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 3.3.0 — Alex / Blake is the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
+**Version 4.0.0 — Cora, Alex and Blake are the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
 
 ## 安装方式
 
@@ -62,7 +62,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 3.3.0
+cat .tad/version.txt          # 应显示 4.0.0
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认：从 Cora 开始（Codex 用 $cora）。说清想要的结果，她安排 Epic，你说「继续」后她通过 subagent 和 gate 跑完
@@ -109,6 +109,14 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 6. **手工还原一个条目**：从存档的 `tree/<路径>` 拷回 `<路径>`；原位置若已是链接，先删链接，不要直接 `mv` 覆盖。若项目把 `.claude/` 纳入 git，替换会显示为删除加新增链接，需自行提交。
 7. **降级为只报告**：没有 SHA-1 工具、台账缺失或损坏、备份根无法解析、`.claude` 是符号链接、或存在上次中断留下的 `.tad-adopt-tomb.*` 时，安装照常成功，但只打印 `CLAUDE-ADOPT-DEGRADED <原因>` 与分类，不替换任何东西。`--claude-adopt=off` 完全回到不接管的行为。
 8. 同步工具（如 Syncthing）对符号链接的处理未测。
+
+### 从 3.x 升级到 v4.0.0（新增 Cora）
+
+- 重新运行安装命令（按你的平台加 `--platform`）。安装后出现 `/cora`（Codex 用 `$cora`）。
+- `/alex`、`/blake` 和已有的 handoff 照常可用。
+- 没有 `**Conductor**: Cora` 行的 Epic 归 Alex；Cora 接手前会先问你。
+- `.tad/migrations/` 下的 4.0.0 迁移清单删除 `alex/references/yolo-manual-conductor-protocol.md` 和 `alex/references/update-roadmap-protocol.md`，并把 `alex/references/status-panoramic-protocol.md` 改名为 `cora/references/status-roadmap-protocol.md`；不动 `.claude/`、`CLAUDE.md`、`.codex/hooks.json`。
+- 新项目不带本仓库自己的 `.tad/project-knowledge/principles.md` 和 `patterns/_index.md`；Cora 激活时会报告缺失并继续。
 
 ### 升级到 v3.0.0（平台支持整合）
 

@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-14 11:35
+Generated: 2026-10-14 15:59
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -70,6 +70,13 @@ Generated: 2026-10-14 11:35
 | HANDOFF-2026-10-13-cora-phase1-slim-addendum-1.md | code |  |
 | HANDOFF-2026-10-13-cora-phase1-slim-addendum-2.md | code |  |
 | HANDOFF-2026-10-13-cora-phase1-slim.md | code |  |
+| HANDOFF-2026-10-14-cora-carry-forward-fixes-phase1.md | mixed | Five small wording fixes in three protocol files of the Cora conductor, so that ids, stops and distillation inputs are d |
+| HANDOFF-2026-10-14-cora-carry-forward-fixes-phase2.md | e2e | 1. **Rework `phase2-queue.sh`** (C10 / D2(a)): protocol-consistent fixtures, a corrected rubric, a prompt note that allo |
+| HANDOFF-2026-10-14-cora-conductor-role-phase4a.md | mixed | Close the carry-forward list in `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md` section 5 that belongs to |
+| HANDOFF-2026-10-14-cora-conductor-role-phase4b.md | mixed | 1. Every place that introduces TAD, rewritten around three roles (the README body is part 4c). |
+| HANDOFF-2026-10-14-cora-conductor-role-phase4c.md | mixed | `README.md` rewritten around three roles, opening with the alternative the human chose. Two dispatches: |
+| HANDOFF-2026-10-14-cora-conductor-role-phase4d.md | mixed | Everything from Phases 1–3 and 4a–4c made into one release commit chain on `feat/cora-role`, every release gate gree |
+| HANDOFF-2026-10-14-cora-conductor-role-phase4e.md | e2e | Proof that someone installing the published release gets Cora: a fresh install from the tag `v4.0.0` on Claude Code and  |
 | HANDOFF-2026-10-14-cora-phase2-slim.md | code |  |
 
 ## Active Epics
@@ -77,6 +84,7 @@ Generated: 2026-10-14 11:35
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
 | EPIC-20261013-cora-conductor-role.md | **Epic ID**: EPIC-20261013-cora-conductor-role |
+| EPIC-20261014-cora-carry-forward-fixes.md | **Epic ID**: EPIC-20261014-cora-carry-forward-fixes |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -160,10 +168,10 @@ Generated: 2026-10-14 11:35
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 44 | journal |
+| evidence/journal/ | 46 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
-| evidence/live-regression/ | 9 | live-regression |
+| evidence/live-regression/ | 13 | live-regression |
 | evidence/maintenance/ | 1 | maintenance |
 | evidence/metrics/ | 1 | metrics |
 | evidence/overrides/ | 0 | overrides |
@@ -191,7 +199,7 @@ Generated: 2026-10-14 11:35
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 989 | yolo |
+| evidence/yolo/ | 3866 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
