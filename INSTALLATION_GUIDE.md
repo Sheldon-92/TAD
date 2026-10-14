@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 4.0.0 — Cora, Alex and Blake are the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
+**Version 4.0.1 — Cora, Alex and Blake are the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
 
 ## 安装方式
 
@@ -62,7 +62,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 4.0.0
+cat .tad/version.txt          # 应显示 4.0.1
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认：从 Cora 开始（Codex 用 $cora）。说清想要的结果，她安排 Epic，你说「继续」后她通过 subagent 和 gate 跑完
@@ -112,10 +112,10 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 ### 从 3.x 升级到 v4.0.0（新增 Cora）
 
-- 重新运行安装命令（按你的平台加 `--platform`）。安装器会从你已装的版本起，按顺序应用各版本的迁移清单（3.0 至 3.2 的项目会逐跳经过），最后应用 4.0.0 的清单。安装后出现 `/cora`（Codex 用 `$cora`）。
+- 重新运行安装命令（按你的平台加 `--platform`）。安装后出现 `/cora`（Codex 用 `$cora`）。4.0.1 更正：下面说的三个旧 Alex 协议文件在升级到 4.0.1 或更高版本时才会被删除，安装 4.0.0 本身没有删；已在 4.0.0 的项目，用 4.0.1 的安装器再装一次即可清理。3.0.0 没有 3.0.0 到 3.0.1 的迁移跳，3.0.0 的项目会看到引擎的链缺口警告，文件清理不依赖迁移跳。
 - `/alex`、`/blake` 和已有的 handoff 照常可用。
 - 没有 `**Conductor**: Cora` 行的 Epic 归 Alex；Cora 接手前会先问你。
-- `.tad/migrations/` 下的 4.0.0 迁移清单删除 `alex/references/yolo-manual-conductor-protocol.md` 和 `alex/references/update-roadmap-protocol.md`，并把 `alex/references/status-panoramic-protocol.md` 改名为 `cora/references/status-roadmap-protocol.md`；不动 `.claude/`、`CLAUDE.md`、`.codex/hooks.json`。
+- 4.0.1 更正：安装器按 `.tad/deprecation.yaml`（键 `"3.0.0"`）删除 `alex/references/yolo-manual-conductor-protocol.md`、`alex/references/update-roadmap-protocol.md`、`alex/references/status-panoramic-protocol.md`（Cora 用的是 `cora/references/status-roadmap-protocol.md`）；改过的副本也会删，副本留在 `.tad-backup/`；不动 `.claude/`、`CLAUDE.md`、`.codex/hooks.json`。
 - 新项目不带本仓库自己的 `.tad/project-knowledge/principles.md` 和 `patterns/_index.md`；Cora 激活时把缺失的知识文件视为空，一句话说明后继续（4.0.0 之前，Codex 上会判为激活未完成）。
 
 ### 升级到 v3.0.0（平台支持整合）
