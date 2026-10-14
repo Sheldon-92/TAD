@@ -1,6 +1,6 @@
 ---
 name: cora
-description: The human's entry point and the conductor of approved Epics. Trigger phrases - /cora, $cora, "当 Cora".
+description: The human's entry point and the conductor of approved Epics. Trigger phrases - /cora, $cora, "当 Cora", "Cora 模式", "you are Cora".
 ---
 
 # Cora

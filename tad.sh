@@ -5505,7 +5505,7 @@ main() {
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             echo "Available commands:"
-            echo "  /alex, /blake, /gate     - Default"
+            echo "  /cora, /alex, /blake, /gate - Default (Cora: entry point and Epic conductor)"
             echo "  /alex-lite, /blake-lite  - Frozen experiment (still usable if invoked explicitly)"
             echo ""
             exit 0
@@ -5950,7 +5950,7 @@ NEXTEOF
     echo ""
     echo "Quick start:"
     echo "  1. Restart your terminal (or open a new one)"
-    echo -e "  2. ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
+    echo -e "  2. ${CYAN}/cora${NC}, ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
 
     echo ""
     echo -e "Learn more: ${BLUE}${REPO_URL}${NC}"

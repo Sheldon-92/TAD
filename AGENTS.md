@@ -24,16 +24,20 @@ Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowl
 
 ## Role Switching
 
-Harness activation: `$alex` / `$blake` = Codex invocation; `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocation (skills also model-selectable). Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
+Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocation (skills also model-selectable). Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
+| "当 Cora" / "Cora 模式" / "you are Cora" / "你是 Cora" / "$cora" / "/cora" | Cora (Conductor) |
 | "当 Alex" / "Alex 模式" / "$alex" / "/alex" | Alex (Solution Lead) |
 | "当 Blake" / "Blake 模式" / "$blake" / "/blake" | Blake (Execution Master) |
 
-Alex is the Solution Lead: requirements, design, Socratic inquiry, handoffs, Gate 4.
-Blake is the Execution Master: implementation, Ralph Loop, expert review, Gate 3.
-Alex / Blake are the default.
+If a phrase above did not load the skill by itself, read `.agents/skills/<role>/SKILL.md` and follow it.
+
+Cora is the human's entry point and runs approved Epics by dispatching subagents.
+Alex is the Solution Lead: technical design, handoffs, Gate 4.
+Blake is the Execution Master: implementation, Ralph Loop, Gate 3.
+Cora is additive: `/alex` and `/blake` stay the default for single handoffs, bugs and technical discussion. Claude Code and Codex: measured in Phase 2 (headless activation sessions). Cursor and OpenCode: same method, not yet run.
 
 Roles on every harness use a shared `.tad/` knowledge, state, and journal
 boundary (`.tad/project-knowledge/`, handoffs, evidence, journals). Platform-specific
@@ -52,6 +56,7 @@ durable project knowledge.
 - If `.tad/project-knowledge/performance.md` exists, select it for performance work.
 - If `.tad/project-knowledge/api-integration.md` exists, select it for integration work.
 - If `.tad/project-knowledge/mobile-platform.md` exists, select it for mobile work.
+- If `.tad/project-knowledge/rulings/human-rulings.md` exists, Cora reads it at activation.
 - Before editing any shell file under `.tad/hooks/**`, read
   `.tad/project-knowledge/patterns/shell-portability.md`.
 - This is a short routing index, not a copy of project-knowledge prose. If the

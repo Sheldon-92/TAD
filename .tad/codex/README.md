@@ -73,7 +73,7 @@ Codex adapter handles **platform mechanics only**: how hooks fire, how skills lo
 | Responsibility | Codex Mechanism |
 |---------------|----------------|
 | Skill loading | `.agents/skills/` with progressive disclosure |
-| Role routing | `AGENTS.md` → `$alex` / `$blake` |
+| Role routing | `AGENTS.md` → `$cora` / `$alex` / `$blake` |
 | Hook execution | `.codex/hooks.json` with trust-review |
 | Subagent spawning | Built-in + future custom `.codex/agents/*.toml` |
 | Sandbox/permissions | Permission profiles (filesystem + network) |
