@@ -1,4 +1,4 @@
-# schema=1 rows=1848
+# schema=1 rows=1851
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -368,6 +368,7 @@ skill	08b0866ef3438d7e7e2b6e93fbaaf3fc77886983	ai-voice-production/SKILL.md
 skill	08b6a71d475aa030bb667e024976b41cf9e14c8d	blake/SKILL.md
 skill	08d3520c09b2108cd7b9e3fa92ea58e619848dbd	rag-retrieval/references/hybrid-rerank-rules.md
 skill	08ebd66956b5a0335782210ce88709c96c8cfbef	tad-maintain/SKILL.md
+skill	08f6801ab5312058bac3d79b503024c3b0476c37	cora/references/conductor-protocol.md
 skill	093ab4c735cadfc96f627bba9d886b90307250a1	agent-memory/references/context-editing-memory-tool.md
 skill	0954e2a1cd78bbd58394c8ef30019dde9fa7134a	code-security/references/vulnerability-triage-rules.md
 skill	099595d4fd6d376bcc6766a37469428afb02db8d	capability-builder/SKILL.md
@@ -735,6 +736,7 @@ skill	43fca737e40df7326adc05f89ef8f1a6aa436210	knowledge-graph/references/graphr
 skill	4400a5e72bfce6ca734f030e24f49bc5723f1647	alex/references/socratic-inquiry-protocol.md
 skill	440737901b123b75e3b377aa2dd7852b50a09d66	alex/SKILL.md
 skill	441894fd9bb29d7929e277256475bea4d9d14f4a	alex/SKILL.md
+skill	442dde43b247aac944c580265a3cd829618c612f	alex/references/distillation-loop-protocol.md
 skill	44512a1d55ed5fc5930cabdf05ba8366610f03c7	reading-companion/fixtures/sample.pdf
 skill	450bb8ceaedc707c39c4fbcb696a8779cf43f014	_archived/pptx-creation.md
 skill	4534b2f6c887c8c4f37b61795b778f60ab94e8e4	tad/SKILL.md
@@ -1359,6 +1361,7 @@ skill	ad75bbe7365f4a4c2fec3b4590c860de568a699c	ai-podcast-production/examples/fu
 skill	ad9bbd6621e0cfb8106010ebf1bd94a3e63b7f44	tad-help/SKILL.md
 skill	ae252aff951fd687e76a28929eed1fe8bf474c45	alex/references/experiment-path-protocol.md
 skill	ae58048e7f1174557fa9c2af42dff0b8e27c4e5d	alex/SKILL.md
+skill	ae71641a8ac9a5bfff53234ed9f9b591206dd01d	cora/SKILL.md
 skill	ae7abc5f589af8189265eb45ff623ef7d5402a2c	tad-help/SKILL.md
 skill	ae88f800a1cee89dd982d50f08287f238b5eec55	_archived/verification.md
 skill	ae8bb0e06fb0894fadcd07821cd7aec07f978ba6	tad-elicit/SKILL.md
