@@ -1,4 +1,4 @@
-# schema=1 rows=1862
+# schema=1 rows=1865
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -401,6 +401,7 @@ skill	0c8027fdfc6b8ae3876dcda739710b0818551a85	mobile-testing/references/device-
 skill	0c88064cb30822c6f0ee05420d75992eef0dcd26	alex/references/acceptance-protocol.md
 skill	0c8a42bdc476790a011a620dddd504142288e678	ai-evaluation/references/human-eval-protocol.md
 skill	0d0cec25175611738594bc52cd99c1cffe54a757	alex/SKILL.md
+skill	0d3241fa53bb2d4d82baf31372b4baa49364c4ed	blake/SKILL.md
 skill	0d39ca39d68c353dd450e6cee9160854ffa2d664	alex/SKILL.md
 skill	0d5d4d5b495ae0a97f9b8265508584232dd92aeb	alex/SKILL.md
 skill	0d7369a4201a56add368ac541a614b6f604ec0b3	tad-help/SKILL.md
@@ -598,6 +599,7 @@ skill	2c9f1f1c6a5f8c5d04714ae968ac04071e52f9ab	research-github/SKILL.md
 skill	2cccaa6134ffabec7516bb08d40c73773f566497	ai-voice-production/examples/audiobook-tool-selection.md
 skill	2d0ae0e2f04ae6a605358ba996c0091118c54059	product-thinking/examples/pressure-test-verdict.md
 skill	2d7d1c19ec678a10e4a4da87f9611b09c6104770	alex/references/yolo-execution-protocol.md
+skill	2d9acc05f95c9c404f0a97e223541eb6d7a5d4f1	alex/SKILL.md
 skill	2daf427a7e2d5857cffde31c410027c885d2eef6	agent-orchestration/examples/agent-orchestration-fixture.md
 skill	2e023241f5a34d0ce1748005fcb36e564499d26a	web-frontend/SKILL.md
 skill	2ea505bcdbaf5681414c59393ee23fc6a1f10bae	product-thinking/adapters/content.md
@@ -1758,6 +1760,7 @@ skill	f58b99f26ae7378b9eb626a25158cf7631baeaca	ai-voice-production/references/ap
 skill	f59d3954a5f81e5b2df609c85b62355f13416c5c	ai-agent-architecture/examples/multi-agent-design-decisions.md
 skill	f59d5de92e15e25d91b0af916418654690653a85	cora/references/conductor-protocol.md
 skill	f5cc25353680f552685d7e14bab64ffe3c850eb8	video-creation/scripts/verify-prereqs.sh
+skill	f5d179dea1d0018d2132a8d0389035c2e3e10f2c	tad-help/SKILL.md
 skill	f609482b9a3e0dcc411abf35872b9a855ea7cf50	code-security/references/vulnerability-triage-rules.md
 skill	f60b168f21ec19ca7cf40129ed92687f82fb95bd	alex/references/cancel-protocol.md
 skill	f60f1b4499fe57763443514ebaa3348ad77d8bc9	hw-testing/references/power-on-test.md
