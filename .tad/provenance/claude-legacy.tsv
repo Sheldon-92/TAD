@@ -1,4 +1,4 @@
-# schema=1 rows=1851
+# schema=1 rows=1852
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -364,6 +364,7 @@ skill	06f0d48483fa80e4fb2e0950c1478d0c87326b87	synthetic-data/references/dedupli
 skill	06fde29f31da9e061a962cca602f33325ac61167	blake/SKILL.md
 skill	071a392bf57dac1caadb015ec1634a0b13dcb6e8	code-security/examples/sast-dast-triage-pipeline.md
 skill	075d139b55ff85fab3f1ba6d941a84aaa8ebc51c	alex/SKILL.md
+skill	080a8dfc511393fac3e15616f428ac71dbfc75d6	cora/SKILL.md
 skill	08b0866ef3438d7e7e2b6e93fbaaf3fc77886983	ai-voice-production/SKILL.md
 skill	08b6a71d475aa030bb667e024976b41cf9e14c8d	blake/SKILL.md
 skill	08d3520c09b2108cd7b9e3fa92ea58e619848dbd	rag-retrieval/references/hybrid-rerank-rules.md
