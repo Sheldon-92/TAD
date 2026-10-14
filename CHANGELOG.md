@@ -5,6 +5,49 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-10-14
+
+Major release. TAD now has three roles, not two. **Cora** is the human's entry point and the conductor: she agrees the result with you, has an Epic written, and after you say "continue" runs it to the end by dispatching Alex, Blake and independent reviewers as subagents. Alex and Blake still work exactly as before when you call them directly.
+
+### What changed
+
+- **Cora, a third role.** New skill `.agents/skills/cora/` (`/cora`, `$cora`, or "当 Cora"). Cora writes no implementation, edits no handoff and gives no verdict; every verdict comes from a subagent that did not do the work.
+- **The conductor protocol moved out of Alex.** Epic conducting now lives in `cora/references/conductor-protocol.md`. `alex/references/yolo-manual-conductor-protocol.md` and `alex/references/update-roadmap-protocol.md` are removed; `alex/references/status-panoramic-protocol.md` became `cora/references/status-roadmap-protocol.md`. Alex gained `alex/references/conductor-dispatch-mode.md` for being dispatched by Cora.
+- **First principle: "Three Roles, Independent Judgment".** No one judges their own work; separate terminals with the human as the bridge are one way to get that, a fresh subagent dispatched by Cora is another.
+- **Queue, pointer and owner line.** Cora keeps a queue of Epics, a `Pointer:` line in each Epic's `## Run` block so a new session can resume, and an `Owner:` line so a session that is not the owner writes nothing and asks.
+- **Acceptance and archiving are two questions.** Cora asks whether you accept, alone; archiving is a separate question after acceptance. One question asks one decision.
+- **Per-round verdict files.** A re-dispatched review or gate writes a `-r<k>` file; no verdict file is overwritten.
+- **Epic template** gained a `Closed - PARTIAL` status that counts as closed, not as done.
+- **Distillation** gets its own dispatch id form (`p<N>-distill-<n>`), output path and pointer rule.
+- **The installer ships Cora on all four targets** (Claude Code, Codex, OpenCode, Cursor) and prints `/cora` in its quick-start line. `AGENTS.md`, `README.md`, `INSTALLATION_GUIDE.md`, `docs/MULTI-PLATFORM.md` and the help skills introduce TAD as three roles.
+
+### Upgrading from 3.x
+
+1. Re-run the installer for your harness (`--platform claude-code|codex|opencode|cursor`; Codex is the default). `/cora` (`$cora` on Codex) appears.
+2. `/alex`, `/blake` and your existing handoffs work unchanged.
+3. Epics without a `**Conductor**: Cora` line are Alex's. Cora asks before taking one over.
+4. The 4.0.0 migration manifest under `.tad/migrations/` removes `alex/references/yolo-manual-conductor-protocol.md` and `alex/references/update-roadmap-protocol.md` and renames `alex/references/status-panoramic-protocol.md` to `cora/references/status-roadmap-protocol.md`. It touches nothing under `.claude/`, `CLAUDE.md` or `.codex/hooks.json`.
+5. A freshly installed project does not ship the TAD repository's own `.tad/project-knowledge/principles.md` or `patterns/_index.md`; Cora's activation reports them missing and carries on (seen in both local fresh-install checks below).
+
+### What was run on each harness
+
+Facts only. Fixtures are scripted headless runs (`claude -p`, `codex exec`), not interactive sessions. Evidence is under `.tad/evidence/`, which is not shipped.
+
+- **Claude Code:** Cora smoke fixtures 6/6 and queue fixtures 5/5 pass, no P0 (`phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`). One live conducted run: a real Claude Code session conducting a real Epic in this repository (the carry-forward fixes). That run closed PARTIAL (`phase3-gate-report.md`); its open P0, acceptance and archiving asked as one question, was fixed in this release and re-checked on the scripted fixtures only (queue scenario q3 passes). Local fresh install from the local tree, `/cora you are Cora.`: install exit 0, session exit 0, Cora described her five actions (`phase4d-install-claude.md`). Fixed-task regression chain: PASS on 2026-10-14 (`live-regression/claude-code-20261014.md`).
+- **Codex:** the same fixtures, 6/6 and 5/5, no P0. In the live run the journal records that Codex resumed an Epic from its pointer (the words given to it are not on disk) and conducted steps Y1 to Y5 only. Local fresh install, `$cora you are Cora.`: install exit 0, session exit 0 (`phase4d-install-codex.md`). Fixed-task chain: PASS on 2026-10-14; under default trust no write-time trace row appeared, with the hook trust review bypassed it did (`live-regression/codex-20261014.md`).
+- **OpenCode, Cursor:** Cora was not run. The fixed-task chain (no Cora) passed on 2026-10-14 on both (`live-regression/opencode-20261014.md`, `cursor-20261014.md`).
+
+### Known limits
+
+- Not run: Cora on Cursor and OpenCode; gates and acceptance with Codex as the conductor; Codex conducting runs whose fixtures need `claude -p` (blocked, R-CC-9); the retry id `-t<m>` and the Y4 round ids (text only); interactive Claude Code; the download install paths before the post-publish check.
+- Checked by text only, not run: the PARTIAL close path, a human "yes" that answers the in-flight question, and the ownership-question exception.
+- The owner token (harness plus minute) cannot tell a compaction from a competing session; the rule fails safe at the cost of one question. After an owner "yes", a still-running old subagent can write over a re-dispatched output; the freshness check stops the run.
+- Accepting a second FAIL as-is is recorded as `Closed - PARTIAL`, which under-reports; Cora never upgrades a verdict.
+- The owner time needs `date`; a tool-restricted session without a shell writes the token without a time.
+- The dispatch side of distillation (writing the pointer before dispatch) was not exercised; the read side was.
+- `.agents/skills/tad-scenario/SKILL.md` and a few role-internal skills still use the older "Agent A / Agent B" and two-terminal wording.
+- Codex hooks did not take effect under default trust in the runs measured; a run through a completed trust review was not tested.
+
 ## [3.3.0] - 2026-10-10
 
 3.0.0 stopped offering Claude Code as an install target (see the 3.0.0 entry below). 3.3.0 restores it. Claude Code, Codex, OpenCode and Cursor are now four install targets that share one skill tree, `.agents/skills/`. Claude Code does not read that directory, so for it the installer adds one link per skill under `.claude/skills/`.

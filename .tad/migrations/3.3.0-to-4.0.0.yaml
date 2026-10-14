@@ -1,0 +1,26 @@
+schema_version: 1
+from: "3.3.0"
+to: "4.0.0"
+generated_by: "manual"
+note: |
+  Major release v4.0.0 - Epic EPIC-20261013 Cora conductor role. Cora is a third
+  role and the human's entry point; the Epic-conducting protocol moved out of Alex
+  into the Cora skill. Three framework files are removed or renamed:
+  the manual YOLO conductor protocol and the roadmap-update protocol are deleted
+  (their content lives in .agents/skills/cora/references/conductor-protocol.md and
+  status-roadmap-protocol.md), and the panoramic status protocol is renamed to the
+  Cora status-roadmap protocol. Nothing under .claude/, CLAUDE.md or
+  .codex/hooks.json is listed here; the installer handles those. Epic files that
+  the project itself keeps under .tad/active/epics/ are project data and are not
+  touched by this manifest.
+delete:
+  - path: ".agents/skills/alex/references/yolo-manual-conductor-protocol.md"
+    type: "file"
+    reason: "Epic conducting moved from Alex to the Cora skill (cora/references/conductor-protocol.md)."
+  - path: ".agents/skills/alex/references/update-roadmap-protocol.md"
+    type: "file"
+    reason: "Roadmap and status updates are Cora's; the protocol lives in cora/references/status-roadmap-protocol.md."
+rename:
+  - from: ".agents/skills/alex/references/status-panoramic-protocol.md"
+    to: ".agents/skills/cora/references/status-roadmap-protocol.md"
+    reason: "The status and roadmap protocol moved from Alex to Cora."
