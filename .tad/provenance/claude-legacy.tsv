@@ -1,4 +1,4 @@
-# schema=1 rows=1869
+# schema=1 rows=1872
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -468,6 +468,7 @@ skill	16e5f9944fe0099c1db3b1e98a34a19d30efeddb	code-security/references/dast-rul
 skill	16e62761b9024359c277f9070a4c1f47c4dd429d	blake/SKILL.md
 skill	16e8c5753684285b48eb75bcbf5181e18067371f	alex/SKILL.md
 skill	171790bdf7bf0a0619c965c419951837c1595935	release-runbook/references/sync-ops.md
+skill	17308acb0cdbaf8d38c3081d4adc6a2b3917ea32	tad-help/SKILL.md
 skill	176009272c87906183b8da834b2fb55966c42948	alex/SKILL.md
 skill	179751a928352f836c7c9d852adfa455ec67c497	agent-computer-interface/SKILL.md
 skill	17b777629108808f66e205ffc21e81e715cb99cb	mobile-development/references/api-integration.md
@@ -864,6 +865,7 @@ skill	569d72167ca075515e870ba5d1eda14bb4b6c6a7	blake/SKILL.md
 skill	5771ba835a5dc2f07187cdcebe0f27b35ceb1ed5	tad-handoff/SKILL.md
 skill	58b0be79a4e2a107d868b4e03f24bedfc21eebd1	reading-companion/tools/bridge-server.py
 skill	58ece129671a55672181dcf3bec8ee96feb10752	product-thinking/references/pressure-test-rubric.md
+skill	594d5d0824ffb5889b770cf1f7a46fda6c4a091f	alex/SKILL.md
 skill	597b37c95fb09be0dcd65037ba503e2bd64c6d3e	alex/references/publish-protocol.md
 skill	5989d04e3e362a50b54d18c5103f1e66bb099828	ai-prompt-engineering/references/claude.md
 skill	599a748c028b82739b918d998378a9aa96c1cebf	reading-companion/tools/export-annotations.py
@@ -1369,6 +1371,7 @@ skill	aca27c7599fdb74e34758708c7a411eb8401d361	research-notebook/SKILL.md
 skill	acb12d63c9e547ae9ddacf4b927f69cb3fd2b2db	alex/references/publish-protocol.md
 skill	acd71a003242692116e14a0020d9770ef7f0c8ee	tad-help/SKILL.md
 skill	ad13810329d9418b246320659bab059d9dd5564f	academic-research/references/literature-search.md
+skill	ad1f0918d5791b89c7b38328f15eb61ec3de9567	blake/SKILL.md
 skill	ad617c2261e3db342a1d65a868b61b5bdf4d8711	alex/references/bug-path-protocol.md
 skill	ad75bbe7365f4a4c2fec3b4590c860de568a699c	ai-podcast-production/examples/full-episode-production.md
 skill	ad9bbd6621e0cfb8106010ebf1bd94a3e63b7f44	tad-help/SKILL.md
