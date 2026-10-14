@@ -692,7 +692,7 @@ handoff_creation_protocol:
         ```
 
         ⚠️ **我不会在这个 Terminal 调用 /blake**
-        人类是 Alex 和 Blake 之间唯一的信息桥梁。
+        手动路径：由人类把这封信转给 Blake。Cora 运行的 Epic 里由 Cora 派发 Blake。
 
         > 💡 如果 Blake 已经在运行，直接粘贴即可。
         > 如果 Blake 尚未启动，先执行 `/blake`，Blake 会自动检测到这个 handoff。

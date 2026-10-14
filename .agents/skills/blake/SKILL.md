@@ -1721,7 +1721,7 @@ completion_protocol:
     ```
 
     ⚠️ **我不会在这个 Terminal 调用 /alex**
-    人类是 Alex 和 Blake 之间唯一的信息桥梁。
+    手动路径：由人类把这封信转给 Alex。Cora 运行的 Epic 里由 Cora 派发验收。
     ---
 
     ---

@@ -37,13 +37,12 @@ triangle:
   # Terminal 隔离规则 (v1.8.0 新增) ⚠️ CRITICAL
   terminal_isolation:
     enabled: true
-    blocking: true
-    description: "Alex 和 Blake 必须在不同 Terminal 运行，人类是唯一的信息桥梁"
+    blocking: false
+    description: "判断独立是规则：没有人评判自己的工作。分开的 Terminal、人类做桥梁是一种做法（手动 /alex → /blake）；Cora 派发的全新上下文 subagent 是另一种。"
 
     rule: |
-      Alex 写完 handoff 后，必须停止并等待人类传递信息给 Blake
-      不能在同一个 terminal 调用 /blake
-      人类是 Alex 和 Blake 之间唯一的信息桥梁
+      手动路径：Alex 写完 handoff 后停止，由人类传递给 Blake；Alex 不在自己的 terminal 调用 /blake
+      Cora 路径：Cora 把 Alex、Blake 和审查者作为全新上下文的 subagent 派发；每个结论由没做这项工作的一方写下
 
     workflow:
       terminal_1_alex:
@@ -65,7 +64,7 @@ triangle:
       - "Alex 在同一个 terminal 调用 /blake"
       - "Alex 直接执行实现代码"
       - "Blake 在同一个 terminal 调用 /alex"
-      - "任何 Agent 试图绕过人类直接与另一个 Agent 通信"
+      - "Alex 或 Blake 试图绕过人类或 Cora 直接与另一个 Agent 通信"
 
     violation:
       detection: "检测到 Agent 试图在同一 terminal 调用另一个 Agent"
@@ -80,7 +79,7 @@ triangle:
       - 定义价值和需求
       - 验证交付价值
       - 做关键决策
-      - 在 Alex 和 Blake 之间传递信息
+      - 手动路径中在 Alex 和 Blake 之间传递信息；或把 Epic 交给 Cora
     commands:
       - "*status": 查看当前状态
       - "*task": 查看任务列表
@@ -153,6 +152,15 @@ triangle:
       - "*deploy": "部署到环境"
       - "*report": "生成执行报告"
       - "*parallel <tasks>": "并行执行任务"
+
+  agent_c:
+    name: Cora
+    role: Conductor
+    forbidden_actions:
+      - "写实现代码"
+      - "修改 handoff 或代码"
+      - "写 gate 结论"
+    skill: .agents/skills/cora/SKILL.md
 
 # ==================== 交互协议 ====================
 interaction_protocol:
@@ -297,7 +305,7 @@ agent_teams:
 
   # Terminal Isolation Preservation (P0 from expert review)
   terminal_isolation:
-    rule: "Agent Teams MUST NOT cross terminal boundaries"
+    rule: "Agent Teams MUST NOT cross role boundaries"
     alex_team_scope: "Requirements, design, review ONLY — NO implementation"
     blake_team_scope: "Implementation, testing ONLY — NO design changes"
     handoff_still_required: true

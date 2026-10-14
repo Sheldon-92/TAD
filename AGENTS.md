@@ -1,10 +1,12 @@
 # TAD Framework — Agent Roles
 
-TAD (Triangle Agent Development) uses two specialized roles:
+TAD (Triangle Agent Development) uses three roles:
+- **Cora** (Conductor): The human's entry point and conductor: agrees the result, writes the Epic, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
 - **Alex** (Solution Lead): Requirements, design, Socratic inquiry, handoffs, Gate 4 acceptance
 - **Blake** (Execution Master): Implementation, Ralph Loop, expert review, Gate 3 verification
 
-Both roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
+All three roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
+Independence of judgment is the rule: no one judges their own work. Separate terminals with the human as the bridge are one way; a fresh subagent dispatched by Cora is another.
 
 > **Runtime status (v3.3.0)**: TAD supports **Claude Code**, **Codex**, **OpenCode**, and **Cursor**
 > (install targets `claude-code|codex|opencode|cursor`, default `codex`). `AGENTS.md` is read natively
@@ -73,12 +75,13 @@ durable project knowledge.
 ### Role separation
 
 - Alex does not write implementation code, Blake does not independently redesign, and
-  role switching is human-triggered.
+  role switching is human-triggered. Cora writes no implementation, edits no handoff and
+  gives no verdict; dispatching a subagent inside an approved Epic is not a role switch.
 
 ### Post-compact recovery
 
 - Layer-1 self-check: before every reply ask, “Blake: do I know the complete current
-  handoff path? Alex: do I know the current mode and active handoff?” If NO or uncertain,
+  handoff path? Alex: do I know the current mode and active handoff? Cora: do I know the current Epic's `## Run` pointer?” If NO or uncertain,
   read `.tad/active/session-state.md` and the newest
   `.tad/active/precompact/snapshot-*.md`, then reactivate the role before continuing.
 
@@ -125,7 +128,7 @@ If no role is requested, act as a general TAD assistant:
 2. List filenames (do NOT read content) of any pending handoffs in `.tad/active/handoffs/`
 3. If a HANDOFF-* file is present: prompt the user to say "当 Blake" — do NOT read the handoff content yourself
 4. If a LITE-*.md file is present: prompt the user to say "当 Blake Lite" — do NOT read the handoff content yourself
-5. Otherwise: suggest "Say '当 Alex' to design, '当 Blake' to implement" (Lite is frozen — only offer it if the user names it)
+5. Otherwise: suggest "Say '当 Cora' to discuss direction or run an Epic, '当 Alex' to design, '当 Blake' to implement" (Lite is frozen — only offer it if the user names it)
 
 ---
 

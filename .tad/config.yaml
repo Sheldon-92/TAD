@@ -18,7 +18,7 @@ config_modules:
     description: "Agent definitions, triangle model, interaction protocols, human role"
     contains:
       - activation_protocol
-      - triangle (terminal_isolation, agent_a, agent_b, human)
+      - triangle (terminal_isolation, agent_a, agent_b, agent_c, human)
       - interaction_protocol
       - human_role_v13
     loaded_by:

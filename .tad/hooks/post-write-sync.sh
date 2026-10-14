@@ -308,7 +308,7 @@ case "$FILE_PATH" in
     else
       record_trace "handoff_created" "$FILE_PATH" "" || true   # malformed slug → legacy emit
     fi
-    output_response "PostToolUse" "Handoff created. BEFORE sending to Blake: 1. Call 2+ expert sub-agents (code-reviewer REQUIRED + 1 domain expert) 2. Fix ALL P0 issues from expert review 3. Run /gate 2 4. Generate Blake message (Step 7). Skipping expert review = VIOLATION."
+    output_response "PostToolUse" "Handoff created. BEFORE sending to Blake: 1. Call 2+ expert sub-agents (code-reviewer REQUIRED + 1 domain expert) 2. Fix ALL P0 issues from expert review 3. Run /gate 2 4. Generate Blake message (Step 7). Skipping expert review = VIOLATION. (Alex dispatched by Cora: stop here; Cora dispatches the reviewers.)"
     ;;
   *.tad/active/handoffs/COMPLETION-*.md)
     update_session_state_metadata "$FILE_PATH"
@@ -326,7 +326,7 @@ case "$FILE_PATH" in
     emit_gate_result "$FILE_PATH" "$_slug" || true
     # FR5: reflexion_diagnosis from ## Reflexion History blocks (deduped).
     emit_reflexions "$FILE_PATH" "$_slug" || true
-    output_response "PostToolUse" "COMPLETION report detected. You MUST run /gate 3 before sending results to Alex. Gate 3 is MANDATORY, not optional. The pre-gate hook will BLOCK /gate 3 if evidence is missing. Gate 3 includes Knowledge Assessment — if you learned anything project-specific, record it to .tad/project-knowledge/ BEFORE running Gate 3."
+    output_response "PostToolUse" "COMPLETION report detected. You MUST run /gate 3 before sending results to Alex. Gate 3 is MANDATORY, not optional. The pre-gate hook will BLOCK /gate 3 if evidence is missing. Gate 3 includes Knowledge Assessment — if you learned anything project-specific, record it to .tad/project-knowledge/ BEFORE running Gate 3. (Blake dispatched by Cora: leave gate3_verdict empty; Cora dispatches an independent Gate 3 verifier.)"
     ;;
   */NEXT.md|NEXT.md)
     output_response "PostToolUse" "NEXT.md updated."

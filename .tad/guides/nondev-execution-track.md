@@ -186,7 +186,7 @@ section selected by a guard line when `task_type == deliverable`.
   `verdict: PASS` | `verdict: PARTIAL` | `verdict: FAIL`. This is the token **Gate 4
   greps** (`grep -E '^verdict: PASS'`). The human-readable `**Verdict**: ✅ PASS` prose
   is NOT matched by that anchor — the machine line is required.
-- **gate3_verdict marker**: the Conductor edits the deliverable-completion report's
+- **gate3_verdict marker**: the Gate 3 executor (the session that spawned the judge; under Cora, her Gate 3 verifier, never Cora) edits the deliverable-completion report's
   `gate3_verdict:` frontmatter to the lowercased verdict (`pass|fail|partial`) as a
   Gate 3 post-step, so `post-write-sync.sh` emits the `gate_result` telemetry event.
 - **Rubric-eval format constraint**: weaknesses MUST NOT use the `^#+ *P[0-9]-` heading

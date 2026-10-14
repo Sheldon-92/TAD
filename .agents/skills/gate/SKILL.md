@@ -388,7 +388,7 @@ Gate3_Verdict_Marker:
       - rubric AC inside a normal Blake-path handoff (no Conductor present) → Blake spawns the
         independent judge (judge ≠ Blake still holds — Blake does NOT self-score) and Blake writes
         the marker from the judge's verdict.
-      - rubric AC under a Conductor/Epic lane → the Conductor/judge-orchestrator writes it.
+      - rubric AC under a Conductor/Epic lane → the Gate 3 executor writes it; when Cora conducts, that is the Gate 3 verifier she dispatches, never Cora.
     Single rule: the Gate 3 executor owns the marker; the judge is always a distinct sub-agent."
   when: "AFTER the Gate 3 verdict is computed, as a Gate 3 post-step (all task_types)."
   action: |

@@ -1,11 +1,11 @@
 ---
-# gate3_verdict: filled by the CONDUCTOR (the Gate 3 judge-orchestrator for the deliverable
-#   lane) as a Gate 3 POST-STEP (value ∈ pass|fail|partial). NOT Blake — Blake is excluded from
+# gate3_verdict: filled by the Gate 3 judge-orchestrator (under Cora: the Gate 3 verifier she dispatches, never Cora) for the deliverable
+#   lane as a Gate 3 POST-STEP (value ∈ pass|fail|partial). NOT Blake — Blake is excluded from
 #   the deliverable lane (blake task_type_branching.deliverable). After the judge verdict is
-#   computed, the Conductor Edits this to the judge verdict lowercased.
+#   computed, the judge-orchestrator edits this to the judge verdict lowercased.
 # ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 (deliverable) runs.
 # Empty / placeholder / any other value → post-write-sync.sh skips emission (FR2b timing).
-# See gate SKILL "Gate 3 — Deliverable Branch" Gate3_Verdict_Marker (mirrors blake step4b, Conductor-performed).
+# See gate SKILL "Gate 3 — Deliverable Branch" Gate3_Verdict_Marker (mirrors blake step4b, performed by the Gate 3 executor).
 gate3_verdict:
 ---
 
