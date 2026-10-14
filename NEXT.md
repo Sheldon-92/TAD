@@ -13,15 +13,14 @@
 
 ## 🔴 优先队列
 
-### ✅ ACCEPTED 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
+### ✅ DONE 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
 
-- Epic: `.tad/active/epics/EPIC-20261014-cora-carry-forward-fixes.md` (Conductor: Cora; 2 phases: Protocol gaps / Queue and run record)
+- Epic: `.tad/archive/epics/EPIC-20261014-cora-carry-forward-fixes.md` (Conductor: Cora; 2 phases: Protocol gaps / Queue and run record)
 - Approved 2026-10-14 ("继续"). [x] Phase 1 Protocol gaps — Gate 4 PASS (`.tad/evidence/yolo/cora-carry-forward-fixes/phase1-gate-report.md`). [x] Phase 2 Queue and run record — closed as PARTIAL by the human ("选2"): Gate 4 PARTIAL p0 1 (`phase2-gate-report.md`; open P0 = acceptance and archiving asked as one question → parent Phase 4, CF-1). Completion: `.tad/evidence/yolo/cora-carry-forward-fixes/EPIC-COMPLETION.md`; distillation wrote 5 pattern entries (uncommitted). Accepted by the human 2026-10-14 ("继续我要把整个流程整个都完成啊"); archiving asked once at the parent Epic's end.
 
-### 🔄 RUNNING 2026-10-14 (Cora conducting). EPIC-20261013 Cora — a third role: the human's entry point and the conductor (A-B-C)
+### ✅ DONE 2026-10-14. EPIC-20261013 Cora — a third role: the human's entry point and the conductor (A-B-C)
 
-- Epic: `.tad/active/epics/EPIC-20261013-cora-conductor-role.md` (4 phases). [x] 1 Cora herself (Gate 4 PASS). [x] 2 Wiring (Gate 4 PASS). [x] 3 Real run — closed PARTIAL (Gate 4 `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md`, open P0 CF-1 carried). [ ] 4 Release — active, waiting for 4 human decisions before design; scope includes the carry-forward fixes (CF-1..CF-10, C-1..C-8).
-- Conductor: Cora since 2026-10-14 (the human: "继续我要把整个流程整个都完成啊"). Human stops left: README opening, push, release. Where the run is: the Epic's `## Run` block.
+- Epic: `.tad/archive/epics/EPIC-20261013-cora-conductor-role.md`. All 4 phases closed; v4.0.0 and v4.0.1 published (main = tag v4.0.1 = acbdcf91). Summary: `.tad/evidence/yolo/cora-conductor-role/EPIC-COMPLETION.md`. Accepted and archived by the human 2026-10-14 (Epic now under `.tad/archive/epics/`).
 
 ### ✅ DONE 2026-10-10. EPIC-20261008 multi-harness restore & cleanup (released as v3.3.0)
 
