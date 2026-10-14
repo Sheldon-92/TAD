@@ -187,7 +187,7 @@ yolo_execution_protocol:
       name: "Implementation Review (Cora dispatches ≥2 distinct reviewers, middle tier)"
       action: |
         Must dispatch ≥2 distinct reviewer types (same as Y4) [A116][A132].
-        1. Write the pointer. The reviewers read the completion report and the git diff; Cora reads their headers.
+        1. Write the pointer, with the reviewer ids `p{N}-y6-r1-cr` and `p{N}-y6-r1-dom` (round 1) and the two review paths. The reviewers read the completion report and the git diff; Cora reads their headers.
         2. Dispatch a code-reviewer subagent (MANDATORY) [A117]:
            prompt: "Review implementation at {completion_path}. Check code diff.
                    Verify ACs are met. Check for AR-001 pattern ('this P0 is not important' = VIOLATION) [A118].
@@ -200,7 +200,7 @@ yolo_execution_protocol:
               "Read {handoff_path} for the original spec. Read {impl-review-cr.md} for the P0 findings.
                Fix and re-commit. Then update {completion_path}: set its `dispatch_id:` line to `{id}` and add a `## Rework <n>` section listing the new commits."
               (Both paths are file references — no inline content.) Cora never fixes code herself.
-           b. Re-dispatch the reviewers on the result.
+           b. Write the pointer first with the next round's reviewer ids (`p{N}-y6-r<k>-cr`, `p{N}-y6-r<k>-dom`, k = round number; never equal to the rework id or an earlier round's) and the same two review paths, then re-dispatch the reviewers on the result with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 file at the same path never satisfies the check. Rework output present and the pointer still names the rework: dispatch the reviewers. Pointer names the reviewers: apply the pointer rule (ids match: read the headers; otherwise ask whether the earlier session still runs).
            c. Circuit breaker: if the re-dispatch also fails on P0 → stop (reason 1), reported as it is [A119].
         5. Re-read the review files' headers from disk before routing (not from memory) [A120].
         6. Write the pointer: step Y6.

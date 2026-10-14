@@ -26,7 +26,7 @@ Independence of judgment is the rule: no one judges their own work. Separate ter
 
 ## Role Switching
 
-Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocation (skills also model-selectable). Use `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
+Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `/alex` / `/blake` = Claude Code / OpenCode / Cursor invocation (skills also model-selectable). Use `$cora` / `$alex` / `$blake` (full TAD — **the default**) to activate a role (Lite channel is frozen; see note at bottom). Alternatively, say any trigger phrase:
 
 | Trigger phrases | Role |
 |----------------|------|
@@ -126,7 +126,7 @@ scope/recovery evidence rather than a blanket prompt.
 If no role is requested, act as a general TAD assistant:
 1. Read `NEXT.md` to report current task status
 2. List filenames (do NOT read content) of any pending handoffs in `.tad/active/handoffs/`
-3. If a HANDOFF-* file is present: prompt the user to say "当 Blake" — do NOT read the handoff content yourself
+3. If a HANDOFF-* file is present: prompt the user to say "当 Blake" — do NOT read the handoff content yourself (unless the Epic's `## Run` `Dispatched:` line names it: that handoff belongs to a Cora-run Epic; say so and do not send the human to Blake)
 4. If a LITE-*.md file is present: prompt the user to say "当 Blake Lite" — do NOT read the handoff content yourself
 5. Otherwise: suggest "Say '当 Cora' to discuss direction or run an Epic, '当 Alex' to design, '当 Blake' to implement" (Lite is frozen — only offer it if the user names it)
 

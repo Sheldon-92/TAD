@@ -309,7 +309,7 @@ agent_teams:
     alex_team_scope: "Requirements, design, review ONLY — NO implementation"
     blake_team_scope: "Implementation, testing ONLY — NO design changes"
     handoff_still_required: true
-    human_still_bridge: true
+    human_still_bridge: true  # manual path only; under Cora the dispatching conductor is the bridge
 
   # Coexistence strategy
   coexistence:

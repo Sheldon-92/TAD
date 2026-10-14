@@ -14,7 +14,7 @@ The human's approval of the Epic's result contract is your Gate 1. If the phase 
 The intent router, complexity assessment, and every question to the human.
 
 ## Questions
-Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry each: `class: 1 | 2 | 3 | design` / `question: <one sentence>` / `options: <choices>`. line 1 is `dispatch_id: <id>` from your prompt. Then stop and return. Class `design` is your own technical decision to settle if the phase block allows it; otherwise ask.
+Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry each: `class: 1 | 2 | 3 | design` / `question: <one sentence>` / `options: <choices>`. Line 1 is `dispatch_id: <id>` from your prompt. Then stop and return. Class `design` is your own technical decision to settle if the phase block allows it; otherwise ask.
 
 ## Your kind of step (the prompt names it)
 - Phase Details: write only the Phase Detail blocks (Scope, Acceptance Criteria, Files Likely Affected) of the Epic named.
