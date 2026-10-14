@@ -1,4 +1,4 @@
-# schema=1 rows=1846
+# schema=1 rows=1848
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -876,6 +876,7 @@ skill	5c35c8c4d06c7962caee3e431ec974f81f6a3ac9	alex/SKILL.md
 skill	5c9644042b694623270639b2144ef0ad741a5d0e	research-github/SKILL.md
 skill	5d03d7805089734f41889bb3e10303d3d0b92ca3	reading-companion/SKILL.md
 skill	5d1c454e10c198a0e1e157e78d2cc43d1cc97baf	blake-lite/SKILL.md
+skill	5d703d9b650af23a5b80405dabd6992903257ddd	alex/references/conductor-dispatch-mode.md
 skill	5d779ab983a5f780deb2a35998a968ad4d3462e2	alex/SKILL.md
 skill	5d835808e440f9b31f3f9adfa20e5be553bae813	alex-lite/SKILL.md
 skill	5d841236b03a277687763e644f0c7c14eb56e5c2	mobile-development/references/performance.md
@@ -1317,6 +1318,7 @@ skill	a78ac3062a1d4885c34266dc22ed1c61c411e98d	web-frontend/references/performan
 skill	a7e881ba87bfb348c916bdd74605ab49c404f6bf	tad-status/SKILL.md
 skill	a7efde0448bc2d4663886ebdd8fc623befc79120	hw-enclosure/references/pcb-fitting.md
 skill	a7f30af11592e8c109efc5a8d2f564a4f5cc32a7	ai-guardrails/examples/ai-guardrails-fixture.md
+skill	a8120cd63424ac29ea198dd9c30924251738094d	cora/references/conductor-protocol.md
 skill	a83c47929b7da26b51cc751e4f18ff8a68c92527	alex/references/handoff-creation-protocol.md
 skill	a86b1cc5e3730db4d7d2b3885d08e32d0a6fcf56	research-notebook/SKILL.md
 skill	a86f96303890625324c117f13a6c106b78516987	alex/SKILL.md
