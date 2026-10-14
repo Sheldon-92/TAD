@@ -1,4 +1,4 @@
-# schema=1 rows=1857
+# schema=1 rows=1862
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -462,6 +462,7 @@ skill	15a2d1df2aa302de938c247b55969d1f9479a0b5	knowledge-graph/references/graph-
 skill	1669ddd8fcd6c4c6a253e79d060bcabe8de28eb2	web-ui-design/tools/tokens-to-css.sh
 skill	16c77eb2e51855fd6b619cb15550fe29689f29f3	code-security/examples/sast-dast-triage-pipeline.md
 skill	16cc128ef0703be9e36728f2e042b07c58da3893	ai-voice-production/references/narration-dubbing.md
+skill	16d7902cc4972839f7ca74fbea276645ab5f562e	tad-init/SKILL.md
 skill	16e5f9944fe0099c1db3b1e98a34a19d30efeddb	code-security/references/dast-rules.md
 skill	16e62761b9024359c277f9070a4c1f47c4dd429d	blake/SKILL.md
 skill	16e8c5753684285b48eb75bcbf5181e18067371f	alex/SKILL.md
@@ -896,6 +897,7 @@ skill	5ee3d7bb4c0d4c07ee074adc5e6b83d1ea82f1bd	ai-guardrails/references/content-
 skill	5f2e0586532029c7efa269c4c6aa28cb360a7f3a	alex-lite/SKILL.md
 skill	5fa315249dbcb8a655c8f8e2754b1e2b38fe651f	alex/SKILL.md
 skill	5fbef99b98a41d30ebd1c086122218b41f1bd22f	release-runbook/SKILL.md
+skill	5fd5586c704e84e5dbd2c8f268a7607f73a20355	tad-help/SKILL.md
 skill	601258d3c0e815a0928f241c1f97865fb6eeceed	alex/references/research-decision-protocol.md
 skill	60160d27159c48ec9cd7a79bbe4c2dab4ab11d86	alex/SKILL.md
 skill	6016f3da9c98bc15fcf5ac63a9974ac603daae27	rag-retrieval/references/rag-evaluation-rules.md
@@ -1184,6 +1186,7 @@ skill	91f8ea174d332e266ad0ec4af54000ab975094b6	video-creation/examples/single-cl
 skill	91fce76abaa018f40066766115061755b791eacc	hw-circuit-design/references/component-selection.md
 skill	9250ff20edaec14a808051902cf3e12f451c984d	alex/references/design-protocol.md
 skill	925970c8c590637e1386f889eb229adcb58948ea	release-runbook/SKILL.md
+skill	9295e3bf40befe59217d55aee6a26034ebebeab2	tad/SKILL.md
 skill	92acbae84cf04c380769ebcced435f79fe743848	blake/SKILL.md
 skill	92f819cfd0760aef063cee3ac93d8053e452c364	cora/SKILL.md
 skill	93281d06c05870a29c6e3700740c649d242c732e	web-backend/scripts/security-scan.sh
@@ -1464,6 +1467,7 @@ skill	bd546ff7123d1856ad49d01ba4184cea3e6f4362	code-security/examples/sast-dast-
 skill	bd8b8285d7907ecb8d4534c751ea9539b8256ff2	hw-firmware/references/firmware-testing.md
 skill	bde2d243d3daf9030d44edea05665d9aa715b69e	web-backend/scripts/api-lint.sh
 skill	bdf024b6fbfc6073fe2139e4612e5e9b2f6eea42	alex/SKILL.md
+skill	be15b89c31ee568ea189fb785ee7972b2340423c	tad/SKILL.md
 skill	bf3b192324cf56e82de3d1e0ef24a51e877f6cd3	hw-firmware/references/quality-criteria.md
 skill	bf48c9c85f45700c62834b37169f481ba02834d2	ai-voice-production/references/licensing-safety.md
 skill	bf649b84d8e3c032d7cc5f53625dab271ce2fc09	alex/SKILL.md
@@ -1589,6 +1593,7 @@ skill	d38f2405cc2b02c9514b7399bf925db0729467ae	_archived/api-design.md
 skill	d39d787f245a02a8f80044fd2f55f59fac9cf4eb	alex/references/idea-path-protocol.md
 skill	d3a2dc88ddc30ed8f6a1d3d757e25cac445014d3	alex/references/acceptance-protocol.md
 skill	d3d1d34316b197726e9db13ccd0cdaf186ed0f13	tad-help/SKILL.md
+skill	d3fc698bf7fa222fbea2ddd24672b8ac72700624	tad-help/SKILL.md
 skill	d40325938c31d75aef13b85aabcda115612b4c7d	capability-upgrade/SKILL.md
 skill	d40997824f47aef4fff632bc5e81c74062d51f74	hw-enclosure/references/manufacturing-export.md
 skill	d431bf63ae8949a47f7ec8350e8c3405d48c6edf	mobile-testing/references/test-strategy.md

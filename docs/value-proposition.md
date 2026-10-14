@@ -93,7 +93,7 @@ comparison against alternative methodologies. Those remain directions, not facts
   checkpoints become more valuable as AI gets stronger.
 - **Not an agent orchestration framework.** TAD is not a LangGraph, CrewAI, or
   AutoGen alternative. It ships no runtime, no graph engine, no message bus. Its
-  "infrastructure" is markdown documents, quality gates, and two agent roles.
+  "infrastructure" is markdown documents, quality gates, and three roles.
 - **Not limited to software development.** The dev workflow is where TAD started
   and is still the most exercised path, but the evidence above shows the same
   loop producing voice production pipelines, podcast episodes, reading tools,

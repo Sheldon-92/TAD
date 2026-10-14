@@ -38,8 +38,8 @@ Please select an option (0-9):
 ```
 0. Initialize TAD in current project (/tad-init)
 1. Activate Cora - Conductor, start here (/cora)
-2. Activate Agent A - Alex (/alex)
-3. Activate Agent B - Blake (/blake)
+2. Activate Alex - Solution Lead (/alex)
+3. Activate Blake - Execution Master (/blake)
 4. Start requirement elicitation (/elicit)
 5. Execute quality gate (/gate)
 6. Create/verify handoff (/handoff)
@@ -81,8 +81,8 @@ Select 0-9:
 
 ### Agent Activation
 - `/cora` - Activate Cora (Conductor, the default entry point)
-- `/alex` - Activate Agent A (Solution Lead)
-- `/blake` - Activate Agent B (Execution Master)
+- `/alex` - Activate Alex (Solution Lead)
+- `/blake` - Activate Blake (Execution Master)
 
 ### Core Workflows
 - `/elicit` - Start requirement gathering (Socratic inquiry)
@@ -106,12 +106,12 @@ Select 0-9:
 
 0. **Start**: `/cora` → Activate Cora (Conductor): agree a result, she dispatches Alex, Blake and the gates
 
-1. **Alex** (`/alex`, direct use) → Activate Agent A
+1. **Alex** (`/alex`, direct use) → Activate Alex
    - Socratic inquiry → Gather requirements (adaptive questions)
    - `*design` → Create technical design with expert review
    - `*handoff` → Generate handoff for Blake
 
-2. **Blake** (`/blake`, direct use) → Activate Agent B
+2. **Blake** (`/blake`, direct use) → Activate Blake
    - Verify handoff from Alex (auto-detect on startup)
    - `*develop` → Ralph Loop (Layer 1 + Layer 2)
    - Gate 3 v2 → Technical verification

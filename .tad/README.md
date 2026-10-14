@@ -21,8 +21,8 @@ This is your TAD (Triangle Agent Development) setup - a simplified, value-focuse
 
 .claude/
 ├── commands/            # TAD command definitions
-│   ├── tad-alex.md      # Agent A definition
-│   └── tad-blake.md     # Agent B definition
+│   ├── tad-alex.md      # Alex definition (solution lead)
+│   └── tad-blake.md     # Blake definition (execution master)
 └── skills/              # Skills (code-review, etc.)
 ```
 
@@ -102,13 +102,13 @@ Direct use: implement one handoff.
 
 ## Commands
 
-### Agent A Commands
+### Alex Commands
 - `*plan <requirement>` - Create sprint plan
 - `*design <feature>` - Generate technical design
 - `*review <implementation>` - Review code quality
 - `*call <sub-agent> <task>` - Invoke specialist
 
-### Agent B Commands
+### Blake Commands
 - `*implement <spec>` - Begin implementation
 - `*parallel <tasks>` - Execute tasks in parallel
 - `*test <component>` - Run tests
@@ -117,9 +117,9 @@ Direct use: implement one handoff.
 ## First Steps
 
 1. **Update PROJECT.md** with your project information
-2. **Activate both agents** in separate terminals
+2. **Start with Cora** (`/cora`, or `$cora` on Codex); `/alex` and `/blake` still work directly
 3. **State your need** clearly
-4. **Let the triangle collaboration begin!**
+4. **Let the three roles work**: Cora dispatches Alex, Blake and the gates
 
 ## Remember
 

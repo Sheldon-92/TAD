@@ -21,7 +21,7 @@ TAD Framework Help Guide
 - [ ] Initialize: /tad-init
 - [ ] Verify: /tad-status
 - [ ] Choose scenario: /tad-scenario [name]
-- [ ] Activate agents: Follow terminal commands
+- [ ] Start: /cora (Codex: $cora)
 
 📋 COMMAND REFERENCE
 Each command produces standardized output:
@@ -139,26 +139,27 @@ Direct use (implement one handoff):
 ## Triangle Collaboration Model
 ```
       Human
-       /\
-      /  \
+        |
+      Cora
      /    \
-Agent A -- Agent B
+  Alex -- Blake
 ```
 
-- **Human**: Defines value, validates delivery, relays messages between agents
-- **Agent A**: Designs solutions, reviews quality
-- **Agent B**: Implements code, runs tests
+- **Human**: Defines value, agrees the result with Cora, validates delivery
+- **Cora**: Conducts: dispatches Alex, Blake and reviewers as subagents
+- **Alex**: Designs solutions, reviews quality
+- **Blake**: Implements code, runs tests
 
 ### Bidirectional Message Protocol
-Agents auto-generate structured, copy-pasteable messages for the human to relay:
+When Alex and Blake are used directly in separate sessions (one way to get independent judgment), they generate structured, copy-pasteable messages for the human to pass on:
 - **Alex → Blake**: After handoff creation, Alex generates a "Message from Alex" with task, files, priority
 - **Blake → Alex**: After implementation, Blake generates a "Message from Blake" with status, changes, evidence
 - **Blake auto-detect**: On startup, Blake scans for active handoffs and offers to execute them
 
 ## Configuration Files
 - `.tad/config.yaml` - Main configuration
-- `.agents/skills/alex/SKILL.md` - Agent A definition
-- `.agents/skills/blake/SKILL.md` - Agent B definition
+- `.agents/skills/alex/SKILL.md` - Alex definition
+- `.agents/skills/blake/SKILL.md` - Blake definition
 - `.tad/active/handoffs/` - Active handoff documents
 - `.tad/project-knowledge/` - Project-specific learnings
 
