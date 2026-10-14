@@ -1,4 +1,4 @@
-# schema=1 rows=1855
+# schema=1 rows=1857
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -902,6 +902,7 @@ skill	6016f3da9c98bc15fcf5ac63a9974ac603daae27	rag-retrieval/references/rag-eval
 skill	6059995795c785830f8900f0e53cd3c60412a831	blake/SKILL.md
 skill	615a764350d7e20df971fc260f617a245424ca13	alex/SKILL.md
 skill	615f71d3fb64bd6781890d539d5be757564ffcb2	agent-memory/references/context-compaction.md
+skill	618595fc57d3bd0303047118c77a3d9895a0ddd6	cora/references/conductor-protocol.md
 skill	61a68f8093c90180056a4bd50c0e261914d5f711	ai-agent-architecture/SKILL.md
 skill	61c3c0711f1a22d53c191af8c821872681437f8f	alex-lite/SKILL.md
 skill	61d2d1033e164d208415a274c5316a1c00f2cc3c	alex/SKILL.md
@@ -1491,6 +1492,7 @@ skill	c2fc582364205c3547737befc0dcfbc65e0e9e85	blake/SKILL.md
 skill	c3256590b9d17672df59b2251c3d72b5e999103b	reading-companion/tools/export-notes.py
 skill	c33485550d8cb05c66c8b577552ba59eac279043	alex/references/research-plan-protocol.md
 skill	c339adb606e8daf460beebd931ccb90bd518c53b	blake/SKILL.md
+skill	c35a16cf1e021b64ecbdf69d7b567c5e89ae301c	cora/SKILL.md
 skill	c365c51b288046213aee1d3a87be28fa174201a9	alex/SKILL.md
 skill	c39afe7b2fea2acbc7eca313efde5978c97896f7	research-methodology/SKILL.md
 skill	c45216489ba259505d1ad3561a58073274b6e63e	mobile-development/references/platform-features.md
