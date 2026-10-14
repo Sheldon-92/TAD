@@ -67,3 +67,4 @@ tad.sh	.tad/migrations/genesis.yaml	Guarded by an existence test in tad.sh befor
 NEXT.md	.tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-package.md	parked capability-builder entry kept verbatim at the human's request; the handoff now lives under .tad/archive/handoffs/
 .agents/skills/cora/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
 .agents/skills/cora/SKILL.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling
+.agents/skills/cora/references/conductor-protocol.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored

@@ -102,6 +102,5 @@ At the same *accept trigger, ALSO scan the native auto-memory capture layer:
 - The doer is the conductor, not Blake. The journal is `.tad/evidence/journal/conductor-{epic-slug}-{date}.md`: human corrections, failed steps, surprises.
 - The trigger is the Epic-close dispatch in Cora's conductor-protocol (step 3b of epic_completion), not an *accept.
 - The distiller must be a session that did not conduct that Epic. It reads the journal, then runs Steps 2 to 4 above unchanged.
-- Gap questions go into `{ev}distillation-report.md` under "Questions for the conductor". The conductor answers by appending to the journal; at most two rounds.
-- A field that is still unfillable after two rounds means the entry is not written; the material stays in the journal.
+- A gap the distiller cannot fill is not answered by the conductor: no entry is written, the material stays in the journal, and the gap is listed in `{ev}distillation-report.md` under "Gaps" for the conductor's acceptance message to the human.
 - Entry schema and destination are unchanged; the conductor writes no knowledge entry herself.

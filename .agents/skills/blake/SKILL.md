@@ -493,7 +493,7 @@ ralph_loop_execution:
         - "Load/create state file: .tad/evidence/ralph-loops/{task_id}_state.yaml"
         - "Check for existing state (resume vs fresh start)"
         - "Initialize iteration counter"
-        - "Create/overwrite .tad/active/session-state.md from .tad/templates/session-state-template.md:
+        - "Create/overwrite .tad/active/session-state.md from .tad/templates/session-state-template.md (keep any `## Conductor run (Cora)` section unchanged):
            substitute ALL {placeholders} with actual values:
            - Status = ACTIVE
            - Active Agent.Role = Blake

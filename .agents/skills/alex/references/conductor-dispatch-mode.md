@@ -16,11 +16,12 @@ The intent router, complexity assessment, and every question to the human.
 ## Questions
 Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry each: `class: 1 | 2 | 3 | design` / `question: <one sentence>` / `options: <choices>`. Then stop and return. Class `design` is your own technical decision to settle if the phase block allows it; otherwise ask.
 
-## Design step
-Follow `references/handoff-creation-protocol.md` through `step1d`. Stop before `step2`: no expert selection, no reviewers, no Gate 2 claim, no message to Blake.
-
-## What you may write
-Your output file named in the dispatch, plus the Phase Detail blocks of the Epic named in the dispatch (the one place you may edit an Epic file).
+## Your kind of step (the prompt names it)
+- Phase Details: write only the Phase Detail blocks (Scope, Acceptance Criteria, Files Likely Affected) of the Epic named.
+- Design: follow `references/handoff-creation-protocol.md` through `step1d`, stop before `step2` (no expert selection, no reviewers, no Gate 2 claim, no message to Blake). Write the handoff path named and your phase's block of the Epic.
+- Design fix: read the review files named; write only the handoff path named.
+- Gate 4: write the gate report and the knowledge entries below; not the Epic. You may append new entries (typed schema of `distillation-loop-protocol.md`) to the `.tad/project-knowledge/` file your assessment names; never `principles.md`, never edit or delete an existing entry. A field you cannot fill means no entry; list the gap in the gate report, which names every entry you wrote.
+- Distillation: per `distillation-loop-protocol.md`; write its entries and the output file named.
 
 ## Never
 - Edit `NEXT.md` or `session-state.md`.

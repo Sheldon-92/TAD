@@ -153,7 +153,7 @@ handoff_creation_protocol:
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
         - "Capability Pack References (if packs loaded in *design step1_5b)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
-        - "(skip when dispatched by a conductor: the conductor owns session-state during a run) Write .tad/active/session-state.md: Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
+        - "(skip when dispatched by a conductor: the conductor owns session-state during a run) Write .tad/active/session-state.md (keep any `## Conductor run (Cora)` section unchanged): Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
       epic_linkage: |
         If this session was dispatched by a conductor (references/conductor-dispatch-mode.md): do steps 1, 1b and 2 only. The conductor has already set this phase 🔄 Active and owns the Epic file: do not edit it (skip 3 and 3b). Step 4 then means: the only 🔄 Active phase is the one named in the dispatch; if another phase is Active, stop and report to the conductor.
         If an active Epic exists in .tad/active/epics/:

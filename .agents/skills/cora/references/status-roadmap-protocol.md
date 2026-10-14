@@ -16,7 +16,7 @@ status_panoramic_protocol:
         1. ROADMAP.md → extract themes with status
            - If not found: show "No ROADMAP.md yet — start a direction discussion to create one"
         2. .tad/active/epics/EPIC-*.md → extract name, derived status, progress (N/M phases)
-        3. .tad/active/handoffs/HANDOFF-*.md → extract name, date, priority
+        3. .tad/active/handoffs/HANDOFF-*.md → list by file name only; the date is taken from the file name
         4. .tad/active/ideas/IDEA-*.md → count by status (captured/evaluated/promoted/archived)
         5. .tad/research-notebooks/REGISTRY.yaml → extract notebooks with status + last_queried
            - Also read ROADMAP.md + NEXT.md to understand current project goals for relevance judgment
@@ -42,9 +42,9 @@ status_panoramic_protocol:
         (or: "No active Epics" if .tad/active/epics/ is empty)
 
         ### Active Handoffs
-        | Handoff | Date | Priority |
-        |---------|------|----------|
-        | {name} | {date} | {P0-P3} |
+        | Handoff | Date |
+        |---------|------|
+        | {name} | {date} |
         (or: "No active Handoffs" if .tad/active/handoffs/ is empty)
 
         ### Ideas

@@ -209,7 +209,6 @@ intent_router_protocol:
       - "After any path transition fails or is cancelled → Enter standby"
       - "After *idea-promote step2: user selects 'Cancel' → Enter standby"
       - "After *idea-promote step1: no promotable ideas → Enter standby"
-      - "After *status step3 completes → Enter standby"
       - "After *research status step3 completes (user selects 'only look, no action') → Enter standby"
       - "After *research status step4 operations complete → Enter standby"
       - "After *research completes (any level — Quick/Standard/Deep) → Enter standby"
