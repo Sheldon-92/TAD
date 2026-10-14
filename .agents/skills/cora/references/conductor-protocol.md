@@ -34,7 +34,8 @@ yolo_execution_protocol:
 
   dispatch_id_rule: |
     Every dispatched output file (handoff and each revision, completion report, review, verdict, gate report, intake details, distillation output) carries `dispatch_id: <id>` in its first lines: as a key inside the verdict header or frontmatter block where the file has one, otherwise as line 1. Each prompt that writes a file says: "put `dispatch_id: {id}` in your file's first lines".
-    An output counts as the result of the recorded dispatch only if its dispatch_id equals the pointer's; otherwise it is "output not on disk". A re-dispatch takes the next <n>.
+    An output counts as the result of the recorded dispatch only if its dispatch_id equals the pointer's; otherwise it is "output not on disk". A re-dispatch takes the next <n>; a retry of a review-round id keeps the round (step_Y6 4b).
+    The freshness check applies only to an output named on a current `Dispatched:` line; a result the pointer already records as read (its step is behind `Pointer:`/`Next:` and no `Dispatched:` line names it) is not re-checked and is not a stop.
 
   questions_file: |
     A subagent that cannot go on without the human writes `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry per question:
@@ -132,7 +133,7 @@ yolo_execution_protocol:
       action: |
         Note: reviewer type names and subagent_type/isolation parameters in this file are Claude Code examples; map them to your harness's own spawn facility.
         Must dispatch ≥2 distinct reviewer types (matching production TAD hard_requirement_distinct_reviewers) [A105][A132].
-        1. Write the pointer (one id per reviewer). Cora does not read the handoff; the reviewers do.
+        1. Write the pointer with one id per reviewer, `p{N}-y4-r<k>-cr` and `p{N}-y4-r<k>-dom` (k = round number; round 1 here: `p{N}-y4-r1-cr`, `p{N}-y4-r1-dom`), and the two review paths. Cora does not read the handoff; the reviewers do.
         2. Dispatch a code-reviewer subagent (MANDATORY) [A106]:
            prompt: "Review {handoff_path}. Focus on file list completeness + AC verifiability.
                    Check for AR-001 pattern ('this P0 is not important' = VIOLATION) [A107]. Report P0/P1/P2.
@@ -143,8 +144,8 @@ yolo_execution_protocol:
                    Write your review to .tad/evidence/yolo/{epic-slug}/phase{N}-design-review-{domain}.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         4. Each reviewer writes its own file. Cora reads both headers from disk, not from memory or from the chat reply [A109][A131].
         5. If ANY P0 or a FAIL across either file (a CONDITIONAL's review file path goes into the next dispatch prompt):
-           a. Dispatch an Alex subagent with the two review file paths. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: design fix. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it." It fixes the handoff (writes v2 to {handoff_path}, with `dispatch_id: {id}` in its first lines).
-           b. Re-dispatch the code reviewer on v2 to verify the fix.
+           a. Write the pointer first (design-fix id `p{N}-y4-<n>`, output {handoff_path}), then dispatch an Alex subagent with the two review file paths. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: design fix. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it." It fixes the handoff (writes v2 to {handoff_path}, with `dispatch_id: {id}` in its first lines).
+           b. Write the pointer first with the next round's reviewer ids (`p{N}-y4-r<k>-cr`, `p{N}-y4-r<k>-dom`; never equal to the design-fix id or an earlier round's) and the same two review paths, then re-dispatch both reviewers on v2 with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 FAIL at the same path is never read as the new result. A retry inside a round follows step_Y6 4b (same k, suffix `-t<m>`).
            c. Circuit breaker: max 2 fix-review rounds, then stop (reason 1), reported as it is [A108].
         6. Neither a P0 nor a FAIL → proceed.
         7. Write the pointer: step Y4.
@@ -165,6 +166,7 @@ yolo_execution_protocol:
         4. Write a completion report to: {completion_path}
            Include: files changed, the results of the handoff's verification rows, AC verification table, and `dispatch_id: {id}` in the first lines.
            Leave `gate3_verdict:` empty; you do not judge your own work.
+           Journal: if you have human corrections, failed steps or surprises to note, write them to .tad/evidence/journal/{epic-slug}-phase{N}-{date}.md and put the line `Journal: <that path>` in the report; otherwise write no journal and put `Journal: No discoveries`.
         5. Git commit with message: "feat({scope}): {description} [YOLO Phase {N}]"
 
         LIMITS:
@@ -200,7 +202,7 @@ yolo_execution_protocol:
               "Read {handoff_path} for the original spec. Read {impl-review-cr.md} for the P0 findings.
                Fix and re-commit. Then update {completion_path}: set its `dispatch_id:` line to `{id}` and add a `## Rework <n>` section listing the new commits."
               (Both paths are file references — no inline content.) Cora never fixes code herself.
-           b. Write the pointer first with the next round's reviewer ids (`p{N}-y6-r<k>-cr`, `p{N}-y6-r<k>-dom`, k = round number; never equal to the rework id or an earlier round's) and the same two review paths, then re-dispatch the reviewers on the result with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 file at the same path never satisfies the check. Rework output present and the pointer still names the rework: dispatch the reviewers. Pointer names the reviewers: apply the pointer rule (ids match: read the headers; otherwise ask whether the earlier session still runs).
+           b. Write the pointer first with the next round's reviewer ids (`p{N}-y6-r<k>-cr`, `p{N}-y6-r<k>-dom`, k = round number; never equal to the rework id or an earlier round's) and the same two review paths, then re-dispatch the reviewers on the result with those ids as {id}. On resume only the current round's ids count: a review file whose `dispatch_id` is another round's is "output not on disk", so a round-1 file at the same path never satisfies the check. Rework output present and the pointer still names the rework: dispatch the reviewers. Pointer names the reviewers: apply the pointer rule (ids match: read the headers; otherwise ask whether the earlier session still runs). If the human answers "no" for a reviewer of round k, its retry keeps k and takes `p{N}-y6-r<k>-cr-t<m>` (or `p{N}-y6-r<k>-dom-t<m>`), m = 2, 3, …, written into the pointer before the retry is dispatched. A retry does not start a new round: the circuit breaker in 4c counts rounds, not retries.
            c. Circuit breaker: if the re-dispatch also fails on P0 → stop (reason 1), reported as it is [A119].
         5. Re-read the review files' headers from disk before routing (not from memory) [A120].
         6. Write the pointer: step Y6.
@@ -253,7 +255,7 @@ yolo_execution_protocol:
          Include: per-Phase summary, total files changed, total commits, all review references
       2. Run .tad/hooks/lib/audit-yolo.sh {epic-slug} (skip if the script is not available)
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
-      3b. Dispatch the distillation: an Alex subagent that did not conduct, on Blake's journals, Cora's journal and every gate report's `## Knowledge candidates`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
+      3b. Dispatch the distillation: an Alex subagent that did not conduct, on the paths its prompt names: Blake's journals (`.tad/evidence/journal/{epic-slug}-phase*-*.md`, from each completion report's `Journal:` line), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) and the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
           (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance message. Announce the result and ask the human to accept.
           Nothing is archived before the human has accepted.
       4. After the human accepts: archive the Epic .tad/active/epics/ → .tad/archive/epics/
