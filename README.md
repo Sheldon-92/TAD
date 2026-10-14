@@ -1,512 +1,162 @@
-# TAD Method - Triangle Agent Development
+# TAD - Triangle Agent Development
 
 **Version 3.3.0 — Claude Code · Codex · OpenCode · Cursor**
 
-> Roles, gates and capability packs ship as one skill tree, `.agents/skills/`. Install targets: `--platform claude-code|codex|opencode|cursor` (default `codex`). Codex, OpenCode and Cursor read `.agents/skills/` natively; Claude Code reads `.claude/skills/`, which the installer fills with per-skill links into `.agents/skills/`. TAD writes a lifecycle-hook configuration for each of the four, all calling the same `.tad/hooks/` scripts (for Claude Code only when the project has no `.claude/settings.json`; Codex wires no PreCompact hook; on Codex the hook configuration did not take effect in a default-trust run and did in a run with the hook trust review bypassed (codex-cli 0.159.3, one machine, `codex exec`); a run through a completed trust review was not tested); what has been verified on each harness, and the known limits, are in the status table of [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md#current-status).
->
-> With `--platform codex|opencode|cursor` the installer does not change your `CLAUDE.md` or `.claude/settings.json`, and it leaves your own files under `.claude/` alone. One exception: in a project that already carries a TAD Claude Code projection, it keeps the `.claude/skills/` links current (adds links for new skills, removes dangling ones) and does nothing else there; `TAD_CLAUDE_STICKY=off` turns that off. With `--platform claude-code` it archives (outside the project, restorable) and replaces only files it can prove byte-for-byte were shipped by an earlier TAD; everything else, including your own hooks, permissions, MCP config and `CLAUDE.md` text, stays byte-identical. An existing `.claude/settings.json` is kept and TAD's hooks are not added to it. The [3.0.0 CHANGELOG entry](CHANGELOG.md#300---2026-09-16) records the earlier removal of the Claude Code target, which this release restores.
->
-> Claude Code loads `AGENTS.md` by itself only when the project has no `CLAUDE.md`; for a project that already has one, the installer keeps a marked `@AGENTS.md` reference block inside it.
+**You talk to Cora. She gets the work done and shows you the result.**
 
-> 📚 **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)** | [Version History](#version-history)
+TAD is a way of working with AI coding agents (Claude Code, Codex, Cursor, OpenCode) where you stay in one conversation about what you want, and the building and checking happen behind it, by separate agents, with quality gates between the steps.
 
----
-
-## 💡 Philosophy: Beneficial Friction
-
-**TAD is not about making AI do more. It's about making human involvement more valuable.**
-
-Many AI coding tools promise: "Give AI a goal, it handles everything." This sounds appealing, but in practice leads to:
-- **Requirement drift**: AI's understanding diverges from what you actually need
-- **False quality**: AI says "all tests pass" — but it wrote those tests itself
-- **Priority confusion**: AI spends 80% of time on 20% of value
-
-TAD — Triangle Agent Development (Two-Agent Quality Framework) — takes a different approach: **AI can do a lot, but must stop at three critical points for human confirmation.**
-
-### The Three Friction Points
-
-| Point | Why Human is Essential | Without Human |
-|-------|----------------------|---------------|
-| **Requirement Clarification** | Only humans know the real problem to solve | AI builds "technically correct but directionally wrong" things |
-| **Priority Decision** | Involves resources, time, business judgment | AI sorts by "technical complexity" instead of value |
-| **End-to-End Acceptance** | Only humans can judge "does this actually work" | AI passes all unit tests but UX is broken |
-
-These three points correspond to the **Value Guardian** role in the Triangle Model — not participating in every step, but gatekeeping at critical nodes.
-
-### Beneficial vs. Wasteful Friction
-
-| Wasteful Friction | Beneficial Friction |
-|-------------------|---------------------|
-| Copy-pasting code manually | Requirement clarification dialogue |
-| Formatting adjustments | Priority decisions |
-| Environment setup | End-to-end acceptance testing |
-| Waiting for builds | Feedback when acceptance fails |
-
-Wasteful friction should be automated. Beneficial friction should be **preserved and strengthened** — it's where value is created.
-
-### A Deeper Insight
-
-**The stronger AI becomes, the more critical human checkpoints are.**
-
-When AI is weak, humans must participate in every step. When AI is strong, humans can step back to higher levels — but those few critical points become even more important, because once AI deviates there, it races toward the wrong direction faster.
-
-This is why "fully autonomous AI development" is a false premise — **not because AI can't do it, but because AI without human gatekeeping produces unreliable results.**
-
----
-
-## 🧭 What TAD Is: Capability Acquisition
-
-TAD is a **capability acquisition methodology**. It is a repeatable way for one
-human, working with AI agents and a set of persistent documents (handoffs,
-project-knowledge, capability packs, a local research wiki), to acquire and compound
-working capability over time — the documents carry what was learned from each
-task into the next, so capability accumulates instead of resetting every session.
-
-**What TAD is not:** TAD does not compete with autonomous coding agents like
-**Devin** or orchestration frameworks like **LangGraph**. Those products ship
-runtimes that do the work for you; TAD ships a method that makes a human + AI
-pair progressively more capable, with human judgment kept at the checkpoints
-where it matters.
-
-The evidence is cross-domain, not just software: the projects the maintainer runs
-with TAD span voice and podcast production, a reading companion,
-academic research methodology, and a 26-pack capability library — every claim
-cited to an on-disk artifact in **[docs/value-proposition.md](docs/value-proposition.md)**.
-
----
-
-## 🔄 Supported Harnesses (Claude Code · Codex · OpenCode · Cursor)
-
-TAD runs on Claude Code, Codex, OpenCode and Cursor. Codex, OpenCode and Cursor discover `.agents/skills/` + `AGENTS.md` directly; Claude Code reaches the same skills through `.claude/skills/` links. Use `$alex` / `$blake` on Codex and `/alex` / `/blake` on Claude Code, OpenCode and Cursor (skills also model-selectable). Each harness gets a lifecycle-hook configuration over the same scripts (Claude Code: only when the project has no `.claude/settings.json`; Codex: no PreCompact hook); see the status table for coverage and limits.
-
-```bash
-bash tad.sh --platform claude-code|codex|opencode|cursor --yes  # default: codex
-# Codex: $alex or $blake; Claude Code/OpenCode/Cursor: /alex or /blake (via .claude/skills/ links or .agents/skills/)
+```
+You  -->  Cora  -->  Alex designs  -->  Blake builds  -->  independent checks  -->  You look at the result
 ```
 
-See [INSTALLATION_GUIDE.md "Codex CLI Setup"](INSTALLATION_GUIDE.md) for details.
+**How a piece of work goes**
+
+1. Tell Cora what you want. She asks until the result is clear.
+2. She has an Epic (the written plan) made and stops. Nothing runs yet.
+3. You read it and say "continue".
+4. She runs it to the end through subagents and gates. Only questions a human can answer reach you.
+5. You look at the result and accept it, or send it back.
+
+Not every job needs the whole flow. Pick by what you need:
+
+| You want to... | Go to |
+|---|---|
+| Decide what to build, why, whether, or what next | **Cora** (`/cora`, Codex `$cora`) |
+| Have something built from start to finish | **Cora**: Epic, then Alex, Blake and the gates after you say "continue" |
+| Design how to build one thing, or discuss a technical choice | **Alex** (`/alex`) directly |
+| Implement one finished handoff, or fix a bug | **Blake** (`/blake`) directly |
+| Not sure | **Cora** |
+
+**Start**
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform claude-code --yes   # or codex | opencode | cursor
+/cora        # Codex: $cora
+```
+
+`/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion.
+
+Cora has been run on Claude Code and Codex, to the extent listed in [What has been run on each harness](#what-has-been-run-on-each-harness). She has not been run on Cursor or OpenCode yet.
+
+> **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)**
 
 ---
 
-## 🎯 What's New in v2.43
+## Three roles
 
-### v2.43.1 — Opt-in YOLO2, project-owned Skills, and local-first research
+| Role | Command | What she or he does |
+|------|---------|---------------------|
+| **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Agrees the result with you, has the Epic written, then dispatches Alex, Blake and the reviewers as subagents and runs the work to the end. Writes no implementation, gives no verdict. |
+| **Alex** (Solution Lead) | `/alex` | Requirements, design, handoffs, and Gate 4 acceptance. |
+| **Blake** (Execution Master) | `/blake` | Implementation, the Ralph Loop, and Gate 3 verification. |
 
-- **YOLO2 is complete as an opt-in workflow.** Durable recovery, bounded quality rounds,
-  evidence attestation, and Codex native fresh/resume are accepted. Other harness adapters
-  remain experimental and are qualified when first used.
-- **Capability Builder Phase 1 is available.** TAD can create, validate, project, and
-  behaviorally evaluate one project-owned Agent Skill without taking ownership of the
-  downstream project's content.
-- **Local Wiki now includes FTS5 retrieval and native Chrome/CDP capture.** The capture path
-  is repository-owned and does not depend on the external download-Markdown plugin.
-- **Honest limits:** YOLO2 remains off by default, Capability Builder evolution is parked,
-  and public YouTube captions are experimental and fail closed when unavailable.
+You are the fourth part: you decide what the result should be, and you accept it at the end.
 
-## 🎯 What's New in v2.42
+## How a piece of work goes
 
-### v2.42.0 — Full is the default channel again; Alex costs 42% less to activate
-- **`/alex` `/blake` `/gate` are the default.** The Lite channel (`/alex-lite`, `/blake-lite`) is a
-  **frozen experiment** as of 2026-08-13: it takes no new work, and explicit invocation still works.
-  Eleven files previously pointed new projects at Lite by default.
-- **Activation cost 107.7K → 62K tokens (−42%), with no discipline removed.** Startup scans now read
-  command output instead of whole files; mode-specific protocol blocks moved behind `load_when` stubs.
-- **The 29 obligations that must never be forgotten now sit verbatim in the resident layer**, before the
-  activation protocol. The test is whether the forbidden action is the agent's *default* behaviour:
-  forgetting "don't auto-invoke an external CLI" is harmless, forgetting "get two expert reviews" is not.
-- **The fatal-operation recognition table moved to a module Gate actually loads.** Before this, an agent
-  could say "this needs human review" but could not tell you what counts as a fatal operation.
+1. **Agree a result with Cora.** She asks until what you want is clear.
+2. **She gets an Epic written and stops.** The Epic is the plan, in a file you can read. Nothing has run yet.
+3. **You say "continue".**
+4. **She runs it to the end** through subagents (Alex designs, Blake builds, reviewers check) and the quality gates.
+5. **You look at the result** and accept it or send it back.
 
-### Known limits, stated plainly
-- The ≤15K activation target was **not** met (62K). The discipline floor itself is only ~20KB; the rest
-  is movable but has to be moved safely, and this release moved part of it.
-- `express`'s expert-review floor is written **five contradictory ways** across the tree. Not yet unified.
+While she runs, she stops for only three things: something she cannot get past on her own, a change to the result you agreed, or an irreversible or outward action (push, publish, delete).
 
-## 🎯 What's New in v2.36
+## Where quality comes from
 
-### v2.36.0 — TAD Lite v1.1 (Quality Amendments)
-- **Symmetric dual reviewers**: every lite task now gets a design-side contract reviewer (alex-lite L2.5, with an AC-executability matrix: real principal? production path? runs verbatim?) plus the implementation-side reviewer (blake-lite L3) — blake L0.5 mechanically verifies the contract carries a real review (fail-closed, no self-review substitution)
-- **Why**: the first real-world lite run shipped a contract whose ACs specified a wrong execution principal; it survived self-review all the way to the last gate. Full quality study: `.tad/evidence/research/2026-07-30-lite-vs-full-quality-comparison.md`
-- **Design-side depth**: mandatory goal-anchor question (≤2 rounds) + pre-write solution sketch; restricted quota-exit wording (informing, never suggesting)
-- **Execution ergonomics**: single-step user-gated AC protocol (one action at a time, agent checks logs/readbacks), 7-state status vocabulary, 6-condition autonomous fix (implementation code only), mandatory follow-up entries for non-blocking findings, opt-in retrospective
-- **Cost**: ~35K tokens/cycle estimated with dual reviewers (v1.0 measured 23K) — still ~1/10 of full TAD
+- **The checker did not see the doer's reasoning.** Whoever reviews a piece of work is a fresh agent that was not part of building it. An agent that reviews its own work will usually approve it.
+- **Four gates:** Gate 1 requirements clarity, Gate 2 design completeness, Gate 3 implementation and integration (Blake), Gate 4 business acceptance (Alex). Evidence goes to files, not to claims.
+- **Only human-answerable questions go to the human:** what, why, whether, what next. Questions that a command or a file can answer do not.
+- **Separate terminals are one way to get the same independence.** Running `/alex` in one session and `/blake` in another, with you passing the handoff between them, still works and is a fine choice for a single handoff.
 
-### v2.35.0 — TAD Lite Channel
-- **`/alex-lite` + `/blake-lite`**: self-contained lightweight skills (81+115 lines, zero config loads) for small tasks (≤5 files, non-protocol) or when quota is tight — measured **~23K tokens/cycle vs full TAD's 300K-1M**
-- **Four essences preserved**: one-page LITE contract, mandatory fresh-context reviewer post-implementation (no self-review), two human decision points, runnable ACs
-- **Escalation valve**: SAFETY/protocol-contract/fatal-operation tasks are refused with a fail-closed catch-all — lite never touches what full TAD must own; sensitive files need explicit user insistence + 2 reviewers (L0.5 design pre-check + L3)
-- **Lifecycle = location**: `LITE-*.md` in `active/` = pending, moved to `archive/` on human acceptance; Codex-portable by construction (byte-identical `.agents` mirrors, smoke-tested on codex-cli 0.145.0)
+## Who to go to for what
 
-### v2.34.0 — Native Capability Adoption + Session Continuity
-- **PreCompact session snapshot hook** (Layer 0 post-compact recovery): on a harness where the hook is wired, a context compaction is meant to write a mechanical snapshot (`.tad/active/precompact/`, newest-wins, keep-5) and inject a post-compact reminder (the injection was not measured). The hook is wired for Claude Code, Cursor and OpenCode, not for Codex. Verified so far: on Claude Code a manual `/compact` made the hook write a snapshot, but there was nothing to compact, and natural compaction was not measured; for Cursor and OpenCode only the handler-level evidence exists (no live compaction)
-- **Subagent skills preload**: `security-auditor` project-level def statically preloads the `code-security` pack via `skills:` frontmatter (harness-path capability, negative-controlled; headless `claude -p` path remains inert)
-- **`.claude/rules` path-scoped pilot**: shell-portability constraints auto-load when touching `.tad/hooks/**` (READ-triggered)
-- **Headless weekly GitHub scan capability**: non-interactive `*research-github scan` variant + cron prompt (session-bound scheduling; STEP 3.9 staleness watchdog as fallback)
-- **`*save-skill` / `*save-workflow`**: capture conversation patterns into gitignored machine-local skills (`.claude/skills/local/`)
-- **Express frontmatter marker**: `express: true` durable marker consumed by layer2-audit two-tier detection
-- **Gate-ROI measurement**: net-positive verdict (27-sample catch-agnostic frame) — Layer 2 review chain confirmed GO
-- **Memory redirect capture layer**: native auto-memory → `.tad/memory/` (Capture layer feeding the distillation loop)
-- **9 archived Domain Pack YAMLs migrated to Capability Packs** (hw-*×4, mobile-*×4, supply-chain-security)
-- **Release tooling**: parity gate now excludes machine-local `local/`; version-sweep dual-layer drift detection
+- What to build, why, whether it is worth it, what next: **Cora**.
+- How to build it: Cora dispatches Alex, or go to **`/alex`** directly.
+- A single handoff, a bug, or a technical discussion: **`/alex`** or **`/blake`**.
+- Not sure: **Cora**.
 
-## 🎯 What's New in v2.33
+## What has been run on each harness
 
-### v2.33.0 — Claude Science + Brain Native + AI/Human Domain Awareness
-- **Claude Science Skill Architecture** (4-phase Epic): Anthropic open standard frontmatter + description-based semantic pack discovery + auto-SCAND pipeline capture + provenance tracking
-- **TAD-brain native knowledge search**: 250-line index + general-purpose agent = zero-dependency semantic search over TAD's knowledge base (Claude IS the search engine)
-- **New L1 Principle**: AI/Human Judgment Domain Awareness — agents self-assess whether a judgment belongs to AI domain (logic/data) or human domain (perception/taste/direction)
+Facts only. Nothing unrun is described as verified. Fixtures are scripted headless runs, not interactive sessions. Full table and evidence: [docs/MULTI-PLATFORM.md](docs/MULTI-PLATFORM.md#cora-on-each-harness).
 
-### Recent Highlights
-- **v2.32.0**: Trajectory evaluation harness (5-dim rubric + calibrated judge + gate-ROI report)
-- **v2.31.0**: Surplus Burn Mode (auto-execute ranked backlog within budget envelope)
-- **v2.30.0**: Research system consolidation (9 entry points → unified `*research`)
-- **v2.29.0**: Self-Evolution Pruning (retired near-zero-yield loops, 3-tier skill formalization)
-- **v2.28.0**: Upgrade Lifecycle System (migration engine + zero-garbage upgrades)
-- **v2.27.0**: SKILL progressive loading, 25 capability packs
+| Harness | Run | Not run |
+|---------|-----|---------|
+| **Claude Code** | Cora headless smoke fixtures (6/6) and queue fixtures (5/5), no P0; one live conducted run on a real Epic. | No interactive live session is on disk. |
+| **Codex** | The same fixtures, 6/6 and 5/5, no P0; in the live run, Steps Y1 to Y5 only. | Gates, acceptance and distillation were not run on Codex; conducting a run whose fixtures need `claude -p` was blocked. |
+| **Cursor** | Nothing. | Cora was not run on Cursor. |
+| **OpenCode** | Nothing. | Cora was not run on OpenCode. |
 
-## 🚀 Installation & Upgrade
+The roles `/alex` and `/blake`, the gates and the lifecycle hooks have their own status per harness in the [status table](docs/MULTI-PLATFORM.md#current-status).
+
+## Install
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 ```
 
-一行命令，默认安装（codex 目标）+ 全部 26 个 capability packs。首次安装与升级用同一命令；项目数据不变。
+One command; first install and upgrade are the same command, and project data is untouched. It installs the default target (`codex`) and all capability packs.
 
-`--platform claude-code|codex|opencode|cursor` 均可（默认 codex）。`--platform both` 仍被拒绝（安装器会在改动任何文件前停下并打印说明）。`--platform codex|opencode|cursor` 不会改你的 `CLAUDE.md` 与 `.claude/settings.json`，也不动你自己放在 `.claude/` 下的文件。唯一例外：项目里已经有 TAD 的 Claude Code 投影时，安装器会顺带维护 `.claude/skills/` 下的链接（为新 skill 补链接、清理悬空链接），不做别的；设 `TAD_CLAUDE_STICKY=off` 可关闭。`--platform claude-code` 只归档（存到项目之外，可恢复）并替换能逐字节证明是旧版 TAD 装进去的文件；你自己的 hook、权限、MCP 配置和 `CLAUDE.md` 正文原样保留。已存在的 `.claude/settings.json` 保留不动，TAD 的 hook 不会写进去。已有旧版 Claude Code 安装的项目，可先加 `--claude-adopt=plan` 只看清单、不改任何文件。选 packs 用 `--packs web-frontend,web-backend`，或用交互式 `npx github:Sheldon-92/TAD`。
+- **Targets:** `--platform claude-code|codex|opencode|cursor` (default `codex`). `--platform both` is refused before any file is changed.
+- **Where skills live:** roles, gates and packs ship as one tree, `.agents/skills/`. Codex, OpenCode and Cursor read it natively; Claude Code reads `.claude/skills/`, which the installer fills with per-skill links into it.
+- **What the installer leaves alone:** with `--platform codex|opencode|cursor` it does not change your `CLAUDE.md` or `.claude/settings.json`, nor your own files under `.claude/` (one exception: in a project that already has a TAD Claude Code projection it keeps the `.claude/skills/` links current; `TAD_CLAUDE_STICKY=off` turns that off). With `--platform claude-code` it archives (outside the project, restorable) and replaces only files it can prove byte-for-byte were shipped by an earlier TAD; your hooks, permissions, MCP config and `CLAUDE.md` text stay as they are. An existing `.claude/settings.json` is kept and TAD's hooks are not added to it. Add `--claude-adopt=plan` to see the list without changing anything.
+- **Packs:** choose with `--packs web-frontend,web-backend`, or run `npx github:Sheldon-92/TAD` for the interactive picker.
+- **Hooks:** each harness gets a lifecycle-hook configuration over the same `.tad/hooks/` scripts (Claude Code: only when the project has no `.claude/settings.json`; Codex: no PreCompact hook, and the configuration did not take effect in a default-trust run, see the status table).
 
-> 详细指南见 **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)**
+Details: [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md). Claude Code loads `AGENTS.md` by itself only when the project has no `CLAUDE.md`; for a project that already has one, the installer keeps a marked `@AGENTS.md` reference block inside it.
 
-### In-project updates (`$tad-update` / `/tad-update`)
-
-Installed projects ship one shared update entrypoint: `$tad-update` in Codex,
-and `/tad-update` in OpenCode (**updater-only projection in addition** — OpenCode/Cursor also receive
-Alex/Blake/Gate roles via `.agents/skills/` open-box). All of them delegate
-to `.tad/scripts/tad-update.sh`, which checks current/remote versions read-only,
-refuses downgrades, and applies only after explicit human confirmation. The helper
-backs up the project before the first mutation and delegates installation to the
-official tagged installer; it never runs unattended.
-The updater does not auto-detect Claude Code projects: run `bash tad.sh --platform claude-code` (or pass the flag to the updater) to update one.
-
-### Verify Installation
+To check an install:
 
 ```bash
-cat .tad/version.txt
-# Should show: 3.3.0
-
-# Check migration engine installed
-test -f .tad/hooks/lib/migration-engine.sh && echo "Migration engine: OK"
-
-# Check historical manifests
-ls .tad/migrations/*.yaml | wc -l
-# Should show: 12+ manifests
+cat .tad/version.txt     # 3.3.0
 ```
 
----
+Installed projects update with `$tad-update` (Codex) or `/tad-update` (OpenCode); it checks versions read-only, refuses downgrades, backs up first, and applies only after you confirm. It does not detect Claude Code projects: run `bash tad.sh --platform claude-code` there.
 
-## ⚡ Quick Start (5 minutes)
+## Upgrading from 3.x
 
-### 1. Install TAD
-```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
-```
+- Re-run the installer command above (add `--platform` for your harness). `/cora` appears.
+- `/alex` and `/blake` keep working unchanged.
+- Nothing to migrate by hand unless the migration notes in the [CHANGELOG](CHANGELOG.md) for this release say so.
 
-### 2. Pick a Channel
+## When to use TAD
 
-**Default — full TAD** (two terminals, the human is the only bridge between them)
+TAD applies to any substantial capability-building work. Software is the most exercised path, but the same loop runs for content production, research and other domains (see [docs/value-proposition.md](docs/value-proposition.md)).
 
-| Terminal 1 | Terminal 2 |
-|------------|------------|
-| `/alex` | `/blake` |
-| Design & Planning | Implementation |
+- **Use it for:** a new feature (more than 3 files or a day of work), architecture changes, complex multi-step requirements, cross-module refactoring, multi-phase work in a non-code domain.
+- **Skip it for:** a single-file bug fix, config changes, documentation updates, an emergency hotfix, or any small task where the process costs more than the task.
 
-**Frozen — TAD Lite** (one terminal; explicit invocation still works, but takes no new work)
+## Frozen: TAD Lite
 
-| Command | Role |
-|---------|------|
-| `/alex-lite` | Design & Planning — 🧊 frozen experiment since 2026-08-13 |
-| `/blake-lite` | Implementation — 🧊 frozen experiment since 2026-08-13 |
+TAD Lite (`/alex-lite`, `/blake-lite`) is a frozen experiment since 2026-08-13. In-flight Lite contracts run to completion and explicit invocation still works, but no new work starts there.
 
-### 3. Start Collaboration
+## Capability packs
 
-**Terminal 1 (Alex):**
-```
-You: I want to add user authentication
-Alex: [Uses AskUserQuestion to clarify requirements]
-Alex: [Creates handoff after Socratic inquiry]
-Alex: "Handoff ready. Please tell Blake to execute it in Terminal 2."
-```
+Domain packs (frontend, backend, testing, security, research, video and more) ship under `.agents/skills/` and load on demand when a task matches their keywords. See [.agents/skills/](.agents/skills/).
 
-**Terminal 2 (Blake):**
-```
-You: Execute the auth handoff
-Blake: [Reads handoff, implements, runs Gate 3/4]
-Blake: [Creates completion report]
-```
+## Troubleshooting
 
-**Terminal 1 (Alex):**
-```
-You: Blake finished, here's the completion report
-Alex: [Reviews with subagents, accepts or requests changes]
-```
+- **"Gate failed - no evidence file":** the reviewers were not called or did not write to `.tad/evidence/reviews/`; run the gate again.
+- **"Handoff created without Socratic inquiry":** Alex must ask before writing a handoff; re-run with the proper flow.
+- **"Knowledge files empty":** run `/knowledge-audit --fix` or bootstrap from the templates.
 
----
-
-## 🔺 The Triangle Model
-
-```
-           Human
-       (Value Guardian)
-            /\
-           /  \
-          /    \
-         /      \
-   Agent A ──── Agent B
-  (Solution)  (Execution)
-   Terminal 1  Terminal 2
-```
-
-### Human - The Value Guardian
-- **Defines** what is valuable for users
-- **Bridges** information between Alex and Blake
-- **Decides** when conflicts arise
-- **Verifies** final delivery meets expectations
-
-### Agent A (Alex) - Solution Lead
-- **Elicits** requirements through Socratic inquiry
-- **Designs** solutions with expert review
-- **Creates** handoffs for Blake
-- **Owns** Gate 1 (Requirements) & Gate 2 (Design)
-
-### Agent B (Blake) - Execution Master
-- **Implements** based on handoff only
-- **Tests** with mandatory subagent calls
-- **Owns** Gate 3 (Implementation) & Gate 4 (Integration)
-- **Reports** completion for Alex review
-
----
-
-## 🚦 4-Gate Quality System (v2.0)
-
-| Gate | Name | Owner | What Changed in v2.0 |
-|------|------|-------|----------------------|
-| Gate 1 | Requirements Clarity | Alex | (unchanged) |
-| Gate 2 | Design Completeness | Alex | (unchanged) |
-| **Gate 3 v2** | **Implementation + Integration** | **Blake** | **Expanded: includes old Gate 4 Part A** |
-| **Gate 4 v2** | **Acceptance + Archive** | **Alex** | **Simplified: pure business acceptance** |
-
-### Gate 3 v2 (Blake - Technical Quality)
-
-**Layer 1 (Self-Check):**
-- Executes the technical check rows declared in handoff §9.1
-- Max 15 retries with circuit breaker
-
-**Layer 2 (Expert Review):**
-- Group 1: `code-reviewer` (blocking)
-- Group 2: `test-runner`, `security-auditor`, `performance-optimizer` (parallel)
-- Max 5 rounds with escalation to Alex
-
-**Evidence Required:**
-- All expert review files in `.tad/evidence/reviews/`
-- Iteration evidence in `.tad/evidence/ralph-loops/`
-- Knowledge assessment
-
-### Gate 4 v2 (Alex - Business Acceptance)
-
-**What Alex Verifies:**
-- Handoff requirements satisfied
-- Business value delivered
-- User acceptance confirmed
-
-**Actions:**
-- Archive handoff to `.tad/archive/handoffs/`
-- Record final knowledge assessment
-
----
-
-## 📋 Key Commands
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/alex` | - | **Default** — Alex (Solution Lead): design, planning, acceptance |
-| `/blake` | - | **Default** — Blake (Execution Master): implementation, testing |
-| `/gate N` | Both | **Default** — Execute quality gate N |
-| `/alex-lite` | - | 🧊 Frozen experiment — explicit invocation only |
-| `/blake-lite` | - | 🧊 Frozen experiment — explicit invocation only |
-| `/knowledge-audit` | Both | Audit project knowledge health |
-| `/tad-init` | - | Initialize TAD in new project |
-| `/tad-maintain` | - | Document health check and sync |
-
-### Alex Commands (use `*` prefix)
-- `*analyze` - Start requirement elicitation
-- `*design` - Create technical design (with Capability Pack loading)
-- `*handoff` - Generate handoff with expert review
-- `*review` - Review Blake's completion
-- `*accept` - Accept and archive handoff
-- `*status` - Panoramic project status view
-
-### Blake Commands (use `*` prefix)
-- `*develop` - Start Ralph Loop (auto Layer 1 + Layer 2)
-- `*layer1` - Run Layer 1 self-checks only
-- `*layer2` - Run Layer 2 expert review only
-- `*ralph-status` - Check Ralph Loop state
-- `*ralph-resume` - Resume from checkpoint
-- `*gate 3` - Execute Gate 3 v2 (technical quality)
-- `*complete` - Generate completion report
-
----
-
-## 📚 Project Knowledge System
-
-TAD captures project-specific learnings in `.tad/project-knowledge/`:
-
-```
-.tad/project-knowledge/
-├── README.md           # How to use knowledge system
-├── ux.md               # UX patterns and decisions
-├── code-quality.md     # Code standards learned
-├── security.md         # Security considerations
-├── architecture.md     # Architectural decisions
-└── [custom].md         # Create new categories as needed
-```
-
-### Knowledge Capture Flow
-1. Gate 3/4 passes
-2. Agent assesses: "Did I learn something project-specific?"
-3. If yes → Record in appropriate category
-4. If no → Skip (don't record obvious/generic knowledge)
-
-### `/knowledge-audit` Command
-Run periodically to check knowledge health:
-- Files with content vs empty
-- Missing foundational sections
-- Categories needing attention
-
----
-
-## 🔄 Version History
-
-| Version | Key Features |
-|---------|--------------|
-| **v2.29.0** | **Self-Evolution Pruning & Feedback Collector: retired near-zero-yield loops (*dream/*evolve/*optimize, 18→1 measured yield) replaced by 3-tier skill formalization (T1 in-session ceremony + T2 skill-library + T3 *harvest cross-project promotion); Feedback Collector complete (structured human feedback for non-code artifacts, overlay model, /playground deprecated); TAD Friction Protocol (friction is never a skip reason); codex parity gate v2 (DIRECTION signal + --fix); layer2-audit fail-closed** |
-| **v2.28.0** | **Upgrade Lifecycle System: migration engine (5-step safety pipeline, single rm choke point, TOCTOU re-validation) + tad.sh/\*sync integration + CLAUDE.md merge execution + publish gate (hard-block on unmanifested deletions) + 12 historical manifests (v2.19.0→v2.27.0) + 22 E2E fixtures + acceptance tooling** |
-| **v2.27.0** | **SKILL progressive loading (36 protocols → references/), circular-trigger body-integrity checker, dual-platform runtime freshness verifier** |
-| **v2.26.0** | **Codex CLI support — dual-platform native runtime, compatibility ledgers, `.codex/` policy framework** |
-| **v2.25.0** | **Universal AC-Driven Gate: §9.1 becomes primary verification source for Gate 3/4. Hardcoded tsc/test/lint replaced by task-scoped ACs.** |
-| **v2.24.1** | **npx cross-platform installer (`bin/tad-install.mjs`): `npx github:Sheldon-92/TAD` offers interactive platform selection (Claude Code / Codex CLI) + capability-pack selection with one-line descriptions. Codex users get a slimmed install (excludes the 86K Claude-edition alex/blake SKILLs + hooks via deny-delta). `tad.sh --platform <claude-code\|codex>` + `--packs <list>` config-driven routing via `.tad/platform-codes.yaml`. README + INSTALLATION_GUIDE npx docs.** |
-| **v2.24.0** | **Non-dev deliverable lane — Gate 3/4 deliverable branches add `categorical` (rigor band, decoupled from BUILD/PIVOT/KILL via order-of-emission firewall + swap test) and `checklist` (export-spec pass/fail with ≥1-required guard) verdict_shapes alongside `weighted`. product-thinking gains a dogfood-verified categorical rubric; voice/video checklist gate-logic verified via synthetic fixture. visual-code-bridge (React fiber source locator) + ai-podcast-production pack (registry → 25 packs). Triple-Question KA simplified to draft-then-confirm.** |
-| **v2.23.1** | **Triple-Question KA — Knowledge Assessment expanded from 2 to 3 questions (knowledge + skill + workflow). Skillify Step 5 routes patterns to SKILL.md (judgment) or .workflow.js (orchestration). Alex .workflow.js authoring carve-out. Workflow completion trigger (agent_count ≥ 3).** |
-| **v2.23.0** | **Self-Deriving Release/Sync — publish, sync, and install now DERIVE their file sets from the repo structure (deny-list) instead of hardcoded lists. Includes derive-sync-set.sh (deny-list single source of truth), release-verify.sh (structure-agnostic version+structural gates), tad.sh self-derivation, and release-runbook SKILL upgrade to derive+verify procedure.** |
-| **v2.21.0** | **Agent-Adjacent Pack Factory — 8 new research-grounded capability packs (16→24 total): rag-retrieval, agent-memory, llm-observability, ai-guardrails, data-engineering, agent-orchestration, synthetic-data, knowledge-graph. Built via NotebookLM deep research (~401 sources) → parallel build workflow → adversarial review → cross-model (Codex) review (caught + fixed ~44 factual/API errors the same-model loop missed) → real discriminative behavioral eval (WITH-pack vs no-pack CONTROL). Measured: pack value is cross-vendor (Codex/Gemini) and non-monotonic in model strength (peaks at Sonnet-tier). Honest status: 7/8 behaviorally verified, 1 (data-engineering) pending — CONTROL also passed.** |
-| **v2.19.0** | **Observational Trace Instrumentation + ML Pack — (1) v2 observational trace emission: gate_result/expert_review_finding/decision_point/reflexion_diagnosis now fire by PARSING agent-written artifacts (COMPLETION gate3_verdict marker, HANDOFF §11 decision table, review files) instead of unreliable imperative helper calls (1/328 fire rate); handoff_created 6x over-fire fixed; analyzer schema fix + N=0 gate skip guard — self-evolution data layer now functional. (2) *sync directory-list fix: added .tad/domains/ + .tad/hooks/ to sync list (mirrors tad.sh). (3) ML Training capability pack (reference-based, cloud-GPU training judgment). (4) Cloud compute resource awareness in Socratic inquiry. Hooks never fail-closed; no trace schema change.** |
-| **v2.14.1** | **Research Adversarial Challenge — Codex+Gemini 双模型 adversarial review 内置研究 pipeline (3 挑战点: Phase 0c 计划/4c 结论/5b 行动); 5 维度挑战 (证据充分性/角度完整性/假设可靠性/因果推理/决策支撑力); 双模型 ADEQUATE+ 通过条件; max 2 轮循环; CHALLENGE_INSTRUCTION 对称常量; fail-closed rating extraction; 清理 1 Epic + 8 Ideas** |
-| **v2.14.0** | **YOLO Mode + LSP Code Understanding — (1) YOLO Mode: Alex 可自动驱动 Blake sub-agent 执行多 Phase Epic (step7_execution_mode + yolo_execution_protocol Y1-Y8); 增强 Epic 模板 (Phase Detail Block: Scope/Input/Output/AC/Files); audit-yolo.sh 4-dimension 审计 (产物链/内容真实性/代码验证/时序); dogfood 验证 39/39 PASS. (2) LSP Code Understanding: Claude Code 原生 LSP tool 集成; Alex step1c_lsp + Blake 1_5d_lsp_blast_radius; 12-language auto-provision** |
-| **v2.13.0** | **STORM + Elicit + Auto Source + Adaptive Seed — 4 research methodology upgrades: STORM multi-perspective questioning (strategy #4 in step3_5, OBJECTIVES.md-derived stakeholder perspectives); Elicit structured paper extraction (Phase 4.5, academic sources only); Auto Source Discovery (WebSearch + quality-probed add when internal gap enrichment fails, max 3 URLs); Adaptive Research Plan (dynamic seed generation, max 2 user-confirmed seeds); bilibili-handler 4-phase fallback (CC→B站API→yt-dlp→Jina)** |
-| **v2.12.0** | **Research Routing + Action Bridge — CLAUDE.md global research routing (deep research → NotebookLM, not WebSearch); /deep-research skill exclusion; research-notebook standalone usage without /alex; step6 Research→Action Bridge (5 next-step options); persistent research knowledge base (NotebookLM notebooks queryable across sessions)** |
-| **v2.10.4** | **CRAG Judge Loop + Parallel Curate — Phase 4b auto gap detection in research pipeline (3 signal phrases, per-notebook scope, max 1 re-ask, diminishing returns check); xargs -P5 parallel batch delete for Phase 2 curate (~2x faster); validated on real NotebookLM API (0 rate limit errors)** |
-| **v2.10.3** | **Global Skill Exclusion + Tool Quick Reference — prevents global skills from shadowing TAD methods; tool-quick-reference-alex/blake.md loaded at activation (CLI paths for NotebookLM/Codex/Gemini/gh); archived 5 conflicting skills; fixed stale version strings in Alex/Blake SKILL** |
-| **v2.10.1** | **GitHub Knowledge Integration — `*research-github` 8-command skill; GitHub Awesome-List Registry (24 domains, 50 lists); Alex step2c_github auto-recommend; notebook auto-refresh; research priority rule; weekly scan automation; domain-pack-feedback loop** |
-| **v2.10.0** | **Goal-Driven Research Director + NotebookLM Full Integration — `*research-notebook` 19-command skill; Alex STEP 3.8 research scan; `*research-plan` autonomous goal-driven research; OBJECTIVES.md OKR template; Blake NotebookLM read-only access; cross-model invocation guide** |
-| **v2.9.1** | **Cross-Model Orchestration + NotebookLM Knowledge Layer — `*research-notebook` skill (8 commands) for multi-source research (YouTube + PDF + web); cross-model capability catalog (Codex Image-2, NotebookLM, Gemini); notebook lifecycle management; Alex integration for research workflows** |
-| **v2.9.0** | **Codex CLI Support — cross-platform TAD via OpenAI Codex (AGENTS.md native role switching, launcher scripts, static Codex-edition SKILLs, 4 operation guides, portable extraction system)** |
-| **v2.8.5** | **Compact Recovery (two-layer session state persistence — CLAUDE.md self-check + session-state.md on-disk file; prevents agent identity/task loss after context compaction)** |
-| **v2.8.4** | **Token Efficiency (L1 tiered Layer 2 reviewer count by task_type / L2 lazy knowledge load / L4 *express ≤5 files / L6 narrow-scope expert prompts) ~30-35% per architecture handoff savings; Linear integration removed (unused); Hook passive mode (no more additionalContext injection — keyword scoring + log preserved); BUSINESS-VALUE-FIRST rule for handoff/completion 人话版** |
-| **v2.8.3** | **Layer 2 Audit (smoke-alarm replacement for Epic 1 mechanical enforcement), Alex `*accept` step4c red-flag, SKILL hardening (anti_rationalization_registry + honest_partial_protocol + Slug Contract), Epic 1 cancelled** |
-| **v2.8.2** | **Domain Pack Auto-Loading Hook (UserPromptSubmit + keyword router, 100% acc / 81ms), tad.sh bug fixes** |
-| **v2.8.1** | **Commands consolidated into skills (18 command files → skills), deprecation registry** |
-| **v2.8.0** | **Self-Evolving Framework, 20 Domain Packs (78 tools), Execution Traces, Quality Gate Hooks** |
-| **v2.7.0** | **Hook-Native Architecture, 76% context reduction, PreToolUse gating** |
-| **v2.6.0** | **4D Protocol Pair Testing, Autoresearch Optimization, Linear Integration** |
-| v2.5.0 | Spec Compliance Reviewer, Anti-Rationalization, TDD Skill, Worktree |
-| v2.4.0 | *publish + *sync, Context Refresh, Git Commit Verification |
-| v2.3.0 | Multi-Platform Cleanup, Intent Router, *learn, *idea, ROADMAP |
-| v2.2.x | Bidirectional Messages, Adaptive Complexity, Pair Testing, Modular Config |
-| v2.1.x | Agent-Agnostic Architecture, 9 Skills, `/tad-maintain` |
-| v2.0 | Ralph Loop Fusion, Gate 3/4 Restructure |
-| v1.8 | Socratic Inquiry, Terminal Isolation, Knowledge Assessment |
-
----
-
-## 🤔 When to Use TAD
-
-TAD applies to any substantial capability-building work — software is the most
-exercised path, but the same loop runs for content production, research, and
-other domains (see [docs/value-proposition.md](docs/value-proposition.md)).
-
-### Use TAD When:
-- New feature (>3 files or >1 day work)
-- Architecture changes
-- Complex multi-step requirements
-- Cross-module refactoring
-- Multi-phase work in a non-code domain (production pipelines, research projects, methodology design)
-
-### Skip TAD When:
-- Single-file bug fix
-- Config changes (.env, versions)
-- Documentation updates
-- Emergency hotfix
-- Any small task where process overhead exceeds the task itself
-
----
-
-## 💡 Key Principles
-
-These principles are the practical implementation of [Beneficial Friction](#-philosophy-beneficial-friction) — each one preserves a human checkpoint where it matters most, while automating everything else.
-
-### 1. Human-in-the-Loop (Beneficial Friction)
-Human is not just a requester but the Value Guardian at three critical friction points: requirement clarification, priority decisions, and end-to-end acceptance. Information flows through the human.
-
-### 2. Design Before Code
-Alex designs completely before Blake implements. No implementation without handoff. This ensures requirements are clarified (friction point #1) before any code is written.
-
-### 3. Evidence-Based Quality
-Every gate requires evidence. Subagent reviews are mandatory, not optional. Automated checks eliminate wasteful friction; human review at gates preserves beneficial friction.
-
-### 4. Knowledge Accumulation
-Project learns from every feature. Patterns captured prevent repeated mistakes.
-
-### 5. Adaptive Complexity
-Scale process to task size. Small task = light process. Large task = full TAD. Match the amount of beneficial friction to the risk level.
-
----
-
-## 🛠 Troubleshooting
-
-### "Alex called /blake in same terminal"
-This is a VIOLATION. Alex must stop and instruct human to switch to Terminal 2.
-
-### "Gate failed - no evidence file"
-Ensure subagents were called and wrote to `.tad/evidence/reviews/`.
-
-### "Handoff created without Socratic inquiry"
-Alex must use AskUserQuestion before writing handoff. Re-run with proper flow.
-
-### "Knowledge files empty"
-Run `/knowledge-audit --fix` or manually bootstrap with templates.
-
----
-
-## 🤝 Contributing
+## Contributing
 
 TAD evolves through direct improvement in the [TAD repository](https://github.com/Sheldon-92/TAD). If you find issues or have suggestions, modify the framework directly or open an issue.
 
----
+## Further reading
 
-## 📖 Further Reading
-
-- [Changelog](CHANGELOG.md) — every version, what changed and what did not land
+- [Changelog](CHANGELOG.md): every version, what changed and what did not land
 - [Installation Guide](INSTALLATION_GUIDE.md)
-- [Multi-Platform Guide](docs/MULTI-PLATFORM.md) — install targets, per-harness status and limits
+- [Multi-Platform Guide](docs/MULTI-PLATFORM.md): install targets, per-harness status and limits
 - [Codex User Guide](docs/CODEX-USER-GUIDE.md)
 - [Ralph Loop Guide](docs/RALPH-LOOP.md)
-- [Value Proposition](docs/value-proposition.md) — every claim cited to an on-disk artifact
-- [Agent Skills](.agents/skills/)
+- [Value Proposition](docs/value-proposition.md): every claim cited to an on-disk artifact
 - [Configuration](.tad/config.yaml)
-
-> Earlier documentation (portal, overview, audit report) is archived under
-> [`docs/archive/`](docs/archive/) — it describes TAD as of v2.3–v2.4 and is no longer maintained.
 
 ---
 
-**Welcome to TAD v3.3.0 — Claude Code · Codex · OpenCode · Cursor**
+**TAD v3.3.0 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*
