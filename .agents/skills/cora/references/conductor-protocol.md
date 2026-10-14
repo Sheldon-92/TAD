@@ -21,7 +21,7 @@ yolo_execution_protocol:
     Next: <next action, one line>
     Stopped: <question> | answer: (none yet)   ("—" when not stopped)
     Owner: <harness> <YYYY-MM-DD HH:MM>   ("—" when no session holds the run; absent reads as "—")
-    Owner rule: on taking up a run (first dispatch or a resume) with Owner "—" or absent she writes her own token (harness name plus `date '+%Y-%m-%d %H:%M'`); she clears it to "—" at any Stopped: and at IDLE. Before each write to `## Run` she re-reads Owner. If it names another session, or she cannot tell after a compaction, she is not the owner. A session that is not the owner writes nothing, says which session holds the run, and asks the human one question: is that session closed? On "yes" she writes her own token and continues; otherwise she stops.
+    Owner rule: on taking up a run (first dispatch or a resume) with Owner "—" or absent she writes her own token (harness name plus `date '+%Y-%m-%d %H:%M'`); she clears it to "—" in the same edit that writes `Stopped:` (or `IDLE`), as the last change of that edit; on the human's answer she takes up the run again under this rule. Before each write to `## Run` she re-reads Owner. If it names another session, or she cannot tell after a compaction, she is not the owner. A session that is not the owner writes nothing, says which session holds the run, and asks the human one question: is that session closed? On "yes" she writes her own token and continues; otherwise she stops. A "yes" also answers the dispatch-in-flight question: a recorded dispatch whose output is not on disk is re-dispatched (next `<n>`) without asking again.
     Distillation pointer: `Pointer: phase <N> | step distill` while it is in flight (N = the Epic's last phase).
     Dispatch id: p<N>-<step>-<n>, e.g. p1-y5-1; the distillation uses `p<N>-distill-<n>` (N = the Epic's last phase). Wherever a step below says "write the pointer", this is the block it means.
 
@@ -240,7 +240,7 @@ yolo_execution_protocol:
         6. FAIL or PARTIAL:
            a. honest_partial_protocol: mark PARTIAL, do NOT fake PASS [A121]. PARTIAL is never routed as PASS, and Cora never upgrades a verdict [A121].
            b. Announce: "❌ Phase {N} Gate failed. Reason: {detail}"
-           c. One rework dispatch: back to Y5 with the verdict file path, then Y6 and Y7 again. A second FAIL → stop (reason 1), reported as it is.
+           c. One rework dispatch: back to Y5 with the verdict file path, then Y6 and Y7 again. A second FAIL or PARTIAL → stop (reason 1), reported as it is; the question offers: accept the phase as is, or keep the run stopped. On "accept as is" she sets the phase's Phase Map row and Phase Detail Status to `✅ Closed — PARTIAL` in the same edit that records the answer in `Stopped:`, then goes on to Y8. An Epic whose phases are all ✅ Done or ✅ Closed — PARTIAL goes to epic_completion, and its queue line is marked `done`: the queue line says the run is finished, not that the Epic is Complete.
         7. Write the pointer: step Y7.
         → Proceed to step_Y8.
       output: "phase{N}-gate3-verdict.md and phase{N}-gate-report.md on disk"
@@ -255,7 +255,7 @@ yolo_execution_protocol:
       output: "journal line"
 
   epic_completion:
-    trigger: "All phases ✅ Done (or closed PARTIAL)"
+    trigger: "All phases ✅ Done or ✅ Closed — PARTIAL"
     action: |
       Per Epic:
       1. Write the final report: .tad/evidence/yolo/{epic-slug}/EPIC-COMPLETION.md
@@ -264,9 +264,9 @@ yolo_execution_protocol:
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
       3b. Dispatch the distillation: an Alex subagent that did not conduct. Write the pointer first (`Pointer: phase <N> | step distill`, N = the Epic's last phase; id `p<N>-distill-<n>`; output `.tad/evidence/yolo/{epic-slug}/distillation-report.md`). Its inputs, named in the prompt: Blake's journals (selected only by every `Journal:` line in each completion report (a rework section adds its own)), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) and the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
           (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance question.
-      3c. Read the distillation report. In the same edit that records the distillation result, mark the Epic `done` in the queue block and move `current` to the next approved Epic. If an approved Epic is waiting, start it with no question.
+      3c. Read the distillation report. In the same edit that records the distillation result, mark the Epic `done` in the queue block, clear its `Owner:` to "—", and move `current` to the next approved Epic. If an approved Epic is waiting, start it with no question.
       Queue-wide, when no Epic is waiting:
-      4. Write `Conductor status: IDLE` (and clear `Owner:` to "—"), then ask acceptance alone: one question; each Epic of the queue listed with its result, every phase closed PARTIAL and every open P0 named, distillation gaps listed. Record the question in the `Stopped:` line of every Epic it covers.
+      4. Record the acceptance question in the `Stopped:` line of every Epic it covers and clear their `Owner:` to "—" (one edit per Epic file), then write `Conductor status: IDLE`, then ask acceptance alone: one question; each Epic of the queue listed with its result, every phase closed PARTIAL and every open P0 named, distillation gaps listed.
       5. After the human accepts: ask archiving as its own question, after acceptance, recorded the same way. Nothing is archived before both answers.
       6. On yes, archive each accepted Epic:
          a. Archive the Epic .tad/active/epics/ → .tad/archive/epics/ (two-phase safety: copy first, verify, then delete source)
