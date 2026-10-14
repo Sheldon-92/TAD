@@ -1,4 +1,4 @@
-# schema=1 rows=1852
+# schema=1 rows=1855
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -554,6 +554,7 @@ skill	25cd45e40fc17d27bcab4edd95deaaddba7d371f	tad-test-brief/SKILL.md
 skill	25f015c6960b1c2e49ddf4689dbf43514ca81e45	agent-skill-evolution/references/skillopt-sleep-integration.md
 skill	25f27c260f3f8829b92bd6c9d4927ee6ffea41e6	capability-upgrade/SKILL.md
 skill	2623834a01a8f9316e3ba22a7897e0c0a6ae5339	academic-research/references/domain-social.md
+skill	26253dbdd04fdc19fb9438e3aa4f22a81444980d	cora/references/conductor-protocol.md
 skill	267633fe6eec1e124da3a00cde7b20b2dbe7f811	alex/references/handoff-creation-protocol.md
 skill	267ead46d63fdfd2a96c1eaad66bff8e4026f32d	tad-help/SKILL.md
 skill	27001bd6633c178c835d47750382c1bcf42824f6	agent-computer-interface/examples/fixture-browser-task.md
@@ -1254,6 +1255,7 @@ skill	9d8d8e46c1746d432db617963773fc93ed2e0bc9	web-deployment/references/monitor
 skill	9d91b17c919ff1be6ace8ca4831aeef41da47710	web-deployment/references/platform-selection-rules.md
 skill	9de8d308c020b5b5ea2024cc77374d69868d186d	hw-circuit-design/references/bom-management.md
 skill	9df31646c8bbfa7d213ec157fcd1fd1fcf1f91d2	alex/SKILL.md
+skill	9dfefcc819fb3f3b30d13db0c2ce7226fd3f91a5	alex/references/distillation-loop-protocol.md
 skill	9e06cb782750736fa39b338635dc4abd2c808b67	agent-memory/references/memory-architecture.md
 skill	9e72758fa8270011c16ad350b144afecf2f528d5	alex/references/publish-protocol.md
 skill	9e7b7aee4652134fbc63f433832b0b7645a0a765	tad-help/SKILL.md
@@ -1336,6 +1338,7 @@ skill	a9c0e4e1256907496db95cc15b3c27307cb28629	alex/SKILL.md
 skill	a9e2eb3a8758e4eab7cf9325ff3dbe57d93080a0	blake/SKILL.md
 skill	a9e819bb13b31b24f064210aa0d158b7c9fb2a1f	reading-companion/fixtures/sample.html
 skill	a9ee02627b41efbd8ffff09a597e129187e846cf	tad-help/SKILL.md
+skill	aa1b50edb1cacce753d57af08e0959e86b8b73b3	cora/SKILL.md
 skill	aa220afa169996490121b205d1a6e964beb36d35	ai-agent-architecture/references/production-disasters.md
 skill	aa3429c0f7883827329aa2733afc89e8fce4afec	alex/references/handoff-creation-protocol.md
 skill	aa55cd1aea644cfc67d8d03e7f83fd91c07e7f43	academic-research/scripts/academic-search.sh
