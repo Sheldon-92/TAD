@@ -68,3 +68,4 @@ NEXT.md	.tad/active/handoffs/HANDOFF-20260903-capability-builder-phase23-evolve-
 .agents/skills/cora/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
 .agents/skills/cora/SKILL.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling
 .agents/skills/cora/references/conductor-protocol.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
+AGENTS.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling; the Ingress line is conditional on it existing
