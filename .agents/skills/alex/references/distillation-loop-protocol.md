@@ -97,3 +97,11 @@ At the same *accept trigger, ALSO scan the native auto-memory capture layer:
 - If user decides to skip distillation → legitimate (soft, not blocking); KA writes "User skipped distillation"
 - If Blake wrote no journal (Q1=No) → legitimate; KA writes "No discoveries"
 - The entire loop is advisory/human-gated; no hooks registered (L1 reject-mechanical-enforcement)
+
+## When the journal was written by a conductor (Cora)
+- The doer is the conductor, not Blake. The journal is `.tad/evidence/journal/conductor-{epic-slug}-{date}.md`: human corrections, failed steps, surprises.
+- The trigger is the Epic-close dispatch in Cora's conductor-protocol (step 3b of epic_completion), not an *accept.
+- The distiller must be a session that did not conduct that Epic. It reads the journal, then runs Steps 2 to 4 above unchanged.
+- Gap questions go into `{ev}distillation-report.md` under "Questions for the conductor". The conductor answers by appending to the journal; at most two rounds.
+- A field that is still unfillable after two rounds means the entry is not written; the material stays in the journal.
+- Entry schema and destination are unchanged; the conductor writes no knowledge entry herself.

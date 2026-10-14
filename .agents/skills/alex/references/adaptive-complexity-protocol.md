@@ -106,10 +106,13 @@ adaptive_complexity_protocol:
           Use AskUserQuestion:
             question: "这个任务预计需要多个阶段，建议创建 Epic Roadmap 来追踪整体进度。"
             options:
-              - "创建 Epic (Recommended)": "先规划整体 Phase Map，再逐阶段创建 Handoff"
+              - "交给 Cora (Recommended)": "新开一个会话，第一句话说：Read .agents/skills/cora/SKILL.md and follow it. You are Cora. 她与你确定结果、成 Epic、派发执行到底"
+              - "在这里创建 Epic": "先规划整体 Phase Map，再逐阶段创建 Handoff，由你在 Alex 与 Blake 之间传递"
               - "直接用单个 Handoff": "作为一个大 Handoff 处理，不创建 Epic"
 
-        If user chooses "创建 Epic":
+        If user chooses "交给 Cora": give the human that sentence and stop; do not create the Epic.
+
+        If user chooses "在这里创建 Epic":
           1. Create Epic file: .tad/active/epics/EPIC-{YYYYMMDD}-{slug}.md
              - Use .tad/templates/epic-template.md as base
              - Fill Objective, Success Criteria, Phase Map TABLE (overview)

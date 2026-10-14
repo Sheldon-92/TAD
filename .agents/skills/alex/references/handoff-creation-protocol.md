@@ -153,8 +153,9 @@ handoff_creation_protocol:
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
         - "Capability Pack References (if packs loaded in *design step1_5b)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
-        - "Write .tad/active/session-state.md: Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
+        - "(skip when dispatched by a conductor: the conductor owns session-state during a run) Write .tad/active/session-state.md: Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
       epic_linkage: |
+        If this session was dispatched by a conductor (references/conductor-dispatch-mode.md): do steps 1, 1b and 2 only. The conductor has already set this phase 🔄 Active and owns the Epic file: do not edit it (skip 3 and 3b). Step 4 then means: the only 🔄 Active phase is the one named in the dispatch; if another phase is Active, stop and report to the conductor.
         If an active Epic exists in .tad/active/epics/:
         1. Read the Epic's Phase Map to find the next ⬚ Planned phase
         1b. Read the Phase Detail Block for this Phase (### Phase {N}: {name}),
@@ -640,18 +641,16 @@ handoff_creation_protocol:
 
     step7_execution_mode:
       name: "Execution Mode Selection"
-      trigger: "Handoff 通过 Gate 2 AND handoff 有 Epic 字段（多 Phase 任务）"
-      skip_if: "Handoff 没有 Epic 字段（单 handoff → 直接走手动 step7）"
+      trigger: "Handoff 通过 Gate 2 AND handoff 有 Epic 字段（多 Phase 任务）AND not dispatched by a conductor"
+      skip_if: "Handoff 没有 Epic 字段（单 handoff → 直接走手动 step7）; or this session was dispatched by a conductor (the conductor routes)"
       action: |
         AskUserQuestion:
         question: "Handoff 已通过设计审查。这是 Epic {slug} 的 Phase {N}/{M}。怎么执行？"
         options:
           - "我来传递给 Blake（手动）": "生成 Blake message，你来复制到 Terminal 2"
-          - "你跑完告诉我（YOLO）": "自动驱动设计→实现→审查→验收，完成后通知你"
-          - "你跑，每个 Phase 完了暂停（半自动）": "YOLO + 每个 Phase 完成后暂停等你确认"
+          - "交给 Cora 跑完这个 Epic": "Alex 到此为止；你新开一个会话，第一句话说：Read .agents/skills/cora/SKILL.md and follow it. You are Cora. 她从磁盘接手并派发后续步骤"
         If "手动" → proceed to step7 (existing Human Handover)
-        If "YOLO" → enter yolo_execution_protocol with pause_between_phases: false
-        If "半自动" → enter yolo_execution_protocol with pause_between_phases: true
+        If "交给 Cora" → give the human that sentence and stop. Alex does not conduct. Note for the human: an Epic that Alex created has no `**Conductor**: Cora` line; Cora will ask before she takes it over.
 
     step7:
       name: "⚠️ STOP - Human Handover"
