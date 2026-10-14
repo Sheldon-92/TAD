@@ -22,6 +22,8 @@ Independence of judgment is the rule: no one judges their own work. Separate ter
 > See `.tad/codex/README.md` for adapter details and activation status.
 > Version of record: `.tad/version.txt`. Do not restate a version number anywhere else; link here instead.
 
+**How a piece of work goes.** You talk to Cora and agree a result. She has an Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
+
 ---
 
 ## Role Switching

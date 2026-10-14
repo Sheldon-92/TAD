@@ -28,32 +28,41 @@ This is your TAD (Triangle Agent Development) setup - a simplified, value-focuse
 
 ## Quick Activation
 
-### Terminal 1 - Agent A (Strategic Architect)
+### Cora (Conductor) - start here
+```
+/cora
+```
+Agree a result with Cora. She has an Epic written and stops; say "continue" and she runs it through Alex, Blake and the gates, then you look at the result.
+
+### Alex (Solution Lead)
 ```
 /alex
 ```
+Direct use: a single handoff or a technical discussion.
 
-### Terminal 2 - Agent B (Execution Master)
+### Blake (Execution Master)
 ```
 /blake
 ```
+Direct use: implement one handoff.
 
 ## How TAD Works
 
 ### The Triangle Model
 ```
      Human (You)
-    /          \
-   /            \
-Agent A ------- Agent B
-(Design)      (Execute)
+         |
+       Cora (talk, dispatch)
+      /          \
+   Alex -------- Blake
+ (Design)      (Execute)
 ```
 
 ### Simple Workflow
-1. **Human** expresses what they need
-2. **Agent A** designs the solution
-3. **Agent B** implements it
-4. **Human** validates the value delivered
+1. **Human** agrees a result with **Cora**
+2. **Alex** designs the solution
+3. **Blake** implements it
+4. **Human** looks at the result and accepts it
 
 ## Task Sizing Guide
 

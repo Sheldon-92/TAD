@@ -1,7 +1,7 @@
 {
   "name": "tad-framework",
   "version": "3.3.0",
-  "description": "Triangle Agent Development - Two-Agent Quality Framework for AI-assisted development",
+  "description": "Triangle Agent Development - Cora conducts, Alex designs, Blake builds; independent gates check the work",
   "type": "module",
   "bin": {
     "tad-install": "bin/tad-install.mjs"

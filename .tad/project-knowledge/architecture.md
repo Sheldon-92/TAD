@@ -8,7 +8,8 @@ Project-specific architecture learnings accumulated through TAD workflow.
 
 > Established at project inception.
 
-### Two-Agent System
+### Three Roles
+- **Cora (Conductor)**: The human's entry point; agrees the result, has the Epic written, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
 - **Alex (Solution Lead)**: Design, planning, requirements, business acceptance
 - **Blake (Execution Master)**: Implementation, testing, technical quality
 - **failure_mode**: Naive default: one agent does both design and implementation in a single pass. Why wrong: the designer rationalizes implementation shortcuts, and the implementer makes unreviewed design decisions — no separation of concerns means quality drift goes undetected.

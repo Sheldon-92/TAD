@@ -24,30 +24,30 @@ When this command is triggered, provide TAD framework guidance and options:
 Welcome to TAD v2.5.0 — Beneficial Friction + Ralph Loop
 
         Human (You)
-         /\
-        /  \
-       /    \
-      /      \
-Alex -------- Blake
-(Design)    (Execute)
+            |
+          Cora (talk, dispatch)
+         /    \
+     Alex ---- Blake
+   (Design)  (Execute)
 ```
 
 ## Quick Start Options
 
-Please select an option (0-8):
+Please select an option (0-9):
 
 ```
 0. Initialize TAD in current project (/tad-init)
-1. Activate Agent A - Alex (/alex)
-2. Activate Agent B - Blake (/blake)
-3. Start requirement elicitation (/elicit)
-4. Execute quality gate (/gate)
-5. Create/verify handoff (/handoff)
-6. Start parallel execution (/parallel)
-7. Show TAD status (/tad-status)
-8. View help documentation (/tad-help)
+1. Activate Cora - Conductor, start here (/cora)
+2. Activate Agent A - Alex (/alex)
+3. Activate Agent B - Blake (/blake)
+4. Start requirement elicitation (/elicit)
+5. Execute quality gate (/gate)
+6. Create/verify handoff (/handoff)
+7. Start parallel execution (/parallel)
+8. Show TAD status (/tad-status)
+9. View help documentation (/tad-help)
 
-Select 0-8:
+Select 0-9:
 ```
 
 ## Key Features in v2.5.0
@@ -80,6 +80,7 @@ Select 0-8:
 ## Slash Commands Available
 
 ### Agent Activation
+- `/cora` - Activate Cora (Conductor, the default entry point)
 - `/alex` - Activate Agent A (Solution Lead)
 - `/blake` - Activate Agent B (Execution Master)
 
@@ -103,12 +104,14 @@ Select 0-8:
 
 ## Typical Workflow
 
-1. **Terminal 1**: `/alex` → Activate Agent A
+0. **Start**: `/cora` → Activate Cora (Conductor): agree a result, she dispatches Alex, Blake and the gates
+
+1. **Alex** (`/alex`, direct use) → Activate Agent A
    - Socratic inquiry → Gather requirements (adaptive questions)
    - `*design` → Create technical design with expert review
    - `*handoff` → Generate handoff for Blake
 
-2. **Terminal 2**: `/blake` → Activate Agent B
+2. **Blake** (`/blake`, direct use) → Activate Agent B
    - Verify handoff from Alex (auto-detect on startup)
    - `*develop` → Ralph Loop (Layer 1 + Layer 2)
    - Gate 3 v2 → Technical verification

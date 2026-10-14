@@ -107,13 +107,14 @@ Use this checklist format to track progress:
    ## Quick Start
    | Command | Description |
    |---------|-------------|
+   | /cora   | Start Cora (Conductor) - start here |
    | /alex   | Start Alex (Solution Lead) |
    | /blake  | Start Blake (Execution Master) |
    | /gate   | Run quality gate |
 
    ## Next Steps
-   1. Terminal 1: Activate Alex for design
-   2. Terminal 2: Activate Blake for execution
+   1. Say `/cora` to start: agree a result, she runs it through Alex, Blake and the gates
+   2. `/alex` or `/blake` directly for a single handoff, a bug or a technical discussion
    3. State your project requirements
    4. Begin triangle collaboration
 

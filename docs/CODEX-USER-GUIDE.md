@@ -386,7 +386,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 Blake 必须调用子 agent 做代码审查才能通过 Gate 3。检查 `.tad/evidence/reviews/` 目录。
 
 ### "Handoff 创建了但 Blake 看不到"
-TAD 要求两个终端（或两次对话）：Terminal 1 = Alex，Terminal 2 = Blake。人类是两者之间的唯一桥梁，需要手动把 handoff 路径告诉 Blake。
+TAD 有三个角色：Cora 是你对话的入口并负责调度，Alex 设计，Blake 执行。正常流程是：用 `$cora` 和她商定结果，她让人写好 Epic 后停下；你说「继续」，她通过 subagent 和 gate 跑完；你看结果。检查的人不应看到做事的人的推理，分开的会话（Alex 一个、Blake 一个，你手动传 handoff 路径）只是做到这一点的一种方式，`$alex` / `$blake` 仍可直接使用。
 
 ### "升级后旧文件还在"
 v2.28.0 之前的升级不会自动清理旧文件。首次升级到 2.28.0+ 后，后续升级会自动通过 migration 引擎处理。如果仍有残留，运行：

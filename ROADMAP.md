@@ -10,7 +10,7 @@
 
 ### Stable foundation
 
-- **Full TAD is the default path.** Alex owns requirements and acceptance; Blake owns implementation and technical verification.
+- **Full TAD is the default path, in three roles.** Cora is who you talk to: you agree a result, she has an Epic written and stops, and after you say "continue" she runs it to the end through subagents and gates. Alex owns requirements and acceptance; Blake owns implementation and technical verification; `/alex` and `/blake` still work directly.
 - **Four harnesses are supported install targets.** Claude Code, Codex, OpenCode, and Cursor share the same durable `.tad/` project state and the single `.agents/skills/` tree, and each ships a lifecycle-hook projection over the shared hook scripts. Verification depth differs per harness (see [Multi-Platform](./docs/MULTI-PLATFORM.md#current-status)); one harness's adapter failure must not block the others.
 - **TAD Lite is frozen, not removed.** Existing Lite workflows remain available when explicitly invoked, but new framework work targets Full TAD.
 - **Quality remains evidence-based.** Four gates, the Ralph Loop, independent review, and honest partial outcomes remain the default safeguards.
@@ -23,7 +23,7 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 |---|---|---|
 | YOLO 2.0 verified orchestration | Complete, opt-in | Codex fresh/resume is proven. Claude Code, OpenCode, and DeepSeek YOLO2 adapters are experimental and qualify on first real use. Default-on remains deferred. |
 | Local Wiki research | Complete | File-is-truth research, stdlib FTS5 retrieval, and native rendered-page capture are accepted. Public YouTube captions remain experimental; Whisper/vector retrieval wait for measured need. |
-| Capability Builder `create` | Phase 1 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills. Evolution and packaging remain separate phases. |
+| Capability Builder `create` / `evolve` / `package` | Phases 1–3 complete | Projects can create, validate, project, and behaviorally prove locally owned Agent Skills, evolve them fixture-first on a concrete signal, and explicitly package one Skill as one Plugin. |
 | v3.0.0 release | Published | Runtime consolidated on a single `.agents/skills/` tree. See [CHANGELOG](./CHANGELOG.md). |
 | Platform Adapters P1+P3 | Complete | Installer accepts `claude-code\|codex\|opencode\|cursor`; P2 (lifecycle hooks) has an adapter on all four (Claude Code: only when the project has no `.claude/settings.json`; Codex: no PreCompact). P4 (live regression) is partial: see AGENTS.md Known Gaps. |
 
@@ -31,9 +31,9 @@ Primary references: [README](./README.md), [project context](./PROJECT_CONTEXT.m
 
 ### Capability Builder v1
 
-**Status:** Phase 1 of 4 complete; later phases parked.
+**Status:** Phases 1–3 of 4 complete; Phase 4 parked.
 
-[Phase 1](./.tad/active/epics/EPIC-20260831-capability-builder-v1.md) delivered the independently useful `create` path. Phase 2 `evolve` starts only after a real failure, correction, regression, external change, or explicit new requirement. Phase 3 packaging and Phase 4 Voice Studio dogfood remain downstream of that signal-driven work.
+[The Epic](./.tad/active/epics/capability-builder-v1/EPIC.md) delivered `create` (Phase 1), then `evolve` and `package` (Phases 2 and 3, accepted together). Each use of `evolve` still requires a real failure, correction, regression, external change, or explicit new requirement. Phase 4, the Voice Studio dogfood, is parked until the human starts it from that project.
 
 ### Framework health repair
 
@@ -45,7 +45,7 @@ Before starting any remaining item, revalidate it against current code because s
 
 - **YOLO2 default-on:** reconsider only after a new human-authorized real-work evaluation demonstrates enough reliability and acceptable cost.
 - **Per-harness verification:** extend live regression to every harness whose baseline is missing or failed (see AGENTS.md Known Gaps); one adapter failure must not block the verified core.
-- **Capability evolution:** add `evolve` only when a concrete regression fixture or explicit new requirement exists.
+- **Capability evolution:** run `evolve` on a Skill only when a concrete regression fixture or explicit new requirement exists.
 - **Local Wiki media retrieval:** add audio download/Whisper or persisted/vector retrieval only when current text and FTS5 paths show a measured gap.
 - **Remaining capability-pack evals:** expand behavioral evaluation as real projects exercise the packs, rather than creating a speculative all-pack campaign.
 

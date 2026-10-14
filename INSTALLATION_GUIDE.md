@@ -65,9 +65,10 @@ cd .. && rm -rf .tad-source
 cat .tad/version.txt          # 应显示 3.3.0
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
-# 默认（Alex / Blake —— 两个 terminal，人是唯一信息桥梁）
-/alex           # Terminal 1: 设计与规划
-/blake          # Terminal 2: 实现与执行
+# 默认：从 Cora 开始（Codex 用 $cora）。说清想要的结果，她安排 Epic，你说「继续」后她通过 subagent 和 gate 跑完
+/cora           # 对话入口与调度
+/alex           # 仍可直接用：单个 handoff、bug、技术讨论的设计
+/blake          # 仍可直接用：单个 handoff 的实现与执行
 
 # 🧊 已冻结的实验（lite —— 显式调用仍完全可用）
 /alex-lite      # 设计与规划（已冻结）

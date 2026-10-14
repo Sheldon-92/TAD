@@ -15,9 +15,10 @@ working capability in domains they did not previously have.
 
 The mechanism, deflated:
 
-1. **Two agents with enforced separation** — Alex designs, Blake implements, the
-   human is the only bridge. The separation exists so that no single context
-   reviews its own work.
+1. **Independent judgment by a party that did not do the work** — Cora is who you
+   talk to and who dispatches; Alex designs, Blake implements, and whoever checks
+   did not see the reasoning of whoever built. The separation exists so that no
+   single context reviews its own work.
 2. **Persistent documents as the unit of capability** — every task leaves behind
    artifacts (handoff, completion report, distilled knowledge entry) that the next
    task builds on. Capability lives in the documents, not in any one session's
@@ -109,7 +110,7 @@ comparison against alternative methodologies. Those remain directions, not facts
   each AI session starts from zero. TAD's persistent-document layer is the
   counter-design: handoffs, distilled principles, and packs carry capability
   forward.
-- **Anyone who distrusts self-reviewed AI output** — the two-agent separation and
+- **Anyone who distrusts self-reviewed AI output** — the independent-judgment separation and
   evidence-gated acceptance exist precisely for users who have been burned by
   "all tests pass" claims.
 

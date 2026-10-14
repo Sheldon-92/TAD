@@ -3,6 +3,7 @@
 **Version**: 3.3.0 (Claude Code, Codex, OpenCode and Cursor are install targets)
 
 TAD runs on **Claude Code, Codex, OpenCode, and Cursor as supported install targets**, with a shared protocol.
+On each of them you start with Cora (`/cora`, or `$cora` on Codex): she is the conductor you talk to, and she dispatches Alex, Blake and reviewers as subagents; `/alex` and `/blake` still work directly. What has been run for Cora on each harness is in the section "Cora on each harness" below; the table below covers the hooks and the rest of the framework.
 There is a single skill tree (`.agents/skills/`, the shared source of truth) and four install targets
 (`claude-code|codex|opencode|cursor`, default `codex`). Codex, OpenCode and Cursor read `.agents/skills/` natively.
 Claude Code does not: it reads `.claude/skills/`, so `tad.sh --platform claude-code` creates one link per skill
@@ -17,6 +18,21 @@ With `--platform codex|opencode|cursor` the installer does not change your `CLAU
 With `--platform claude-code` it archives (outside the project, restorable) and replaces only files it can prove
 byte-for-byte were shipped by an earlier TAD; everything else, including your own hooks, permissions, MCP config and
 `CLAUDE.md` text, stays byte-identical. An existing `.claude/settings.json` is kept and TAD's hooks are not added to it.
+
+---
+
+## Cora on each harness
+
+What was run for the Cora conductor role, and what was not. Facts only; nothing unrun is described as verified. Counts are as the judge files stand; fixtures are scripted headless runs (`claude -p`, `codex exec`), not interactive sessions.
+
+| Harness | Run | Not run | Evidence |
+|---|---|---|---|
+| **Claude Code** | Headless smoke fixtures (6 scenarios) and queue fixtures (5 scenarios), after the 4a rework: 6/6 and 5/5 pass, no P0. One live conducted run: the carry-forward Epic, its phases conducted through subagents and gates. | No interactive live session is on disk. | `.tad/evidence/yolo/cora-conductor-role/phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`; `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md`; `.tad/evidence/yolo/cora-carry-forward-fixes/run-record.md` |
+| **Codex** | The same headless smoke and queue fixtures: 6/6 and 5/5 pass, no P0. In the live run, Codex resumed an Epic from its pointer without re-explanation and conducted steps Y1 to Y5 only. | Gates, acceptance and distillation were not run on Codex. Conducting a run whose fixtures need `claude -p` was blocked (R-CC-9), so the human moved conducting back to Claude Code. | `.tad/evidence/yolo/cora-conductor-role/phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`; `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md` (G-2); `.tad/project-knowledge/patterns/runtime-adapter-instance-claude-code.md` (R-CC-9) |
+| **Cursor** | Nothing. | Cora was not run on Cursor. | none |
+| **OpenCode** | Nothing. | Cora was not run on OpenCode. | none |
+
+The live-run record has open residuals (see `.tad/evidence/yolo/cora-carry-forward-fixes/phase2-record-check.md`); this section does not rely on the points it lists as unconfirmed.
 
 ---
 

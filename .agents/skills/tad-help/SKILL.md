@@ -33,8 +33,8 @@ Each command produces standardized output:
 
 🎭 AGENT ACTIVATION PROTOCOL
 Must follow exact format:
-Terminal 1: Use /alex command to activate Agent A
-Terminal 2: Use /blake command to activate Agent B
+Start: use /cora (Codex: $cora) to talk to the Conductor
+Direct use: /alex for design, /blake for implementation
 
 ⚠️ CRITICAL SUCCESS FACTORS
 1. Agents MUST read their definition files first
@@ -118,14 +118,20 @@ npm run release:ios && npx cap open ios
 
 ## Activating Agents
 
-### Agent A (Solution Lead)
-In Terminal 1:
+### Cora (Conductor)
+Start here:
+```
+/cora
+```
+
+### Alex (Solution Lead)
+Direct use (single handoff, technical discussion):
 ```
 /alex
 ```
 
-### Agent B (Execution Master)
-In Terminal 2:
+### Blake (Execution Master)
+Direct use (implement one handoff):
 ```
 /blake
 ```
