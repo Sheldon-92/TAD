@@ -5,6 +5,40 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2026-10-14
+
+Patch release. Upgrading a 3.x project to 4.0.0 left three old Alex protocol files in place. This release removes them.
+
+### What was wrong
+
+- `.tad/migrations/3.3.0-to-4.0.0.yaml` was rejected by the migration engine (`REJECT: rename entry missing type field`), so its delete and rename entries never ran.
+- Adding the missing field would not have been enough. The engine only deletes a file when it can compare it with the git history of the source tree, and every download install (`npx`, `curl | bash`) uses a tarball, not a git tree: each entry reports `skipped-detection-unavailable`.
+- The status protocol was a rename onto `cora/references/status-roadmap-protocol.md`, a file the installer has already copied by then; run with git detection it would have overwritten Cora's file with the 3.x Alex content.
+- The 4.0.0 notes (steps 1 and 4 of "Upgrading from 3.x") therefore described removals that did not happen.
+
+### What changed
+
+- `.tad/deprecation.yaml` has a new key `"3.0.0"` that removes `alex/references/yolo-manual-conductor-protocol.md`, `alex/references/update-roadmap-protocol.md` and `alex/references/status-panoramic-protocol.md`. It works without git. The key is a floor: it applies to every 3.x project and to 4.0.0. A customised copy is removed too; the installer keeps a copy under `.tad-backup/`.
+- `3.3.0-to-4.0.0.yaml` is valid now: three `delete` entries with `type: "file"`, no rename. New empty hop `4.0.0-to-4.0.1.yaml` keeps the engine chain unbroken.
+- `release-verify.sh migration` now runs the migration engine's own validator over every manifest from the previous major on, so a manifest the engine rejects fails the release gate.
+- The 4.0.0 entry's upgrade steps 1 and 4 and `docs/releases/v4.0.0-release.md` are corrected (marked as corrected in 4.0.1).
+
+### Upgrading
+
+Re-run the installer for your harness. A 3.x project and a project already on 4.0.0 both end without the three files. A project on 4.0.0 is cleaned by running the 4.0.1 installer once.
+
+### What was run
+
+Five real upgrades, each in a scratch directory outside the repository from a `git archive` install of the old tag to a `git archive` of this release tree (no `.git`, like the download tarball): 3.3.0 to 4.0.1 on Codex and on Claude Code, 3.2.0 and 3.0.0 to 4.0.1 on Codex, and 3.3.0 to 4.0.0 to 4.0.1 on Codex (the 4.0.0 step reproduces the bug: 3 stale files). Each ended with 0 stale files, Cora's status protocol equal to the source, and `.tad/project-knowledge/` byte-identical (hash before and after, a project-owned sentinel kept). Records: `.tad/evidence/yolo/cora-conductor-role/phase4f-upgrade-*.md`. In the Claude Code run `.claude/skills/alex` is a link to `.agents/skills/alex`, so one removal covers both.
+
+### Known limits
+
+- The engine's delete and rename never run on a download install (no git source); the `deprecation.yaml` entry is the only cleanup path there.
+- 2.x projects are not cleaned by key `"3.0.0"` (cross-major path, not supported as an upgrade source for 4.x).
+- There is no `3.0.0-to-3.0.1` hop: a 3.0.0 project gets `REJECT: chain gap at 3.0.0` and the engine step is skipped with a warning; the installer exits 0 and the file cleanup still runs (measured).
+- `.tad/migrations/2.42.0-to-2.43.0.yaml` fails engine validation (2.x chains only); the new gate leaves manifests older than the previous major out of scope.
+- Not run: a real `curl | bash` upgrade from the published `main` (post-publish check), interactive Claude Code, OpenCode and Cursor upgrades.
+
 ## [4.0.0] - 2026-10-14
 
 Major release. TAD now has three roles, not two. **Cora** is the human's entry point and the conductor: she agrees the result with you, has an Epic written, and after you say "continue" runs it to the end by dispatching Alex, Blake and independent reviewers as subagents. Alex and Blake still work exactly as before when you call them directly.
