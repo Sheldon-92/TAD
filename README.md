@@ -18,7 +18,7 @@ You  -->  Cora  -->  Alex designs  -->  Blake builds  -->  independent checks  -
 4. She runs it to the end through subagents and gates. Only questions a human can answer reach you.
 5. You look at the result and accept it, or send it back.
 
-Not every job needs the whole flow: Cora first tells you whether a request is a simple task, a single handoff or an Epic (the steps above are the Epic path; for the other two she states her plan and starts; say 'wait' to stop her). Or pick by what you need:
+Not every job needs the whole flow: Cora first tells you whether a request is a simple task, a single handoff or an Epic (the steps above are the Epic path; for the other two she states her plan and starts, except a handoff with an irreversible effect, which she asks about first; say 'wait' to stop her). Or pick by what you need:
 
 | You want to... | Go to |
 |---|---|
@@ -47,7 +47,7 @@ Cora has been run on Claude Code and Codex, to the extent listed in [What has be
 
 | Role | Command | What she or he does |
 |------|---------|---------------------|
-| **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Triages each request (simple task, single handoff or Epic) and tells you which, with the plan; dispatches Alex, Blake and the reviewers as subagents (an Epic after your "continue"; a simple task or handoff right after stating the plan) and runs the work to the end. Writes no implementation, gives no verdict. |
+| **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Triages each request (simple task, single handoff or Epic) and tells you which, with the plan; dispatches Alex, Blake and the reviewers as subagents (an Epic after your "continue"; a simple task or a reversible handoff right after stating the plan; a one-way handoff after your answer) and runs the work to the end. Writes no implementation, gives no verdict. |
 | **Alex** (Solution Lead) | `/alex` | Requirements, design, handoffs, and Gate 4 acceptance. |
 | **Blake** (Execution Master) | `/blake` | Implementation, the Ralph Loop, and Gate 3 verification. |
 
