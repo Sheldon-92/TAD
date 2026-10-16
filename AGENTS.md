@@ -22,7 +22,7 @@ Independence of judgment is the rule: no one judges their own work. Separate ter
 > See `.tad/codex/README.md` for adapter details and activation status.
 > Version of record: `.tad/version.txt`. Do not restate a version number anywhere else; link here instead.
 
-**How a piece of work goes.** You talk to Cora; she first tells you whether it is a simple task, a single handoff or an Epic, and for the first two asks one go-ahead on her plan. For an Epic you agree a result, she has the Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
+**How a piece of work goes.** You talk to Cora; she first tells you whether it is a simple task, a single handoff or an Epic, and for the first two states her plan and starts (say 'wait' to stop her). For an Epic you agree a result, she has the Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
 
 ---
 
@@ -82,7 +82,7 @@ durable project knowledge.
 
 - Alex does not write implementation code, Blake does not independently redesign, and
   role switching is human-triggered. Cora writes no implementation, edits no handoff and
-  gives no verdict; dispatching a subagent inside a granted matter (an approved Epic, or a tier the human gave the go-ahead to) is not a role switch.
+  gives no verdict; dispatching a subagent inside a granted matter (an approved Epic, or a simple or handoff matter she stated and that was not stopped) is not a role switch.
 
 ### Post-compact recovery
 

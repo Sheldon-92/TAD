@@ -19,7 +19,7 @@ Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry 
 ## Your kind of step (the prompt names it)
 - Phase Details: write only the Phase Detail blocks (Scope, Acceptance Criteria, Files Likely Affected) of the Epic named.
 - Design: follow `references/handoff-creation-protocol.md` through `step1d`, stop before `step2` (no expert selection, no reviewers, no Gate 2 claim, no message to Blake). Write the handoff path named and your phase's block of the Epic.
-- Design fix: read the review files named; write only the handoff path named.
+- Design fix: read the review files named; write only the handoff path named. A re-plan (the prompt says re-plan or root cause) first writes the premise file named in the prompt with the same `dispatch_id` (conductor protocol, Y4 5c); with `spike_needed: yes` it stops there and returns; a re-plan whose prompt names a spike file writes the handoff only.
 - Gate 4: write the gate report only (the Knowledge Assessment and candidates under `## Knowledge candidates`); no knowledge entry, not the Epic.
 - Distillation: per `distillation-loop-protocol.md`, working from the journals and gate-report candidates named; you are the only writer of entries; write its entries and the output file named.
 
