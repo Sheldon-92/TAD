@@ -1648,10 +1648,21 @@ copy_framework_files() {
             # surfaces that did not exist pre-run).
             local _skill_new=0
             if [ ! -e "$TARGET_SKILL_DIR/$skill_name" ]; then _skill_new=1; fi
+            # Repair a self-nested copy left by an older installer under GNU cp
+            # (a copy of the skill INSIDE itself). Never when the source really
+            # has one, and never through a symlinked skill dir or nested symlink.
+            if [ -d "$TARGET_SKILL_DIR/$skill_name/$skill_name" ] && [ ! -L "$TARGET_SKILL_DIR/$skill_name" ] \
+               && [ ! -L "$TARGET_SKILL_DIR/$skill_name/$skill_name" ] \
+               && [ ! -e "$src/.agents/skills/$skill_name/$skill_name" ]; then
+                log_info "  → Repairing nested skill copy: $skill_name/$skill_name"
+                rm -rf "$TARGET_SKILL_DIR/$skill_name/$skill_name" # RM-OK:skill-self-nested-repair
+            fi
             if is_pack_skill "$skill_name" "$src"; then
                 copy_pack_skill_smart "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
             else
-                cp -r "$skill_dir" "$TARGET_SKILL_DIR/$skill_name"
+                # Copy CONTENTS ("dir/.") so an existing target is merged in place on BSD and GNU cp.
+                mkdir -p "$TARGET_SKILL_DIR/$skill_name"
+                cp -R "${skill_dir%/}/." "$TARGET_SKILL_DIR/$skill_name/"
             fi
             if [ "$_skill_new" = "1" ] && [ -e "$TARGET_SKILL_DIR/$skill_name" ]; then
                 note_created_top "$TARGET_SKILL_DIR/$skill_name"
@@ -1919,6 +1930,15 @@ verify_install_complete() {
             checked=$((checked + 1))
             if [ ! -d "$TARGET_SKILL_DIR/$skill_name" ]; then
                 log_warn "    ✗ MISSING skill: $TARGET_SKILL_DIR/$skill_name/"
+                missing=$((missing + 1))
+            elif [ "$skill_name" != "local" ] && [ ! -L "$TARGET_SKILL_DIR/$skill_name" ] \
+                 && [ -d "$TARGET_SKILL_DIR/$skill_name/$skill_name" ] \
+                 && [ ! -L "$TARGET_SKILL_DIR/$skill_name/$skill_name" ] \
+                 && [ ! -e "$src/.agents/skills/$skill_name/$skill_name" ] \
+                 && ! { [ -f "$TARGET_SKILL_DIR/$skill_name/SKILL.md" ] && \
+                        grep -qE '^[[:space:]]*ownership:[[:space:]]*["'"'"']?project-owned["'"'"']?' "$TARGET_SKILL_DIR/$skill_name/SKILL.md"; }; then
+                # One level only (<name>/<name>), same predicates as the copy loop.
+                log_warn "    ✗ NESTED skill: $TARGET_SKILL_DIR/$skill_name/$skill_name"
                 missing=$((missing + 1))
             fi
         done

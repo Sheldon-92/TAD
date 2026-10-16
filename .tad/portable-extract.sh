@@ -76,7 +76,8 @@ for item in "${PORTABLE_FILES[@]}"; do
 
   mkdir -p "$(dirname "$dst")"
   if [ -d "$src" ]; then
-    cp -r "$src" "$dst"
+    mkdir -p "$dst"
+    cp -R "${src%/}/." "${dst%/}/"
   else
     cp "$src" "$dst"
   fi
