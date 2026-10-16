@@ -12,6 +12,7 @@
 #   --case full-upgrade           AC9  real old-version upgrade + existing suites
 #   --case release-gates          AC10 release preflight order
 #   --case remote-release         AC14 publication verification (post-Gate-4)
+#   --case archive-shape          real `git archive HEAD` shape through the pinned download path
 #
 # Deterministic by construction: NO real network. A temporary mock curl in PATH
 # intercepts the fixed official URLs and serves fixture payloads built from a
@@ -90,8 +91,10 @@ make_src_tarball() {
     # archive of TRACKED files, so untracked/ignored local state must not ride
     # into the fixture source. `node_modules` (e.g. .opencode/node_modules from
     # a local npm install) holds relative `../` symlinks that the installer's
-    # tar-slip gate rejects by design, and the repo's own `.claude/` is an
-    # untracked, human-owned directory (no tracked file lives there).
+    # tar-slip gate rejects by design. `.claude/` holds the source repo's
+    # tracked skill links (`../` targets) and is export-ignored from the
+    # release archive (.gitattributes); the `archive-shape` case covers the
+    # real archive shape.
     ( cd "$REPO_ROOT" && tar -czf "$tmp/all.tar.gz" \
         --exclude='node_modules' \
         --exclude='./.git' --exclude='./.worktrees' \
@@ -1188,6 +1191,107 @@ case_remote_release() {
 }
 
 # ══════════════════════════════════════════════════════════════════
+# Case: archive-shape — the archive GitHub builds (git archive of HEAD) must
+# pass the tar-slip gate unchanged and install end to end. Reads HEAD, so it is
+# meaningful only once the commit carrying .gitattributes exists.
+# ══════════════════════════════════════════════════════════════════
+case_archive_shape() {
+    echo "== archive-shape: git archive HEAD through the real pinned download path =="
+    setup_sandbox
+    local RV="$REPO_ROOT/.tad/hooks/lib/release-verify.sh"
+    local ver
+    ver="$(git -C "$REPO_ROOT" show HEAD:.tad/version.txt | head -1 | tr -d '[:space:]')"
+    if [ "$ver" != "$FIXTURE_VERSION" ]; then
+        echo "  INFO: HEAD version $ver differs from worktree $FIXTURE_VERSION; using HEAD"
+    fi
+    local ga="$SANDBOX/ga.tgz"
+    git -C "$REPO_ROOT" archive --format=tar.gz --prefix="TAD-$ver/" HEAD > "$ga"
+    local nlink nclaude
+    nlink="$(tar -tvzf "$ga" | grep -c ' -> ' || true)"
+    nclaude="$(tar -tzf "$ga" | grep -c '/\.claude/' || true)"
+    [ "$nlink" -eq 0 ] && ok "archive carries 0 symlink members" || bad "archive carries $nlink symlink members"
+    [ "$nclaude" -eq 0 ] && ok "archive carries 0 .claude/ members" || bad "archive carries $nclaude .claude/ members"
+
+    # positive: default platform, then claude-code
+    local pd pc rc
+    for pd in default claude-code; do
+        pc="$SANDBOX/proj-$pd"
+        mkdir -p "$pc"
+        rc=0
+        if [ "$pd" = "default" ]; then
+            ( cd "$pc" && PATH="$SANDBOX/bin:$PATH" MOCK_TAG_TARBALL="$ga" MOCK_REMOTE_VERSION="$ver" \
+                bash "$TAD_SH" --release-ref "v$ver" --expected-version "$ver" --yes ) >/dev/null 2>&1 || rc=$?
+        else
+            ( cd "$pc" && PATH="$SANDBOX/bin:$PATH" MOCK_TAG_TARBALL="$ga" MOCK_REMOTE_VERSION="$ver" \
+                bash "$TAD_SH" --release-ref "v$ver" --expected-version "$ver" --platform claude-code --yes ) >/dev/null 2>&1 || rc=$?
+        fi
+        [ "$rc" -eq 0 ] && ok "pinned install of git archive ($pd) rc 0" || bad "pinned install of git archive ($pd) rc=$rc"
+        [ "$(cat "$pc/.tad/version.txt" 2>/dev/null)" = "$ver" ] && ok "installed version = $ver ($pd)" \
+            || bad "installed version wrong ($pd)"
+    done
+    if [ -L "$SANDBOX/proj-claude-code/.claude/skills/cora" ] && [ -f "$SANDBOX/proj-claude-code/.claude/skills/cora/SKILL.md" ]; then
+        ok "claude-code target: .claude/skills/cora is a link and resolves to SKILL.md"
+    else
+        bad "claude-code target: .claude/skills/cora link missing or dangling"
+    fi
+
+    # Negative A (synthetic, never skipped): escaping symlink refused by the real path
+    local ev="$SANDBOX/evil" evtar="$SANDBOX/evil.tgz"
+    mkdir -p "$ev/TAD-main/.tad" "$ev/TAD-main/x"
+    printf '%s\n' "$ver" > "$ev/TAD-main/.tad/version.txt"
+    ln -s ../../etc "$ev/TAD-main/x/evil"
+    ( cd "$ev" && tar -czf "$evtar" TAD-main )
+    local pa="$SANDBOX/proj-neg-a" da outa rca=0
+    mkdir -p "$pa"; printf 'keep\n' > "$pa/marker.txt"
+    da="$(digest_tree "$pa")"
+    outa="$( cd "$pa" && PATH="$SANDBOX/bin:$PATH" MOCK_TAG_TARBALL="$evtar" MOCK_REMOTE_VERSION="$ver" \
+        bash "$TAD_SH" --release-ref "v$ver" --expected-version "$ver" --yes 2>&1 )" || rca=$?
+    [ "$rca" -ne 0 ] && ok "negative A: escaping symlink archive refused (rc=$rca)" || bad "negative A: escaping archive accepted"
+    printf '%s\n' "$outa" | grep -q 'tar-slip rejected' && ok "negative A: output says tar-slip rejected" \
+        || bad "negative A: no tar-slip rejected message"
+    [ "$(digest_tree "$pa")" = "$da" ] && ok "negative A: project digest unchanged" || bad "negative A: project mutated"
+    if ls "$pa"/TAD-* >/dev/null 2>&1; then bad "negative A: TAD-* residue"; else ok "negative A: no TAD-* residue"; fi
+
+    # Negative C (synthetic repo, never skipped): archive-links flips on the link
+    local sr="$SANDBOX/synth" outc rcc=0
+    mkdir -p "$sr/x" "$sr/.tad"
+    git -C "$REPO_ROOT" show HEAD:tad.sh > "$sr/tad.sh"
+    printf '%s\n' "$ver" > "$sr/.tad/version.txt"
+    ln -s ../../etc "$sr/x/evil"
+    ( cd "$sr" && git init -q . && git add -A && git -c user.name=t -c user.email=t@t commit -q -m synth )
+    outc="$(bash "$RV" archive-links "$sr" HEAD 2>&1)" || rcc=$?
+    [ "$rcc" -eq 1 ] && ok "negative C: archive-links exit 1 on synthetic escaping link" || bad "negative C: expected exit 1, got $rcc"
+    printf '%s\n' "$outc" | grep -q 'literal:.*x/evil' && ok "negative C: literal check names x/evil" || bad "negative C: x/evil not named by literal check"
+    ( cd "$sr" && git rm -q x/evil && git -c user.name=t -c user.email=t@t commit -q -m rm )
+    rcc=0; bash "$RV" archive-links "$sr" HEAD >/dev/null 2>&1 || rcc=$?
+    [ "$rcc" -eq 0 ] && ok "negative C: exit 0 after removing the link" || bad "negative C: expected exit 0 after removal, got $rcc"
+    rcc=0; bash "$RV" archive-links --tarball "$evtar" >/dev/null 2>&1 || rcc=$?
+    [ "$rcc" -eq 1 ] && ok "negative C: --tarball on the escaping archive exit 1" || bad "negative C: --tarball expected exit 1, got $rcc"
+
+    # Negative B (the real defect): tag v4.0.2. SKIP when the tag is absent (phase verdict counts SKIP as FAIL).
+    if git -C "$REPO_ROOT" rev-parse -q --verify 'v4.0.2^{commit}' >/dev/null 2>&1; then
+        local oldtar="$SANDBOX/v402.tgz" pb="$SANDBOX/proj-neg-b" outb rcb=0
+        git -C "$REPO_ROOT" archive --format=tar.gz --prefix="TAD-4.0.2/" v4.0.2 > "$oldtar"
+        mkdir -p "$pb"
+        outb="$( cd "$pb" && PATH="$SANDBOX/bin:$PATH" MOCK_TAG_TARBALL="$oldtar" MOCK_REMOTE_VERSION="4.0.2" \
+            bash "$TAD_SH" --release-ref "v4.0.2" --expected-version "4.0.2" --yes 2>&1 )" || rcb=$?
+        [ "$rcb" -ne 0 ] && ok "negative B: v4.0.2 archive refused (rc=$rcb)" || bad "negative B: v4.0.2 archive accepted"
+        printf '%s\n' "$outb" | grep -q 'escaping link target' && ok "negative B: output says escaping link target" \
+            || bad "negative B: no escaping link target message"
+        rcb=0; bash "$RV" archive-links "$REPO_ROOT" v4.0.2 >/dev/null 2>&1 || rcb=$?
+        [ "$rcb" -eq 1 ] && ok "negative B: archive-links v4.0.2 exit 1" || bad "negative B: archive-links v4.0.2 expected 1, got $rcb"
+    else
+        echo "  SKIP: tag v4.0.2 absent; real-defect negative controls (2 checks) not run"
+    fi
+
+    # HEAD and its archive pass
+    rc=0; bash "$RV" archive-links "$REPO_ROOT" HEAD >/dev/null 2>&1 || rc=$?
+    [ "$rc" -eq 0 ] && ok "archive-links HEAD exit 0" || bad "archive-links HEAD expected 0, got $rc"
+    rc=0; bash "$RV" archive-links --tarball "$ga" >/dev/null 2>&1 || rc=$?
+    [ "$rc" -eq 0 ] && ok "archive-links --tarball (git archive HEAD) exit 0" || bad "archive-links --tarball expected 0, got $rc"
+}
+
+# ══════════════════════════════════════════════════════════════════
 # Dispatch
 # ══════════════════════════════════════════════════════════════════
 case "$CASE" in
@@ -1199,6 +1303,7 @@ case "$CASE" in
     full-upgrade) case_full_upgrade ;;
     release-gates) case_release_gates ;;
     remote-release) case_remote_release ;;
+    archive-shape) case_archive_shape ;;
     *) echo "tad-update-fixture: unknown --case '$CASE'" >&2; exit 2 ;;
 esac
 

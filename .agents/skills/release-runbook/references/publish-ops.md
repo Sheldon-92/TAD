@@ -176,6 +176,7 @@ bash "$repo_root/.tad/hooks/lib/release-verify.sh" provenance "$repo_root"
 All gates must complete before the tag; a commit made after the tag makes the migration gate look for an X-to-X hop.
 The provenance gate reads the git index: a staged-but-uncommitted skill change keeps it red.
 The commit to tag is the last one, the one that contains the regenerated ledger; re-run `provenance` on that commit immediately before the publish step, after any closeout commits. The gate is also red while `.tad/provenance` has uncommitted changes.
+Then run `bash "$repo_root/.tad/hooks/lib/release-verify.sh" archive-links "$repo_root" <commit-to-tag>`: exit 0 continue, 1 block, 2 hard block. GitHub's tag tarball is built from that commit, and an escaping link in it makes every download install refuse the archive. The mode executes the commit's own `validate_tar_members`, so run it only on the reviewed release commit.
 
 The release commit is local preparation, not publish authority. Verify its staged diff and final commit
 hash against the accepted mandate before any remote action.
@@ -189,9 +190,13 @@ safety boundaries, not separate human decisions.
 
 1. Push the exact approved commit to `refs/heads/main`:
    `git -C "$repo_root" push origin <commit>:refs/heads/main`
-2. Create the exact annotated tag:
+2. Prove GitHub's archive of that commit is clean before any tag exists: download
+   `https://github.com/Sheldon-92/TAD/archive/<commit>.tar.gz` into a temp file (`curl -fsSL`), then run
+   `bash "$repo_root/.tad/hooks/lib/release-verify.sh" archive-links --tarball <file>`. Exit other than 0 blocks the tag
+   (a pushed tag is immutable). The cross-check reads `tad.sh` from the `HEAD` of `$repo_root`, so `HEAD` must equal `<commit>`.
+3. Create the exact annotated tag:
    `git -C "$repo_root" tag -a "v$NEW" <commit> -m "v$NEW — <approved summary>"`
-3. Push only that tag:
+4. Push only that tag:
    `git -C "$repo_root" push origin "refs/tags/v$NEW:refs/tags/v$NEW"`
 
 Never use `--force`, `--tags`, an unscoped refspec, or a combined shell chain. Diagnose remote-ahead;

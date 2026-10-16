@@ -112,6 +112,15 @@
 #       .tad/scripts/gen-claude-provenance.sh. Exit 0 = pass; exit 1 = ledger stale or
 #       damaged (each failed check NAMED); exit 2 = usage / no SHA-1 tool / not a git repo.
 #
+#   archive-links <repo_root> [<ref>]   |   archive-links --tarball <file>
+#       Release-archive link gate. Ref form (default HEAD) builds the archive with `git archive`
+#       from the committed .gitattributes; --tarball takes a downloaded archive (the GitHub
+#       equivalence check). Two predicates must both pass: an independent literal check (absolute
+#       or dot-dot member / link target) and the ref's own validate_tar_members (evaluated from
+#       tad.sh; run only on a reviewed commit). Exit 0 = both pass; exit 1 = either rejects (each
+#       offender printed); exit 2 = usage / not a git repo / ref unresolved / build or extraction
+#       failure. Echoes `GATE: release-verify archive-links exit=<n>` on non-zero.
+#
 #   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
 #       nothing to mirror). Replaced by `structural` (.agents/skills byte-identity).
 #       Any caller still invoking them gets usage exit 2 (fail-closed).
@@ -150,6 +159,8 @@ usage() {
   echo "  release-verify.sh provenance <repo_root>" >&2
   echo "  release-verify.sh state-surface [<repo_root>]" >&2
   echo "  release-verify.sh path-refs [<repo_root>]" >&2
+  echo "  release-verify.sh archive-links <repo_root> [<ref>]" >&2
+  echo "  release-verify.sh archive-links --tarball <file>" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -997,6 +1008,116 @@ VERSION_SWEEP_EOF
       1) echo "VERDICT: path-refs FAIL — dangling reference(s) listed above (exit 1)"; exit 1 ;;
       *) echo "VERDICT: path-refs ERROR — check-path-refs.mjs exited $pr_rc (exit 2)"; exit 2 ;;
     esac
+    ;;
+
+  # ───────────────────────── archive-links ─────────────────────────
+  archive-links)
+    # Release-archive link gate. Builds (ref form) or takes (--tarball form) the archive
+    # GitHub serves for a tag and fails when it carries an escaping link or member.
+    # Two predicates must both pass:
+    #   (a) an independent literal check written here (absolute or dot-dot COMPONENT in any
+    #       member path, symlink target or hard-link target; same component rule as tad.sh);
+    #   (b) the ref's own validate_tar_members (extracted from tad.sh at that commit and
+    #       evaluated with a log_error stub) as the same-predicate cross-check.
+    # TRUST: (b) evaluates code taken from the ref. Run it only on a reviewed commit.
+    # --tarball has no ref: (b) uses HEAD:tad.sh of the repo this script lives in; that HEAD
+    #   must equal the commit the tarball was built from.
+    # Ref form builds with `git archive` from the COMMITTED .gitattributes (no
+    #   --worktree-attributes), as GitHub does. GIT_CONFIG_GLOBAL needs git >= 2.32 (older git
+    #   ignores it); $GIT_DIR/info/attributes is still read locally, keep it empty on the
+    #   release machine.
+    # Exit 0 = both pass; 1 = either rejects; 2 = usage / not a git repo / ref unresolved /
+    #   archive build or function extraction failure.
+    al_gate() { echo "GATE: release-verify archive-links exit=$1"; exit "$1"; }
+    al_literal_check() {
+      # $1 = tarball. Prints offenders; returns 1 if any, 2 if the listing fails.
+      local tb="$1" lst vlst m vl lt bad=0
+      lst="$(tar -tzf "$tb" 2>/dev/null)" || return 2
+      vlst="$(tar -tvzf "$tb" 2>/dev/null)" || return 2
+      while IFS= read -r m; do
+        [ -n "$m" ] || continue
+        case "$m" in
+          /*) echo "  literal: absolute member: $m"; bad=1 ;;
+        esac
+        case "$m" in
+          ..|../*|*/../*|*/..) echo "  literal: dot-dot member: $m"; bad=1 ;;
+        esac
+      done <<< "$lst"
+      while IFS= read -r vl; do
+        lt=""
+        case "$vl" in
+          *" -> "*) lt="${vl##* -> }" ;;
+          *"link to "*) lt="${vl##*link to }" ;;
+        esac
+        [ -n "$lt" ] || continue
+        case "$lt" in
+          /*) echo "  literal: absolute link target: $vl"; bad=1 ;;
+        esac
+        case "$lt" in
+          ..|../*|*/../*|*/..) echo "  literal: dot-dot link target: $vl"; bad=1 ;;
+        esac
+      done <<< "$vlst"
+      return "$bad"
+    }
+    AL_TMP="$(mktemp -d)" || { echo "ERROR: mktemp failed" >&2; al_gate 2; }
+    trap 'rm -rf "$AL_TMP"' EXIT
+    AL_TB=""; AL_FN_REPO=""; AL_FN_REF=""
+    if [ "${2:-}" = "--tarball" ]; then
+      if [ $# -ne 3 ]; then usage; exit 2; fi
+      AL_TB="$3"
+      if [ ! -f "$AL_TB" ]; then echo "ERROR: tarball not found: $AL_TB" >&2; al_gate 2; fi
+      AL_FN_REPO="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+      AL_FN_REF="HEAD"
+      echo "archive-links: tarball $AL_TB (cross-check uses tad.sh from $AL_FN_REPO HEAD)"
+    else
+      if [ $# -lt 2 ] || [ $# -gt 3 ]; then usage; exit 2; fi
+      AL_REPO="$2"; AL_REF="${3:-HEAD}"
+      if ! git -C "$AL_REPO" rev-parse --git-dir >/dev/null 2>&1; then
+        echo "ERROR: not a git repo: $AL_REPO" >&2; al_gate 2
+      fi
+      AL_COMMIT="$(git -C "$AL_REPO" rev-parse --verify -q "$AL_REF^{commit}" 2>/dev/null)" || AL_COMMIT=""
+      if [ -z "$AL_COMMIT" ]; then echo "ERROR: ref does not resolve: $AL_REF" >&2; al_gate 2; fi
+      AL_TB="$AL_TMP/archive.tar.gz"
+      if ! GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git -C "$AL_REPO" archive --format=tar.gz --prefix=TAD-verify/ "$AL_COMMIT" > "$AL_TB"; then
+        echo "ERROR: git archive failed for $AL_COMMIT" >&2; al_gate 2
+      fi
+      AL_FN_REPO="$AL_REPO"; AL_FN_REF="$AL_COMMIT"
+      echo "archive-links: $AL_REPO @ $AL_COMMIT"
+    fi
+    if ! tar -tzf "$AL_TB" >/dev/null 2>&1; then echo "ERROR: archive is not a readable tar.gz" >&2; al_gate 2; fi
+    AL_NLINKS="$(tar -tvzf "$AL_TB" 2>/dev/null | grep -cE ' -> |link to ' || true)"
+    echo "  link members (informational): $AL_NLINKS"
+    # (b) function extraction first, so a wiring failure is exit 2 before any verdict.
+    # capture first: awk exits early, which would SIGPIPE `git show` and fail the pipeline under pipefail
+    AL_TADSH="$(git -C "$AL_FN_REPO" show "$AL_FN_REF:tad.sh" 2>/dev/null)" || AL_TADSH=""
+    AL_FN="$(printf '%s\n' "$AL_TADSH" | awk '/^validate_tar_members\(\) \{/{f=1} f{print} f&&/^}/{exit}' || true)"
+    if [ -z "$AL_FN" ]; then echo "ERROR: validate_tar_members not found in $AL_FN_REF:tad.sh" >&2; al_gate 2; fi
+    AL_PENULT="$(printf '%s\n' "$AL_FN" | tail -n 2 | head -n 1 | tr -d '[:space:]')"
+    if [ "$AL_PENULT" != "return0" ]; then echo "ERROR: extracted function does not end with return 0" >&2; al_gate 2; fi
+    log_error() { printf '%s\n' "$*" >&2; }
+    eval "$AL_FN"
+    if ! type validate_tar_members >/dev/null 2>&1; then echo "ERROR: validate_tar_members not defined after eval" >&2; al_gate 2; fi
+    al_rc=0
+    # (a) independent literal check
+    al_lit_rc=0
+    al_lit_out="$(al_literal_check "$AL_TB")" || al_lit_rc=$?
+    if [ "$al_lit_rc" -eq 2 ]; then echo "ERROR: archive listing failed" >&2; al_gate 2; fi
+    if [ "$al_lit_rc" -ne 0 ]; then
+      echo "FAIL (a) literal check:"; printf '%s\n' "$al_lit_out"; al_rc=1
+    else
+      echo "PASS (a) literal check"
+    fi
+    # (b) shipped-guard cross-check
+    al_vt_rc=0
+    al_vt_out="$(validate_tar_members "$AL_TB" 2>&1)" || al_vt_rc=$?
+    if [ "$al_vt_rc" -ne 0 ]; then
+      echo "FAIL (b) validate_tar_members:"; printf '%s\n' "$al_vt_out"; al_rc=1
+    else
+      echo "PASS (b) validate_tar_members"
+    fi
+    if [ "$al_rc" -ne 0 ]; then echo "VERDICT: archive-links FAIL (exit 1)"; al_gate 1; fi
+    echo "VERDICT: archive-links PASS (exit 0)"
+    exit 0
     ;;
 
   *)

@@ -1,0 +1,2 @@
+# Keep the source repo's .claude/skills links (../ targets) out of the release archive (tad.sh rejects them).
+/.claude export-ignore
