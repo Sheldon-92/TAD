@@ -13,6 +13,10 @@
 
 ## 🔴 优先队列
 
+### ✅ DONE 2026-10-16. EPIC-20261016 Cora lighter flow — accepted and archived; not yet released (local commits on feat/cora-role)
+
+- Epic: `.tad/archive/epics/EPIC-20261016-cora-lighter-flow.md`. Budget ≤12 dispatches, no model runs. [x] Phase 1 Lighter flow (5bda83eb, c5d8d395, 1697ed39). Basis: `.tad/evidence/research/pstack-vs-tad-2026-10-16.md`.
+
 ### ✅ DONE 2026-10-16. EPIC-20261016 installer skill nesting — released in v4.0.2, archived
 
 - Epic: `.tad/archive/epics/EPIC-20261016-installer-skill-nesting.md`. Approved 2026-10-16. Budget 10 dispatches, no model runs. [x] Phase 1 Investigate and fix (b3cfb28f; Gate 4 PASS). Release asked separately afterwards.

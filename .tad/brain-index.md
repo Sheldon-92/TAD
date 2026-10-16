@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-16 17:03
+Generated: 2026-10-16 18:00
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,8 +24,8 @@ Generated: 2026-10-16 17:03
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
-| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
+| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard |
 | Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss |
 | AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
@@ -66,17 +66,13 @@ Generated: 2026-10-16 17:03
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-15-cora-reliability-phase1.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of how a fresh Cora session behaves at the moment a request arrives, before any fix: |
-| HANDOFF-2026-10-16-cora-reliability-phase1-redesign.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of what a fresh Cora session does when a request arrives, before any fix: |
-| HANDOFF-2026-10-16-cora-reliability-phase2.md | yaml#protocoltext(skillmarkdown+roledocs);nocode,nohooks | A protocol-text change to Cora, and the consistency edits it forces: |
-| HANDOFF-2026-10-16-installer-skill-nesting-phase1.md | code | A fix to `tad.sh` so that installing/updating over an existing `.agents/skills/<name>/` copies the release's files **int |
+| HANDOFF-2026-10-16-cora-lighter-flow-phase1.md | mixed#protocoltext(skill+reference+twodocs),nocode | Result-contract items 1–6 of the Epic as protocol text: (1) simple/handoff tiers start without a go-ahead question; (2 |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261015-cora-reliability.md | **Epic ID**: EPIC-20261015-cora-reliability |
-| EPIC-20261016-installer-skill-nesting.md | **Epic ID**: EPIC-20261016-installer-skill-nesting |
+| EPIC-20261016-cora-lighter-flow.md | **Epic ID**: EPIC-20261016-cora-lighter-flow |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -160,7 +156,7 @@ Generated: 2026-10-16 17:03
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 52 | journal |
+| evidence/journal/ | 53 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -181,18 +177,18 @@ Generated: 2026-10-16 17:03
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
 | evidence/releases/ | 14 | releases |
-| evidence/research/ | 187 | research |
+| evidence/research/ | 188 | research |
 | evidence/reviews/ | 844 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
-| evidence/simple/ | 2 | simple |
+| evidence/simple/ | 3 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 9917 | yolo |
+| evidence/yolo/ | 9930 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
