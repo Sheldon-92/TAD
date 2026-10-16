@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.2] - 2026-10-16
+
+Patch release. Cora triages every request before acting, the installer no longer nests a skill inside itself on GNU `cp`, and the source repo can load its own roles in Claude Code.
+
+### What changed
+
+- **Cora triages first.** Every request is triaged before any work action: a question or status request is answered, work is one of three tiers (simple, handoff, Epic), and she states the tier, the plan and the estimate in subagent dispatches before acting. The human's yes is the go-ahead; "do X" is a request to triage, not a grant that skips triage.
+- **A new section "When an instruction meets a rule".** When a direct instruction would make Cora break one of her rules, she names the rule in one line and offers the way that keeps it as one question, instead of obeying or refusing silently. Skipping an independent review is never available as an instruction; push, tag, publish, delete, credentials and spending are confirmed at the moment they happen.
+- **A Budget line.** An Epic carries `**Budget**:` (expected dispatches per phase and in all). Before a dispatch that would pass it, Cora stops and gives the count.
+- **Convergence instead of a round count.** The fix-review and rework loops no longer stop at a fixed number of rounds. They continue while reviews converge; two consecutive re-review rounds that each bring new P0s (`new_p0` in the review header) mark a design fault, and Cora re-plans on the existing work.
+- **Installer fix.** On GNU `cp`, `cp -r "$dir" "$existing"` copied a skill into the existing skill directory (`.agents/skills/<name>/<name>`) instead of merging. `tad.sh` and `.tad/portable-extract.sh` now copy the directory's contents (`mkdir -p` and `cp -R "dir/." "target/"`), which merges on BSD and GNU. `tad.sh` also repairs a nested `<name>/<name>` left by an older installer (never through a symlink, never when the source itself has that path) and its post-install check reports a remaining nested copy.
+- **Claude Code skill links in the source repo.** `.claude/skills/<name>` is now a relative symlink to `.agents/skills/<name>`, the same projection the installer writes into a project, so `/cora`, `/alex`, `/blake` and the other skills load when working on this repo. No `CLAUDE.md` or `.claude/settings.json` is added. This affects the source repo only.
+
+### Upgrading
+
+Re-run the installer for your harness. Projects that an older installer left with a nested `.agents/skills/<name>/<name>` directory are repaired by the new installer. There are no file deletes or renames (`4.0.1-to-4.0.2.yaml` is an empty hop that keeps the engine chain unbroken).
+
+### Known limits
+
+- The GNU `cp` behaviour was exercised through a PATH shim that models the nesting rule, not on a real GNU host; a run of the fixed installer on Linux is still open.
+- The reliability measurement phases of EPIC-20261015 (a baseline and a re-measure of Cora's triage behaviour) were cut by the human; the protocol change was reviewed and gated, but its effect on a fresh Cora session was not re-measured.
+
 ## [4.0.1] - 2026-10-14
 
 Patch release. Upgrading a 3.x project to 4.0.0 left three old Alex protocol files in place. This release removes them.
