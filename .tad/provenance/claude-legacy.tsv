@@ -1,4 +1,4 @@
-# schema=1 rows=1877
+# schema=1 rows=1880
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1258,6 +1258,7 @@ skill	9cce5f0ca638eb51427e42e237008346b57aa0d0	alex/references/my-templates.md
 skill	9cdbff80d769dfd1691b91486da48ebe9beae904	academic-research/references/pattern-extraction.md
 skill	9ce8105de2a7cd1edd93dfbc9d27d511b8c30153	research-methodology/LICENSE-ATTRIBUTION.md
 skill	9d2288929412d7d49e8331b866cfe746f4a93580	research-notebook/SKILL.md
+skill	9d2754c165e97f2fb947c1f66150413fed844d8e	cora/references/conductor-protocol.md
 skill	9d28a2273f3b6e1758d88c34049dd61ece9bc7f3	alex/references/sync-protocol.md
 skill	9d2ed2bd98edf1e84fcb86eabdf4dcd2edbedc7c	web-backend/references/architecture.md
 skill	9d4cbf9d8f4055c53c9d0be3ddee9aafbb903597	ai-guardrails/references/prompt-injection-defense.md
@@ -1332,6 +1333,7 @@ skill	a706a2b89a27f6d5600bf1e0d904e16329218de3	supply-chain-security/references/
 skill	a707e042d796d758db58591160a75cc0d2db9605	alex/references/acceptance-protocol.md
 skill	a747155558b54cdf1a0a84718927605b503c2bf1	ai-voice-production/SKILL.md
 skill	a78ac3062a1d4885c34266dc22ed1c61c411e98d	web-frontend/references/performance.md
+skill	a7e69c15390b0fe26e851d56a9bc5b9ad9c855bc	alex/references/conductor-dispatch-mode.md
 skill	a7e881ba87bfb348c916bdd74605ab49c404f6bf	tad-status/SKILL.md
 skill	a7efde0448bc2d4663886ebdd8fc623befc79120	hw-enclosure/references/pcb-fitting.md
 skill	a7f30af11592e8c109efc5a8d2f564a4f5cc32a7	ai-guardrails/examples/ai-guardrails-fixture.md
@@ -1815,6 +1817,7 @@ skill	fae473173d6b25b771f6832e4631b11fa45bad7e	ml-training/references/data-prepa
 skill	faec89a3ba89b9d91501168e096724b3862f0724	video-creation/examples/photo-to-beat-sync.md
 skill	fb69bd3eeb86d02d10ed65a78e01b0576d1ca51b	mobile-release/references/version-management.md
 skill	fb6f38363b4f46d9803a2219ce1cd16ab27c5628	mobile-ui-design/references/usability-review.md
+skill	fba161bd41a9052988f51757b74227236dc39a28	cora/SKILL.md
 skill	fba23bfe8570789aa4acf99896c4f98fc8f4ef8e	alex/references/accept-command.md
 skill	fbb7c5a422d19a4b5816742c294cbff64e301aac	blake/SKILL.md
 skill	fbda79b67a5bbbfba4124aec4be0a8038142dc0f	alex/references/design-protocol.md
