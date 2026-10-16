@@ -1,4 +1,4 @@
-# schema=1 rows=1874
+# schema=1 rows=1877
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -337,6 +337,7 @@ settings-ws	c66d676a3894f474c9db67a5c8a4a7478925adbe	-
 settings-ws	d94c5a368ddbb1cd0cff1d10142eaa75e695c59e	-
 settings-ws	ef9e241c96cd43af874739487df82ac0bcf89023	-
 settings-ws	f9d4f0e95d02c2c99f73fad6c2ae05081f81cfab	-
+skill	0009a76664fbbad8fb20a79abb6510059c619fb2	alex/SKILL.md
 skill	0021285c93e74bae30ac69293e1eabbc089547a0	reading-companion/tools/ingest.py
 skill	0062b313c79643ec8138e27ef4685f962b23bcac	blake-lite/SKILL.md
 skill	0097a1f1718d62e82978e7acddd6c73e17123987	blake-lite/SKILL.md
@@ -1550,6 +1551,7 @@ skill	cc44238dd6f84ae6fd56ef4c383ebf7193c14d67	capability-upgrade/SKILL.md
 skill	ccbcc4428553831d7a454f97a77c0613db6190f4	hw-firmware/SKILL.md
 skill	ccf42bec2d102eb27cc5c15dee2746860bb1f806	ai-voice-production/references/chattts-workflow.md
 skill	cd0e126c483a1fd5c4ee57a4aac75e8b77644b28	web-frontend/CHANGELOG.md
+skill	cd4b66189c88e017fd8e055aa8791e4a31e6fa88	tad-help/SKILL.md
 skill	cd759f5e20343b8afe7d5398f762139a256942f7	ai-agent-architecture/SKILL.md
 skill	cd9d624da23e17d779edf13c18781bff47fccdeb	tad-handoff/SKILL.md
 skill	cda19312f764f8eb754598fae42479cfad91623e	tad-help/SKILL.md
@@ -1756,6 +1758,7 @@ skill	f2e7fcf96b78bc54680f5b54ae09cc41f8ba9064	blake-lite/SKILL.md
 skill	f36811046c7dada6c9002afd414cd90b561b1ef8	alex/references/intent-router-protocol.md
 skill	f3a656335e3c749eb56745dabea13cef4dff5ff4	ai-prompt-engineering/checklists/pre-deploy.md
 skill	f3eff341daa12235c1ef1cb3ace8f7fcc604e9e0	web-backend/examples/api-pagination-review.md
+skill	f4243a73753ccf9379a3ffde33a279bc88f04f38	blake/SKILL.md
 skill	f44499ba7ba41d2d18fd3f93c3dbfa2c2da7859d	alex/SKILL.md
 skill	f44c5e9b0e6afc6a95e656b2b5d7eeae431979d6	blake-lite/SKILL.md
 skill	f4ff9b053c32616523b4075ee0e040fa97d1d7ff	cora/references/conductor-protocol.md
