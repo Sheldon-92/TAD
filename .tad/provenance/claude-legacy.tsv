@@ -1,4 +1,4 @@
-# schema=1 rows=1885
+# schema=1 rows=1888
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -439,6 +439,7 @@ skill	12eb8791d567a315a9a5e4ee1435d3f3c342f1c1	academic-research/SKILL.md
 skill	12efb8b80d1ed8ec8e3e9f2e08d8f057c7b9d346	llm-observability/references/prompt-registry-rules.md
 skill	13668ce59aadc3db0a70bd6eae5f06c11cc0a28c	ai-podcast-production/scripts/chunk-lint.sh
 skill	139a9eb4e6afa7b8a99ba7a96fadbbeaad0849f4	tad-help/SKILL.md
+skill	139c3b94ac9f95ff7c8f1fa77f502c18f9256b6e	alex/SKILL.md
 skill	139f54cdb393c768bacb7ea6073edbdf2f6ee63c	rag-retrieval/references/chunking-rules.md
 skill	13a82ea32d100f9ec4dc0dfc2f20cc3e9557cc9a	_archived/code-review-reference.md
 skill	13a82ea32d100f9ec4dc0dfc2f20cc3e9557cc9a	_archived/code-review.md
@@ -661,6 +662,7 @@ skill	37a63104efff07a4bbbde28f4433229c950667bb	alex/SKILL.md
 skill	37df71fd81378ba4ef03087516d4298a076d7e1d	web-ui-design/tools/component-matrix.md
 skill	37f69a888a14691a1d4e034118c7a0aee17654fa	web-deployment/references/monitoring-rules.md
 skill	3809da3354c1ff268e139b86367d916c5d7ee53f	capability-builder/references/evolve-protocol.md
+skill	3817b022fdb4e73c71f8a9ade048bcfcc84f814d	tad-help/SKILL.md
 skill	382bf17ec09de06474e6cb9ca3061322c37ba45d	agent-skill-evolution/references/offline-consolidation.md
 skill	3932f1cca4fe3cffb94711efcf2592e241029d90	academic-research/references/multimodal-research.md
 skill	39416d19d8f63b05aeec1266df097ff2e272d906	_archived/canvas-design.md
@@ -1650,6 +1652,7 @@ skill	dd556bfc42777129b1b469001f686b068ea6f3cf	alex/references/handoff-creation-
 skill	ddc1137253d6b9efb42c6a23b6afcec7d8849a6e	ai-agent-architecture/references/observability.md
 skill	ddcb6981aeabdadac57b36f077212c9dd9e77c9b	ai-guardrails/references/content-moderation.md
 skill	dded2d7a96576cdb75aaef14dd41d640cb87dd7b	ai-guardrails/references/defense-architecture.md
+skill	de0fe2767b83fba456ddc1b1e79b9c2056febc1a	blake/SKILL.md
 skill	de3c230c7c7d7e155c277bf77b84d1d51e0cf6a7	hw-testing/references/environmental-test.md
 skill	de4f7acfc3703b8c77501ef64e6d21808dd09612	product-thinking/adapters/software.md
 skill	de9b2da34fd1caf8b3c15f344e7a16c8a8eaabf4	web-backend/examples/api-pagination-review.md
