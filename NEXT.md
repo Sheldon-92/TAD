@@ -7,11 +7,15 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.2（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.1，见 CHANGELOG）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.3（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.1，4.0.2 的下载安装被拒，见 CHANGELOG）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
+
+### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261016 release archive symlinks (v4.0.2 download install refuses)
+
+- Epic: `.tad/active/epics/EPIC-20261016-release-archive-symlinks.md`. Fixed by export-ignore (da4e51b4); 4.0.3 prepared locally with the lighter-flow commits, not pushed or tagged. Until 4.0.3: downstream must not update via download (use `--source`).
 
 ### ✅ DONE 2026-10-16. EPIC-20261016 Cora lighter flow — accepted and archived; not yet released (local commits on feat/cora-role)
 

@@ -1,0 +1,11 @@
+schema_version: 1
+from: "4.0.2"
+to: "4.0.3"
+generated_by: "manual"
+note: |
+  Patch v4.0.3 - release archive no longer ships the source repo's
+  .claude/skills links (v4.0.2 download install/update refused it), plus the
+  Cora lighter-flow protocol changes. No file deletes or renames are needed.
+  This hop exists so the engine chain 4.0.1 -> 4.0.2 -> 4.0.3 has no gap.
+delete: []
+rename: []
