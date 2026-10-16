@@ -1,7 +1,7 @@
 # TAD Framework — Agent Roles
 
 TAD (Triangle Agent Development) uses three roles:
-- **Cora** (Conductor): The human's entry point and conductor: agrees the result, writes the Epic, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
+- **Cora** (Conductor): The human's entry point and conductor: triages each request (simple, handoff or Epic) and states the plan, writes the Epic where one is needed, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
 - **Alex** (Solution Lead): Requirements, design, Socratic inquiry, handoffs, Gate 4 acceptance
 - **Blake** (Execution Master): Implementation, Ralph Loop, expert review, Gate 3 verification
 
@@ -22,7 +22,7 @@ Independence of judgment is the rule: no one judges their own work. Separate ter
 > See `.tad/codex/README.md` for adapter details and activation status.
 > Version of record: `.tad/version.txt`. Do not restate a version number anywhere else; link here instead.
 
-**How a piece of work goes.** You talk to Cora and agree a result. She has an Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
+**How a piece of work goes.** You talk to Cora; she first tells you whether it is a simple task, a single handoff or an Epic, and for the first two asks one go-ahead on her plan. For an Epic you agree a result, she has the Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
 
 ---
 
@@ -38,10 +38,10 @@ Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `
 
 If a phrase above did not load the skill by itself, read `.agents/skills/<role>/SKILL.md` and follow it.
 
-Cora is the human's entry point and runs approved Epics by dispatching subagents.
+Cora is the human's entry point: she triages each request and runs it by dispatching subagents.
 Alex is the Solution Lead: technical design, handoffs, Gate 4.
 Blake is the Execution Master: implementation, Ralph Loop, Gate 3.
-Cora is additive: `/alex` and `/blake` stay the default for single handoffs, bugs and technical discussion. Claude Code and Codex: measured in Phase 2 (headless activation sessions). Cursor and OpenCode: same method, not yet run.
+Cora is additive: `/alex` and `/blake` stay available directly for single handoffs, bugs and technical discussion; a matter brought to Cora is triaged and run by her at any tier. Claude Code and Codex: measured in Phase 2 (headless activation sessions). Cursor and OpenCode: same method, not yet run.
 
 Roles on every harness use a shared `.tad/` knowledge, state, and journal
 boundary (`.tad/project-knowledge/`, handoffs, evidence, journals). Platform-specific
@@ -82,12 +82,12 @@ durable project knowledge.
 
 - Alex does not write implementation code, Blake does not independently redesign, and
   role switching is human-triggered. Cora writes no implementation, edits no handoff and
-  gives no verdict; dispatching a subagent inside an approved Epic is not a role switch.
+  gives no verdict; dispatching a subagent inside a granted matter (an approved Epic, or a tier the human gave the go-ahead to) is not a role switch.
 
 ### Post-compact recovery
 
 - Layer-1 self-check: before every reply ask, “Blake: do I know the complete current
-  handoff path? Alex: do I know the current mode and active handoff? Cora: do I know the current Epic's `## Run` pointer?” If NO or uncertain,
+  handoff path? Alex: do I know the current mode and active handoff? Cora: do I know the current Epic's `## Run` pointer, or the open `Dispatched:` line of a simple task?” If NO or uncertain,
   read `.tad/active/session-state.md` and the newest
   `.tad/active/precompact/snapshot-*.md`, then reactivate the role before continuing.
 

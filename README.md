@@ -18,7 +18,7 @@ You  -->  Cora  -->  Alex designs  -->  Blake builds  -->  independent checks  -
 4. She runs it to the end through subagents and gates. Only questions a human can answer reach you.
 5. You look at the result and accept it, or send it back.
 
-Not every job needs the whole flow. Pick by what you need:
+Not every job needs the whole flow: Cora first tells you whether a request is a simple task, a single handoff or an Epic (the steps above are the Epic path; for the other two she asks one go-ahead on her plan). Or pick by what you need:
 
 | You want to... | Go to |
 |---|---|
@@ -47,7 +47,7 @@ Cora has been run on Claude Code and Codex, to the extent listed in [What has be
 
 | Role | Command | What she or he does |
 |------|---------|---------------------|
-| **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Agrees the result with you, has the Epic written, then dispatches Alex, Blake and the reviewers as subagents and runs the work to the end. Writes no implementation, gives no verdict. |
+| **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Triages each request (simple task, single handoff or Epic) and tells you which, with the plan; on your go-ahead dispatches Alex, Blake and the reviewers as subagents and runs the work to the end. Writes no implementation, gives no verdict. |
 | **Alex** (Solution Lead) | `/alex` | Requirements, design, handoffs, and Gate 4 acceptance. |
 | **Blake** (Execution Master) | `/blake` | Implementation, the Ralph Loop, and Gate 3 verification. |
 
@@ -74,7 +74,7 @@ While she runs, she stops for only three things: something she cannot get past o
 
 - What to build, why, whether it is worth it, what next: **Cora**.
 - How to build it: Cora dispatches Alex, or go to **`/alex`** directly.
-- A single handoff, a bug, or a technical discussion: **`/alex`** or **`/blake`**.
+- A single handoff or a bug: **Cora** triages it and runs it, or go to **`/alex`** or **`/blake`** directly. A technical discussion: **`/alex`**.
 - Not sure: **Cora**.
 
 ## What has been run on each harness
