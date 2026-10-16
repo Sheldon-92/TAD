@@ -1,4 +1,4 @@
-# schema=1 rows=1882
+# schema=1 rows=1884
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -673,6 +673,7 @@ skill	39accf545b5c98443f7a4615a140ceac422e23a1	ai-voice-production/references/to
 skill	3a21042f311995af8e14e421bf8ed703d10af139	llm-observability/references/otel-semconv-rules.md
 skill	3a2326548bea33639dd2134ffa2300629f0d97ce	blake/SKILL.md
 skill	3a3ef003ec46cd8d84d5f6de4cb49af7bf856bec	release-runbook/SKILL.md
+skill	3a5f918fc525eb2433fc29e3e991108912beaa6d	cora/SKILL.md
 skill	3a78f640216ed6ca92a5411c6c01b7e482641f2e	alex/references/sync-protocol.md
 skill	3aba20db26884f1caaba2471e2ca2b90d05b394d	alex/references/knowledge-maintain-protocol.md
 skill	3ac2e30c4da33895b79694b7af28cc095e0be99e	alex/references/research-decision-protocol.md
@@ -746,6 +747,7 @@ skill	440737901b123b75e3b377aa2dd7852b50a09d66	alex/SKILL.md
 skill	441894fd9bb29d7929e277256475bea4d9d14f4a	alex/SKILL.md
 skill	442dde43b247aac944c580265a3cd829618c612f	alex/references/distillation-loop-protocol.md
 skill	44512a1d55ed5fc5930cabdf05ba8366610f03c7	reading-companion/fixtures/sample.pdf
+skill	44af6228c74bbe1481774e3bc778c10d9f5912e5	cora/references/conductor-protocol.md
 skill	450bb8ceaedc707c39c4fbcb696a8779cf43f014	_archived/pptx-creation.md
 skill	4534b2f6c887c8c4f37b61795b778f60ab94e8e4	tad/SKILL.md
 skill	4548fb8de31173dc55229102c9bd4a4d77cf731e	alex/SKILL.md
