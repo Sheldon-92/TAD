@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-16 18:00
+Generated: 2026-10-16 19:36
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -35,7 +35,7 @@ Generated: 2026-10-16 18:00
 | Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改, judge verbatim quotes/全角标点 |
 | Research Methodology | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
-| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, git-archive install/upgrade proof, deprecation vs shipped paths |
+| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, download-path install proof, export-ignore/symlink archive members, deprecation vs shipped |
 | Runtime Adapter Checklist | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU |
 | Runtime Adapter Instance — Codex | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 |
 | Runtime Adapter Instance — Cursor | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 |
@@ -66,13 +66,13 @@ Generated: 2026-10-16 18:00
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-16-cora-lighter-flow-phase1.md | mixed#protocoltext(skill+reference+twodocs),nocode | Result-contract items 1–6 of the Epic as protocol text: (1) simple/handoff tiers start without a go-ahead question; (2 |
+| HANDOFF-2026-10-16-release-archive-symlinks-phase1.md | code | A root `.gitattributes` rule that keeps `.claude/` out of `git archive` (and so out of GitHub's tag tarball), a `release |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261016-cora-lighter-flow.md | **Epic ID**: EPIC-20261016-cora-lighter-flow |
+| EPIC-20261016-release-archive-symlinks.md | **Epic ID**: EPIC-20261016-release-archive-symlinks |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -156,7 +156,7 @@ Generated: 2026-10-16 18:00
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 53 | journal |
+| evidence/journal/ | 54 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -188,7 +188,7 @@ Generated: 2026-10-16 18:00
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 9930 | yolo |
+| evidence/yolo/ | 9946 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
