@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-14 15:59
+Generated: 2026-10-16 16:44
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,18 +24,18 @@ Generated: 2026-10-14 15:59
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
-| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report |
-| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5 |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
+| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget |
+| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss |
 | AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP |
-| Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改 |
+| Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改, judge verbatim quotes/全角标点 |
 | Research Methodology | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
-| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync |
+| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, git-archive install/upgrade proof, deprecation vs shipped paths |
 | Runtime Adapter Checklist | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU |
 | Runtime Adapter Instance — Codex | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 |
 | Runtime Adapter Instance — Cursor | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 |
@@ -78,6 +78,10 @@ Generated: 2026-10-14 15:59
 | HANDOFF-2026-10-14-cora-conductor-role-phase4d.md | mixed | Everything from Phases 1–3 and 4a–4c made into one release commit chain on `feat/cora-role`, every release gate gree |
 | HANDOFF-2026-10-14-cora-conductor-role-phase4e.md | e2e | Proof that someone installing the published release gets Cora: a fresh install from the tag `v4.0.0` on Claude Code and  |
 | HANDOFF-2026-10-14-cora-phase2-slim.md | code |  |
+| HANDOFF-2026-10-15-cora-reliability-phase1.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of how a fresh Cora session behaves at the moment a request arrives, before any fix: |
+| HANDOFF-2026-10-16-cora-reliability-phase1-redesign.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of what a fresh Cora session does when a request arrives, before any fix: |
+| HANDOFF-2026-10-16-cora-reliability-phase2.md | yaml#protocoltext(skillmarkdown+roledocs);nocode,nohooks | A protocol-text change to Cora, and the consistency edits it forces: |
+| HANDOFF-2026-10-16-installer-skill-nesting-phase1.md | code | A fix to `tad.sh` so that installing/updating over an existing `.agents/skills/<name>/` copies the release's files **int |
 
 ## Active Epics
 | File | Summary |
@@ -85,6 +89,8 @@ Generated: 2026-10-14 15:59
 | EPIC-20260831-capability-builder-v1.md |  |
 | EPIC-20261013-cora-conductor-role.md | **Epic ID**: EPIC-20261013-cora-conductor-role |
 | EPIC-20261014-cora-carry-forward-fixes.md | **Epic ID**: EPIC-20261014-cora-carry-forward-fixes |
+| EPIC-20261015-cora-reliability.md | **Epic ID**: EPIC-20261015-cora-reliability |
+| EPIC-20261016-installer-skill-nesting.md | **Epic ID**: EPIC-20261016-installer-skill-nesting |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -168,7 +174,7 @@ Generated: 2026-10-14 15:59
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 46 | journal |
+| evidence/journal/ | 51 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -188,7 +194,7 @@ Generated: 2026-10-14 15:59
 | evidence/ralph-loops/ | 16 | ralph-loops |
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 10 | releases |
+| evidence/releases/ | 13 | releases |
 | evidence/research/ | 187 | research |
 | evidence/reviews/ | 844 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
@@ -199,7 +205,7 @@ Generated: 2026-10-14 15:59
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 3866 | yolo |
+| evidence/yolo/ | 9915 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
