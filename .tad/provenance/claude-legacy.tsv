@@ -1,4 +1,4 @@
-# schema=1 rows=1880
+# schema=1 rows=1882
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1677,6 +1677,7 @@ skill	e45221198998494a090eb5bb4480d45009508e21	cora/SKILL.md
 skill	e47d47026acdc2b9c369373ab7bc7c65a0043343	alex/SKILL.md
 skill	e50cc6bb795be39f637eef12b4059ec7b0470aa8	alex/references/yolo-manual-conductor-protocol.md
 skill	e52940eee1f4f4aff40ce3e191946480e8e1a5cc	video-creation/examples/single-clip-narration.md
+skill	e57ed3477fda4ae06f8ad85736d25da648d655e6	cora/references/conductor-protocol.md
 skill	e589a327c65a2d51db59f106c23dea5985d26356	tad-help/SKILL.md
 skill	e5b35669ac2023af46496cb9c53dfd1dcce1ee11	ai-guardrails/examples/ai-guardrails-fixture.md
 skill	e62b9010036d60df14289a4f7e71f2c4c0689b4f	alex/references/research-review-protocol.md
@@ -1801,6 +1802,7 @@ skill	f8bf6964da902ec6c614ac018d79d6b9351055ad	blake/SKILL.md
 skill	f900bb87b69c16372664cb444e86fa64c045023b	product-thinking/examples/pressure-test-example.md
 skill	f90c534823892dc47b68b2b229e2224ccc9e2eb5	web-testing/SKILL.md
 skill	f9395e216e9895ebfb735a9c6122a90d7aa94d06	blake/SKILL.md
+skill	f974dfff492499bcac9080ad3d6db7b4646f33e4	cora/SKILL.md
 skill	f9b21fe7fbd79aad59452f8ba42b3b865f46be80	tad-help/SKILL.md
 skill	f9ba7fcf771b8c946f4049f6ca243814d5c9e5f5	code-security/references/secret-detection-rules.md
 skill	f9c9b0aca1e6965ee941185cf84b9653184e273a	_archived/deep-research.md
