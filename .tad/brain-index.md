@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-16 16:44
+Generated: 2026-10-16 17:03
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -66,18 +66,6 @@ Generated: 2026-10-16 16:44
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-13-cora-conductor-role-phase1.md | mixed#skilltext(newrole+re-homedprotocols)plusmeasuredharnessprobesandbehaviourruns | A third TAD role, **Cora**: the one the human talks to and the one who dispatches. Phase 1 builds Cora herself: |
-| HANDOFF-2026-10-13-cora-phase1-slim-addendum-1.md | code |  |
-| HANDOFF-2026-10-13-cora-phase1-slim-addendum-2.md | code |  |
-| HANDOFF-2026-10-13-cora-phase1-slim.md | code |  |
-| HANDOFF-2026-10-14-cora-carry-forward-fixes-phase1.md | mixed | Five small wording fixes in three protocol files of the Cora conductor, so that ids, stops and distillation inputs are d |
-| HANDOFF-2026-10-14-cora-carry-forward-fixes-phase2.md | e2e | 1. **Rework `phase2-queue.sh`** (C10 / D2(a)): protocol-consistent fixtures, a corrected rubric, a prompt note that allo |
-| HANDOFF-2026-10-14-cora-conductor-role-phase4a.md | mixed | Close the carry-forward list in `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md` section 5 that belongs to |
-| HANDOFF-2026-10-14-cora-conductor-role-phase4b.md | mixed | 1. Every place that introduces TAD, rewritten around three roles (the README body is part 4c). |
-| HANDOFF-2026-10-14-cora-conductor-role-phase4c.md | mixed | `README.md` rewritten around three roles, opening with the alternative the human chose. Two dispatches: |
-| HANDOFF-2026-10-14-cora-conductor-role-phase4d.md | mixed | Everything from Phases 1–3 and 4a–4c made into one release commit chain on `feat/cora-role`, every release gate gree |
-| HANDOFF-2026-10-14-cora-conductor-role-phase4e.md | e2e | Proof that someone installing the published release gets Cora: a fresh install from the tag `v4.0.0` on Claude Code and  |
-| HANDOFF-2026-10-14-cora-phase2-slim.md | code |  |
 | HANDOFF-2026-10-15-cora-reliability-phase1.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of how a fresh Cora session behaves at the moment a request arrives, before any fix: |
 | HANDOFF-2026-10-16-cora-reliability-phase1-redesign.md | research#measurementdeliverable:scenarioset+harness+runs+judge+baselinereport | A repeatable measurement of what a fresh Cora session does when a request arrives, before any fix: |
 | HANDOFF-2026-10-16-cora-reliability-phase2.md | yaml#protocoltext(skillmarkdown+roledocs);nocode,nohooks | A protocol-text change to Cora, and the consistency edits it forces: |
@@ -87,8 +75,6 @@ Generated: 2026-10-16 16:44
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261013-cora-conductor-role.md | **Epic ID**: EPIC-20261013-cora-conductor-role |
-| EPIC-20261014-cora-carry-forward-fixes.md | **Epic ID**: EPIC-20261014-cora-carry-forward-fixes |
 | EPIC-20261015-cora-reliability.md | **Epic ID**: EPIC-20261015-cora-reliability |
 | EPIC-20261016-installer-skill-nesting.md | **Epic ID**: EPIC-20261016-installer-skill-nesting |
 
@@ -174,7 +160,7 @@ Generated: 2026-10-16 16:44
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 51 | journal |
+| evidence/journal/ | 52 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -194,18 +180,19 @@ Generated: 2026-10-16 16:44
 | evidence/ralph-loops/ | 16 | ralph-loops |
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 13 | releases |
+| evidence/releases/ | 14 | releases |
 | evidence/research/ | 187 | research |
 | evidence/reviews/ | 844 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
+| evidence/simple/ | 2 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 9915 | yolo |
+| evidence/yolo/ | 9917 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records

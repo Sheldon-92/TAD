@@ -26,6 +26,7 @@ Re-run the installer for your harness. Projects that an older installer left wit
 
 - The GNU `cp` behaviour was exercised through a PATH shim that models the nesting rule, not on a real GNU host; a run of the fixed installer on Linux is still open.
 - The reliability measurement phases of EPIC-20261015 (a baseline and a re-measure of Cora's triage behaviour) were cut by the human; the protocol change was reviewed and gated, but its effect on a fresh Cora session was not re-measured.
+- The download install and upgrade paths (curl, `npx github:`, `tad-update`) were not exercised for the changed installer (`tad.sh`, `portable-extract.sh`), and no `git archive` upgrade from the 4.0.1 tag was run.
 
 ## [4.0.1] - 2026-10-14
 
