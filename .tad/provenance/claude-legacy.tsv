@@ -1,4 +1,4 @@
-# schema=1 rows=1884
+# schema=1 rows=1885
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -991,6 +991,7 @@ skill	6ced8b0902e05ffbaa95a76d72468e3b93825065	blake/references/execution-checkl
 skill	6d023f6889a74c4634b9b9e89594ee5edfddd11f	alex/SKILL.md
 skill	6d317e88f06db96cba9c638b57071a2d43e4e076	agent-orchestration/SKILL.md
 skill	6d7d78ab823a8866688903cf608dfef30300c54b	alex/references/learn-path-protocol.md
+skill	6d9c881f49484713ff1399c1ccdd7991fbec1271	release-runbook/references/publish-ops.md
 skill	6dac9387c4246b2c61ae84c366ef5d62cec8f3db	data-engineering/references/ingestion-rules.md
 skill	6dced5f9ea40b2c76179c903ef5745816e45b9eb	alex/references/cancel-protocol.md
 skill	6de101523a452e0fc55a3b9eea99266a8086db79	ai-voice-production/references/audiobook-pipeline.md
