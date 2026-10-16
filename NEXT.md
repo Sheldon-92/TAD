@@ -7,11 +7,20 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.1（发布中：4.0.0 已发布；4.0.1 正在发布，以 origin 上的 tag 为准；见 CHANGELOG）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.2（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.1，见 CHANGELOG）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
+
+### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261016 installer skill nesting (handoff tier)
+
+- Epic: `.tad/active/epics/EPIC-20261016-installer-skill-nesting.md`. Approved 2026-10-16. Budget 10 dispatches, no model runs. [x] Phase 1 Investigate and fix (b3cfb28f; Gate 4 PASS). Release asked separately afterwards.
+
+### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261015 Cora reliability (triage first; measure, fix, re-measure)
+
+- Epic: `.tad/active/epics/EPIC-20261015-cora-reliability.md` (Conductor: Cora; Approved: no). Phase details: `.tad/evidence/yolo/cora-reliability/intake-details.md`; open questions: `intake-questions.md`.
+- Approved 2026-10-15 ("继续"). [-] Phase 1 Measure (cut by the human 2026-10-16, no batch) [x] Phase 2 Fix (f43d5d7a; Gate 4 CONDITIONAL p0 0) [-] Phase 3 Re-measure (cut by the human 2026-10-16)
 
 ### ✅ DONE 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
 

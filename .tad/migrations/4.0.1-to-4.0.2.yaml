@@ -1,0 +1,10 @@
+schema_version: 1
+from: "4.0.1"
+to: "4.0.2"
+generated_by: "manual"
+note: |
+  Patch v4.0.2 - Cora triage-first protocol, installer flat skill copy fix,
+  Claude Code skill links in the source repo. No file deletes or renames are
+  needed. This hop exists so the engine chain 4.0.0 -> 4.0.1 -> 4.0.2 has no gap.
+delete: []
+rename: []
