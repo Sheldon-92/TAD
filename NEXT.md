@@ -13,13 +13,13 @@
 
 ## 🔴 优先队列
 
-### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261016 installer skill nesting (handoff tier)
+### ✅ DONE 2026-10-16. EPIC-20261016 installer skill nesting — released in v4.0.2, archived
 
-- Epic: `.tad/active/epics/EPIC-20261016-installer-skill-nesting.md`. Approved 2026-10-16. Budget 10 dispatches, no model runs. [x] Phase 1 Investigate and fix (b3cfb28f; Gate 4 PASS). Release asked separately afterwards.
+- Epic: `.tad/archive/epics/EPIC-20261016-installer-skill-nesting.md`. Approved 2026-10-16. Budget 10 dispatches, no model runs. [x] Phase 1 Investigate and fix (b3cfb28f; Gate 4 PASS). Release asked separately afterwards.
 
-### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261015 Cora reliability (triage first; measure, fix, re-measure)
+### ✅ DONE 2026-10-16. EPIC-20261015 Cora reliability — Phase 2 released in v4.0.2 (Phases 1, 3 cut by the human), archived
 
-- Epic: `.tad/active/epics/EPIC-20261015-cora-reliability.md` (Conductor: Cora; Approved: no). Phase details: `.tad/evidence/yolo/cora-reliability/intake-details.md`; open questions: `intake-questions.md`.
+- Epic: `.tad/archive/epics/EPIC-20261015-cora-reliability.md` (Conductor: Cora; Approved: no). Phase details: `.tad/evidence/yolo/cora-reliability/intake-details.md`; open questions: `intake-questions.md`.
 - Approved 2026-10-15 ("继续"). [-] Phase 1 Measure (cut by the human 2026-10-16, no batch) [x] Phase 2 Fix (f43d5d7a; Gate 4 CONDITIONAL p0 0) [-] Phase 3 Re-measure (cut by the human 2026-10-16)
 
 ### ✅ DONE 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
