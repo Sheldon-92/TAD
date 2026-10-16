@@ -5,6 +5,25 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.3] - 2026-10-16
+
+Patch release. v4.0.2's download install and update refused the release archive; this release fixes that, and carries a lighter Cora flow.
+
+### What changed
+
+- **Download install/update works again.** v4.0.2's tag archive contained the source repo's `.claude/skills/<name>` links, whose targets use `../`; the tar-slip guard in `tad.sh` (`validate_tar_members`) rejects any link target with `..`, so every download install or update of v4.0.2 refused the archive. `.gitattributes` now marks `/.claude` `export-ignore`, so the links stay in the source repo's working tree but not in `git archive` or GitHub's tag tarball. The tar-slip guard is unchanged. `release-verify.sh` gains an `archive-links` mode (a commit or a tarball) that blocks a release whose archive carries an escaping link; the release runbook runs it before the tag.
+- **Cora lighter flow (protocol changes, not measured).** For the simple tier and for a handoff whose Risk is reversible, Cora states tier, plan, estimate and depth and starts in the same turn; the human's "wait" or "no" stops it, and an Epic's "continue", a one-way handoff, push, tag, publish, delete, credentials and spending still wait for his answer. She puts the tier's steps in the task list. When a re-plan follows failed fixes she writes a premise file, and empirical P0s are settled by a Blake spike before a design fix. A P0 must state a failure scenario and what it blocks. An Epic carries a `**Depth**:` line with its Risk. The Budget is an estimate: passing it is reported, not a stop, until twice the estimate or money is involved.
+
+### Upgrading
+
+Do not fetch 4.0.2 by download: its archive is refused. Update straight to 4.0.3 (`bash tad.sh --platform claude-code|codex|opencode|cursor`), or run the installer from a checkout with `--source`. There are no file deletes or renames (`4.0.2-to-4.0.3.yaml` is an empty hop that keeps the engine chain unbroken).
+
+### Known limits
+
+- The lighter Cora flow is a protocol change that was reviewed and gated; its effect on a fresh Cora session was not measured.
+- The download path was proved on an archive built with `git archive` (which honours `export-ignore`); a real download install from GitHub after the tag is still open at release time.
+- GNU `cp` behaviour from 4.0.2 was tested through a PATH shim, not on a real GNU host.
+
 ## [4.0.2] - 2026-10-16
 
 Patch release. Cora triages every request before acting, the installer no longer nests a skill inside itself on GNU `cp`, and the source repo can load its own roles in Claude Code.
