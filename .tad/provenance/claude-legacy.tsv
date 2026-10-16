@@ -1,4 +1,4 @@
-# schema=1 rows=1872
+# schema=1 rows=1874
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1669,6 +1669,7 @@ skill	e408f08d0a44b972fc9cfb67675dee76b0a01c55	alex-lite/SKILL.md
 skill	e41c5f42972db3a8489d3bc224408e0ddf8850dc	agent-orchestration/references/orchestration-patterns.md
 skill	e44c9d174ab7118df517de3180eecd49af17ee62	hw-enclosure/references/enclosure-design.md
 skill	e44ced57213421cda66e77b6612d8ca4349e65f7	alex/references/bug-path-protocol.md
+skill	e45221198998494a090eb5bb4480d45009508e21	cora/SKILL.md
 skill	e47d47026acdc2b9c369373ab7bc7c65a0043343	alex/SKILL.md
 skill	e50cc6bb795be39f637eef12b4059ec7b0470aa8	alex/references/yolo-manual-conductor-protocol.md
 skill	e52940eee1f4f4aff40ce3e191946480e8e1a5cc	video-creation/examples/single-clip-narration.md
@@ -1717,6 +1718,7 @@ skill	ebdeffd3fea3f822f4302c64c5a987d52b3f5223	capability-upgrade/references/leg
 skill	ebf4e203bcf11beef9223399e627b10714cc46e5	release-runbook/references/sync-ops.md
 skill	ec52e2331607d028ac059372abe8caf631b6b516	code-security/references/dast-rules.md
 skill	ec6d52320b57f82713403f84ee75f64f402bbc0d	agent-computer-interface/references/desktop-control-rules.md
+skill	eccb9155b222dc0e36910590a53744bba6186146	cora/references/conductor-protocol.md
 skill	ed31bc369d35c2ea5e6a73d8f541dc06c590343f	web-deployment/references/ci-cd-pipeline-rules.md
 skill	ed414f7ca6a68faf7262421a858a26facc8fb6b4	alex/references/idea-list-protocol.md
 skill	ee0687fd67f071e615663908dcfe785b51fc31e9	tad-help/SKILL.md
