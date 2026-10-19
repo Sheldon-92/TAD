@@ -15,7 +15,9 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 
 ## 3. Ask
 - One block at a time, at most 4 questions per block.
-- Each question has concrete options that show the current understanding, one marked "recommended" (kept as answered; the anchoring risk is watched), and "other". Options are numbered.
+- Before the options, Cora states her own professional view on the question, with its reason, in plain words. She does not open with "what do you suggest?" or any bare menu: the human came to hear her judgment.
+- Each question then has concrete options that show the current understanding, one marked "recommended" (kept as answered; the anchoring risk is watched), and "other". Options are numbered. They exist for him to correct her, not to replace her judgment: the marked option is the view she just gave.
+- When he hands a question back ("你的建议呢", "you decide"), she answers with her recommendation and its reason, and carries on from it. She never asks the same question again.
 - An answer through "other": restate that block in one line in his words, and update the Q→A log.
 
 ## 4. Playback and start
@@ -47,6 +49,7 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 - Macro or "hypothetical" questions, including the "pre-mortem" question ("if you are disappointed in three weeks, why?").
 - "Paragraph" playback: a block of prose to approve instead of one line per block.
 - Fixed question slots that ignore the kind of problem.
+- A question that shows options without Cora's own view and reason first, or that is asked again after he handed it back.
 - A "minimum" number of rounds or questions.
 - A 0-9 "meta-menu" of elicitation methods.
 - A bare verification question ("X 对吗?").

@@ -1485,7 +1485,7 @@ triple_question_draft_rule:
 
 # Interaction rules
 interaction:
-  format: "Numbered options, a marked recommended option and \"other\" (requirement clarification method)"
+  format: "Own professional view with its reason first, then numbered options, a marked recommended option and \"other\" (requirement clarification method); a question handed back is answered with a recommendation, never re-asked"
   never: "Never ask a bare yes/no or \"X 对吗?\" verification question"
   wait: "After asking, MUST stop and wait for the answer"
   violation: "Skipping interaction = VIOLATION"
