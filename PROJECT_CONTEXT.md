@@ -2,7 +2,7 @@
 
 ## Current State
 - **Version**: 4.0.3 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
-- **Last Updated**: 2026-10-10
+- **Last Updated**: 2026-10-18
 - **How work goes**: three roles. You talk to Cora and agree a result; she has an Epic written and stops; you say "continue" and she runs it through Alex, Blake and the gates via subagents; you look at the result. `/alex` and `/blake` still work directly.
 - **Framework**: TAD v4.0.3 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
@@ -19,6 +19,8 @@
 - Capability packs: 11 auto-match-active / 14 frozen (status on CAPABILITY + registry; files stay). Behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending; remaining eval is a follow-up
 
 ## Recently Completed
+
+- **Full Layer 2 review brakes** (2026-10-18) — Gate 4 `PASS_WITH_APPROVED_KNOWN_DEVIATION`, archived the same day, committed 2026-10-19, not tagged, not released. Three-round cap including R1; recovery does not mint a new budget. AC-01..07 PASS; AC-08 raw exit 1 kept as the GM 14:06 E1 known deviation (complete failed paths: `.tad/evidence/pm/last-cursor.POINTER.md` and `.tad/evidence/traces/2026-10-18.jsonl` only). Approved deviations: timeout exception, F1 exact skill patch, AC-07/AC-08 exact-path exemptions, unrecoverable 11:17 `now.md`, frozen-prompt file read, that E1 list, no commit. Not approved: R2 chat-card `chat_sent: relayed` / `PM_CHAT_RELAY_OK=1` (GM 14:04). Archive sha256: handoff `0466d98191bf808b684f8777fab2daae5763f74f7b592f213ce8451ca9cf8dd4`, completion `ef81f41b998b442f80bc7b34632a71527352c754fa4278a2fb56fad00b41f81c`. Task ID: `TASK-20261017-FULL-LAYER2-REVIEW-BRAKES`.
 
 - **OCR K1–K5 optional Layer 2 review habits** (2026-09-14) — Gate 4 PASS and archived (commit `c48e5620`, 4 files, local only). Optional paste on tax-cut SSOT + pattern + install-visible spec-compliance-format; identical 1281-byte fence; teeth and tad.sh copy-set unchanged. Do not absorb into v2.44.5. Task ID: `TASK-20260914-OCR-REVIEW-HABITS`.
 
@@ -94,6 +96,7 @@
 - **EPIC: Cross-Model Orchestration — ALL 4/4 PHASES** (archived 2026-05-14)
 
 ## Recent Decisions
+- Gate 4 may close as `PASS_WITH_APPROVED_KNOWN_DEVIATION` when the human names the exact failed set in advance. AC-08's raw exit 1 stayed; the complete failed-path list was exactly two ignored runtime files. An ignored-byte baseline that includes live PM, wrapper, or trace files is a later design knife, not an allowlist extension on the closed task (2026-10-18)
 - Human authority in Lite is an **effect boundary, not a technical counter**: bind it to exact target/writable surface, consequence class, external reach, bounded impact, and visible recovery — never to commit/retry/reviewer/evidence cardinality. Encoding "one local commit" as blast radius turned a Gate-directed repair into a protocol deviation while adding zero target or consequence safety. SAFETY consequences therefore demand stronger exact bindings, recovery policy, and independent review — not an automatic runtime prompt (2026-08-10)
 - A fixture/golden gate guarded by schema + content digest verifies **integrity, not correctness** — if rows carry their own `expected_result`, flip one and re-seal and it still passes. Any such gate needs an expectation source outside the artifact under test, and the repair must be proven with probes the accepter authored, not the implementer (2026-08-10)
 - Self-evolution loops retired by measurement: dream/optimize/evolve yielded 1 accepted from 18 machine proposals (5.6%) while every effective upgrade was human-pain-driven — automated value-DISCOVERY contradicts TAD's own thesis (humans guard value); KA-gate capture (skillify) kept but rebuilt as 3-tier formalization: T1 project-local default / T2 skill-library reference shelf (never distributed) / T3 ≥2-project promotion (2026-06-10)
@@ -109,6 +112,7 @@
 - NotebookLM is retained only as fallback; all 34 registry notebooks are archived locally. Local Wiki is the primary research path.
 
 ## Next Direction
+- **AC-08 baseline design knife** — named by GM on 2026-10-18, ticket not opened. Design the boundary among stable sources, task artifacts, external-owner state, and runtime output, and report the complete diff. Do not widen the closed task's allowlist.
 - **Post-release follow-up** — measure real Lite/Standard routing cost and strengthen the three remaining P2 verifier/evidence hygiene items when usage data warrants it.
 - **PUSH decision**: 41 commits ahead of origin (both Alexes' work) — outward-facing, confirm before pushing
 - Scout-identified optimization directions (evidence-backed, non-colliding): ~~(B) fix self-evolution loop 0% close-rate~~ → RESOLVED differently 2026-06-10: loops retired by EPIC self-evolution-pruning (measured-yield decision), not fixed; (C) architecture.md leanness — consolidate May surge via Supersedes: pattern (~5-7K tokens/session saved); (D/E/F) safety bundle — Blake distinct-reviewer false-PASS + research-source provenance + trace TRACE_DETAIL truncation bug

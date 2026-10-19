@@ -13,6 +13,19 @@
 
 ## 🔴 优先队列
 
+### ✅ ACCEPTED 2026-10-18. Full Layer 2 review brakes（TASK-20261017-FULL-LAYER2-REVIEW-BRAKES）
+
+- **Verdict**: Gate 4 `PASS_WITH_APPROVED_KNOWN_DEVIATION`. GM 14:35 approved `*accept` and archive. Committed 2026-10-19, not tagged, not released.
+- **Archive** (copy, sha256 match, then source removed): `.tad/archive/handoffs/HANDOFF-20261017-full-layer2-review-brakes.md` `0466d98191bf808b684f8777fab2daae5763f74f7b592f213ce8451ca9cf8dd4`; `.tad/archive/handoffs/COMPLETION-20261017-full-layer2-review-brakes.md` `ef81f41b998b442f80bc7b34632a71527352c754fa4278a2fb56fad00b41f81c`.
+- **Gate 4**: `.tad/evidence/acceptance-tests/TASK-20261017-FULL-LAYER2-REVIEW-BRAKES/gate4-acceptance-report.md`.
+- **Approved deviations**: timeout exception (this run); F1 exact skill patch; AC-07/AC-08 exact-path exemptions; unrecoverable 11:17 `now.md`; frozen-prompt file read; AC-08 E1 list exactly the Cursor pointer and `traces/2026-10-18.jsonl` (raw exit 1 kept); no commit.
+- **Not approved**: R2 chat-card `chat_sent: relayed` / `PM_CHAT_RELAY_OK=1` (GM 14:04).
+
+### ⏳ BACKLOG. AC-08 baseline design knife — GM named, ticket not opened
+
+- Ordinary PM, wrapper, and trace writes break an ignored-byte baseline, and AC-08 stops at the first mismatch so the first FAIL path is not the full set.
+- Next ticket designs the boundary among stable sources, task artifacts, external-owner state, and runtime output, and reports the complete diff. Do not widen this task's allowlist. GM 14:06 E1 known deviation belongs here.
+
 ### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261016 release archive symlinks (v4.0.2 download install refuses)
 
 - Epic: `.tad/active/epics/EPIC-20261016-release-archive-symlinks.md`. Fixed by export-ignore (da4e51b4); 4.0.3 prepared locally with the lighter-flow commits, not pushed or tagged. Until 4.0.3: downstream must not update via download (use `--source`).

@@ -8,6 +8,17 @@ expert_criteria:
   version: "1.2.0"
   description: "Structured, machine-parseable pass criteria for expert agents"
 
+  # Counting contract (Blake 3_layer2_loop): preserve original severity/raw counts and
+  # immutable findings. Severity thresholds below are unchanged; report valid unresolved
+  # task blocker counts/IDs separately, with independent checked-input disposition evidence.
+  # fixed: repair diff + actual AC/check proof independently recognized.
+  # pre-existing: baseline proof, no task introduction/aggravation/new exposure, no AC
+  # violation and no unresolved serious safety/delivery risk. dismissed: concrete counterevidence.
+  # Only relevant independent reviewer recognition closes fixed/pre-existing/dismissed;
+  # Blake proposals, insufficient proof or disputes stay open. Out-of-scope serious risk
+  # goes to Alex/human, never self-waived. NOT_SATISFIED AC cannot become SATISFIED by labels.
+  # No downgrading new repair regressions; metrics/coverage/trigger thresholds remain intact.
+
   # ==================== spec-compliance-reviewer ====================
   spec-compliance-reviewer:
     description: "Spec compliance check — verify implementation matches handoff AC"

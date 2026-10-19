@@ -278,9 +278,9 @@ Git_Commit_Verification:
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 # MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts (2026-10-05 recount fix: Provenance item restored to the inline copy)
 Critical Check (7 items):
-  - [ ] Code/deliverable complete (all handoff tasks done)
+  - [ ] Code/deliverable complete (all handoff tasks done; Ralph COMPLETED on final input with all applicable groups independently covered; ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED/NOT_RUN are not clean completion)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
-  - [ ] Evidence files exist per the handoff's Required Evidence Manifest
+  - [ ] Evidence files exist per the handoff's Required Evidence Manifest; preserve original severity/raw findings plus independent checked-input disposition ledger: fixed / pre-existing / dismissed count as addressed only after relevant independent recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed needs counterevidence. Blake proposals remain open. Pure out-of-scope serious risk goes to Alex/human. Unmet AC/missing evidence/evidence veto still block.
   - [ ] Evidence replayable (advisory, WARN-not-BLOCK): 证据采集命令重跑两次应 0 diff。
         若重跑产生全量改动（随机 ID / 时间戳 / commit SHA 入了证据体）→ WARN：
         任何改动都会触发全量重采，reviewer 无法 diff 只能重读全文，代价随轮数线性放大。
@@ -311,9 +311,9 @@ Output Format:
   #### Quality Checks
   | Item | Status | Note |
   |------|--------|------|
-  | Code/Deliverable Complete | ✅ Pass | ... |
+  | Code/Deliverable Complete | ✅ Pass | final input, all applicable groups independently covered; no blocked/escalated/aborted/NOT_RUN |
   | §9.1 all rows pass | ✅ Pass | {P} pass, {F} fail (any fail → BLOCK) |
-  | Evidence | ✅ Pass | Files exist per Required Evidence Manifest |
+  | Evidence | ✅ Pass | Manifest + original severity/raw findings + independent disposition proof/input; valid unresolved blockers only; unmet AC/evidence veto still block |
 
   #### Knowledge Assessment (MANDATORY - must answer)
   | Question | Answer | Evidence |
@@ -733,7 +733,7 @@ Decision_Compliance:
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (4 items):
-  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Fail-close: cannot Gate 4 PASS if landing Verification Method missing or unrun — Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
+  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Consume same independently recognized fixed / pre-existing / dismissed as Gate 3; valid historical exemption need not be fixed. Unmet ACs and missing/contradictory evidence still fail. Fail-close: cannot Gate 4 PASS if landing Verification Method missing or unrun — Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
   Gate 4 复算发现自报与盘上不符的条目 → 该条目判 FAIL 并记入 gate4_delta，
   不得以被审方总结覆盖重算结果。
   - [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality):
@@ -742,7 +742,7 @@ Critical Check (4 items):
     - [ ] Performance review evidence exists (code/mixed only)
     - [ ] UX review evidence exists (if UI involved)
     FAIL must enumerate which evidence is missing.
-  - [ ] Subagent issues resolved — all P0/P1 from subagent feedback addressed
+  - [ ] Subagent issues resolved — all P0/P1 from subagent feedback addressed via independently recognized fixed / pre-existing / dismissed, preserving original severity/input/proof; new evidence may reopen original ID with explicit counterevidence, never without reason
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
 # Note: Functional acceptance reads from handoff §9 (not hardcoded). Quality evidence is structural role enforcement (see Structural_Subagent_Conditionality).
 # Functional acceptance fail-close detail: for every landing-tier §9.1 row, Gate 4 re-runs the declared Verification Method from the on-disk artifact. A row whose Method is missing, illegal (prose-only), or never executed → Functional acceptance cannot PASS. Blake summary is not Gate 4 evidence — only recomputed command output counts.
@@ -771,7 +771,7 @@ Output Format:
   |------|--------|------|
   | Functional acceptance | ✅ Pass | §9 AC met, no open blockers |
   | Quality evidence complete | ✅ Pass | All required evidence exists |
-  | Subagent issues resolved | ✅ Pass | All P0/P1 addressed |
+  | Subagent issues resolved | ✅ Pass | fixed / pre-existing / dismissed independently recognized on checked input; same Gate 3 ledger; new evidence required to overturn |
   | Knowledge Assessment | ✅ Pass | ... |
 
   #### Knowledge Assessment (MANDATORY - must answer)

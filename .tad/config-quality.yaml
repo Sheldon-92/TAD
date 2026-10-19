@@ -133,8 +133,8 @@ quality_gates:
       required: true
       config_file: ".tad/ralph-config/loop-config.yaml"
       checks:
-        - "Ralph Loop completed successfully (no abort/escalation)"
-        - "State file shows clean completion"
+        - "Ralph Loop COMPLETED on same final input with all applicable groups independently satisfied; no ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED/NOT_RUN as clean completion"
+        - "State file shows clean completion with started-round/input history, per-expert coverage, original severity/raw counts and independent disposition ledger; no unresolved task blockers"
         - "Summary file generated"
       evidence_required:
         - ".tad/evidence/ralph-loops/{task_id}_state.yaml"
@@ -221,14 +221,14 @@ quality_gates:
     # Business Acceptance (aligned with canonical — MECE 4 items)
     acceptance:
       checks:
-        - "Functional acceptance — §9 AC met AND no post-impl blockers"
+        - "Functional acceptance — §9 AC met AND no post-impl blockers; same Gate 3 independently recognized fixed / pre-existing / dismissed dispositions, without forcing valid exempt history to be fixed; unmet AC and missing/contradictory evidence still fail"
         - "Quality evidence complete — code/security/perf/ux review evidence exists"
-        - "Subagent issues resolved — all P0/P1 addressed"
+        - "Subagent issues resolved — all P0/P1 addressed via relevant independent reviewer recognition of fixed / pre-existing / dismissed on checked input with original severity/proof retained; new evidence may overturn with explicit reason, no unexplained reopening"
         - "Knowledge Assessment complete — distillation or no discovery"
 
-      # Review evidence only - no re-run needed
+      # No repeated full expert technical review; landing §9.1 Method recompute remains mandatory
       evidence_review:
-        description: "Review Blake's Gate 3 evidence (not re-execute)"
+        description: "Review Blake's Gate 3 evidence without re-invoking full expert technical review; MUST recompute landing §9.1 Methods from disk. No re-run/not re-execute never waives AC verification or evidence veto."
         files:
           - "{task_id}_summary.md"
           - "Final code-review report"

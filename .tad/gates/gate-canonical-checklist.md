@@ -39,8 +39,8 @@ Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 # MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts
 
 Checklist items:
-- [ ] Code/deliverable complete — all handoff tasks done. Why ME: 产出物完整性
-- [ ] §9.1 Spec Compliance — every row verified. Why ME: AC 逐条验证
+- [ ] Code/deliverable complete — all handoff tasks done; Ralph Layer 2 COMPLETED on the final input with all applicable groups covered. ESCALATED_TO_ALEX / BLOCKED_STATE / BLOCKED_RISK / ABORTED / NOT_RUN are not clean completion. Why ME: 产出物完整性
+- [ ] §9.1 Spec Compliance — every row verified. Finding dispositions never make an unmet AC satisfied; every landing Method must actually hold. Why ME: AC 逐条验证
   Present-but-prose ≠ empty: any landing row whose Verification Method is prose-only FAILs
   that row → cannot Gate 3 PASS. Empty §9.1 still BLOCKS (separate guard).
   Evidence discipline (E维): 每行判定必须附证据指针（落盘路径＋行号/章节，或命令输出
@@ -49,7 +49,7 @@ Checklist items:
   不得以其他行结果抵消；不符属口径未注明者，须先注明口径再重算，仍不符按上行处理。
   Load-point claims: 声称某文件/条文构成装载或约束的 AC 行，Verification Method
   必须含位置断言（目标内容行号 ≤ 该载体单次可达范围）；只有 grep 在场不算装载成立。
-- [ ] Evidence files exist — per handoff manifest. Why ME: 证据存在性
+- [ ] Evidence files exist — per handoff manifest. Preserve original findings/severity and independent disposition ledger (checker, checked input, reason/proof): fixed / pre-existing / dismissed count as addressed only after relevant independent reviewer recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed requires counterevidence. Blake proposals alone remain open; only valid unresolved task findings count toward unchanged thresholds. Pure out-of-scope serious risk goes to Alex/human, never self-waived. Missing evidence and evidence veto still block. Why ME: 证据存在性
 - [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
       全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
       reviewer 无法 diff 只能重读全文 → 先修证据管道再谈验收。Why ME: 证据管道确定性
@@ -63,7 +63,7 @@ Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 — 七�
 **Owner:** Alex | **When:** After Gate 3 passes
 
 Checklist items:
-- [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Why ME: 只检查"功能达标+可交付"
+- [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Consume the same independently recognized fixed / pre-existing / dismissed dispositions as Gate 3; addressed does not require fixing a valid exempt historical issue. Unmet ACs and missing/contradictory evidence still fail. Why ME: 只检查"功能达标+可交付"
   Fail-close (2026-09-10 verify-delta): cannot Gate 4 PASS if landing Verification Method missing or unrun.
   Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
   Gate 4 复算发现自报与盘上不符的条目 → 该条目判 FAIL 并记入 gate4_delta，
@@ -74,7 +74,7 @@ Checklist items:
   - [ ] Performance review evidence exists (code/mixed only)
   - [ ] UX review evidence exists (if UI involved)
   Why ME: 只检查 evidence 存在性
-- [ ] Subagent issues resolved — 所有 subagent 反馈中的 P0/P1 已处理. Why ME: 只检查问题修复状态
+- [ ] Subagent issues resolved — 所有 subagent 反馈中的 P0/P1 已处理：沿用 Gate 3 经相关独立 reviewer 认可的 fixed / pre-existing / dismissed，保留原严重度、输入和依据；不是强迫有效免卡项全修。新证据可推翻处置并重开原 ID，须明示反证，不能无理由重开。 Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
 
 Why CE: 功能 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。
