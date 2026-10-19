@@ -1,4 +1,4 @@
-# schema=1 rows=1888
+# schema=1 rows=1890
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1074,6 +1074,7 @@ skill	7bc232462737ac170aa5990313d702f93a79d8ce	research-notebook/SKILL.md
 skill	7be932363e649468185b93e9bb661be5701ff0f1	alex-lite/SKILL.md
 skill	7bedd56a22312a01de5138e3f323e73f5c94057c	agent-orchestration/references/tool-permissions.md
 skill	7bfdae4b9b7837dc6aea2153b0690e90562f14c2	tad-help/SKILL.md
+skill	7c352cba56eda2658c92c2721793f8af2168e5d8	gate/SKILL.md
 skill	7c5a2b103a5d08149d52181b9c4ba7ef5e77b212	alex/SKILL.md
 skill	7c5f08a6350e45056edb24d22ca077dbf36154b9	academic-research/scripts/setup-cv.sh
 skill	7c8b1145b3ba2b4907449e5e3bbec5ea39818f85	blake/SKILL.md
@@ -1392,6 +1393,7 @@ skill	ae8bb0e06fb0894fadcd07821cd7aec07f978ba6	tad-elicit/SKILL.md
 skill	aebd91095dc3ef13d829405e0b16767504a09694	web-backend/LICENSE-ATTRIBUTION.md
 skill	af578e779e2c7ed576f011807b1a393f6208c217	alex/SKILL.md
 skill	afc03a8636aaffe455a00ac8584927ce3bddbc1e	alex/references/intent-router-protocol.md
+skill	afd8057dd5ab4fe0cb7e3e4cfb09f1492b9cc056	blake/SKILL.md
 skill	afdf466068cc08e38b674ee4aa2b5946638b2ab3	ai-prompt-engineering/SKILL.md
 skill	affa1dfac328cc689d099f9be277c22477eeb4ff	alex/references/discuss-path-protocol.md
 skill	b03589cbff5f5041a9d40103db83084f761ae927	web-frontend/scripts/a11y-scan.sh
