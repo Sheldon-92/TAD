@@ -1,4 +1,4 @@
-# schema=1 rows=1908
+# schema=1 rows=1911
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -645,6 +645,7 @@ skill	348f5957246e1b75bc5d0402fbaf87a5f2e46717	web-testing/SKILL.md
 skill	349281036b15c29ecc9d316e96f51fa33b1a4346	playground/SKILL.md
 skill	34a8e59b6844c896dbc79543e8683f0ef835344f	research-methodology/examples/five-phase-pipeline.md
 skill	34c1de68fc020272af067b3e641864912b2c1564	alex/references/express-path-protocol.md
+skill	34e4895fb47a2c76f38e98fea21ed155e2563091	alex/SKILL.md
 skill	35138a932304b8b57821b80f461abbe9a1fd90d7	blake/SKILL.md
 skill	353e0658e375c7ead1d028453e3e6a8812832e0f	blake-lite/SKILL.md
 skill	35eb1d4ece8acf78ab4b23947c73cf0dafbe1b85	reading-companion/templates/reader.html
@@ -661,6 +662,7 @@ skill	3733c7aca29f71d4ad30519950b4ada0389481b3	mobile-testing/references/pair-te
 skill	374413970a1c3581dd349ba5d9c508a3992d1b07	alex/references/skillify-command-protocol.md
 skill	37521ed97f14f1d5c79b45baae94eafabf4563d1	supply-chain-security/references/dependency-audit.md
 skill	375a48dc28b91735e54ab898244aaaee051220b0	ai-tool-integration/examples/cli-vs-mcp-decision.md
+skill	376fefd98f4ab30058f5b8ab7721f65671cc9a58	cora/references/requirement-clarification.md
 skill	379538a32e9cc2630a45b2c63d01417481a15c4c	_archived/writing-skills.md
 skill	37a63104efff07a4bbbde28f4433229c950667bb	alex/SKILL.md
 skill	37df71fd81378ba4ef03087516d4298a076d7e1d	web-ui-design/tools/component-matrix.md
@@ -1722,6 +1724,7 @@ skill	e8ad1f5a9513cfa3f28010d240b8f6cdf847c725	cora/SKILL.md
 skill	e8f63f34d685497b2e4b46f6140abdcd1fb2473c	ai-voice-production/SKILL.md
 skill	e92446d609b32787116917c5945dce334aec88a3	academic-research/references/domain-social.md
 skill	e932fbc9a59e42bbba51550fd93f7203978fe04b	blake/SKILL.md
+skill	e944eb33bd167b381ab5ca646243c3e89ba251bb	cora/SKILL.md
 skill	e957ccc9ce95e7ae9a1b779cf69b2196ae1217a5	mobile-development/references/state-management.md
 skill	e9731cd206921c0a1ffa8a971759869b5e5c4f9c	ai-tool-integration/references/api-integration-rules.md
 skill	e98e0fed5e81d6a066a22c14962d8c3929fa4f2b	mobile-ui-design/references/gesture-interaction.md
