@@ -84,7 +84,7 @@ $blake   → 激活 Blake（Execution Master — 负责实现和测试）
 你: $alex
 你: 我想给应用加一个用户登录功能
 
-Alex: [Socratic 提问 3-5 轮，澄清需求]
+Alex: [拆成小块，只问不清楚的块，逐块复述经你确认]
 Alex: [创建技术设计 + Handoff 文档]
 Alex: "Handoff 已准备好，请切换到 Blake 执行。"
 

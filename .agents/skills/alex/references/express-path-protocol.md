@@ -34,6 +34,7 @@ express_path_protocol:
     # ⚠️ AR-001 hard guarantee: cannot be skipped (text grep'd by AC-P3.1-h).
     # The literal phrase "expert review" + "code-reviewer" must remain on consecutive
     # tokens within ~30 lines following `express_path_protocol:` header.
+    - "requirement clarification (a clear request leaves no unclear block: zero questions, per-block playback confirmed)"
     - "step1 draft creation (handoff scaffold + frontmatter — MUST set `express: true` in YAML frontmatter; this is the durable marker layer2-audit.sh is_express_frontmatter() consumes)"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
@@ -45,7 +46,6 @@ express_path_protocol:
     - "Gate 4 v2 acceptance (Alex side)"
 
   skipped_steps:
-    - "Socratic Inquiry Protocol (3-5 rounds)"
     - "Adaptive Complexity Protocol step2 (no scope choice — *express IS the scope)"
     - "Epic Phase Map evaluation (express handoffs not part of Epics)"
     - "Knowledge Assessment ceremony (skip_knowledge_assessment defaults to yes; Blake can override unskip per P3.3)"

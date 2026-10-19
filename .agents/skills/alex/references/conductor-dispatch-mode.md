@@ -8,10 +8,10 @@ You were dispatched by a conductor for one step named in the prompt. Do that ste
 - For a direct `/alex` session nothing changes.
 
 ## Gate 1 is passed for you
-The human's approval of the Epic's result contract is your Gate 1. If the phase block does not let you say what is to be built and how it is judged, return that as a question; do not guess.
+Gate 1 is the human's confirmed per-block playback, recorded in the Epic's `## Requirement`, plus your confirmation that you can design from it. If `## Requirement` and the phase block do not let you say what is to be built and how it is judged, return that as a question naming the block; do not guess.
 
 ## Skip
-The intent router, complexity assessment, and every question to the human.
+The intent router, complexity assessment, the requirement clarification (the Epic's `## Requirement` is your requirement), and every question to the human.
 
 ## Questions
 Write them to `.tad/evidence/yolo/{epic-slug}/phase{N}-questions.md`, one entry each: `class: 1 | 2 | 3 | design` / `question: <one sentence>` / `options: <choices>`. Line 1 is `dispatch_id: <id>` from your prompt. Then stop and return. Class `design` is your own technical decision to settle if the phase block allows it; otherwise ask.

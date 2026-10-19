@@ -8,8 +8,8 @@ design_protocol:
 
   steps:
     step1:
-      name: "Review Socratic Inquiry Results"
-      action: "Confirm all requirements are clarified from Socratic Inquiry"
+      name: "Review the Requirement"
+      action: "Confirm every block of the requirement is clear or listed as an assumption"
 
     step1_5:
       name: "Capability Pack Loading"
@@ -19,7 +19,7 @@ design_protocol:
 
     step1_5b:
       name: "Capability Pack Loading (from registry)"
-      trigger: "After Socratic Inquiry (step1)"
+      trigger: "After the requirement review (step1)"
       action: |
         1. Read .tad/capability-packs/pack-registry.yaml
            If not found → skip this step entirely (no error)
@@ -217,7 +217,7 @@ design_protocol:
     step3:
       name: "Create Architecture Design"
       action: |
-        If icp_anchor was defined in Socratic Inquiry:
+        If the requirement has a "who uses it" block, use that line as the design test anchor:
           Use as design test anchor throughout architecture decisions.
           For each major design decision, ask: "Would [ICP] understand/value this?"
         Design system architecture, data flow, API contracts.

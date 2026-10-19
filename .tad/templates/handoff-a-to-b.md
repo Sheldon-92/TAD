@@ -115,6 +115,10 @@ Blake在开始实现前，请确认：
 |---|---|---|---|---|
 | | | | | |
 
+### 1.5 Requirement (human's words)
+
+Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines, `Q→A log`, `Assumptions (not asked; Gate 4 lists them)`.
+
 ---
 
 ## 📚 Project Knowledge（Blake 必读）
@@ -554,7 +558,7 @@ Blake的实现被认为完成，当且仅当：
 > | AC4 | Python tests pass   | `pytest`           | all pass |
 > | AC5 | Change scope        | `git diff --stat`  | only §6 files |
 >
-> # 非 dev 项目（播客/内容/电商 —— Socratic 确定的域标准）：
+> # 非 dev 项目（播客/内容/电商 —— 需求澄清确定的域标准）：
 > | AC1 | Pitch consistency   | `python scripts/measure_consistency.py EP04 \| grep overall` | > 70 |
 > | AC2 | Eval build passes   | `python scripts/build_podcast_eval.py EP04 --check`         | exit 0 |
 > | AC3 | Final audio exists  | `ls podcasts/EP04-colin/final/*.wav \| wc -l`               | >= 1 |

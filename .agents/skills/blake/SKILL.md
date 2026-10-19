@@ -1246,7 +1246,7 @@ execution_checklist:
     - "确认所有 AC 都有实现计划（不能'先做完再说'）"
     - "如果某个 AC 你认为不适用 → PAUSE → 问人确认 → 不能自己决定跳过"
     # ⚠️ ANTI-RATIONALIZATION: "这个 AC 明显是模板遗留，实际不需要"
-    # → AC 是 Alex 经 Socratic Inquiry 和专家审查确定的。Blake 没有删除 AC 的权力。
+    # → AC 是 Alex 依据经人确认的需求（逐块复述）和专家审查确定的。Blake 没有删除 AC 的权力。
 
   during_development:
     task_type_branching:

@@ -265,14 +265,14 @@ intent_router_protocol:
     forbidden:
       - from: "analyze"
         to: "any"
-        reason: "Once in standard TAD flow (Socratic/Design/Handoff), switching out would lose context. Complete or abort first."
+        reason: "Once in standard TAD flow (clarification/Design/Handoff), switching out would lose context. Complete or abort first."
       # Phase 3 P3.1 (2026-04-24): explicit forbidden for analyze→express / analyze→experiment
       # Even though "any" already covers these, AC-P3.1-l requires explicit declaration
       # to defend against AR-001 mid-flight scope downgrade attack.
       - from: "analyze"
         to: "express"
         reason: |
-          Once in Standard TAD with Socratic complete, downgrading to *express loses ceremony
+          Once in Standard TAD with the requirement playback confirmed, downgrading to *express loses ceremony
           rationale (AR-001 attack surface — Alex auto-rationalizing 'this turned out small,
           let's downgrade'). User must explicitly *cancel current *analyze handoff and start
           a fresh *express if scope truly shrunk.

@@ -11,7 +11,7 @@ idea_path_protocol:
       action: |
         Let user describe their idea freely.
         If the idea is clear enough, proceed to step2.
-        If vague, ask 2-3 lightweight clarifying questions (NOT full Socratic Inquiry):
+        If vague, ask 2-3 lightweight clarifying questions (NOT the requirement clarification method; an idea is clarified when promoted):
         - "What problem does this solve?"
         - "Who benefits?"
         - "Any initial thoughts on how it might work?"

@@ -95,11 +95,11 @@ PROHIB='MUST NOT|forbidden|禁止|不得|VIOLATION|never '
 | key | 规则 | 承载者 | 判定 |
 |---|---|---|---|
 | cross_model_awareness | couple w/ skipKA+express | 正文 L707 | ✅ |
-| | bypass socratic via delegation | 正文 L708 + refs | ✅ |
+| | bypass requirement clarification via delegation | 正文 cross_model_awareness.forbidden_implementations + refs | ✅ |
 | express_path | `'express = review-exempt'` 禁止解释 | `express-path-protocol.md:56`（措辞 `forbidden interpretation`） | ✅ |
 | | auto_downgrade standard→express | refs ×2 | ✅ |
 | experiment_path | replace_silently gate_3_4 | 正文 + `experiment-path-protocol.md:112` | ✅ |
-| | bypass socratic via shortcut | `experiment-path-protocol.md:113` | ✅ |
+| | bypass requirement clarification via shortcut | `experiment-path-protocol.md:112` | ✅ |
 | step0_graph | auto_index repository | `handoff-creation-protocol.md:344` | ✅ |
 | | block_on_failure graph_probe | `handoff-creation-protocol.md:345`（含 `<500ms` 预算） | ✅ |
 | step1d_ac_dryrun | skip rationalizations | `handoff-creation-protocol.md:521` | ✅ |

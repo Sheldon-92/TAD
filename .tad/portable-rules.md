@@ -48,7 +48,7 @@ When generating a Codex-edition SKILL from a Claude Code SKILL, apply these rule
 - Knowledge Assessment protocol
 - Completion report protocol
 - Handoff reading and paraphrasing protocol
-- Socratic inquiry protocol (Alex)
+- Requirement clarification method (Cora and Alex)
 - Adaptive complexity protocol (Alex)
 - Intent router protocol routing logic (Alex)
 - Handoff creation protocol (Alex)

@@ -9,6 +9,16 @@
 ## Objective
 {1-3 sentences: what this epic delivers when all phases complete}
 
+## Requirement
+{One line per block, in the human's words (requirement-clarification method). Gate 1: he confirmed this playback.}
+- **{block}**: {his words}
+
+### Q→A log
+- {block}{n}: {question} → {his answer, in his words}
+
+### Assumptions (not asked; Gate 4 lists them)
+- {what was not asked, and what is assumed}
+
 ## Success Criteria
 - [ ] {measurable outcome 1}
 - [ ] {measurable outcome 2}

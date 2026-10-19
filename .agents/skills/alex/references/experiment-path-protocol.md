@@ -20,7 +20,7 @@ experiment_path_protocol:
 
   alex_evaluation_signals:
     when_to_suggest_task_type_experiment:
-      - "Socratic answers mention 'iteratively', 'rubric', 'A vs B', 'optimize prompt', 'eval against baseline'"
+      - "Clarification answers mention 'iteratively', 'rubric', 'A vs B', 'optimize prompt', 'eval against baseline'"
       - "Capability Pack ai-evaluation or ai-prompt-engineering matches"
       - "Output measured by score not by 'feature works'"
     note: |
@@ -45,7 +45,7 @@ experiment_path_protocol:
     # P1-3 (CR review 2026-04-24): list ALL Standard TAD steps explicitly to mirror
     # express_path_protocol.required_steps. Avoids the "Standard TAD steps DO follow"
     # shorthand letting a future Alex skip Gate 2 / step7 / Gate 3 / Gate 4.
-    - "Socratic Inquiry Protocol (3-5 rounds) — DO follow"
+    - "Requirement clarification (method reference) — DO follow"
     - "step0_5 Risk Translation (cognitive firewall) — DO follow"
     - "step1 draft creation (handoff scaffold + frontmatter)"
     - "step1 explicit Read of .agents/skills/ai-evaluation/SKILL.md (per capability_pack_auto_load)"
@@ -109,5 +109,5 @@ experiment_path_protocol:
   enforcement: "prompt-level-only"
   forbidden_implementations:
     - "MUST NOT replace Gate 3/4 silently — semantics is AUGMENT (additive), original criteria still apply"
-    - "MUST NOT bypass *analyze Socratic for *experiment — all Standard TAD steps DO run"
+    - "MUST NOT bypass *analyze requirement clarification for *experiment — all Standard TAD steps DO run"
 

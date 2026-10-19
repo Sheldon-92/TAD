@@ -10,7 +10,7 @@ Find bypass holes before agents find them in production.
 ## RED-GREEN-REFACTOR for Rules
 
 ### RED: Run Without the Rule
-1. Pick a TAD rule to test (e.g., "Alex must use AskUserQuestion for Socratic inquiry")
+1. Pick a TAD rule to test (e.g., "Alex must get the per-block requirement playback confirmed before writing a handoff")
 2. Simulate a scenario where the rule would apply
 3. WITHOUT the rule: observe what the agent does — document violations
 4. Record: What went wrong? How did the agent bypass the intent?
@@ -40,25 +40,25 @@ Find bypass holes before agents find them in production.
 | Bypass Discovery Rate | Document all found | Count of new anti-rationalization entries generated |
 | False Positive Rate | ≤10% | Rules blocking legitimate actions |
 
-## Worked Example: Socratic Inquiry Rule
+## Worked Example: Requirement Clarification Rule
 
-**Rule**: "Alex must call AskUserQuestion before writing handoff"
+**Rule**: "Alex must get the per-block requirement playback confirmed before writing handoff"
 
 **RED** (without rule enforcement):
 - Scenario: User says "I need a login page, just do it fast"
-- Agent behavior: Skips AskUserQuestion, writes handoff directly
-- Violation: No structured requirement capture
+- Agent behavior: Skips the playback, writes handoff directly
+- Violation: No confirmed requirement
 
 **GREEN** (with rule):
 - Same scenario, rule enforced
-- Agent: Calls AskUserQuestion with 3 questions
-- Compliance: Questions asked, answers recorded
+- Agent: Decomposes the request, asks only the unclear blocks, plays back one line per block
+- Compliance: Playback confirmed, Q→A log and assumptions recorded
 
 **REFACTOR** (bypass hunting):
-- Bypass attempt 1: "User said 'fast' so I'll ask just 1 trivial question"
-  → Add anti-rationalization: "Minimum question count is set by adaptive complexity, not agent"
-- Bypass attempt 2: "I'll ask AskUserQuestion but pre-fill all options to guide toward my design"
-  → Add anti-rationalization: "Options must represent genuine alternatives, not lead to predetermined answer"
+- Bypass attempt 1: "User said 'fast' so I'll skip the playback"
+  → Add anti-rationalization: "Just do it still gets the playback"
+- Bypass attempt 2: "I'll offer options but pre-fill them to guide toward my design"
+  → Add anti-rationalization: "Options show understanding; 'other' is always offered"
 
 **Result**: 2 new anti-rationalization entries, rule tightened.
 

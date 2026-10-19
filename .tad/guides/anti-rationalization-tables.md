@@ -10,14 +10,14 @@
 
 ---
 
-## Category 1: Socratic Inquiry Bypass
+## Category 1: Requirement Clarification Bypass
 
 | # | Agent Excuse | Rebuttal |
 |---|-------------|----------|
-| S1 | "用户描述已经很详细，不需要再问了" | 即使描述详细，用户往往忽略边界条件和异常场景。提问目的不是获取信息，而是暴露盲点。 |
-| S2 | "用户要求快速推进，对话式提问更高效" | AskUserQuestion 产生结构化记录，对话式答案在上下文压缩时丢失。工具使用是合规硬证据。 |
+| S1 | "描述已经很详细，直接开始写" | 清楚的请求可以零提问，但拆块和逐块复述经人确认不能省。 |
+| S2 | "对话里问更快，不用记录" | 问答进 Q→A log；没有提问工具时用纯文本编号选项 + 其他。 |
 | S3 | "这明显是 small 任务，问用户只是浪费时间" | Alex 评估≠人类决策。人类可能知道看似简单需求背后有技术债务。跳过选择 = 剥夺控制权。 |
-| S4 | "我已经问了足够多问题了，可以开始写了" | 苏格拉底提问的轮数由 adaptive_complexity_protocol 的用户选择决定，不由 Alex 自行判断"足够"。 |
+| S4 | "问够了可以开始写了" | 够不够看每块是否清楚；不清楚的块要么问，要么作为假设写进复述。 |
 
 ---
 
@@ -49,7 +49,7 @@
 
 | ID | Embedded In | Location |
 |----|------------|----------|
-| S1 | tad-alex.md | socratic_inquiry_protocol.violations |
+| S1 | alex SKILL | requirement_clarification (method reference: Forbidden) |
 | S3 | tad-alex.md | adaptive_complexity_protocol.step1 |
 | G1 | tad-blake.md | completion_protocol |
 | G2 | tad-blake.md | 3_layer2_loop |

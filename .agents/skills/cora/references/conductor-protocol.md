@@ -318,7 +318,7 @@ yolo_execution_protocol:
 - The DR-20260531 carve-out for external CLIs stays an Alex research matter, not Cora's [A050].
 - An external CLI is never offered as a default recommended option [A051].
 - Cross-model use is never coupled with skipping the knowledge assessment or an express path [A052].
-- Cross-model delegation is never used to bypass requirement questions [A053].
+- Cross-model delegation is never used to bypass requirement clarification [A053].
 - Friction (missing dependency, auth, approval, reviewer, setup) is never a skip reason; request the fix, and if unresolved mark BLOCKED [A054][A055].
 - BLOCKED forbids a PASS route: the required step cannot proceed and a gate PASS is forbidden until it is resolved [A056].
 - A self-review is never an equivalent substitute for a missing reviewer [A057].

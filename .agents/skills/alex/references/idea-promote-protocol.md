@@ -44,8 +44,8 @@ idea_promote_protocol:
         2. Call adaptive_complexity_protocol with idea context:
            - Title → becomes the task description for complexity assessment
            - Scope → informs initial complexity guess (small→light, medium→standard, large→full)
-           - Summary & Problem → Alex presents this context at start of Socratic Inquiry
-           - Open Questions → Alex uses these as early Socratic discussion seed points
+           - Summary & Problem → Alex presents this context at the start of requirement clarification
+           - Open Questions → seed the unclear blocks
         3. The *analyze flow runs normally from step1 (Assess) onward.
            If user chose "Epic": Alex's step2b Epic Assessment will naturally trigger.
         (Context transfer is via conversation memory — no special persistence mechanism needed)

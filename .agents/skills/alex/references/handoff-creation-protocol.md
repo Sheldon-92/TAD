@@ -4,13 +4,13 @@
 
 handoff_creation_protocol:
   description: "创建 handoff 时必须经过专家审查，确保设计完整且可执行"
-  prerequisite: "必须先完成 Socratic Inquiry Protocol"
+  prerequisite: "必须先完成需求澄清（逐块复述经人确认；Cora 派发的 Epic 阶段即 Epic ## Requirement）"
 
   workflow:
     step0:
       name: "Prerequisite Check"
-      action: "检查是否已完成苏格拉底式提问"
-      violation: "未完成 Socratic Inquiry 就开始写 handoff = VIOLATION"
+      action: "检查需求澄清是否完成（逐块复述已经人确认）"
+      violation: "未完成需求澄清（逐块复述未经人确认）就开始写 handoff = VIOLATION"
 
     step0_5_conflict_matrix:
       name: "AC Conflict Matrix Self-Check"  # Phase 3 anchor A-01 (per HANDOFF-20260415-phase3 §3.1)
@@ -30,7 +30,7 @@ handoff_creation_protocol:
         Before writing handoff draft, reload **relevant** project knowledge.
         L2 lazy-load (2026-04-27): only read files matching task keywords, not all.
 
-        1. **Identify task keywords** from current Socratic Inquiry results / *discuss
+        1. **Identify task keywords** from the requirement (block lines, Q→A log) / *discuss
            context (topics, technologies, file paths, domain). Output: keyword list.
         2. **Read .tad/project-knowledge/principles.md** (always — L1 methodology rules).
         3. **Read .tad/project-knowledge/patterns/_index.md** — match task keywords
@@ -52,7 +52,7 @@ handoff_creation_protocol:
         # Knowledge Matching — ensure relevant history reaches Blake (BA-P1-3: scan operates on partial corpus per L2 lazy-load; inclusivity rule below preserves "false negatives are not acceptable")
         8. After reading matched knowledge files (per step 4 — partial corpus by design),
            scan each entry (### title - date) for relevance:
-           a. Extract task keywords from current Socratic Inquiry results (topics, technologies, file paths, domain)
+           a. Extract task keywords from the requirement (block lines, Q→A log) (topics, technologies, file paths, domain)
            b. For each knowledge entry: does its Context/Discovery mention any of these keywords?
            c. Collect all matching entries into a "relevant_knowledge" list
         9. When writing handoff §📚 Project Knowledge → "⚠️ Blake 必须注意的历史教训":
@@ -84,7 +84,7 @@ handoff_creation_protocol:
       purpose: "Last line of defense — all known pitfalls must be in context when writing handoff"
 
     step0_5b:
-      name: "Research Asset Check (post-Socratic)"
+      name: "Research Asset Check (post-clarification)"
       trigger: "After step0_5 knowledge reload completes, before step1 draft creation"
       action: |
         0. Prefer Local Wiki first: search `research/canon/_index.md` or run
@@ -164,8 +164,8 @@ handoff_creation_protocol:
             - Extract AC → pre-fill handoff AC section
             - Extract Files Likely Affected → pre-fill handoff §5 Files to Modify
             - Extract Input/Output → inform design context
-            NOTE: Socratic reduction was already determined by step2b_phase_detail_check
-            (runs before Socratic). This step only pre-fills handoff sections.
+            NOTE: Clarification depth follows clarity; a sufficient Phase Detail Block leaves fewer unclear blocks (step2b_phase_detail_check).
+            This step only pre-fills handoff sections.
             If no Phase Detail Block found (backward compat):
               → No pre-fill available (behavior unchanged from pre-enhancement)
         2. Add **Epic** metadata field to handoff header:
@@ -198,7 +198,7 @@ handoff_creation_protocol:
         tsc/test/lint checks that USED to be hardcoded in Gate 3; for non-dev projects they are
         domain-specific commands.
       detection: |
-        Detection is TASK-SCOPED (based on THIS task's §6 Files to Modify + Socratic result),
+        Detection is TASK-SCOPED (based on THIS task's §6 Files to Modify + requirement),
         NOT purely project-scoped (ARCH-P1-1 fix). Inspect the files THIS handoff touches:
           - §6 has .ts/.tsx files → generate `npx tsc --noEmit` AC (if a tsconfig.json exists in the project)
           - §6 has .py files → detect pytest/unittest → generate `pytest` (or `python -m pytest`) AC
@@ -217,7 +217,7 @@ handoff_creation_protocol:
         handoff writes `python scripts/measure_consistency.py EP04 | grep overall` → > 70).
       non_dev_and_rubric: |
         - Non-dev project (Colin声音/播客, Sober Creator/content, 买卖/electronics): §9.1 ACs come
-          entirely from the Socratic-determined quality standards (domain-specific commands).
+          entirely from the requirement-determined quality standards (domain-specific commands).
         - When task_type: deliverable (rubric/judge ACs): write a §9.1 row whose Verification
           Method is "spawn independent judge per Rubric Evaluation Protocol against {rubric_ref}
           → verdict: PASS" so Gate 3's Rubric Evaluation Protocol activates.

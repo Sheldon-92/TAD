@@ -73,9 +73,9 @@ Direct use: /alex for design, /blake for implementation
 
 ## Adaptive Complexity
 When you describe a task to Alex, he'll assess complexity and suggest one of:
-- **Full TAD**: 6+ questions (co-definition with follow-up rounds), expert review, detailed handoff (architecture/complex features)
-- **Standard TAD**: 4-5 questions (co-definition model), handoff, gates (new features, API changes)
-- **Light TAD**: 2-3 questions, quick handoff (small changes, configs)
+- **Full TAD**: requirement clarification (questions follow clarity, not depth), expert review, detailed handoff (architecture/complex features)
+- **Standard TAD**: requirement clarification, handoff, gates (new features, API changes)
+- **Light TAD**: requirement clarification, quick handoff (small changes, configs)
 - **Skip TAD**: Direct implementation (trivial fixes, user opts out)
 Alex suggests, **you decide** the process depth.
 

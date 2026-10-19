@@ -35,19 +35,19 @@ adaptive_complexity_protocol:
   process_depths:
     full:
       label: "Full TAD"
-      description: "Complete Socratic Inquiry (6+ questions with follow-up rounds, all phases Q1-Q5) → Expert Review → Detailed Handoff → All Gates"
+      description: "Requirement clarification (depth by clarity) → Expert Review → Detailed Handoff → All Gates"
       when: "Architecture changes, complex features, high-risk work"
     standard:
       label: "Standard TAD"
-      description: "Moderate Inquiry (4-5 questions) → Handoff → Gates"
+      description: "Requirement clarification → Handoff → Gates"
       when: "New features, API changes, multi-file modifications"
     light:
       label: "Light TAD"
-      description: "Brief Inquiry (2-3 questions) → Quick Handoff → Streamlined Gates"
+      description: "Requirement clarification → Quick Handoff → Streamlined Gates"
       when: "Small features, config changes, straightforward modifications"
     skip:
       label: "Skip TAD"
-      description: "Direct implementation, no formal handoff process"
+      description: "Direct implementation, no formal handoff process (the one-line-per-block playback is still shown and confirmed)"
       when: "Trivial fixes, user explicitly wants speed over process"
 
   # Execution flow
@@ -113,11 +113,12 @@ adaptive_complexity_protocol:
         If user chooses "交给 Cora": give the human that sentence and stop; do not create the Epic.
 
         If user chooses "在这里创建 Epic":
+          0. Run requirement clarification first (.agents/skills/cora/references/requirement-clarification.md) and write the Epic's `## Requirement` (block lines, Q→A log, Assumptions) before the Phase Map.
           1. Create Epic file: .tad/active/epics/EPIC-{YYYYMMDD}-{slug}.md
              - Use .tad/templates/epic-template.md as base
              - Fill Objective, Success Criteria, Phase Map TABLE (overview)
           2. For EACH Phase in the Phase Map: fill the Phase Detail Block
-             - Scope: derive from Socratic discussion context (≥2 sentences, explicit NOT-in-scope)
+             - Scope: derive from the confirmed requirement (≥2 sentences, explicit NOT-in-scope)
              - Input/Output: derive from phase sequencing (Phase N input = Phase N-1 output)
              - AC: at least 3 per Phase, specific and verifiable
              - Files Likely Affected: derive from scope + codebase knowledge (≥1 concrete path with CREATE/MODIFY)
@@ -135,27 +136,26 @@ adaptive_complexity_protocol:
           Proceed normally without Epic.
 
     step2b_phase_detail_check:
-      name: "Phase Detail Block Sufficiency Check (pre-Socratic)"
-      trigger: "After step2b, before Socratic Inquiry — only when continuing an existing Epic"
+      name: "Phase Detail Block Sufficiency Check (pre-clarification)"
+      trigger: "After step2b, before requirement clarification — only when continuing an existing Epic"
       action: |
         If an active Epic exists in .tad/active/epics/ AND the current task is
         starting the next Phase (not creating a new Epic):
           1. Read the Epic file
           2. Find the next ⬚ Planned Phase in the Phase Map
           3. Look for the corresponding Phase Detail Block (### Phase {N}: {name})
-          4. If no Phase Detail Block found → skip (backward compat, normal Socratic)
+          4. If no Phase Detail Block found → skip (backward compat, normal clarification)
           5. Run sufficiency check:
              - Scope: ≥2 sentences (not placeholder like "TBD" or "{...}")
              - AC: ≥3 items, each with checkbox (- [ ]) and ≥1 of: file path, command, numeric threshold, or comparison operator
              - Files: ≥1 concrete path with CREATE/MODIFY annotation (not "TBD" or "{...}")
           6. If ALL pass:
-             → Set Socratic depth to "light" tier (2-3 questions per socratic_inquiry_protocol)
-             → Announce: "Phase {N} 已有详细定义，苏格拉底提问将简化为 light 模式（2-3 个问题）。"
-             → Light questions should focus on questions NOT covered by the Detail Block
-               (Q4 risk blind-spot, Q3b exclusion gaps, edge cases)
+             → Blocks the Detail Block answers are shown as clear in the playback; ask only blocks it leaves unclear
+             → Announce: "Phase {N} 已有详细定义：只问它没说清的块。"
+             → Questions focus on blocks NOT covered by the Detail Block
           7. If ANY fail:
-             → Normal Socratic depth
-             → Announce: "Phase {N} 定义不够详细（{which check failed}），需要完整苏格拉底提问。"
+             → Clarify the blocks the failed check names
+             → Announce: "Phase {N} 定义不够详细（{which check failed}），先澄清它指出的块。"
         If no active Epic or creating a new Epic → skip entirely.
 
       epic_assessment_signals:
@@ -166,7 +166,7 @@ adaptive_complexity_protocol:
 
     step2c_github:
       name: "GitHub Registry Check"
-      trigger: "User confirmed process depth (step2 done), before Socratic Inquiry starts"
+      trigger: "User confirmed process depth (step2 done), before requirement clarification starts"
       error_blocking: false
       user_interaction: conditional
       skip_conditions:
@@ -198,7 +198,7 @@ adaptive_complexity_protocol:
                (prevents *ask Step 2b from double-refreshing in the same session)
            c. Extract source_count from the research-notebooks REGISTRY entry found in step 4a.
               Output: "📦 Found research notebook for '{domain}' ({source_count} sources, refreshed). Key findings available during design."
-           d. No AskUserQuestion — passively available for Socratic + design
+           d. No AskUserQuestion — passively available for requirement clarification + design
 
         5. If match found AND no notebook_id (no notebook yet):
            → AskUserQuestion: "'{domain}' 领域有 {N} 个 awesome-list。要先研究参考项目再开始设计吗？"
@@ -209,21 +209,17 @@ adaptive_complexity_protocol:
            → "跳过" → continue
         6. If no match → skip silently
 
-        → ALWAYS proceed to step3 (Socratic Inquiry) after this step completes
+        → ALWAYS proceed to step3 (requirement clarification) after this step completes
 
     step3:
       name: "Proceed"
       action: |
         Based on user's choice:
-        - full: Run Socratic Inquiry with all phases Q1-Q5 (6+ questions with follow-up rounds)
-        - standard: Run Socratic Inquiry with 4-5 questions (medium complexity rules)
-        - light: Run Socratic Inquiry with 2-3 questions (small complexity rules)
-        - skip: Inform user they can implement directly. Exit Alex if appropriate.
+        - full / standard / light: run requirement clarification (depth follows clarity, same method at every depth)
+        - skip: show the per-block playback and get it confirmed; then inform user they can implement directly. Exit Alex if appropriate.
 
-  # Integration with existing Socratic Inquiry
+  # Integration with requirement clarification
   integration: |
-    The user's chosen depth OVERRIDES the internal complexity_detection in socratic_inquiry_protocol.
     If user picks "light" for a task Alex assessed as "large", respect the user's choice.
-    The complexity_detection section still determines WHICH questions (Q1-Q5) to ask,
-    but the depth choice controls HOW MANY questions and HOW DETAILED the process is.
+    Process depth sets the ceremony (reviews, handoff detail, gates); it does not set the number of questions — clarity does.
 

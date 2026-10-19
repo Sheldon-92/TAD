@@ -21,16 +21,15 @@ Execute TAD's 4-gate quality system with BMAD-style enforcement to ensure consis
 
 ### Gate 1: Requirements Clarity (Agent A)
 **When:** After requirement elicitation completes
-**Enforced by:** BMAD elicitation mechanism (3-5 rounds mandatory)
+**Enforced by:** requirement clarification (`.agents/skills/cora/references/requirement-clarification.md`); Gate 1 conditions: Phase 3 of EPIC-20261019
 
 **Execution Steps:**
 
 1. **Verify Elicitation Evidence**
 ```
 ✅ Requirement Elicitation Evidence:
-- [ ] Completed minimum 3 rounds of elicitation
-- [ ] Used 0-9 numbered options (not yes/no)
-- [ ] User confirmed understanding at each round
+- [ ] Requirement decomposed into blocks; only unclear blocks asked (options + recommended + other)
+- [ ] User confirmed the per-block playback
 - [ ] All assumptions documented and validated
 
 Evidence Location: .tad/evidence/project-logs/[project]/elicitation-rounds.md

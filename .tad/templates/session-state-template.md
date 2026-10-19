@@ -15,7 +15,7 @@ Last File Written: <none>                  <!-- Updated by post-write-sync.sh ho
 **Mode** (Alex only): {analyze | bug | discuss | idea | learn | express | experiment | N/A}
 
 ## Current Position
-{One line: e.g. "Ralph Loop → Layer 1 → Step 3/5 (lint)" or "Socratic Inquiry Round 3/5"}
+{One line: e.g. "Ralph Loop → Layer 1 → Step 3/5 (lint)" or "Requirement clarification — block 3/5"}
 
 ## Completed ✅
 {Brief bullets of what's done — update progressively}

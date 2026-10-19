@@ -40,12 +40,11 @@ Please select an option (0-9):
 1. Activate Cora - Conductor, start here (/cora)
 2. Activate Alex - Solution Lead (/alex)
 3. Activate Blake - Execution Master (/blake)
-4. Start requirement elicitation (/elicit)
-5. Execute quality gate (/gate)
-6. Create/verify handoff (/handoff)
-7. Start parallel execution (/parallel)
-8. Show TAD status (/tad-status)
-9. View help documentation (/tad-help)
+4. Execute quality gate (/gate)
+5. Create/verify handoff (/handoff)
+6. Start parallel execution (/parallel)
+7. Show TAD status (/tad-status)
+8. View help documentation (/tad-help)
 
 Select 0-9:
 ```
@@ -72,7 +71,7 @@ Select 0-9:
 
 ### 🎯 Core Mechanisms
 - **4-Gate Quality System**: Systematic quality control with evidence
-- **Socratic Inquiry**: Alex must use AskUserQuestion before writing handoffs
+- **Requirement clarification**: decompose into blocks, ask only unclear blocks (options + recommended + other), per-block playback confirmed before work
 - **Expert Handoff Review**: 2+ experts review handoff before Blake executes
 - **Knowledge Accumulation**: Project learns from every feature
 - **Parallel Execution**: 40%+ time savings via parallel-coordinator
@@ -85,7 +84,6 @@ Select 0-9:
 - `/blake` - Activate Blake (Execution Master)
 
 ### Core Workflows
-- `/elicit` - Start requirement gathering (Socratic inquiry)
 - `/handoff` - Create/verify handoff document
 - `/gate` - Execute quality gate
 - `/parallel` - Start parallel execution
@@ -107,7 +105,7 @@ Select 0-9:
 0. **Start**: `/cora` → Activate Cora (Conductor): agree a result, she dispatches Alex, Blake and the gates
 
 1. **Alex** (`/alex`, direct use) → Activate Alex
-   - Socratic inquiry → Gather requirements (adaptive questions)
+   - Requirement clarification → blocks, questions on unclear blocks, playback confirmed
    - `*design` → Create technical design with expert review
    - `*handoff` → Generate handoff for Blake
 
@@ -129,7 +127,7 @@ Select 0-9:
 ## Success Patterns
 
 ✅ **Always Do:**
-- Use Socratic inquiry before designing
+- Clarify the requirement block by block before designing
 - Search existing code before designing
 - Use `*develop` for implementation (triggers Ralph Loop)
 - Use parallel-coordinator for multi-component tasks
@@ -137,7 +135,7 @@ Select 0-9:
 - Record knowledge discoveries in Gate results
 
 ❌ **Never Do:**
-- Skip Socratic inquiry
+- Skip requirement clarification or its playback
 - Let Alex write code
 - Start Blake without handoff
 - Bypass Ralph Loop for implementation

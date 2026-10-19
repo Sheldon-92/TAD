@@ -49,7 +49,7 @@ bug_path_protocol:
         ```
         # Mini-Handoff: Bugfix — {title}
         **From:** Alex | **To:** Blake | **Date:** {date}
-        **Type:** Express Bugfix (skip Socratic, skip expert review)
+        **Type:** Express Bugfix (requirement playback confirmed; skip expert review)
         **Priority:** {P0/P1/P2}
 
         ## Bug Description
@@ -71,7 +71,7 @@ bug_path_protocol:
         | 1 | Reported symptom fixed, no related regression | post-impl-verifiable | `{repro command or failing-then-passing test, e.g. pytest tests/test_slug.py -k bugfix}` | exit 0, symptom gone under reported conditions | (post-impl) |
 
         ## Blake Instructions
-        - This is an express bugfix — no Socratic inquiry or expert review needed
+        - This is an express bugfix — requirement clarification was a playback (no unclear block), no expert review
         - Apply fix → run Ralph Loop Layer 1 (self-check) → verify AC → done
         - If fix turns out to be more complex than described, escalate to user
         ```

@@ -46,7 +46,7 @@ triangle:
 
     workflow:
       terminal_1_alex:
-        - "需求分析 → 苏格拉底式提问 → 设计 → 写 handoff"
+        - "需求分析 → 需求澄清（拆块、逐块复述确认）→ 设计 → 写 handoff"
         - "输出: 'Handoff 已创建，请在 Terminal 2 执行 /blake'"
         - "停止，等待人类反馈"
 

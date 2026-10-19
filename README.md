@@ -18,7 +18,7 @@ You  -->  Cora  -->  Alex designs  -->  Blake builds  -->  independent checks  -
 4. She runs it to the end through subagents and gates. Only questions a human can answer reach you.
 5. You look at the result and accept it, or send it back.
 
-Not every job needs the whole flow: Cora first tells you whether a request is a simple task, a single handoff or an Epic (the steps above are the Epic path; for the other two she states her plan and starts, except a handoff with an irreversible effect, which she asks about first; say 'wait' to stop her). Or pick by what you need:
+Not every job needs the whole flow: Cora first clarifies the request (you confirm a one-line-per-block playback), then tells you whether it is a simple task, a single handoff or an Epic (the steps above are the Epic path; for the other two she states her plan and starts, except a handoff with an irreversible effect, which she asks about first; say 'wait' to stop her). Or pick by what you need:
 
 | You want to... | Go to |
 |---|---|
@@ -138,7 +138,7 @@ Domain packs (frontend, backend, testing, security, research, video and more) sh
 ## Troubleshooting
 
 - **"Gate failed - no evidence file":** the reviewers were not called or did not write to `.tad/evidence/reviews/`; run the gate again.
-- **"Handoff created without Socratic inquiry":** Alex must ask before writing a handoff; re-run with the proper flow.
+- **"Handoff created without a confirmed requirement playback":** Alex must clarify the requirement block by block and get the playback confirmed before writing a handoff; re-run with the proper flow.
 - **"Knowledge files empty":** run `/knowledge-audit --fix` or bootstrap from the templates.
 
 ## Contributing

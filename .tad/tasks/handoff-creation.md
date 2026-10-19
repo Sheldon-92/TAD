@@ -22,7 +22,7 @@ Create a comprehensive handoff document that gives Blake (Agent B) everything ne
 ## Pre-requisites Check
 
 Before creating handoff, verify:
-- [ ] Requirements documented and confirmed (3-5 rounds completed)
+- [ ] Requirement clarified and per-block playback confirmed
 - [ ] Design specifications created
 - [ ] Technical approach defined
 - [ ] Test criteria established

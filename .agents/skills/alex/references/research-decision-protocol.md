@@ -4,7 +4,7 @@
 
 research_decision_protocol:
   description: "Research before designing. Present options. Human decides."
-  prerequisite: "Socratic Inquiry completed"
+  prerequisite: "Requirement clarification completed (per-block playback confirmed)"
   blocking: true
   config: ".tad/config-cognitive.yaml"
 
@@ -17,7 +17,7 @@ research_decision_protocol:
   step1_identify_decisions:
     name: "Decision Point Identification"
     action: |
-      After Socratic Inquiry, analyze the task requirements and identify:
+      After the requirement playback is confirmed, analyze the task requirements and identify:
       1. What technical decisions need to be made?
       2. Classify each as simple or important (per config depth_rules)
 

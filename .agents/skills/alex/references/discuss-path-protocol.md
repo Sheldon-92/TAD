@@ -13,7 +13,7 @@ discuss_path_protocol:
       - Offer perspectives and trade-offs
       - Challenge assumptions constructively
       - Do NOT steer toward handoff creation
-      - Do NOT run Socratic Inquiry protocol
+      - Do NOT run requirement clarification (it starts when work is brought)
       - Do NOT run Adaptive Complexity assessment
 
     allowed:
@@ -114,7 +114,7 @@ discuss_path_protocol:
       - "Running Gate checks"
       - "Suggesting 'let me create a handoff for this'"
       - "Creating HANDOFF-*.md files"
-      - "Running Socratic Inquiry protocol"
+      - "Running requirement clarification (it starts when work is brought)"
       - "Writing implementation code"
     note_on_research_protocol: |
       *discuss mode and research_decision_protocol (Cognitive Firewall) are COMPATIBLE:

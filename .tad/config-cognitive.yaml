@@ -180,7 +180,7 @@ research_first:
 # ==================== Integration Points ====================
 integration:
   alex_design_flow:
-    insert_after: "socratic_inquiry_protocol"
+    insert_after: "requirement_clarification"
     insert_before: "design_protocol"
     new_step: "research_and_decision_protocol"
 

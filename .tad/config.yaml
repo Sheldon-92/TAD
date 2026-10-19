@@ -45,21 +45,19 @@ config_modules:
 
   config-workflow.yaml:
     path: ".tad/config-workflow.yaml"
-    description: "Document management, maintenance, requirement elicitation, socratic inquiry, scenarios, epic lifecycle, playground"
+    description: "Document management, maintenance, requirement clarification pointer, scenarios, epic lifecycle, playground"
     contains:
       - document_management (handoff_lifecycle, next_md_maintenance, epic_lifecycle)
       - tad_maintain
       - pair_testing
       - playground (command, resources, workflow, style_library, state, cleanup, legacy_v1)
-      - requirement_elicitation (research_phase)
-      - socratic_inquiry_protocol
+      - requirement_clarification (pointer)
       - scenarios (new_project, bug_fix)
     loaded_by:
       - tad-alex.md
       - tad-maintain.md
       - tad-handoff.md
       - tad-scenario.md
-      - tad-elicit.md
       - tad-test-brief.md
 
   config-execution.yaml:
@@ -133,10 +131,6 @@ command_module_binding:
   tad-help:
     modules: []
     note: "Help only needs this master config"
-
-  tad-elicit:
-    modules: [config-workflow]
-    note: "Elicitation is defined in workflow module"
 
   tad-test-brief:
     modules: [config-workflow]

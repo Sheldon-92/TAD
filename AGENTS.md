@@ -2,7 +2,7 @@
 
 TAD (Triangle Agent Development) uses three roles:
 - **Cora** (Conductor): The human's entry point and conductor: triages each request (simple, handoff or Epic) and states the plan, writes the Epic where one is needed, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
-- **Alex** (Solution Lead): Requirements, design, Socratic inquiry, handoffs, Gate 4 acceptance
+- **Alex** (Solution Lead): Requirements (clarified block by block), design, handoffs, Gate 4 acceptance
 - **Blake** (Execution Master): Implementation, Ralph Loop, expert review, Gate 3 verification
 
 All three roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
@@ -22,7 +22,7 @@ Independence of judgment is the rule: no one judges their own work. Separate ter
 > See `.tad/codex/README.md` for adapter details and activation status.
 > Version of record: `.tad/version.txt`. Do not restate a version number anywhere else; link here instead.
 
-**How a piece of work goes.** You talk to Cora; she first tells you whether it is a simple task, a single handoff or an Epic, and for the first two states her plan and starts (say 'wait' to stop her; a handoff with a one-way, irreversible effect she asks about first). For an Epic you agree a result, she has the Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
+**How a piece of work goes.** You talk to Cora; she first clarifies what you want (blocks, a question only where a block is unclear, a one-line-per-block playback you confirm), then tells you whether it is a simple task, a single handoff or an Epic, and for the first two states her plan and starts (say 'wait' to stop her; a handoff with a one-way, irreversible effect she asks about first). For an Epic you agree a result, she has the Epic written and stops. You say "continue"; she runs it to the end through subagents (Alex designs, Blake builds) and the quality gates. You look at the result. Quality comes from judgment by someone who did not do the work: the one who checks never saw the reasoning of the one who built. Only questions a human can answer reach you. Separate terminals with the human as the bridge are one way to get that independence, and `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion. Unsure where to start: Cora.
 
 ---
 

@@ -126,7 +126,7 @@ else
     "distillation_loop:"
     "note_blocking_taxonomy"
     "read_feedback_protocol:"
-    "MANDATORY: Socratic Inquiry Protocol"
+    "MANDATORY: Requirement Clarification"
     "anti_rationalization_registry:"
     "NOT_via_alex_auto: true"
   )
@@ -135,7 +135,7 @@ else
     "distillation_loop (Gate 4 KA distillation trigger)"
     "note_blocking_taxonomy (3-layer blocking taxonomy)"
     "read_feedback_protocol (feedback read protocol)"
-    "Socratic Inquiry Protocol (MANDATORY body header)"
+    "Requirement Clarification (MANDATORY body header)"
     "anti_rationalization_registry (AR registry block)"
     "NOT_via_alex_auto (AR-001 grep anchor)"
   )

@@ -187,6 +187,12 @@ deprecations:
       - .agents/skills/alex/references/yolo-manual-conductor-protocol.md
       - .agents/skills/alex/references/update-roadmap-protocol.md
       - .agents/skills/alex/references/status-panoramic-protocol.md
+      # EPIC-20261019 (requirement clarification): the Socratic reference, the menu-style elicitation skill,
+      # its task and its methods template are replaced by .agents/skills/cora/references/requirement-clarification.md
+      - .agents/skills/tad-elicit/
+      - .agents/skills/alex/references/socratic-inquiry-protocol.md
+      - .tad/tasks/requirement-elicitation.md
+      - .tad/templates/elicitation-methods.md
     note: |
       A customised copy is removed too; the installer keeps a backup under .tad-backup/.
     date: "2026-10-14"
