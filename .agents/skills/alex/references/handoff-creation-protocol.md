@@ -43,8 +43,8 @@ handoff_creation_protocol:
            Legacy category files (ux, performance, testing, etc.) still loaded if they
            have content and match keywords.
         5. Read handoff_creation_protocol key rules from THIS file:
-           - expert_selection_rules (which experts to call)
-           - minimum_experts: 2 (or 1 per L1 tier rule — see Blake SKILL hard_requirement_distinct_reviewers)
+           - lens_selection (which Gate 2 lenses to dispatch)
+           - review composition: .tad/templates/review-contract.md §8 (Gate 2: consistency + risk or fit; two reviewers)
            - step7 STOP rule (must generate Blake message, must not call /blake)
         6. Read the handoff template: .tad/templates/handoff-a-to-b.md
            (to ensure template structure is fresh in context)
@@ -276,6 +276,8 @@ handoff_creation_protocol:
         task_type: "must be one of: code, yaml, research, e2e, mixed, deliverable"
         e2e_required: "must be yes or no"
         research_required: "must be yes or no"
+        risk_triggers: "list from the closed set security | data | money | ui | platform | domain, or [none]"
+        real_paths: "≥1 entry {id, path, run} or {id, path, not-run: <reason>}; protocol text: a named scenario walk"
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
 
     step1c:
@@ -532,85 +534,16 @@ handoff_creation_protocol:
         - "MUST NOT turn verify-ac-commands.sh (the step1d advisory tail linter) into a blocking gate: it MUST NOT be registered as a PreToolUse / UserPromptSubmit / SessionStart hook, MUST NOT be added to .claude/settings.json, MUST NOT return a deny/blocking exit, and a WARN/INFO from it MUST NOT block the handoff (advisory smoke alarm only — single-user-CLI mechanical-enforcement-rejected lesson 2026-04-15)."
 
     step2:
-      name: "Expert Selection"
-      action: "根据任务类型确定需要调用的专家"
-      rule: "至少调用 2 个专家（code-reviewer 必选）"
+      name: "Gate 2 reviewers"
+      action: "根据 risk_triggers 确定两个不同 lens 的 reviewer"
+      rule: "Two reviewers with different lenses per the review contract: consistency (MANDATORY; code-reviewer on Claude Code) plus one risk reviewer covering risk_triggers, or fit when none"
 
     step3:
-      name: "Parallel Expert Review"
-      action: "并行调用选定的专家审查初稿"
-      execution: "使用 Task tool 并行调用多个专家"
+      name: "Parallel Gate 2 Review"
+      action: "dispatch both in parallel; each prompt = the contract's §0 list; outputs under `.tad/evidence/reviews/alex/<slug>/`"
+      execution: "使用 Task tool 并行调用两个 reviewer"
 
-    # Agent Team Review Mode (TAD v2.3 - experimental)
-    # Alternative to step3 when process_depth is full or standard, and Agent Teams available
-    step3_agent_team:
-      name: "Agent Team Expert Review (Full + Standard TAD)"
-      description: "Alternative to step3 when process_depth is full or standard, and Agent Teams available"
-      experimental: true
-
-      activation: |
-        This step REPLACES step3 when ALL conditions met:
-        1. process_depth in ["full", "standard"] (user chose Full or Standard TAD)
-        2. Agent Teams feature is available (env var set)
-        If any condition not met → skip this step, use original step3.
-        If Agent Team creation fails → fallback to original step3 automatically.
-
-      terminal_scope_constraint:
-        rule: "Review Team stays within Alex's domain — NO implementation code"
-        allowed: ["design review", "type safety check", "architecture analysis", "risk assessment"]
-        forbidden: ["writing code", "running builds", "executing tests", "file modifications"]
-
-      team_structure:
-        lead: "Alex (delegate mode — coordination only)"
-        teammates:
-          - role: "code-quality-reviewer"
-            focus: "Type safety, code structure, test requirements, execution order"
-          - role: "architecture-reviewer"
-            focus: "Data flow, API design, state management, system architecture"
-          - role: "domain-reviewer"
-            focus: "Dynamic: frontend→UX, security→audit, performance→optimize"
-
-      team_prompt_template: |
-        Create an agent team to review this handoff draft:
-
-        FILE: {handoff_path}
-
-        Spawn three reviewers:
-        - Code quality reviewer: type safety, interfaces, test requirements
-        - Architecture reviewer: data flow, API contracts, state management
-        - {domain_type} reviewer: {domain_focus}
-
-        WORKFLOW:
-        Phase 1 - Individual Review (parallel):
-          Each reviewer independently reviews and produces a structured report.
-
-        Phase 2 - Cross-Challenge:
-          After all reviews complete, each reviewer challenges one other:
-          - Code challenges Architecture findings
-          - Architecture challenges Domain findings
-          - Domain challenges Code findings
-          Focus: "Is this really P0? Could it be downgraded?"
-
-        Phase 3 - Consensus:
-          Synthesize into single report:
-          - P0 blocking issues (must fix)
-          - P1 recommendations (should address)
-          - P2 suggestions (nice to have)
-          - Overall: PASS / CONDITIONAL PASS / FAIL
-
-        CONSTRAINT: This is a REVIEW team. Do NOT write implementation code.
-
-      fallback_protocol: |
-        IF Agent Team creation fails OR errors during review:
-          1. Log: "⚠️ Agent Team review failed, falling back to subagent mode"
-          2. Execute original step3 (parallel Task tool calls with 2+ experts)
-          3. Continue handoff_creation_protocol from step4 normally
-        Fallback is automatic — no user intervention, no blocking.
-
-      output_format: |
-        Same as current Expert Review Status table, with added note:
-        "Reviewed via Agent Team (3 reviewers with cross-challenge)"
-        OR "Reviewed via subagent (fallback)" if fallback was used.
+    # Agent Teams review mode retired 2026-10-19 (EPIC-20261019-review-redesign): its cross-challenge asked reviewers whether a P0 "could be downgraded", against AR-001; Gate 2 composition is the review contract's.
 
     step4:
       name: "Feedback Integration"
@@ -726,155 +659,48 @@ handoff_creation_protocol:
       forbidden: "在同一个 terminal 调用 /blake = VIOLATION"
       violation_plain_language: "Generating Blake message without the 人话版 section in same response = VIOLATION. Wrong order (technical block before 人话版) = VIOLATION. Formulaic compliance (no task-specific content) = VIOLATION."
 
-  expert_selection_rules:
-    always_required:
-      - agent: code-reviewer
-        purpose: "类型安全、测试要求、代码结构、执行顺序"
-        prompt_focus: "Review code snippets for type safety, missing interfaces, required tests"
+  lens_selection:
+    always: "consistency (code-reviewer on Claude Code): contradictions, consumers of changed lines, the baseline run of every §9.1 command"
+    from_risk_triggers: "one risk reviewer covers every listed trigger (security | data | money | ui | platform | domain), one section per lens"
+    when_none: "fit (is this what the requirement asks, is the size proportionate, does the premise hold); yields questions or P1, never P0"
+    examples: "the review contract §9 mapping (Claude Code examples: security-auditor, database-expert, backend-architect, ux-expert-reviewer, devops-engineer, product-expert)"
 
-    when_backend_involved:
-      trigger: "API、数据库、服务端逻辑"
-      agent: backend-architect
-      purpose: "数据流、API 设计、系统架构、状态管理"
-      prompt_focus: "Review data flow, type extensions, storage patterns, API contracts"
+  reviewer_prompt: "Load .tad/templates/review-contract.md and follow it. Lens: {lens}. Object: {handoff_path}. Reference: the handoff's §1.5 (carrying the human's request verbatim) and §9 (or the Epic's ## Requirement and ## Result contract). Previous round: {file|none}. Questions path (fit only): {path}. Write {path}; start with the verdict header (model: key included)."
+  # The narrow-scope rule of the old prompt template is replaced by review contract §2 ("read the object and the reference first"): consistency needs the consumers of changed lines.
 
-    when_frontend_involved:
-      trigger: "UI 组件、用户交互、页面布局"
-      agent: ux-expert-reviewer
-      purpose: "UI/UX、可访问性、交互设计、视觉一致性"
-      prompt_focus: "Review UI patterns, accessibility (WCAG), touch targets, visual hierarchy"
+  minimum_reviewers: 2  # two different lenses; never below one independent reviewer (AR-001)
 
-    when_performance_critical:
-      trigger: "正则表达式、大数据处理、API 调用、缓存"
-      agent: performance-optimizer
-      purpose: "性能分析、成本估算、ReDoS 风险、优化建议"
-      prompt_focus: "Review regex patterns, cost estimates, caching strategies, bottlenecks"
-
-    when_security_involved:
-      trigger: "认证、用户数据、API 密钥、权限控制"
-      agent: security-auditor
-      purpose: "安全审查、漏洞分析、数据保护"
-      prompt_focus: "Review auth flows, data exposure risks, injection vulnerabilities"
-
-  expert_prompt_template: |
-    Review this handoff draft for Phase {phase}.
-
-    ⚠️ NARROW-SCOPE INSTRUCTION (L6, 2026-04-27): Read ONLY the focused sections listed below.
-    Do NOT read full handoff. Do NOT free-grep wider codebase except for explicit blast-radius
-    checks listed in FOCUS AREAS. Saves ~50% per review (~115K→~50-60K) without reducing P0
-    finding rate (P0s mostly live in §6/§9/diff range).
-
-    REQUIRED READS:
-    - {handoff_path} §6 (Implementation Steps)
-    - {handoff_path} §9 (Acceptance Criteria) + §9.1 (Spec Compliance Checklist)
-    - {handoff_path} §10 (Important Notes — anti-patterns + warnings)
-    - Specific files listed in §7 (Files to Modify): {list_of_files}
-
-    OPTIONAL READS (only if REQUIRED reads alone are ambiguous for the finding you're evaluating):
-    - {handoff_path} §3 (Requirements)
-    - {handoff_path} §4 (Technical Design)
-    - {handoff_path} §11 (Decision Summary)
-
-    FOCUS AREAS:
-    {expert_specific_focus}
-
-    EXPLICIT BLAST-RADIUS CHECKS (only run these greps if listed):
-    {blast_radius_grep_patterns}
-
-    OPTIONAL TOOLS (if codebase-memory-mcp is available via MCP):
-    - search_graph: Find symbol definitions by name → returns file:line
-    - query_graph: Cypher queries for caller/callee chains, imports, usage
-    - detect_changes: Git diff → impacted symbols + blast radius
-    These return structured data (~200 tokens) instead of full file reads (~5000 tokens).
-    Use when you need structural answers. Fall back to file reads for content analysis.
-
-    NOT ALLOWED:
-    - Free-explore wider codebase outside REQUIRED + OPTIONAL + listed grep patterns
-    - Reading full handoff if §6 + §9 + §10 + listed files is sufficient
-
-    REQUIRED OUTPUT (first line of every reviewer report):
-    Model: harness={codex|other} | model={运行时自报 ID} | route={host|native|unknown}
-    Capture by harness:
-    codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
-    CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
-    model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected
-    [model_providers.<id>] route base_url (manual section ownership) plus agents/*.toml
-    model/model_reasoning_effort overrides; other → self-reported model and route=unknown.
-    Missing env/file/key is native fail-soft; route=unknown is alias-mapped conservative
-    handling. A runtime /model override takes precedence.
-    缺此行的专家审查记录在 Gate 2 证据中视为 provenance-incomplete，handoff Audit Trail
-    必须补记原因；该标记不覆盖既有 verdict。
-
-    OUTPUT FORMAT:
-    1. Critical Issues (P0 - must fix before implementation)
-    2. Recommendations (P1 - should address)
-    3. Suggestions (P2 - nice to have)
-    4. Overall Assessment (PASS/CONDITIONAL PASS/FAIL)
-
-  minimum_experts: 2
-
-  # 轮次上限 —— 2026-08-17 补。此前本协议 810 行无任何终止条件，而 Gate 2 要求
-  # "P0 resolved" 却未定义如何证明，导致唯一可得的证明方式是再审一次；
-  # reviewer 的任务是找 P0，在无真实缺陷时会转向构造假想场景 → 循环无终点。
-  # 实测代价：EPIC-20260816 的 1a 单审 5 轮，第 2-5 轮全在打磨一行 markdown 链接。
-  # 本上限照抄 alex-lite/SKILL.md:197-199 已验证的写法。
-  max_review_rounds: 2
-
-  round_protocol:
-    round_1: "全文审查。reviewer 收到 handoff 全文。"
-    round_2: |
-      增量复核。reviewer 收到：
-        (a) 第 1 轮 P0 的修复 diff
-        (b) 第 1 轮 P0 列表 —— 含每条的【完整理由】，不止标题
-        (c) diff 触及的每个章节的【全文】
-      MUST NOT 重发 handoff 全文。
-      理由：重读全文会让 reviewer 重新审视与本轮修复无关的部分，
-      产出与「P0 是否已解决」无关的新发现，这正是循环的燃料。
-
-      ⚠️ (b)(c) 是 full 特有的补充，lite 不需要：lite 用【同一个】reviewer 做增量复核
-      （有第 1 轮上下文），full 每轮 spawn 全新 subagent（无记忆）。
-      只给 diff 对无状态 reviewer 不足以判断「这条 P0 是否真的解决了」。
-
-      round_2 的审查范围【限定为】：
-        1. 第 1 轮的每条 P0 是否已解决
-        2. 修复是否弄坏了 (c) 所列章节里的东西
-      本轮发现的【新问题】一律记为 P1 交人类，MUST NOT 记为 P0 —— 新 P0 会重置计数，
-      那正是循环。
-    after_round_2: |
-      第 2 轮后仍未满足 p0_resolved_definition（verdict 为 FAIL，
-      或 verdict 为 CONDITIONAL PASS 但仍有遗留 P0）→ 【停】。
-      照抄 lite:199 的终态语义：
-        "本单 2 轮审查后 verdict 仍为 FAIL，任务可能超出本单范围或方案不成立。
-         P0 列表：{每条含标题 + 完整理由 + 影响面}。
-         请裁定：缩小范围 / 换方案 / 撤单。"
-
-      ⚠️ 【不提供「接受风险继续」选项】—— lite 的停是硬停（`不得把 FAIL 契约交给 blake-lite`），
-      本单照此。理由（Gate 2 reviewer `48f007ec` 指出，已复核）：
-        · 「继续」会把 agent 侧的无界循环变成【人类侧的】—— 每轮问一次，同意一次，循环重开
-        · Alex 控制上报措辞，而本单 §1.2 自己提供了现成说辞（"reviewer 在构造假想场景"）
-        · 无记录要求时，未修的 P0 在人类点头那一刻就消失了
-
-      MUST NOT 进入第 3 轮 —— 【无论人类是否同意】。
-      MUST NOT 把 verdict=FAIL 的 handoff 交给 Blake。
+  # Rounds (review contract §7), restated for direct /alex. History: the 2026-08-17 cap of 2 rounds
+  # (EPIC-20260816: a single review ran 5 rounds polishing one markdown link) is replaced by the
+  # round-3 upstream rule below; the rule keeps the loop bounded without forcing new findings to P1.
+  rounds:
+    round_1: "both lenses review the whole handoff."
+    round_k_ge_2: |
+      Only the lens(es) whose latest file has a P0, FAIL or PARTIAL are re-dispatched. Each reviewer receives:
+        (a) the fix diff
+        (b) the open P0 list with the full reason of each, not only the title
+        (c) the full text of every section the diff touches
+      MUST NOT re-send the whole handoff: re-reading everything lets a reviewer re-open parts unrelated to the fix, which feeds the loop.
+      A fix that changes risk_triggers re-dispatches the risk lens. Each reviewer labels new_p0 and origin from its own lens's previous file; an introduced_by_fix P0 is fixed as a class.
+    round_3_open_p0: |
+      Round 3 (counted from round 1 or the last re-plan) with an open P0 -> stop reviewing and look upstream: Alex writes the premise (one sentence the failed fixes share, one observation that differs if it is false), checks it by a read, grep or local command, and re-plans the handoff once.
+      A second time, or a re-plan that would change the result or scope, goes to the human:
+        "本单 3 轮审查后仍有 P0，任务可能超出范围或方案不成立。P0 列表：{每条含标题 + 完整理由 + 影响面}。请裁定：缩小范围 / 换方案 / 撤单。"
+      There is no option "accept the risk and continue": it turns an agent-side loop into a human-side one, Alex controls the wording, and an unfixed P0 vanishes at the human's nod.
+      There is no round 4 without a re-plan, whatever the human says.
+      MUST NOT start a 4th review round with an open P0 before the premise re-plan.
+      MUST NOT hand a FAIL handoff to Blake.
 
   p0_resolved_definition: |
-    Gate 2 的 "P0 resolved" 判定为以下之一：
-      (a) 第 2 轮增量复核 verdict 非 FAIL 【且】无遗留 P0；或
-      (b) 第 1 轮 verdict 非 FAIL 【且】无 P0。
-    Alex 自行断言 "已修复" 不构成 resolved。
-
-    ⚠️ verdict 为 CONDITIONAL PASS 时（本协议 OUTPUT FORMAT 允许该值）：
-    仅在【无遗留 P0】时算 resolved。CONDITIONAL PASS 附带未修 P0 →
-    不算 resolved，按 after_round_2 处理。未修的 P1 写进 handoff
-    「风险与注意」作已知取舍（照 alex-lite 的 CONDITIONAL 分支）。
-
-    ⚠️ 【没有第三种】。原草案曾有 "(c) 人类裁定继续"，已删除 ——
-    它使 cap 可被一句「同意」抵消，且 Alex 控制提问措辞。lite 无此分支。
-    人类在 after_round_2 的选项是【缩小范围 / 换方案 / 撤单】，
-    三者都不导向 "带着未解决 P0 进 Gate 2"。
+    Gate 2 "P0 resolved" = the latest round's file of every lens is PASS or CONDITIONAL (`p0_count: 0`).
+    Alex's own assertion "fixed" is not resolved.
+    A "fixed" claim MUST NOT stand in for the latest round's files.
+    A CONDITIONAL file has no P0; its open P1s go into handoff §10 as known trade-offs (carried).
+    There is no third way: "the human decides to go on" is not a resolution; the human's options at round 3 are narrow the scope / change the approach / withdraw, none of which leads into Gate 2 with an unresolved P0.
 
   violations:
-    - "不经过专家审查直接发送 handoff 给 Blake = VIOLATION"
-    - "忽略专家发现的 P0 问题不修复 = VIOLATION"
-    - "自行进入第 3 轮 = VIOLATION（无论人类是否同意）"
-    - "把 verdict=FAIL 的 handoff 交给 Blake，或第 2 轮复核时重发 handoff 全文而非 diff = VIOLATION"
+    - "No handoff to Blake without the two Gate 2 lenses = VIOLATION"
+    - "Ignoring a P0 a reviewer found = VIOLATION"
+    - "A 4th review round with an open P0 and no premise re-plan = VIOLATION (whatever the human says)"
+    - "A FAIL handoff to Blake, or re-sending the whole handoff from round 2 instead of the diff = VIOLATION"
+    - "Offering 'accept the risk and continue' = VIOLATION"

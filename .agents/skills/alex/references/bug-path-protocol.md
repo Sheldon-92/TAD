@@ -47,9 +47,18 @@ bug_path_protocol:
 
         Mini-handoff template:
         ```
+        ---
+        express: true
+        task_type: code
+        risk_triggers: [none]   # Alex fills: closed list in .tad/templates/review-contract.md §5 (security | data | money | ui | platform | domain, or none)
+        real_paths:
+          - id: RP1
+            path: "the reported symptom's path"
+            run: "{repro command}"
+        ---
         # Mini-Handoff: Bugfix — {title}
         **From:** Alex | **To:** Blake | **Date:** {date}
-        **Type:** Express Bugfix (requirement playback confirmed; skip expert review)
+        **Type:** Express Bugfix (requirement playback confirmed; no Gate 2 — the fix is named by the diagnosis; Gate 3 reviewers per .tad/templates/review-contract.md)
         **Priority:** {P0/P1/P2}
 
         ## Bug Description
@@ -71,8 +80,8 @@ bug_path_protocol:
         | 1 | Reported symptom fixed, no related regression | post-impl-verifiable | `{repro command or failing-then-passing test, e.g. pytest tests/test_slug.py -k bugfix}` | exit 0, symptom gone under reported conditions | (post-impl) |
 
         ## Blake Instructions
-        - This is an express bugfix — requirement clarification was a playback (no unclear block), no expert review
-        - Apply fix → run Ralph Loop Layer 1 (self-check) → verify AC → done
+        - This is an express bugfix — requirement clarification was a playback (no unclear block)
+        - Apply fix → Layer 1 → commit → Gate 3 reviewers run + consistency (+ domain if security/data/money) per the review contract → done
         - If fix turns out to be more complex than described, escalate to user
         ```
 

@@ -78,12 +78,12 @@ Ralph Loop 是 Blake 的迭代质量循环机制，通过 Layer 1 自检和 Laye
 ```yaml
 ralph_loop:
   layer1: "Self-Check (build, test, lint, tsc)"
-  layer2: "Expert Review (spec-compliance → code-reviewer → test-runner/security/performance)"
+  layer2: "Gate 3 reviewers (review contract): run + consistency (+ domain for security/data/money); only P0/FAIL/PARTIAL blocks, P1 carried; round 3 with an open P0 → escalate to Alex"
 
   key_concepts:
-    - 专家说"PASS"才算完成，不是 Blake 自己判断
+    - 专家说"PASS"才算完成，不是 Blake 自己判断 (Experts say PASS, not me)
     - Circuit Breaker: 同一错误连续 3 次 → 升级到人类
-    - Escalation: Layer 2 同类问题失败 3 次 → 升级到 Alex 重新设计
+    - Escalation: Layer 2 第 3 轮仍有 open P0 → 升级到 Alex 重新设计
     - State Persistence: 每层完成后 checkpoint，支持崩溃恢复
 ```
 
@@ -102,21 +102,15 @@ ralph_loop:
 └─────────────────────────────────────────────────────────┘
      ↓ (Layer 1 全部 PASS)
 ┌─────────────────────────────────────────────────────────┐
-│ Layer 2: Expert Review (最多 5 轮)                       │
+│ Layer 2: Gate 3 reviewers (review contract §5-§8)       │
 │                                                         │
-│   Group 0 (顺序执行，必须先通过):                          │
-│     - spec-compliance-reviewer (AC 全部满足)             │
+│   run (writes gate3-verdict + the gate3_verdict marker) │
+│   consistency (code-reviewer on Claude Code)            │
+│   domain (only when risk_triggers lists                 │
+│           security | data | money)                      │
+│   只有 P0 / FAIL / PARTIAL 阻断；P1 带入 (carried)       │
 │                                                         │
-│   Group 1 (顺序执行，Group 0 通过后):                      │
-│     - code-reviewer (P0/P1 blocking)                    │
-│                                                         │
-│   Group 2 (并行执行，Group 1 通过后):                      │
-│     - test-runner (100% pass, 70% coverage)             │
-│     - security-auditor (conditional)                    │
-│     - performance-optimizer (conditional)               │
-│                                                         │
-│   ⚡ Escalation Threshold:                               │
-│   同类问题失败 3 次 → escalate_to_alex                    │
+│   ⚡ Escalation: round 3 仍有 open P0 → escalate_to_alex │
 └─────────────────────────────────────────────────────────┘
      ↓ (Layer 2 全部 PASS)
      Gate 3 v2 (Implementation & Integration)
@@ -416,7 +410,7 @@ ralph_loop_execution:
         - "Fix integration issues (Blake does this, not teammates)"
 
       phase3_expert_review:
-        - "Blake runs standard Layer 2 (spec-compliance → code-reviewer → test-runner etc.)"
+        - "Blake dispatches the Gate 3 reviewers (run + consistency, + domain when listed; review contract)"
         - "Same quality gate as current Ralph Loop"
         - "Gate 3 v2 checks apply normally"
 
@@ -928,48 +922,33 @@ ralph_loop_execution:
           - "Proceed to Layer 2"
 
       3_layer2_loop:
-        description: "Expert Review Loop (max 5 rounds)"
+        description: "Gate 3 reviewers (review contract §5, §7, §8), on commit:<sha>"
         # ⚠️ ANTI-RATIONALIZATION: "已经跑过 Layer 1 检查全部通过，再调 subagent 是重复劳动"
-        # → Layer 1 的检查只验证是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
+        # → Layer 1 的检查只验证是否通过。run reviewer 真实运行每条 §9.1 方法和 real_path，consistency reviewer 查矛盾与调用方。两者目的不同。
         # ⚠️ express-not-exempt rule (Phase 3 anchor B-03, per AR-001/AR-003):
-        # Express handoffs, spike handoffs, and infra/tooling handoffs are NOT review-exempt.
-        # They may justify skipping e2e_test, but MUST call ≥1 expert (≥2 for security-adjacent).
+        # "Express Handoff is NOT Review-Exemption" (principles.md): express handoffs, *bug mini-handoffs, spike handoffs, and infra/tooling handoffs are NOT review-exempt.
+        # They may justify skipping e2e_test, but MUST call both lenses (never fewer than one independent reviewer, AR-001).
         # Rationale: 2026-04-14 plain-language express handoff — expert review caught 4 P0 that
         # would have shipped broken. Small-edit ≠ low-risk when it changes a protocol contract.
-        priority_groups:
-          group0:
-            name: "Spec Compliance Gate"
-            parallel: false
-            experts:
-              - subagent: "spec-compliance-reviewer"
-                pass_criteria: "NOT_SATISFIED=0, PARTIALLY_SATISFIED≤3"
-                blocking: true
-          group1:
-            name: "Code Quality Gate"
-            parallel: false
-            experts:
-              - subagent: "code-reviewer"
-                pass_criteria: "P0=0, P1=0, P2≤10"
-                blocking: true
-          group2:
-            name: "Verification Experts"
-            parallel: true
-            experts:
-              - subagent: "test-runner"
-                pass_criteria: "100% pass, 70% coverage"
-                blocking: true
-              - subagent: "security-auditor"
-                trigger: "auth|token|password|credential|api.*key|encrypt"
-                pass_criteria: "critical=0, high=0"
-                blocking: false
-              - subagent: "performance-optimizer"
-                trigger: "database|query|cache|batch|loop|sort"
-                pass_criteria: "no blocking patterns"
-                blocking: false
+        reviewers:
+          run:
+            blocking: true  # MUST run every §9.1 method and real_path
+            writes: ".tad/evidence/reviews/blake/<slug>/gate3-verdict.md and the gate3_verdict: marker (the run reviewer writes both, never Blake)"
+            subagent: "general-purpose (test-runner for a test suite)"
+          consistency:
+            blocking: true
+            subagent: "code-reviewer on Claude Code"
+            writes: ".tad/evidence/reviews/blake/<slug>/consistency-review.md"  # MUST grep the consumers of every changed line
+          domain:
+            trigger: "risk_triggers lists security|data|money"
+            blocking: true
+            writes: ".tad/evidence/reviews/blake/<slug>/domain-review.md"  # MUST run when the trigger matches
+            subagent: "security-auditor | database-expert | backend-architect on Claude Code"
+        pass_rule: "no P0, no FAIL, no PARTIAL in the latest round; P1 carried (listed in the completion report); no P1/P2 cap; coverage thresholds only when §9.1 states one"
         on_failure:
           - "Increment layer2_rounds"
-          - "Check escalation threshold (same category 3x → escalate to Alex)"
-          - "Fix issues and restart from Layer 1"
+          - "Fix issues, re-run Layer 1, commit, then the next round per contract §7 (only the lenses with an open item, and the run lens after every rework)"
+          - "Round 3 with an open P0 (counted from round 1 or the last re-plan) → escalate_to_alex"
         on_success:
           - "Checkpoint state"
           - "Proceed to Gate 3 v2"
@@ -977,8 +956,8 @@ ralph_loop_execution:
       4_gate3_v2:
         description: "Expanded Gate 3 (Implementation & Integration)"
         items:
-          - "All Layer 1 checks passing"
-          - "All Layer 2 experts passed"
+          - "Layer 1 passing"
+          - "Gate 3 reviewer files with no P0/FAIL/PARTIAL (run reviewer's gate3-verdict.md is the verdict)"
           - "Evidence files created"
           - "Knowledge Assessment completed"
           - "Implementation changes committed to git (step3c)"
@@ -1033,15 +1012,15 @@ ralph_loop_execution:
 
   # Escalation Logic
   escalation:
-    trigger: "same_category_failures >= 3 in Layer 2"
+    trigger: "an open P0 in Layer 2 round 3, counted from round 1 or the last re-plan"
     detection:
-      - "Track which expert is failing"
-      - "Group failures by root cause category"
+      - "Track which reviewer lens still has an open P0"
+      - "Record the root cause the failed fixes share"
     action: "escalate_to_alex"
     message: |
       ⚠️ ESCALATION TO ALEX
-      Layer 2 repeatedly failing on: {category}
-      Failed {count} rounds on same issue type.
+      Layer 2 round 3 still has an open P0: {category}
+      Failed {count} rounds with the same open P0.
       Returning to Alex for re-design.
       Evidence: {evidence_path}
 
@@ -1220,9 +1199,9 @@ mandatory:
   ralph_loop: "MUST use *develop command for implementation (triggers Ralph Loop)"
   multi_component: "MUST use parallel-coordinator"
   layer1_pass: "MUST pass all Layer 1 checks before Layer 2"
-  layer2_pass: "MUST pass all required Layer 2 experts before Gate 3"
+  layer2_pass: "MUST pass the Gate 3 reviewers of the review contract (run + consistency, + domain) before Gate 3"
   circuit_breaker: "MUST escalate to human after 3 consecutive same errors"
-  escalation: "MUST escalate to Alex after 3 same-category Layer 2 failures"
+  escalation: "MUST escalate to Alex when Layer 2 round 3 still has an open P0"
   evidence: "MUST create evidence files in .tad/evidence/reviews/"
   gate3_v2: "MUST pass Gate 3 v2 (expanded) after Ralph Loop completes"
   gate4_v2: "MUST pass Gate 4 v2 (business acceptance) before archive"
@@ -1330,65 +1309,25 @@ execution_checklist:
 
     layer2_expert_review:
       bullets:
-        - "Group 0: spec-compliance-reviewer（AC 全满足）"
-        - "Group 1: code-reviewer（P0=0, P1=0）"
-        - "Group 2: test-runner + security-auditor + performance-optimizer（按 trigger 规则）"
-        - "Expert 说 PASS 才算完成 — 不是 Blake 自己判断"
+        - "run: 真实运行每条 §9.1 方法和 real_path，写 gate3-verdict"
+        - "consistency: 矛盾、调用方、改动代码的缺陷（code-reviewer on Claude Code）"
+        - "domain: 仅当 risk_triggers 列出 security/data/money"
+        - "Reviewers say PASS — not Blake（Expert 说 PASS 才算完成，不是 Blake 自己判断）"
         # ⚠️ ANTI-RATIONALIZATION: "已经跑过 Layer 1 检查全部通过，再调 subagent 是重复劳动"
         # → Layer 1 的检查只验证是否通过。test-runner subagent 额外检查覆盖率和测试质量。两者目的不同。
 
       # Phase 6-A.2 (2026-04-25): Hard requirement — Layer 2 reviewer count discipline.
       # Phase 1-5 累积 3 次 Blake 用 self-review.md 替代 backend-architect 的 drift。
-      # 修复：≥2 distinct sub-agent invocations，substitution heuristics 不算。
+      # 修复：两个不同 lens 的 reviewer 调用，substitution heuristics 不算。
       hard_requirement_distinct_reviewers:
         rule: |
-          Layer 2 MUST invoke ≥2 DISTINCT sub-agents:
-          - code-reviewer (REQUIRED — every Layer 2 round)
-          - PLUS ≥1 from layer2-audit.sh's KNOWN_REVIEWERS whitelist (canonical
-            single source of truth — see `.tad/hooks/lib/layer2-audit.sh`
-            top-of-file array). Choose by task fit (e.g., backend-architect for
-            architecture handoffs; security-auditor for auth/secrets;
-            performance-optimizer for hot-path; ux-expert-reviewer for UI; etc.).
-          # P6-A.2 v2 (2026-04-27): tier rule by handoff frontmatter task_type
-          # Tier 1 (≥2 distinct): task_type=code OR task_type=mixed (current rigor)
-          # Tier 2 (≥1 distinct, code-reviewer): task_type=yaml OR task_type=research OR task_type=doc-only
-          # Tier e2e (≥2 distinct, test-runner+code-reviewer or equiv): task_type=e2e
-          # Fallback: task_type missing/unrecognized → Tier 1 (safe default per NFR1+NFR4)
-          # *express exception: existing exception_express below still applies (≥1 regardless of task_type)
-
-        rationale_single_source: |
-          BA-P0-2 fix (2026-04-25): SKILL does NOT inline-enumerate reviewer names.
-          The canonical list lives in layer2-audit.sh KNOWN_REVIEWERS array. SKILL
-          references that array. New reviewer types are added to the array, and
-          SKILL automatically inherits — no SKILL/script drift.
-
-        exception_express:
-          rule: |
-            *express path 仅需 code-reviewer (single expert OK per architecture.md
-            "Express Handoff is NOT Review-Exemption" 2026-04-14 — exempts from
-            ≥2 reviewer rule but NOT from ≥1 reviewer rule. AR-001 anchor
-            preserved: *express still requires expert review, just not 2.).
-          slug_detection: |
-            layer2-audit.sh detects *express via word-boundary case matching:
-              case "$slug" in express|*-express|*-express-*|express-*) ;; esac
-            BA-P0-3 fix: NOT via task_type frontmatter (express is path-state,
-            not in task_type enum {code|yaml|research|e2e|mixed|doc-only}).
-            CR-P0-6 fix: word-boundary defends against expression/compress/espresso
-            false-positives.
-          slug_convention: |
-            (2026-05-31, mirrors alex/SKILL.md express_path_protocol.slug_convention)
-            An *express handoff slug MUST contain the token `express` so the
-            word-boundary detection above fires. If Alex names an *express handoff
-            without `express` in the slug (e.g. `bugfix-foo` + task_type=code),
-            is_express_slug() returns false → audit treats it as Standard Tier-1
-            and emits a FALSE ≥2-reviewer WARN, even though *express legitimately
-            keeps only ≥1 code-reviewer. Convention is doc-only — audit logic is
-            already correct and MUST NOT be changed.
+          Layer 2 MUST dispatch two reviewers with different lenses — run and consistency — plus domain when listed, on every task_type, express and *bug included (review contract §8). No task_type tiers, no express exception, never two of the same lens.
+          # Tiers and the express exception of 2026-04-27 are retired (EPIC-20261019-review-redesign). The KNOWN_REVIEWERS and express tiers belong to the advisory script layer2-audit.sh, aligned in Phase 3.
 
         forbidden:
           - "self-review.md does NOT count as Layer 2 reviewer (Blake reviewing Blake = no second perspective)"
           - "feedback-integration.md does NOT count (synthesis doc, not review)"
-          - "gate3-verdict.md does NOT count (Blake's own gate verdict, not external review)"
+          - "gate3-verdict.md written by Blake does NOT count — the Gate 3 verdict file is the run reviewer's, never Blake's"
           - "Substituting domain expert with self-review = VIOLATION (AR-001 attack surface — Phase 1-5 drift root cause)"
 
         enforcement: "prompt-level-only via Blake SKILL text + layer2-audit.sh advisory CLI"
@@ -1398,55 +1337,18 @@ execution_checklist:
           - "MUST NOT register PreToolUse hook to count reviewers"
           - "MUST NOT add to .claude/settings.json"
           - "MUST NOT return deny exit code from layer2-audit.sh — it remains advisory CLI exit 0/1/2"
-          - "Anti-AR-001: 'this task is simple, code-reviewer covers it' is forbidden interpretation for non-*express paths — must add ≥1 domain expert by task fit"
+          - "Anti-AR-001: 'this task is simple, one reviewer covers it' is a forbidden interpretation on every path — both lenses run"
           - "MUST NOT couple Layer 2 reviewer count to step4c audit script — Blake invokes sub-agents based on judgment; audit is downstream advisory, not gate"
 
       # L6 (2026-04-27 v3): narrow-scope mandate for Layer 2 sub-agent invocations.
       # Symmetric with Alex SKILL expert_prompt_template — Blake's Layer 2 reviewers
       # must be invoked with focused context (diff + §6 + §9), not full handoff.
-      expert_prompt_template:
+      reviewer_prompt:
         rule: |
-          Layer 2 sub-agent invocations MUST follow narrow-scope template:
-
-          REQUIRED READS:
-          - Diff of THIS handoff's implementation changes (git diff <range>)
-          - {handoff_path} §6 (Implementation Steps) — what Blake intended to do
-          - {handoff_path} §9 (Acceptance Criteria) — what Blake claims is done
-          - Specific changed files (already in diff)
-
-          OPTIONAL READS (only if needed):
-          - Other handoff sections only if REQUIRED reads insufficient
-
-          EXPLICIT BLAST-RADIUS CHECKS (per handoff §10 specific patterns):
-          - For backend-architect: targeted grep for downstream consumers of
-            changed APIs/symbols if §10 lists relevant patterns
-          - For code-reviewer: re-verify each AC's verification command against
-            Blake's actual diff
-
-          REQUIRED OUTPUT (first line of every reviewer report):
-          Model: harness={codex|other} | model={运行时自报 ID} | route={host|native|unknown}
-          Capture by harness: codex → OPENAI_BASE_URL env (host-only redacted; never persist userinfo/query/key),
-          CFG="${CODEX_HOME:-$HOME/.codex}" config.toml
-          model/model_provider/model_reasoning_effort/default_subagent_model/base_url keys plus selected
-          [model_providers.<id>] route base_url (manual section ownership) plus agents/*.toml
-          model/model_reasoning_effort overrides; other → self-reported model and
-          route=unknown. Missing env/file/key is native fail-soft; route=unknown is
-          alias-mapped conservative handling. A runtime /model override takes precedence.
-          Missing first-line Model provenance: mark the Layer 2 evidence
-          provenance-incomplete and bind the reason into Completion; this is
-          non-blocking and MUST NOT override the existing review verdict.
-
-          NOT ALLOWED:
-          - Free-explore wider codebase outside REQUIRED + OPTIONAL + §10 patterns
-          - Reading full handoff if §6 + §9 + diff is sufficient
-
-        rationale: |
-          Same as Alex SKILL expert_prompt_template (L6 narrow-scope) — saves ~50%
-          per review (115K → 50-60K) without reducing P0 finding rate. Blake's
-          post-impl reviews catch DIFFERENT P0 classes than Alex Gate 2 (blast
-          radius / out-of-scope consumers per Phase 6-A 2026-04-27 lesson) — both
-          still load-bearing, just narrower in context per invocation.
-
+          Layer 2 reviewer prompts MUST follow review contract §0: the lens; the object (commit:<sha> or a range); the reference (handoff §1.5 and §9); the same lens's previous-round file (or none); the output path; the dispatch_id. No ad-hoc questions or focus lines.
+          "Load .tad/templates/review-contract.md and follow it. Lens: {lens}. Object: commit:<sha>. Reference: {handoff_path} §1.5 and §9. Previous round: {file|none}. Write {path}; start with the verdict header (model: key included)."
+          Model provenance is the header `model:` key (non-blocking: a missing key marks the Layer 2 evidence provenance-incomplete and is bound into Completion; it MUST NOT override the review verdict).
+          The narrow-scope rule of the old template is replaced by contract §2: read the object and the reference first; consistency needs the consumers of changed lines.
         enforcement: "prompt-level-only via Blake SKILL text"
 
         forbidden_implementations:
@@ -1615,7 +1517,7 @@ completion_protocol:
   # → Report 迫使 Blake 显式对比 handoff 计划 vs 实际交付。没有 Report = 没有偏差检测。
   step1: "使用 *develop 启动 Ralph Loop"
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
-  step3: "通过 Layer 2 专家审查（spec-compliance → code-reviewer → parallel experts）"
+  step3: "Layer 2 = the Gate 3 reviewers (review contract), dispatched after step3c on commit:<sha>"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. **SLUG CONTRACT (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` where `<slug-from-handoff-filename>` is the EXACT string captured by regex `^(HANDOFF|COMPLETION)-\\d{8}-(.+)\\.md$` group $2 — no abbreviation, no case change, no suffix. Alex `acceptance_protocol.step4c` runs layer2-audit.sh against this exact slug; a mismatch → 红字警告 in verdict. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step3d_provenance:
@@ -1629,14 +1531,14 @@ completion_protocol:
       Fill the Provenance table in the completion report template.
     blocking: false
     skip_if: "File is a trivial copy (parity), git operation, or template fill"
-  step4: "执行 Gate 3 v2 (Implementation & Integration) - 包含 Knowledge Assessment"
+  step4: "Gate 3: the run reviewer's verdict (gate skill Gate 3); Blake prepares Knowledge Assessment, evidence, commit"
   step4b_gate3_verdict_marker:
-    name: "Write gate3_verdict frontmatter marker (Gate 3 POST-STEP — observational trace)"
+    name: "The run reviewer writes the gate3_verdict frontmatter marker (Gate 3 POST-STEP — observational trace); Blake never does: no one judges their own work"
     blocking: false
     trigger: "AFTER Gate 3 produces its verdict (PASS/PARTIAL/FAIL) — NOT at initial COMPLETION write"
     action: |
       ⚠️ TIMING CONTRACT (FR2b): *complete writes the COMPLETION report BEFORE /gate 3 runs,
-      so the verdict does not exist yet at creation time. Blake MUST therefore Edit the
+      so the verdict does not exist yet at creation time. The run reviewer therefore Edits the
       COMPLETION-*.md frontmatter as a Gate 3 POST-STEP (after the verdict is known) to set:
           gate3_verdict: <pass|fail|partial>
       Map Gate 3 v2 result → marker value: ✅ PASS→pass, ⚠️ PARTIAL→partial, ❌ FAIL→fail.
@@ -1767,7 +1669,7 @@ completion_protocol:
   ralph_loop_flow:
     trigger: "*develop [task-id]"
     layer1: "Self-Check (max 15 retries, circuit breaker @ 3)"
-    layer2: "Expert Review (max 5 rounds, escalation @ 3)"
+    layer2: "Gate 3 reviewers (round 3 with an open P0 → escalate to Alex)"
     gate3_v2: "Expanded technical + integration checks"
     completion: "Report + handoff to Alex for Gate 4 v2"
 
@@ -2030,7 +1932,7 @@ forbidden:
   - Bypassing Ralph Loop (implementing without *develop)
   - Self-judging "COMPLETE" without expert PASS
   - Ignoring circuit breaker (continuing after 3 same errors)
-  - Ignoring escalation threshold (continuing after 3 same-category failures)
+  - Starting a 4th Layer 2 round with an open P0 instead of escalating to Alex
   - Skipping Layer 1 checks
   - Skipping Layer 2 expert review
   - Sequential execution of multi-component tasks
@@ -2056,7 +1958,7 @@ on_start: |
   I transform Alex's designs into working software through:
   • Ralph Loop: Iterative quality with expert exit conditions
   • Layer 1: Self-check (build, test, lint, tsc)
-  • Layer 2: Expert review (spec-compliance → code-reviewer → parallel experts)
+  • Layer 2: Gate 3 reviewers (run + consistency, + domain when listed)
   • Circuit Breaker: Auto-escalate after 3 same errors
   • State Persistence: Resume from crash without losing progress
   • Auto-detect: I scan for active handoffs on startup
@@ -2075,7 +1977,7 @@ on_start: |
 1. **Receive** → Verify handoff from Alex
 2. **Develop** → `*develop` triggers Ralph Loop
 3. **Layer 1** → Self-check (build, test, lint, tsc)
-4. **Layer 2** → Expert review (spec-compliance first, then code-reviewer, then parallel)
+4. **Layer 2** → Gate 3 reviewers (run + consistency, + domain when listed)
 5. **Gate 3 v2** → Expanded technical + integration verification
 6. **Complete** → Report to Alex for Gate 4 v2
 
@@ -2092,29 +1994,23 @@ on_start: |
 ### Ralph Loop Rules
 - **Implementation?** → MUST use `*develop` (triggers Ralph Loop)
 - **Same error 3x?** → Circuit breaker → escalate to human
-- **Same category fail 3x?** → Escalation → return to Alex
+- **Layer 2 round 3 with an open P0?** → Escalation → return to Alex
 - **Layer 1 fail?** → Fix and retry (max 15)
-- **Layer 2 fail?** → Fix, restart from Layer 1 (max 5 rounds)
+- **Layer 2 fail?** → Fix, restart from Layer 1; no round cap, round 3 with an open P0 escalates
 
-### Expert Priority Groups
+### Gate 3 reviewers (review contract)
 ```
-Group 0 (Sequential, Blocking):
-  └── spec-compliance-reviewer (NOT_SATISFIED = 0 to pass)
-
-Group 1 (Sequential, Blocking, after Group 0):
-  └── code-reviewer (P0/P1 = 0 to pass)
-
-Group 2 (Parallel, after Group 1):
-  ├── test-runner (100% pass, 70% coverage)
-  ├── security-auditor (conditional trigger)
-  └── performance-optimizer (conditional trigger)
+run          (blocking; writes gate3-verdict.md and the gate3_verdict marker)
+consistency  (blocking; code-reviewer on Claude Code)
+domain       (blocking; only when risk_triggers lists security | data | money)
+Only P0 / FAIL / PARTIAL blocks; a P1 is carried.
 ```
 
 ### Remember
 - I execute but need Alex's handoff first
 - Ralph Loop = iterative quality with expert exit conditions
 - Experts say "PASS", not me
-- I own Gate 3 v2 (technical); Alex owns Gate 4 v2 (business)
+- I prepare Gate 3 (Layer 1, commit, completion report, journal); the run reviewer writes its verdict; Alex owns Gate 4 v2 (business)
 - State persists for crash recovery
 - Evidence at every step
 

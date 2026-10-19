@@ -52,7 +52,7 @@ experiment_path_protocol:
     - "step1 §6 may be 'Experiment Setup' (rubric / fixture / generator-judge config) instead of 'Files to Modify'"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
-    - "step2 expert review — recommend security-auditor SKIP unless safety-critical (toy OPRO 非 safety); add product-expert IF stakeholder validation matters"
+    - "step2 Gate 2 review per the review contract (consistency + risk or fit); security only when risk_triggers lists it; add product-expert as the domain lens IF stakeholder validation matters"
     - "step4 Audit Trail integration (P1.5 — record reviewer findings)"
     - "step5 Gate 2 check (Design Completeness)"
     - "step7 Blake message generation with 人话版"

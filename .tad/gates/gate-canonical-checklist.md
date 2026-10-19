@@ -23,7 +23,7 @@ Why CE: What / Who / Boundary / How-to-verify — 四个独立需求维度。
 **Owner:** Alex | **When:** Before handoff to Blake
 
 Checklist items:
-- [ ] Expert review complete (min 2). Why ME: 流程检查（审查是否发生）
+- [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md). Why ME: 流程检查（审查是否发生）
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
@@ -35,7 +35,7 @@ Checklist items:
 Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 
 ## Gate 3: Implementation Quality
-**Owner:** Blake | **When:** After implementation (Ralph Loop complete)
+**Owner:** the Gate 3 run reviewer — not the builder (Blake prepares: completion report, journal, commit) | **When:** After implementation (Layer 1 and commit)
 # MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts
 
 Checklist items:
@@ -74,7 +74,7 @@ Checklist items:
   - [ ] Performance review evidence exists (code/mixed only)
   - [ ] UX review evidence exists (if UI involved)
   Why ME: 只检查 evidence 存在性
-- [ ] Subagent issues resolved — 所有 subagent 反馈中的 P0/P1 已处理. Why ME: 只检查问题修复状态
+- [ ] Subagent issues resolved — every P0 resolved; each open P1 listed (fixed, or carried with reason). Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
 
 Why CE: 功能 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。

@@ -1,5 +1,5 @@
 ---
-# gate3_verdict: filled by Blake as a Gate 3 POST-STEP (value ∈ pass|fail|partial).
+# gate3_verdict: filled by the Gate 3 run reviewer as a Gate 3 POST-STEP, never by Blake (value ∈ pass|fail|partial).
 # ⚠️ Do NOT fill at creation — the verdict does not exist until /gate 3 runs.
 # Empty / placeholder / any other value → post-write-sync.sh skips emission (FR2b timing).
 # See blake SKILL completion_protocol.step4b_gate3_verdict_marker.
@@ -30,15 +30,13 @@ gate3_verdict:
 | Lint Passes | ✅/⚠️/❌ | [代码规范检查] |
 | TypeScript Compiles | ✅/⚠️/❌ | [类型检查（如适用）] |
 
-### Layer 2 (Expert Review)
+### Layer 2 (Gate 3 reviewers, review contract)
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| spec-compliance | ✅/⚠️/❌ | [所有 AC 满足] |
-| code-reviewer | ✅/⚠️/❌ | [P0=0, P1=0] |
-| test-runner | ✅/⚠️/❌ | [覆盖率 ≥ threshold] |
-| security-auditor | ✅/⚠️/❌/N/A | [安全审查（如触发）] |
-| performance-optimizer | ✅/⚠️/❌/N/A | [性能审查（如触发）] |
+| run (Gate 3 verdict) | ✅/⚠️/❌ | [every §9.1 row and real_path] |
+| consistency | ✅/⚠️/❌ | [P0=0; open P1 carried, listed] |
+| domain (if security/data/money) | ✅/⚠️/❌/N/A | [N/A or result] |
 
 ### Evidence
 

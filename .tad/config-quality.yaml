@@ -4,6 +4,7 @@
 #           progressive_validation, subagents_enforcement, template_triggers
 # Consumers: tad-alex.md, tad-blake.md, tad-gate.md
 # ==================== Sub-agents 强制调用机制 ====================
+# Review composition (Gate 2/3 reviewers): .tad/templates/review-contract.md. The must_call entries below are design consults, not review composition.
 subagents_enforcement:
   # 强制调用规则
   mandatory_invocation_rules:
@@ -71,7 +72,7 @@ quality_gates:
     gate2_design:
       name: "设计完整性"
       checks:
-        - "Expert review complete — min 2 experts"
+        - "Gate 2 review complete — two lenses (review contract)"
         - "All P0 resolved"
         - "Architecture complete"
         - "Components specified"
@@ -223,7 +224,7 @@ quality_gates:
       checks:
         - "Functional acceptance — §9 AC met AND no post-impl blockers"
         - "Quality evidence complete — code/security/perf/ux review evidence exists"
-        - "Subagent issues resolved — all P0/P1 addressed"
+        - "Subagent issues resolved — every P0 resolved; open P1 listed (carried with reason)"
         - "Knowledge Assessment complete — distillation or no discovery"
 
       # Review evidence only - no re-run needed

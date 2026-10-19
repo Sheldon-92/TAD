@@ -3,7 +3,7 @@
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
 
 express_path_protocol:
-  description: "Quick path for trivial bugfix / small UX polish. Skips ceremony, keeps ≥1 review."
+  description: "Quick path for trivial bugfix / small UX polish. Skips ceremony, keeps both review lenses."
 
   trigger:
     type: "user_explicit_only"
@@ -38,11 +38,11 @@ express_path_protocol:
     - "step1 draft creation (handoff scaffold + frontmatter — MUST set `express: true` in YAML frontmatter; this is the durable marker layer2-audit.sh is_express_frontmatter() consumes)"
     - "step1b frontmatter validation (含 git_tracked_dirs)"
     - "step1c grounding pass (P2.2 — Read 目标文件 head 50)"
-    - "step2 expert review with ≥1 expert (code-reviewer 必选; ≥1 expert; 视场景可加第 2 个)"
-    - "step4 Audit Trail integration (P1.5 dogfood — *express 仍含 Audit Trail，记录 ≥1 review 的可审计证据)"
+    - "step2 expert review per .tad/templates/review-contract.md: consistency (code-reviewer 必选 on Claude Code) + risk or fit — two reviewers, never fewer than one (AR-001)"
+    - "step4 Audit Trail integration (P1.5 dogfood — *express 仍含 Audit Trail，记录两个 review 的可审计证据)"
     - "step5 Gate 2 check"
     - "step7 Blake message generation with 人话版"
-    - "Gate 3 v2 (Blake side: build/test/lint + Layer 2 ≥1 expert)"
+    - "Gate 3 (Blake side: Layer 1, then the Gate 3 reviewers run + consistency per the review contract)"
     - "Gate 4 v2 acceptance (Alex side)"
 
   skipped_steps:
@@ -92,7 +92,6 @@ express_path_protocol:
       express|*-express|*-express-*|express-* on a word boundary (fallback,
       back-compat for pre-marker handoffs). Before the frontmatter marker,
       a `*express` handoff named `bugfix-foo` would NOT match → audit treated
-      it as Standard Tier-1 and WARNed on <2 reviewers, even though *express
-      legitimately keeps only ≥1 code-reviewer. The frontmatter marker closes
+      it as Standard Tier-1 and WARNed on <2 reviewers. The frontmatter marker closes
       that false-WARN gap regardless of slug wording.
 

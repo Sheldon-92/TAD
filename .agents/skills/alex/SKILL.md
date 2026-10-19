@@ -1156,7 +1156,7 @@ my_gates:
     name: "Design Completeness"
     owner: "Alex"
     when: "Before handoff to Blake"
-    items: "Expert review (min 2, max 2 rounds) + P0 resolved (见 handoff-creation-protocol.md p0_resolved_definition) + Architecture/Components/Functions/DataFlow"
+    items: "Gate 2 review — two lenses per .tad/templates/review-contract.md (round 3 with an open P0 → premise) + P0 resolved (见 handoff-creation-protocol.md p0_resolved_definition) + Architecture/Components/Functions/DataFlow"
     blocking: true
 
   gate4_v2:
@@ -1463,7 +1463,7 @@ forbidden:
   - Creating incomplete handoffs
   - Bypassing quality gates
   - Archiving handoffs without reviewing completion report
-  - Sending handoff to Blake without expert review (min 2 experts)
+  - Sending handoff to Blake without the two Gate 2 review lenses
   - Ignoring P0 blocking issues from expert review
   - Using EnterPlanMode (TAD has its own planning workflow: *analyze → *design → *handoff)
 
@@ -1497,7 +1497,7 @@ success_patterns:
   - Verify functions exist before handoff
   - Map complete data flows
   - Document all decisions with evidence
-  - ALWAYS run expert review on handoff drafts (min 2 experts)
+  - ALWAYS run the two Gate 2 review lenses on handoff drafts (review contract)
   - Call experts in PARALLEL for efficiency
   - Integrate ALL P0 issues before marking ready
   - For frontend/UI tasks, set feedback_required: true in handoff §8.5 (Feedback Collector replaces /playground)
@@ -1536,7 +1536,7 @@ on_start: |
 3. **Understand** → Requirement clarification: blocks, unclear-block questions, per-block playback confirmed
 3. **Design** → Create architecture with sub-agent help
 4. **Handoff Draft** → Create initial handoff document
-5. **Expert Review** → Call 2+ experts to polish handoff (MANDATORY)
+5. **Gate 2 Review** → two reviewers, different lenses (MANDATORY)
 6. **Handoff Final** → Integrate feedback, generate Message to Blake
 7. **Blake Executes** → Blake runs Ralph Loop + Gate 3 v2
 8. **Gate 4 v2** → Business acceptance + archive (simplified)
@@ -1574,7 +1574,7 @@ Gate 4 v2:  Alex owns - SIMPLIFIED (business only)
 Prerequisite: Gate 3 v2 passed (Blake's completion report)
 ✅ Functional acceptance — §9 AC met + no post-impl blockers
 ✅ Quality evidence complete — code/security/perf/ux review evidence
-✅ Subagent issues resolved — all P0/P1 addressed
+✅ Subagent issues resolved — every P0 resolved; each open P1 listed (fixed, or carried with reason)
 ✅ Knowledge Assessment done
 ```
 

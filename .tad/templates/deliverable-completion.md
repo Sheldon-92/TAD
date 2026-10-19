@@ -1,5 +1,5 @@
 ---
-# gate3_verdict: filled by the Gate 3 judge-orchestrator (under Cora: the Gate 3 verifier she dispatches, never Cora) for the deliverable
+# gate3_verdict: filled by the Gate 3 judge-orchestrator (under Cora: the Gate 3 run reviewer she dispatches, never Cora) for the deliverable
 #   lane as a Gate 3 POST-STEP (value ∈ pass|fail|partial). NOT Blake — Blake is excluded from
 #   the deliverable lane (blake task_type_branching.deliverable). After the judge verdict is
 #   computed, the judge-orchestrator edits this to the judge verdict lowercased.

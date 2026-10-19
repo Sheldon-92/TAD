@@ -54,7 +54,7 @@ Detecting current context...
 Available Gates:
 1. Gate 1: Requirements Clarity (Agent A - After elicitation)
 2. Gate 2: Design Completeness (Agent A - Before handoff)
-3. Gate 3: Implementation Quality (Agent B - After coding)
+3. Gate 3: Implementation Quality (run reviewer, not the builder - After coding)
 4. Gate 4: Integration Verification (Agent B - Before delivery)
 
 Which gate to execute? (1-4):
@@ -83,7 +83,7 @@ Output: Quick summary, no formal evidence required
 When: Before creating handoff (BLOCKING)
 Owner: Agent A (Alex)
 Critical Check (8 items):
-  - [ ] Expert review complete (min 2)
+  - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md).
   - [ ] All P0 resolved
   - [ ] Architecture complete
   - [ ] Components specified
@@ -102,14 +102,15 @@ Output Format:
   | Data Flow | ✅ Pass | ... |
 ```
 
-## Gate 3: Implementation Quality (Blake) - **MANDATORY** 🔴
+## Gate 3: Implementation Quality (run reviewer, not the builder) - **MANDATORY** 🔴
 > Gate 3 is UNIVERSAL across all task_types. Its checks come from the active handoff's
 > §9.1 Spec Compliance Checklist (the PRIMARY VERIFICATION SOURCE), not from hardcoded
 > tsc/test/lint. When any §9.1 AC references rubric scoring or an independent judge, the
 > `## Rubric Evaluation Protocol` section below ACTIVATES.
 ```yaml
 When: After implementation (BLOCKING)
-Owner: Agent B (Blake)
+Owner: the Gate 3 run reviewer (not the builder; Blake prepares)
+# The run reviewer applies this Gate 3 section as its checklist (review contract §5 run).
 
 # ⚠️ PREREQUISITE CHECK (BLOCKING)
 Prerequisite:
@@ -383,13 +384,10 @@ Knowledge_Assessment:
 # This runs for EVERY task_type (code / yaml / research / e2e / mixed / doc-only), not just rubric ACs.
 Gate3_Verdict_Marker:
   who: |
-    Whoever RAN Gate 3 writes the marker. Concretely:
-      - code-shaped handoff (normal Blake path) → Blake writes it.
-      - rubric AC inside a normal Blake-path handoff (no Conductor present) → Blake spawns the
-        independent judge (judge ≠ Blake still holds — Blake does NOT self-score) and Blake writes
-        the marker from the judge's verdict.
-      - rubric AC under a Conductor/Epic lane → the Gate 3 executor writes it; when Cora conducts, that is the Gate 3 verifier she dispatches, never Cora.
-    Single rule: the Gate 3 executor owns the marker; the judge is always a distinct sub-agent."
+    The Gate 3 run reviewer writes the marker (it wrote the Gate 3 verdict) — never the builder, never Cora.
+    A rubric judge is a distinct subagent dispatched before it by Blake (direct) or Cora (run); the run reviewer
+    reads the judge's verdict line for those rows.
+    Single rule: the Gate 3 run reviewer owns the marker; the judge is always a distinct sub-agent."
   when: "AFTER the Gate 3 verdict is computed, as a Gate 3 post-step (all task_types)."
   action: |
     Edit the completion report's `gate3_verdict:` frontmatter to the Gate 3 verdict
@@ -742,7 +740,7 @@ Critical Check (4 items):
     - [ ] Performance review evidence exists (code/mixed only)
     - [ ] UX review evidence exists (if UI involved)
     FAIL must enumerate which evidence is missing.
-  - [ ] Subagent issues resolved — all P0/P1 from subagent feedback addressed
+  - [ ] Subagent issues resolved — every P0 resolved; each open P1 listed (fixed, or carried with reason)
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
 # Note: Functional acceptance reads from handoff §9 (not hardcoded). Quality evidence is structural role enforcement (see Structural_Subagent_Conditionality).
 # Functional acceptance fail-close detail: for every landing-tier §9.1 row, Gate 4 re-runs the declared Verification Method from the on-disk artifact. A row whose Method is missing, illegal (prose-only), or never executed → Functional acceptance cannot PASS. Blake summary is not Gate 4 evidence — only recomputed command output counts.
@@ -771,7 +769,7 @@ Output Format:
   |------|--------|------|
   | Functional acceptance | ✅ Pass | §9 AC met, no open blockers |
   | Quality evidence complete | ✅ Pass | All required evidence exists |
-  | Subagent issues resolved | ✅ Pass | All P0/P1 addressed |
+  | Subagent issues resolved | ✅ Pass | Every P0 resolved; each open P1 listed (fixed, or carried with reason) |
   | Knowledge Assessment | ✅ Pass | ... |
 
   #### Knowledge Assessment (MANDATORY - must answer)

@@ -24,6 +24,14 @@ skip_knowledge_assessment: no  # yes | no
 # Future gate-roi-report.sh uses this for cross-project drift detection.
 # Cancelled handoffs do NOT use this field — they use cancel_reason instead.
 gate4_delta: []
+
+# risk_triggers: closed list — security | data | money | ui | platform | domain, or [none] (review contract §5; Gate 2 risk or fit, Gate 3 domain for security/data/money)
+risk_triggers: [none]
+# real_paths: each path the change takes in the real environment, run once by the Gate 3 run reviewer; protocol text = a named scenario walk; impossible → not-run: <reason> (paid, the human's own account or device, production/outward, a capability this harness lacks)
+real_paths:
+  - id: RP1
+    path: "[the path a user takes]"
+    run: "[the command or call, or a named scenario walk for protocol text]"
 ---
 
 # Handoff Document for Agent B (Blake)
@@ -567,7 +575,7 @@ Blake的实现被认为完成，当且仅当：
 > | AC1 | Report passes rubric | spawn independent judge per Rubric Evaluation Protocol against {rubric_ref} | verdict: PASS |
 > ```
 
-Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
+Gate 3 的 run reviewer（review contract）逐行运行以下条目和每个 real_path：
 
 > **Verification Type column** (Phase 6-A.1, 2026-04-25):
 > - `pre-impl-verifiable` — Alex dry-runs at handoff drafting (step1d); paste raw output into Verified Output column
@@ -616,8 +624,8 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 
 | Reviewer | Issue | Resolution Section | Status |
 |----------|-------|-------------------|--------|
-| code-reviewer | _(concise: severity + one-line symptom, e.g., "P0: shell script crashes on empty array")_ | _(cite specific section, e.g., "§Task P1.2 实现提示 #3" or "AC-P1.2-i")_ | Resolved / Open / Deferred |
-| backend-architect | ... | ... | ... |
+| consistency | _(concise: severity + one-line symptom, e.g., "P0: shell script crashes on empty array")_ | _(cite specific section, e.g., "§Task P1.2 实现提示 #3" or "AC-P1.2-i")_ | Resolved / Open / Deferred |
+| risk (security) | ... | ... | ... |
 
 **Status legend:**
 - **Resolved** — fix applied in this handoff; Resolution Section MUST point to where the fix lives
@@ -628,10 +636,10 @@ Blake的实现将由 spec-compliance-reviewer 自动核对以下条目：
 
 <!-- If you want reviewers to be able to re-run the same review later: paste the full prompt(s) sent to each reviewer here. Helps when a later regression needs the same reviewer lens. -->
 
-### Experts Selected
+### Lenses
 
-1. **{reviewer-name}** — {why this reviewer was chosen for this handoff's risk profile}
-2. **{reviewer-name}** — {why}
+1. **consistency** — always (contradictions, consumers of changed lines, baseline run of every §9.1 command)
+2. **{risk | fit}** — {why: which risk_triggers, or none → fit}
 
 ### Overall Assessment (post-integration)
 
