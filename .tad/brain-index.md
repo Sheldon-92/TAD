@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-16 19:36
+Generated: 2026-10-19 22:42
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,10 +24,10 @@ Generated: 2026-10-16 19:36
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL |
 | Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard |
-| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss |
-| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC |
+| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
@@ -66,13 +66,15 @@ Generated: 2026-10-16 19:36
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-16-release-archive-symlinks-phase1.md | code | A root `.gitattributes` rule that keeps `.claude/` out of `git archive` (and so out of GitHub's tag tarball), a `release |
+| HANDOFF-2026-10-19-review-redesign-phase1.md | mixed#protocoltext(md),config(yaml),oneshellmarkeredit | Write down the requirement clarification method the human set in Epic `## Requirement` Part 1 A–F, and make it the onl |
+| HANDOFF-2026-10-19-review-redesign-phase2.md | mixed#protocoltext(md),oneconfig(yaml),templates;noshelleditinthisphase | One reviewer contract file that every review, verification and acceptance dispatch loads, and one set of review rules on |
+| HANDOFF-2026-10-19-review-redesign-phase3.md | mixed#protocoltext(md),configs(yaml),templates,advisoryshellscripts(twonew,fiveedited) | The gates around the Phase 2 reviewers, the same on every path: Gate 1 = four conditions, format checked by a script, co |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261016-release-archive-symlinks.md | **Epic ID**: EPIC-20261016-release-archive-symlinks |
+| EPIC-20261019-review-redesign.md | **Epic ID**: EPIC-20261019-review-redesign |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -156,7 +158,7 @@ Generated: 2026-10-16 19:36
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 54 | journal |
+| evidence/journal/ | 57 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -170,25 +172,25 @@ Generated: 2026-10-16 19:36
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 158 | pm |
+| evidence/pm/ | 162 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
 | evidence/ralph-loops/ | 16 | ralph-loops |
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 14 | releases |
-| evidence/research/ | 188 | research |
-| evidence/reviews/ | 844 | reviews |
+| evidence/releases/ | 15 | releases |
+| evidence/research/ | 194 | research |
+| evidence/reviews/ | 845 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
-| evidence/simple/ | 3 | simple |
+| evidence/simple/ | 5 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 9946 | yolo |
+| evidence/yolo/ | 10030 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
@@ -223,7 +225,7 @@ Generated: 2026-10-16 19:36
 |------|---------|
 | config-agents.yaml | "跳过任何步骤 → 警告并重新激活",    - "身份混淆 → 立即纠正",    - "未显示help → 自动补 |
 | config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
-| config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Expert Review (spec-compliance-reviewer, code-re |
+| config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Gate 3 reviewers per review contract (run, consi |
 | config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
 | config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics     |
@@ -279,7 +281,6 @@ Generated: 2026-10-16 19:36
 | supply-chain-security | name: supply-chain-security |
 | surplus | name: surplus |
 | synthetic-data | name: synthetic-data |
-| tad-elicit | name: tad-elicit |
 | tad-handoff | name: tad-handoff |
 | tad-help | name: tad-help |
 | tad-init | name: tad-init |

@@ -6,10 +6,10 @@
 
 ---
 
-- [Gate Design](gate-design.md) — Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL
+- [Gate Design](gate-design.md) — Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL
 - [Handoff Design](handoff-design.md) — Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard
-- [Shell Portability](shell-portability.md) — macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss
-- [AC Verification](ac-verification.md) — AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC
+- [Shell Portability](shell-portability.md) — macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss
+- [AC Verification](ac-verification.md) — AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD
 - [Process Tax Cut](process-tax-cut.md) — AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2)
 - [Capability Ownership](capability-ownership.md) — Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof
 - [Hook Contracts](hook-contracts.md) — Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json

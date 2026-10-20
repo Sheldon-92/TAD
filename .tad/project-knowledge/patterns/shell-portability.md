@@ -207,6 +207,7 @@
 - **Grounded in**: `.tad/archive/handoffs/HANDOFF-20260814-routing-decouple.pins.tsv`（改用 TAB 后 19 条零撞车）；
   `HANDOFF-20260815-discipline-enumeration.md` §8 的 TAB 修正与字段数断言；
   Gate 2 审查对前一单 AC3 的三组解析实测
+- **AMENDED 2026-10-19 — TAB 是 IFS 空白字符，`IFS=$'\t' read` 会吞掉空字段**（实测）：`IFS=$'\t' read -r a b c <<< $'x\t\tz'` 得 `b=[z] c=[]`——连续 TAB 被当成一个分隔，空字段消失，后面的字段整体左移。上面 Action 的 TAB 方案只在**没有空字段**时成立。可能出现空字段时（表格单元、可选列），分隔符改用非空白控制字符 `\037`（US）：`IFS=$'\037' read -r a b c` 得 `b=[] c=[z]`；字段数断言照旧。来源：Gate 3 证据检查脚本解析 markdown 表格时空单元格错位（`.tad/evidence/yolo/review-redesign/phase3-completion.md` Rework 4 "Row fields joined by `\037`, not tab"；Blake 日志 `.tad/evidence/journal/review-redesign-phase3-2026-10-19.md` Rework 4）。
 
 ### zsh 里 `path` / `cdpath` / `argv` / `status` 是特殊变量，赋值即毁 PATH 且失败是静默的 - 2026-08-13
 
