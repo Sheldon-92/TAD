@@ -1,4 +1,4 @@
-# schema=1 rows=1952
+# schema=1 rows=1954
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -615,6 +615,7 @@ skill	2d7d1c19ec678a10e4a4da87f9611b09c6104770	alex/references/yolo-execution-pr
 skill	2d9acc05f95c9c404f0a97e223541eb6d7a5d4f1	alex/SKILL.md
 skill	2daf427a7e2d5857cffde31c410027c885d2eef6	agent-orchestration/examples/agent-orchestration-fixture.md
 skill	2e023241f5a34d0ce1748005fcb36e564499d26a	web-frontend/SKILL.md
+skill	2e0785fdbe2eb0e7ad5bf96f5a6e203f3c3a8a17	gate/SKILL.md
 skill	2ea505bcdbaf5681414c59393ee23fc6a1f10bae	product-thinking/adapters/content.md
 skill	2eaf7d4ad2867fce6211e0438ebf70bf69ced8a9	web-testing/references/agentic-testing-rules.md
 skill	2f1d6304a4214164b6cb8c65ae5812e8f2214937	_archived/i18n-translation.md
@@ -1738,6 +1739,7 @@ skill	e47d47026acdc2b9c369373ab7bc7c65a0043343	alex/SKILL.md
 skill	e50cc6bb795be39f637eef12b4059ec7b0470aa8	alex/references/yolo-manual-conductor-protocol.md
 skill	e52940eee1f4f4aff40ce3e191946480e8e1a5cc	video-creation/examples/single-clip-narration.md
 skill	e57ed3477fda4ae06f8ad85736d25da648d655e6	cora/references/conductor-protocol.md
+skill	e587b6b325e044d5db9636ef7b3c2438445a398c	cora/references/conductor-protocol.md
 skill	e589a327c65a2d51db59f106c23dea5985d26356	tad-help/SKILL.md
 skill	e5b35669ac2023af46496cb9c53dfd1dcce1ee11	ai-guardrails/examples/ai-guardrails-fixture.md
 skill	e62af587bd3f5c2d91e6417c6ef0ec3baa960a0e	alex/references/express-path-protocol.md
