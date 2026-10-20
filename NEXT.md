@@ -13,6 +13,17 @@
 
 ## 🔴 优先队列
 
+### 🔄 RUNNING 2026-10-19. EPIC-20261019 requirement clarification + review redesign
+
+- Epic: `.tad/active/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Release 4.0.4 prepared locally; push and tag wait for the human.
+
+### ✅ FIXED 2026-10-16（v4.0.3）. **安装器 tar-slip 误杀官方包 — 下载更新路径断裂（TASK-20261016-INSTALLER-TARSLIP-FIX）**
+
+- **问题**：`tad.sh` 的 `validate_tar_members` 对软链目标只做字面判定（`../` 开头即拒），不按链接所在目录解析判逃逸；发布包内 `.claude/skills/*` 64 件相对软链（`../../.agents/skills/*`，实际指回包内）被整批误杀，官方下载安装/更新路径自 4.0.2 起谁走谁断（4.0.x 同病）。现行绕行 `--source` 离线路径只是应急。
+- **正本**：`.tad/active/TICKET-20261016-installer-tar-slip-download-path.md`（根因 PM 已亲验、验收判据在内：下载路端到端成功＋敌意 fixture 仍全拒＋`--source` 不回归）。
+- **排期口径（用户 2026-10-16 定）**：先立票待着，跟下一批本体工作一起排——**这是用户与 TAD PM 要一起修的东西，本地动本体时不要忘、不要顺手单独改掉**；修法走完整链（设计→实施→双审→验收），主线方向＝链接目标解析后判逃逸，不许改回「放行 ../」式假修复。
+- **✅ 已修复并关票（2026-10-16 晚）**：用户本地链 EPIC-20261016-release-archive-symlinks 随 v4.0.3 发布，实际走包侧路线——`/.claude` export-ignore（发布包不再带软链、安装器自 `.agents` 源生成）＋release-verify 增 archive-links 拦截；tar-slip 校验本体未动、防护未降格。验收三条全达（下载路实测打通、敌意拒收行为不变、`--source` 无回归），票已 CLOSED（关票节在票内，含残留登记：校验器字面判定未改，靠发布政策双拦补齐；未来若发布包需再带包内软链，另立票重开）。
+
 ### ✅ ACCEPTED 2026-10-18. Full Layer 2 review brakes（TASK-20261017-FULL-LAYER2-REVIEW-BRAKES）
 
 - **Verdict**: Gate 4 `PASS_WITH_APPROVED_KNOWN_DEVIATION`. GM 14:35 approved `*accept` and archive. Committed 2026-10-19, not tagged, not released.
@@ -26,9 +37,9 @@
 - Ordinary PM, wrapper, and trace writes break an ignored-byte baseline, and AC-08 stops at the first mismatch so the first FAIL path is not the full set.
 - Next ticket designs the boundary among stable sources, task artifacts, external-owner state, and runtime output, and reports the complete diff. Do not widen this task's allowlist. GM 14:06 E1 known deviation belongs here.
 
-### 🟡 AWAITING ACCEPTANCE 2026-10-16. EPIC-20261016 release archive symlinks (v4.0.2 download install refuses)
+### ✅ DONE 2026-10-16. EPIC-20261016 release archive symlinks — released in v4.0.3, archived
 
-- Epic: `.tad/active/epics/EPIC-20261016-release-archive-symlinks.md`. Fixed by export-ignore (da4e51b4); 4.0.3 prepared locally with the lighter-flow commits, not pushed or tagged. Until 4.0.3: downstream must not update via download (use `--source`).
+- Epic: `.tad/archive/epics/EPIC-20261016-release-archive-symlinks.md` (archive commit b52d0a2c). Fixed by export-ignore (da4e51b4).
 
 ### ✅ DONE 2026-10-16. EPIC-20261016 Cora lighter flow — accepted and archived; not yet released (local commits on feat/cora-role)
 
