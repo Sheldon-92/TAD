@@ -7,15 +7,15 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.5（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.4）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.5（已发布 2026-10-20，main = tag v4.0.5 = 4bf0e848）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
 
-### ✅ DONE 2026-10-20. EPIC-20261020 installer fixes — released in v4.0.5 (prepared locally)
+### ✅ DONE 2026-10-20. EPIC-20261020 installer fixes — released in v4.0.5
 
-- Epic: `.tad/active/epics/EPIC-20261020-installer-fixes.md` (accepted 2026-10-20; archive pending). Skill-link check, backup naming and `changes.tsv`, retention keeps the pre-upgrade backup, non-ASCII backup dir, rulings file optional (8528b948, 951e71e3). Push and tag wait for the human.
+- Epic: `.tad/archive/epics/EPIC-20261020-installer-fixes.md` (accepted and archived 2026-10-20). Skill-link check, backup naming and `changes.tsv`, retention keeps the pre-upgrade backup, non-ASCII backup dir, rulings file optional (8528b948, 951e71e3). Pushed and tagged v4.0.5; post-tag download install verified.
 
 ### ✅ DONE 2026-10-19. EPIC-20261019 requirement clarification + review redesign — released in v4.0.4, archived
 
