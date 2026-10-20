@@ -1,4 +1,4 @@
-# schema=1 rows=1945
+# schema=1 rows=1949
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1102,6 +1102,7 @@ skill	7bc232462737ac170aa5990313d702f93a79d8ce	research-notebook/SKILL.md
 skill	7be932363e649468185b93e9bb661be5701ff0f1	alex-lite/SKILL.md
 skill	7bedd56a22312a01de5138e3f323e73f5c94057c	agent-orchestration/references/tool-permissions.md
 skill	7bfdae4b9b7837dc6aea2153b0690e90562f14c2	tad-help/SKILL.md
+skill	7c352cba56eda2658c92c2721793f8af2168e5d8	gate/SKILL.md
 skill	7c5a2b103a5d08149d52181b9c4ba7ef5e77b212	alex/SKILL.md
 skill	7c5f08a6350e45056edb24d22ca077dbf36154b9	academic-research/scripts/setup-cv.sh
 skill	7c8981b1af8d30dd11d4368dacf0a7e30cd2cc9b	alex/references/bug-path-protocol.md
@@ -1113,6 +1114,7 @@ skill	7d1fdd00fb56d5b7d84f0315241ef925d6b8e5ff	alex/SKILL.md
 skill	7ddf930a9a54230d73daf6ca904675e2c81ca8f7	knowledge-graph/references/query-translation.md
 skill	7de25eb335d230514f93aea5d272cec281fb92c6	ai-prompt-engineering/references/ci-cd-templates.md
 skill	7de2ffa1d7aa755cd97073d29bc81bff6f2b0274	academic-research/references/database-apis-general.md
+skill	7e18d1908f507baea2e39e80d15106385737802a	gate/SKILL.md
 skill	7e24ea6061e92eabcbcd7a04c5f93fcd5e9070b9	alex/references/learn-path-protocol.md
 skill	7e31de524fa99859bca69ede7337961a9e90c2dd	research-methodology/references/sourcing.md
 skill	7e3547f0b1a2b8520ca83ce1b4074aadf926a039	alex/references/idea-promote-protocol.md
@@ -1433,6 +1435,7 @@ skill	ae8bb0e06fb0894fadcd07821cd7aec07f978ba6	tad-elicit/SKILL.md
 skill	aebd91095dc3ef13d829405e0b16767504a09694	web-backend/LICENSE-ATTRIBUTION.md
 skill	af578e779e2c7ed576f011807b1a393f6208c217	alex/SKILL.md
 skill	afc03a8636aaffe455a00ac8584927ce3bddbc1e	alex/references/intent-router-protocol.md
+skill	afd8057dd5ab4fe0cb7e3e4cfb09f1492b9cc056	blake/SKILL.md
 skill	afdf466068cc08e38b674ee4aa2b5946638b2ab3	ai-prompt-engineering/SKILL.md
 skill	affa1dfac328cc689d099f9be277c22477eeb4ff	alex/references/discuss-path-protocol.md
 skill	b03589cbff5f5041a9d40103db83084f761ae927	web-frontend/scripts/a11y-scan.sh
@@ -1625,6 +1628,7 @@ skill	cff3249d23cf8c30f654392826507671391efa1d	alex/SKILL.md
 skill	cffb60db0e54e6063fc85198a416081138191e7f	hw-testing/references/power-measurement.md
 skill	d00c9c6a1195eb6019d64781f3a1717943a3a135	web-deployment/references/security-hardening-rules.md
 skill	d038f432b22431ae67937e2ee6133bed9ba8e096	tad-help/SKILL.md
+skill	d04a70fedcc745606d1d585a94435de10367f92e	blake/SKILL.md
 skill	d05a91d34590fc5e982e01135c76e33c2c5504a7	alex/SKILL.md
 skill	d068c780dc06dd02b793e390b738ad48eb9d6511	gate/SKILL.md
 skill	d0836b9e36fbd0a7d986591e6db1b54eeddfa838	hw-testing/references/test-fixture.md
