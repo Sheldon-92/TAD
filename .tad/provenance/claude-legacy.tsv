@@ -1,4 +1,4 @@
-# schema=1 rows=1954
+# schema=1 rows=1957
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -745,6 +745,7 @@ skill	4144af3e43baa6dd78a51352bacb200f46ce85ed	alex/references/adaptive-complexi
 skill	4158a385c33552d8d55b7b1ba0f299f1295eb045	web-deployment/references/domain-dns-rules.md
 skill	4166ebf19a4110b5c64947bf43e7bb109fd314cd	alex/references/acceptance-protocol.md
 skill	418f2a0ed72ed655d760578f879278e1ca05eecc	supply-chain-security/references/typosquat-detection.md
+skill	41ab9b4f61d3e105bf31e3969ba29e4d994bf6e7	blake/SKILL.md
 skill	41be54fee284db92ab262a0eabbdcad64d8a2863	alex/references/research-plan-protocol.md
 skill	41d4fe52ca16cd49c5c0878576c945e3679058b9	tad-help/SKILL.md
 skill	4215a6eeaa9b7486558be4895ade0ce2a2c7331b	knowledge-graph/references/entity-resolution.md
@@ -962,6 +963,7 @@ skill	63cb58846a384f4910f1ba5c5796444dc0e78cd0	tad-help/SKILL.md
 skill	63cdc1fbc5fabb84eade02c5e345b66a0fb0a316	video-creation/references/production.md
 skill	63d0eb29e4a5d24c6d4be9e45c11b1012143c8a5	research-notebook/SKILL.md
 skill	63d971c2077c43f2e3912f8bf4dca7db80533f32	blake-lite/SKILL.md
+skill	63ddd283f1064c6794019743abf6a6d7e9dd64ef	tad-help/SKILL.md
 skill	643833bdc12ef1600f795d61f645d8355079c73d	save-skill/SKILL.md
 skill	645834a542552e44611983856ac10077ad01959b	ai-podcast-production/references/script-writing.md
 skill	6480876d7d941f0c09db8ee5e7c0d3f7df167c2f	blake/SKILL.md
@@ -1624,6 +1626,7 @@ skill	cec3f2f35b582d5ecac301b63bb34ef3f8774d15	alex/references/publish-protocol.
 skill	cf1c2703ce9b530afe6524333ef911eccd1d3ea9	web-deployment/SKILL.md
 skill	cf1eae2c41574f63c0cc2fca7dcf254086858e37	tad-help/SKILL.md
 skill	cf21e62373910104823966c9c916dd9d56d69510	ai-agent-architecture/references/need-an-agent.md
+skill	cf288766eebe750f44ee0524ea8b31f52ad1ebe1	alex/SKILL.md
 skill	cf29a68220b073d500d40f320f776727ff67db5f	ai-tool-integration/references/mcp-server-dev-rules.md
 skill	cfc75b77cb8686c329de0559676899e5bf5997b8	web-testing/references/performance-testing-rules.md
 skill	cfd3529f6e0f5b84e088ad061447b4d00e970aac	tad-status/SKILL.md
