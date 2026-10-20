@@ -80,7 +80,14 @@ if [ "$mode" = epic ]; then
 elif [ "$mode" = handoff ]; then
   # The Epic pointer counts only as a header line: line-anchored, between the first
   # `# ` title and the first `---` after it. A quote of the string in the body does not.
-  hdr=$(awk '!on { if ($0 ~ /^# /) on = 1; next } /^---$/ { exit } { print }' "$f")
+  # A leading YAML frontmatter block (line 1 `---` through the next `---`) is skipped
+  # first: its `# ` comment lines are not the title (template handoff-a-to-b.md shape).
+  hdr=$(awk '
+    NR == 1 && $0 == "---" { fm = 1; next }
+    fm { if ($0 == "---") fm = 0; next }
+    !on { if ($0 ~ /^# /) on = 1; next }
+    /^---$/ { exit }
+    { print }' "$f")
   ep=$(printf '%s\n' "$hdr" | command grep -m1 -E '^\*\*Epic:\*\* *EPIC-' | sed -E 's/.*\*\*Epic:\*\* *//; s/ .*//')
   if [ -n "$ep" ]; then
     ok g0 "Gate 1 is the Epic's: run on $ep"
