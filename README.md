@@ -1,6 +1,6 @@
 # TAD - Triangle Agent Development
 
-**Version 4.0.3 — Claude Code · Codex · OpenCode · Cursor**
+**Version 4.0.4 — Claude Code · Codex · OpenCode · Cursor**
 
 **You talk to Cora. She gets the work done and shows you the result.**
 
@@ -109,7 +109,7 @@ Details: [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md). Claude Code loads `AGEN
 To check an install:
 
 ```bash
-cat .tad/version.txt     # 4.0.3
+cat .tad/version.txt     # 4.0.4
 ```
 
 Installed projects update with `$tad-update` (Codex) or `/tad-update` (OpenCode); it checks versions read-only, refuses downgrades, backs up first, and applies only after you confirm. It does not detect Claude Code projects: run `bash tad.sh --platform claude-code` there.
@@ -157,6 +157,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**TAD v4.0.3 — Claude Code · Codex · OpenCode · Cursor**
+**TAD v4.0.4 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

@@ -1,0 +1,24 @@
+schema_version: 1
+from: "4.0.3"
+to: "4.0.4"
+generated_by: "manual"
+note: |
+  Patch v4.0.4 - requirement clarification by decomposition (replaces the
+  Socratic inquiry protocol and the tad-elicit skill), one reviewer contract
+  with different-lens reviewers on every path, Gate 3 evidence check (no
+  scripted execution), AI acceptance by real use, merged Full Layer 2 review
+  brakes. The retired elicitation files are deleted below.
+delete:
+  - path: ".agents/skills/tad-elicit/SKILL.md"
+    type: "file"
+    reason: "Retired by EPIC-20261019-review-redesign Phase 1: requirement clarification by decomposition replaces tad-elicit."
+  - path: ".agents/skills/alex/references/socratic-inquiry-protocol.md"
+    type: "file"
+    reason: "Retired by EPIC-20261019-review-redesign Phase 1: replaced by .agents/skills/cora/references/requirement-clarification.md."
+  - path: ".tad/tasks/requirement-elicitation.md"
+    type: "file"
+    reason: "Retired by EPIC-20261019-review-redesign Phase 1 (old elicitation task)."
+  - path: ".tad/templates/elicitation-methods.md"
+    type: "file"
+    reason: "Retired by EPIC-20261019-review-redesign Phase 1 (old elicitation methods template)."
+rename: []
