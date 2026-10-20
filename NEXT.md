@@ -13,9 +13,9 @@
 
 ## 🔴 优先队列
 
-### 🔄 RUNNING 2026-10-19. EPIC-20261019 requirement clarification + review redesign
+### ✅ DONE 2026-10-19. EPIC-20261019 requirement clarification + review redesign — released in v4.0.4, archived
 
-- Epic: `.tad/active/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Release 4.0.4 prepared locally; push and tag wait for the human.
+- Epic: `.tad/archive/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Release 4.0.4 prepared locally; push and tag wait for the human.
 
 ### ✅ FIXED 2026-10-16（v4.0.3）. **安装器 tar-slip 误杀官方包 — 下载更新路径断裂（TASK-20261016-INSTALLER-TARSLIP-FIX）**
 
