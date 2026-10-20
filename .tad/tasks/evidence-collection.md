@@ -37,34 +37,18 @@ sub_agents_planned:
   - [agent-name]: [purpose]
 ```
 
-### 2. Requirement Elicitation Evidence
+### 2. Requirement Clarification Evidence
 **When:** During requirement gathering
-**Collected by:** Agent A
-**Enforced by:** BMAD elicitation mechanism
+**Collected by:** Agent A (Cora in an Epic)
+**Enforced by:** the requirement clarification method (`.agents/skills/cora/references/requirement-clarification.md`) and `bash .tad/hooks/lib/gate1-format-check.sh` (format, advisory)
+
+The record is the Epic's `## Requirement` (or the handoff's section 1.5): the per-block lines including `- **Done check**:` and `- **Not wanted**:`, the Q->A log, and the Assumptions. There is no rounds file and no 0-9 option format.
 
 ```yaml
-# .tad/evidence/project-logs/[project-name]/elicitation-rounds.yaml
-rounds_completed: [number]
-round_details:
-  - round: 1
-    timestamp: [time]
-    options_presented: [0-9 format used]
-    user_selection: [number selected]
-    understanding_delta: |
-      [What changed in understanding]
-
-  - round: 2
-    timestamp: [time]
-    clarifications: |
-      [What was clarified]
-    new_requirements: |
-      [What was added]
-
-  - round: 3
-    timestamp: [time]
-    confirmation_achieved: [yes|no]
-    final_requirements: |
-      [Complete requirement set]
+# kept in the project log, not a gate input
+clarification:
+  blocks_confirmed_by_human: [list]
+  assumptions_not_asked: [list]
 
 sub_agents_used:
   - product-expert:

@@ -169,7 +169,7 @@ Spec_Compliance_Verification:
   description: "Gate 3 的主验证源是 Handoff 的 §9.1 Spec Compliance Checklist 表格。逐行执行 Verification Method，对比 Expected Evidence，判断 pass/fail。"
   source: "active handoff 的 §9.1 Spec Compliance Checklist（每行：AC 编号 + Verification Method + Expected Evidence）"
   process:
-    step1: "The run reviewer starts from `bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out <its ac-rerun path> --id <its id>` (review contract §5 run), then reads the active handoff 的 §9.1 表格 and runs by hand every row the script marks not-scriptable or denied that is safe to run"
+    step1: "The run reviewer starts from `bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out <its ac-rerun path> --id <its id>` (review contract §5 run), then reads the active handoff 的 §9.1 表格 and runs by hand every row the script marks not-scriptable or not-run (no sandbox, or the sandbox probe failed) that is safe to run, in a scratch copy"
     step2_classify: "classify Method legality before execute — each landing row's Verification Method cell is LEGAL iff exactly one of: runnable command in backticks | evidence path-check | fixture runner | rubric-spawn | light-tier N/A with reason. prose-only Verification Method = FAIL for that row (present-but-prose is NOT the Empty Guard — it is a row FAIL → cannot Gate 3 PASS)."
     step3: "对每个 LEGAL 行，实际执行其 Verification Method（grep/命令/脚本）；ILLEGAL 行直接记 FAIL，不执行"
     step4: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"

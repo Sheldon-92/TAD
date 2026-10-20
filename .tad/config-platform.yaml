@@ -35,7 +35,7 @@ mcp_tools:
         description: "需求分析开始前推荐调用项目历史"
         action: "recommend"
         timing:
-          - "Round 0 (需求分析开始)"
+          - "需求澄清开始"
           - "设计阶段开始"
           - "回顾历史决策时"
 
@@ -47,13 +47,13 @@ mcp_tools:
       brave-search:
         description: "技术不确定时建议调研"
         action: "suggest"
-        timing: ["Round 2 技术研究"]
+        timing: ["技术研究时"]
 
     workflow_integration:
       requirement_analysis:
-        - "Round 0: RECOMMEND memory-bank"
-        - "Round 1-2: AUTO-TRIGGER context7 on framework mention"
-        - "Round 2: SUGGEST brave-search if technical uncertainty"
+        - "Clarification start: RECOMMEND memory-bank"
+        - "During clarification: AUTO-TRIGGER context7 on framework mention"
+        - "During clarification: SUGGEST brave-search if technical uncertainty"
         - "Round 2.5: AUTO-DETECT project type and recommend Project MCPs"
 
       design_phase:

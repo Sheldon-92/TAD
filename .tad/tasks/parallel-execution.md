@@ -23,7 +23,7 @@ Maximize development efficiency by orchestrating Claude Code's 16 built-in sub-a
 ```yaml
 product-expert:
   purpose: "Requirements analysis, user stories, value definition"
-  when_mandatory: "ALL requirement elicitation"
+  when_mandatory: "requirement clarification, when a block needs a product lens"
   opus_powered: false
 
 backend-architect:

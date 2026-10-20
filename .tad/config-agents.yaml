@@ -336,7 +336,7 @@ agent_teams:
 
   # Alex Review Team settings
   alex_review_team:
-    min_reviewers: 3
+    min_reviewers: 2   # review contract floor: two lenses
     debate_round: true
     delegate_mode: true
 

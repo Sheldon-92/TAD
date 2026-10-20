@@ -18,8 +18,8 @@ subagents_enforcement:
         violation: "未调用backend-architect进行架构设计"
 
       质量审查:
-        must_call: ["code-reviewer"]
-        violation: "未调用code-reviewer进行质量审查"
+        must_call: ["a reviewer given the consistency lens (code-reviewer is a Claude Code example, review contract section 9)"]
+        violation: "未派出 Gate 3 审查者（run + consistency，见 review contract section 8）"
 
     agent_b:
       复杂任务:
@@ -636,7 +636,7 @@ subagent_enforcement_v13:
     code_reviewer:
       when: "审查Blake的实现"
       must_call: true
-      evidence_required: "在审查报告中包含code-reviewer的发现"
+      evidence_required: "Gate 3 consistency review file present (review contract section 8)"
       evidence_format: "代码质量评分、问题列表、改进建议"
       violation_action: "阻止标记为完成"
 
