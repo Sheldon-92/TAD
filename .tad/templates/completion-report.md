@@ -34,7 +34,7 @@ gate3_verdict:
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| run (Gate 3 verdict + ac-rerun.md) | ✅/⚠️/❌ | [every §9.1 row (gate3-check.sh rerun) and real_path] |
+| run (Gate 3 verdict with `## AC runs`) | ✅/⚠️/❌ | [every §9.1 row and real_path, re-run by the run reviewer in a throwaway project copy] |
 | consistency | ✅/⚠️/❌ | [P0=0; open P1 carried, listed] |
 | domain (if security/data/money) | ✅/⚠️/❌/N/A | [N/A or result] |
 
@@ -50,7 +50,7 @@ List each `real_paths` id from the handoff and any path you expect to end `not-r
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| Expert Evidence | ✅/⚠️/❌ | [the lens files (gate3-verdict, consistency, domain) and ac-rerun file] |
+| Expert Evidence | ✅/⚠️/❌ | [the lens files (gate3-verdict, consistency, domain)] |
 | Ralph Loop Summary | ✅/⚠️/❌ | [Ralph Loop 执行摘要] |
 | Acceptance Verification | ✅/⚠️/❌ | [AC 验证脚本执行通过] |
 
@@ -260,7 +260,7 @@ Every claim in this report must have an on-disk carrier file (claims-need-carrie
 
 ### Expert Review Evidence
 - [ ] Gate 3 run verdict: .tad/evidence/reviews/blake/{slug}/gate3-verdict.md (Cora's runs: phase{N}-gate3-verdict.md)
-- [ ] AC re-run: .tad/evidence/reviews/blake/{slug}/ac-rerun.md (Cora's runs: phase{N}-ac-rerun.md)
+- [ ] AC runs: the `## AC runs` table in .tad/evidence/reviews/blake/{slug}/gate3-verdict.md (Cora's runs: phase{N}-gate3-verdict.md); gate3-check.sh exit 0
 - [ ] Consistency review: .tad/evidence/reviews/blake/{slug}/consistency-review.md
 - [ ] Domain review (if security, data or money is listed): .tad/evidence/reviews/blake/{slug}/domain-review.md
 

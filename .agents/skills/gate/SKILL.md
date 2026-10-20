@@ -169,7 +169,7 @@ Spec_Compliance_Verification:
   description: "Gate 3 的主验证源是 Handoff 的 §9.1 Spec Compliance Checklist 表格。逐行执行 Verification Method，对比 Expected Evidence，判断 pass/fail。"
   source: "active handoff 的 §9.1 Spec Compliance Checklist（每行：AC 编号 + Verification Method + Expected Evidence）"
   process:
-    step1: "The run reviewer starts from `bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out <its ac-rerun path> --id <its id>` (review contract §5 run), then reads the active handoff 的 §9.1 表格 and runs by hand every row the script marks not-scriptable or not-run (no sandbox, or the sandbox probe failed) that is safe to run, in a scratch copy"
+    step1: "The independent run reviewer (review contract §5 run) reads the active handoff 的 §9.1 表格 and runs every row itself, by hand, in one throwaway copy of the project (a git worktree or clone in scratch, deleted after); no script executes handoff commands. `bash .tad/hooks/lib/gate3-check.sh <handoff> <its verdict file>` only checks the evidence (AC table, real paths, not-run list)"
     step2_classify: "classify Method legality before execute — each landing row's Verification Method cell is LEGAL iff exactly one of: runnable command in backticks | evidence path-check | fixture runner | rubric-spawn | light-tier N/A with reason. prose-only Verification Method = FAIL for that row (present-but-prose is NOT the Empty Guard — it is a row FAIL → cannot Gate 3 PASS)."
     step3: "对每个 LEGAL 行，实际执行其 Verification Method（grep/命令/脚本）；ILLEGAL 行直接记 FAIL，不执行"
     step4: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"
@@ -291,8 +291,8 @@ Critical Check (9 items):
   - [ ] Git commit done (commit hash recorded, or NONE for doc-only)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
   - [ ] Provenance non-empty (advisory, WARN-not-BLOCK): ≥1 provenance row per CREATE file
-  - [ ] AC re-run by script — gate3-check.sh rerun output file present (dispatch_id of the run reviewer); every row compared with Expected Evidence
-  - [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh paths exit 0)
+  - [ ] ACs re-run by the run reviewer in one throwaway project copy — its verdict file's `## AC runs` table has every §9.1 AC row (or a not-run reason); every row compared with Expected Evidence
+  - [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh exit 0)
 Evidence: Record in completion report + evidence file
 Output Format:
   ### Gate 3 Result
@@ -628,16 +628,16 @@ Gate4_Friction_Review:
 Acceptance_By_Real_Use:
   rule: "MANDATORY: acceptance by real use — reading files is not acceptance (no paper acceptance); for protocol or prompt text the real use is a named scenario walk quoting file:line (contract §6)"
   duties:
-    1: "Reads ## Requirement, the Result contract and Assumptions (Epic; direct: handoff §1.5 and §9), the Gate 3 files, the completion report. Runs `gate3-check.sh paths <handoff> <Gate 3 run file>`: MISSING → FAIL."
+    1: "Reads ## Requirement, the Result contract and Assumptions (Epic; direct: handoff §1.5 and §9), the Gate 3 files, the completion report. Runs `gate3-check.sh <handoff> <Gate 3 run file>`: MISSING or UNEXPLAINED → FAIL."
     2: "Acts as the human: lists what he will do with the result, and does each once for real (install, build, call, open the page) in a scratch location — or drives a browser where its own tool list has one (Claude Code examples: the Browser pane, Claude in Chrome, a Playwright MCP); protocol text: named scenario walks quoting file:line. Evidence (screenshots, run logs, quoted lines) under .tad/evidence/yolo/{slug}/phase{N}-gate4/ (Cora) or .tad/evidence/reviews/alex/<slug>/gate4/ (direct). One real use per path, never a batch or a measurement (contract §6)."
-    3: "Judges against ## Requirement + Result contract (a departure names the requirement line). Recomputes quantitative ACs from raw files (AR-005) and any PARTIAL in play ([A089]); every other §9.1 row is read from the Gate 3 ac-rerun file, not re-run. A self-report that disagrees with disk counts as failed ([A037])."
+    3: "Judges against ## Requirement + Result contract (a departure names the requirement line). Recomputes quantitative ACs from raw files (AR-005) and any PARTIAL in play ([A089]); every other §9.1 row is read from the `## AC runs` table of the Gate 3 run file, not re-run. A self-report that disagrees with disk counts as failed ([A037])."
     4: "What only the human can do — a real device, a payment, his own account login — goes under `## For the human` as `Needs you: <item> — <reason>`; no other item is asked of him. No browser tool on this harness/subagent: `not-run: no browser tool on <harness>` under `## Not run` and as a `Not run:` line in `## For the human` (shown to him, never asked; not a `Needs you:` item); the verdict is given on what ran, and a UI deliverable whose real use did not run caps it at CONDITIONAL (a carried item, contract §7). The dispatcher (Cora step_Y7 3; Alex at *accept step3) re-dispatches the acceptor once on a subagent whose tool list has a browser when the harness offers one, before relaying. Installing a browser tool is a new dependency: a question (risk card [A036], pinned version, lock file), never silent and never a precondition. A paid call: stop — Cora run: class 3 question (stop reason 3); direct: Alex asks the human."
     5: "Release (the Result contract or phase includes a tag or publish): honours .tad/project-knowledge/rulings/human-rulings.md 2026-10-16 — installs the release archive shape (git archive of the release commit) end to end into a throwaway project before the tag. The real download install right after the tag is run by the party that pushes the tag (the release step, under the same confirmation as the tag), never handed to the human; the acceptor records it under `## Not run` as `not-run: after the tag — run by the release step (human-rulings.md 2026-10-16)` and as a `Not run:` line in `## For the human`."
     6: "Report (`lens: acceptor` header) ends with `## For the human`: line 1 `verdict: <…> — <one sentence>`; then 3–5 lines `- <what was done> → <what it showed> (<pointer>)`; then `Needs you:` items, `Not run:` items, `Assumptions:`, `Open P1:`. Knowledge Assessment and `## Knowledge candidates` unchanged."
   violation: "VIOLATION: a Gate 4 PASS while a security, data or money trigger has no Gate 3 domain review file; the domain lens MUST NOT be skipped by leaving a trigger the change has off the list."
 
 Gate3_Evidence_Check:
-  rule: "Gate 3 files present for every lens of contract §8 — run, consistency, and domain when risk_triggers lists security/data/money; ac-rerun file present; `gate3-check.sh paths` exit 0; FAIL enumerates what is missing."
+  rule: "Gate 3 files present for every lens of contract §8 — run, consistency, and domain when risk_triggers lists security/data/money; `gate3-check.sh <handoff> <run file>` exit 0 (AC table complete, every real_path run or not-run with a reason); FAIL enumerates what is missing."
 
 # Feedback Collection Check (BLOCKING — Phase 3, 2026-06-10)
 # Conditional: only applies when handoff §8.5 feedback_required: true.
@@ -690,12 +690,12 @@ Decision_Compliance:
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (4 items):
   - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract
-  - [ ] Gate 3 evidence complete — every contract §8 lens file, ac-rerun file, gate3-check.sh paths exit 0 (FAIL enumerates missing)
+  - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing)
   - [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
-# Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output → that item FAIL and gate4_delta.
+# Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs → that item FAIL and gate4_delta.
 Trust_Curve_Judgment: |
-  Do not expand parallelism, add bots, or claim an unverified capability until that capability's evidence chain has actually run — the Gate 3 §9.1 rows, the Gate 3 script re-run and the Gate 4 real use are the chain. A green verdict on prose-only verification is validation theater, not trust. This is judgment applied at each Gate, not a checklist row and not an L1 principle.
+  Do not expand parallelism, add bots, or claim an unverified capability until that capability's evidence chain has actually run — the Gate 3 §9.1 rows re-run by the run reviewer and the Gate 4 real use are the chain. A green verdict on prose-only verification is validation theater, not trust. This is judgment applied at each Gate, not a checklist row and not an L1 principle.
 Evidence: Record in NEXT.md or completion report + evidence files
 Output Format:
   ### Gate 4 Result
@@ -715,8 +715,7 @@ Output Format:
   | Item | Status | Note |
   |------|--------|------|
   | Lens files (run, consistency, domain if listed) | ✅ Present | {files} |
-  | ac-rerun file | ✅ Present | {file} |
-  | gate3-check.sh paths | ✅ exit 0 | {output} |
+  | gate3-check.sh (AC runs, real paths, not-run list) | ✅ exit 0 | {output} |
 
   #### For the human
   | Item | Content |

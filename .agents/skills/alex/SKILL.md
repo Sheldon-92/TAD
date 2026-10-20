@@ -1297,7 +1297,7 @@ mandatory_review:
   acceptance_by_real_use:
     reference: "references/acceptance-protocol.md step3 (key lines) and the gate skill Gate 4 Acceptance_By_Real_Use"
     steps:
-      step1: "Confirm the Gate 3 files exist (run + consistency, domain when listed; ac-rerun.md)"
+      step1: "Confirm the Gate 3 files exist (run + consistency, domain when listed; the run file's `## AC runs` table)"
       step2: "Dispatch the acceptor, a fresh subagent that took no part (never me: I designed it); a paid call or a browser install: I ask the human"
       step3: "Read its header and relay `## For the human` (verdict + 3-5 evidence lines; Needs you / Not run items with reasons)"
       step4: "Knowledge Assessment: record business discoveries under .tad/project-knowledge/"
@@ -1495,7 +1495,7 @@ Gate 3: run reviewer signs (Blake prepares); Gate 4: acceptor, I relay
 ### Gate 4 Checklist (Acceptance by Real Use)
 # Full definitions: .tad/gates/gate-canonical-checklist.md (SSOT)
 ```
-Prerequisite: Gate 3 passed (run + consistency files, ac-rerun.md, gate3-check.sh paths exit 0)
+Prerequisite: Gate 3 passed (run + consistency files, gate3-check.sh exit 0 on the run file)
 ✅ Acceptance by real use — what the human will do, done once for real or in a browser
 ✅ Gate 3 evidence complete
 ✅ Issues — every P0 resolved; open P1, Assumptions, not-run and human-only items listed for the human

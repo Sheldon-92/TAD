@@ -51,7 +51,6 @@ yolo_execution_protocol:
       - "phase{N}-design-review-consistency.md"
       - "phase{N}-design-review-risk.md or phase{N}-design-review-fit.md (the second Gate 2 reviewer; fit when the handoff's risk_triggers is [none])"
       - "phase{N}-gate3-verdict.md (Gate 3 run reviewer)"
-      - "phase{N}-ac-rerun.md (the run reviewer's gate3-check.sh rerun output; round k ≥ 2: -r<k>)"
       - "phase{N}-impl-review-consistency.md"
       - "phase{N}-impl-review-domain.md (only when security, data or money is listed)"
       - "phase{N}-gate-report.md"
@@ -201,7 +200,7 @@ yolo_execution_protocol:
         2. Dispatch the run reviewer (MANDATORY; it writes the Gate 3 verdict):
            prompt: "Load .tad/templates/review-contract.md and follow it; its P0 rule includes AR-001 ('this P0 is not important' = VIOLATION) [A118]. Lens: run.
                    Object: the commits listed in {completion_path}. Reference: {epic_path} ## Requirement and ## Result contract, and {handoff_path} (§9.1 and real_paths). Previous round: {same lens's file or none}. Spike/premise: {file or none}.
-                   Run `bash .tad/hooks/lib/gate3-check.sh rerun {handoff_path} --out .tad/evidence/yolo/{epic-slug}/phase{N}-ac-rerun.md --id {id}` first, and `gate3-check.sh paths {handoff_path} <your file>` before saving (review contract §5 run).
+                   Re-run every §9.1 row and real_path yourself, by hand, in one throwaway copy of the project (no script executes handoff commands), into `## AC runs`, `## Real paths` and `## Not run`; run `bash .tad/hooks/lib/gate3-check.sh {handoff_path} <your file>` before saving — it only checks that evidence (review contract §5 run).
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md and set the completion report's gate3_verdict marker. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Dispatch the consistency reviewer (MANDATORY; code-reviewer on Claude Code) [A117]:
            prompt: "Load .tad/templates/review-contract.md and follow it; its P0 rule includes AR-001 ('this P0 is not important' = VIOLATION) [A118]. Lens: consistency.
@@ -223,7 +222,7 @@ yolo_execution_protocol:
         5. Re-read the review files' headers from disk before routing (not from memory) [A120].
         6. Write the pointer: step Y6.
         → Proceed to step_Y7.
-      output: "Gate 3 review files on disk: phase{N}-gate3-verdict.md (run) with phase{N}-ac-rerun.md, phase{N}-impl-review-consistency.md (+ phase{N}-impl-review-domain.md)"
+      output: "Gate 3 review files on disk: phase{N}-gate3-verdict.md (run, with its AC runs table), phase{N}-impl-review-consistency.md (+ phase{N}-impl-review-domain.md)"
 
     step_Y7:
       name: "Gate 4 (one independent dispatch; Cora writes no verdict)"
@@ -232,7 +231,7 @@ yolo_execution_protocol:
         1. Gate 3 was settled in step_Y6: the run reviewer's phase{N}-gate3-verdict.md (latest round) with the consistency (and domain) files; Cora dispatches no separate verifier.
         2. Gate 4: dispatch an Alex subagent that took no part in this phase.
            prompt: "You are Alex, dispatched by the conductor (Cora) for one step: Gate 4 for Phase {N}. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it. Read {handoff_path}, {completion_path}, the design review files and the Gate 3 review files (phase{N}-gate3-verdict*.md, phase{N}-impl-review-*.md).
-                   Act as the human (gate skill Acceptance_By_Real_Use): what he will do with the result, done once for real or in a browser (screenshots / run logs under .tad/evidence/yolo/{epic-slug}/phase{N}-gate4/), judged against {epic_path} ## Requirement, Result contract and Assumptions; run `gate3-check.sh paths {handoff_path} <latest gate3 verdict>`. Only a real device, a payment or his own account login goes to the human, with the reason. No browser tool: `not-run: no browser tool on <harness>`, verdict on what ran. A paid call or a browser-tool install: write a class 3 question to the phase questions file and stop. A release honours .tad/project-knowledge/rulings/human-rulings.md. End with `## For the human`: the verdict and 3-5 evidence lines.
+                   Act as the human (gate skill Acceptance_By_Real_Use): what he will do with the result, done once for real or in a browser (screenshots / run logs under .tad/evidence/yolo/{epic-slug}/phase{N}-gate4/), judged against {epic_path} ## Requirement, Result contract and Assumptions; run `gate3-check.sh {handoff_path} <latest gate3 verdict>`. Only a real device, a payment or his own account login goes to the human, with the reason. No browser tool: `not-run: no browser tool on <harness>`, verdict on what ran. A paid call or a browser-tool install: write a class 3 question to the phase questions file and stop. A release honours .tad/project-knowledge/rulings/human-rulings.md. End with `## For the human`: the verdict and 3-5 evidence lines.
                    A P0 states a failure scenario and what it blocks (verdict_header).
                    Record the gate4_delta (design intent vs. what was built, surprises, deviations) and the knowledge assessment.
                    The knowledge assessment must iterate three explicit checks: (a) did this acceptance reveal anything new, (b) is it already in project-knowledge, (c) where does it belong [A095].

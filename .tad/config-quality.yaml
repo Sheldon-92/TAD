@@ -216,14 +216,14 @@ quality_gates:
 
     # Pre-condition
     prerequisite:
-      - "Gate 3 passed (run + consistency, domain when listed; ac-rerun file; gate3-check.sh paths exit 0)"
+      - "Gate 3 passed (run + consistency, domain when listed; gate3-check.sh exit 0 on the run file)"
       - "Blake's completion report received"
 
     # Business Acceptance (aligned with canonical — MECE 4 items)
     acceptance:
       checks:
         - "Acceptance by real use — what the human will do, done once for real or in a browser; judged against ## Requirement + Result contract"
-        - "Gate 3 evidence complete — every contract lens file, ac-rerun file, gate3-check.sh paths exit 0"
+        - "Gate 3 evidence complete — every contract lens file, gate3-check.sh exit 0 on the run file"
         - "Issues — every P0 resolved; open P1, Assumptions, not-run and human-only items listed for the human"
         - "Knowledge Assessment complete — distillation or no discovery"
 
@@ -232,7 +232,7 @@ quality_gates:
         description: "Review Blake's Gate 3 evidence (not re-execute)"
         files:
           - "{task_id}_summary.md"
-          - "Gate 3 run verdict and ac-rerun file"
+          - "Gate 3 run verdict (with its AC runs table)"
           - "Gate 3 consistency (and domain) review file"
 
       # Optional subagent calls (business focus)
@@ -273,7 +273,7 @@ quality_gates:
 
     matrix:
       run:
-        gate3: "Required (run reviewer signs the verdict; gate3-check.sh rerun and paths)"
+        gate3: "Required (run reviewer re-runs the ACs in a throwaway project copy and signs; gate3-check.sh checks the evidence)"
         gate4: "N/A"
         notes: "Runs every §9.1 row and real_path"
 
@@ -699,7 +699,7 @@ template_triggers:
       subagent: "run + consistency reviewers (review contract §8)"
       evidence_path: ".tad/evidence/reviews/blake/{slug}/gate3-verdict.md and consistency-review.md (Cora's runs: .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md and phase{N}-impl-review-consistency.md)"
       blocking: true
-      description: "Gate 3 通过前必须有 run 和 consistency 审查文件（及 ac-rerun）"
+      description: "Gate 3 通过前必须有 run 和 consistency 审查文件（run 文件含 AC runs 表）"
 
     gate_4:
       subagents:
@@ -751,7 +751,7 @@ template_triggers:
       description: "Gate 3 通过条件"
       requirements:
         - "COMPLETION-*.md exists in .tad/active/handoffs/"
-        - "the Gate 3 run reviewer's gate3-verdict file and the ac-rerun file exist"
+        - "the Gate 3 run reviewer's gate3-verdict file exists with its AC runs table"
         - "the consistency review file exists (and the domain file when risk_triggers lists security, data or money)"
       blocking: true
 
@@ -759,7 +759,7 @@ template_triggers:
       description: "Gate 4 通过条件"
       requirements:
         - "the acceptor's gate report exists and ends with ## For the human"
-        - "gate3-check.sh paths exit 0 on the Gate 3 run file"
+        - "gate3-check.sh exit 0 on the Gate 3 run file"
       blocking: true
 
 # ==================== Pillar 3: Fatal Operation Protection ====================

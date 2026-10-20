@@ -10,10 +10,10 @@ acceptance_protocol:
     Gate 3: run + consistency (+ domain) reviewers, the run reviewer signs; Gate 4: an acceptor that took no part, by real use
 
   step1: "Blake's completion report exists (written before the Layer 2 dispatch)"
-  step2: "Confirm the Gate 3 files exist: the run reviewer's gate3-verdict.md (PASS or CONDITIONAL) with ac-rerun.md, plus the consistency (and domain) files (review contract §8)"
+  step2: "Confirm the Gate 3 files exist: the run reviewer's gate3-verdict.md (PASS or CONDITIONAL) with its `## AC runs` table, plus the consistency (and domain) files (review contract §8)"
   step3: |
     Dispatch the acceptor — a fresh subagent that took no part (never me: I designed it), prompt as conductor step_Y7 2 with direct paths (handoff, completion, `.tad/evidence/reviews/blake/<slug>/`, output `.tad/evidence/reviews/alex/<slug>/gate4-report.md`, evidence `…/gate4/`); a paid call or a browser install: I ask the human.
-    The acceptor acts as the human: does once for real what he will do with the result, or drives a browser (screenshots / run logs under `…/gate4/`); judges against `## Requirement` (handoff §1.5 in direct mode), the Result contract (handoff §1.1/§1.3 when there is no Epic) and Assumptions; runs `gate3-check.sh paths <handoff> <gate3-verdict.md>`; only a real device, a payment or his own account login go to the human, as `Needs you:` with the reason; no browser tool: `not-run: no browser tool on <harness>` (then I re-dispatch once on a subagent with a browser when this harness offers one); the report ends with `## For the human`.
+    The acceptor acts as the human: does once for real what he will do with the result, or drives a browser (screenshots / run logs under `…/gate4/`); judges against `## Requirement` (handoff §1.5 in direct mode), the Result contract (handoff §1.1/§1.3 when there is no Epic) and Assumptions; runs `gate3-check.sh <handoff> <gate3-verdict.md>`; only a real device, a payment or his own account login go to the human, as `Needs you:` with the reason; no browser tool: `not-run: no browser tool on <harness>` (then I re-dispatch once on a subagent with a browser when this harness offers one); the report ends with `## For the human`.
   step4:
     action: "【业务检查 — 逐条 AC 对照】"
     details: |
@@ -28,8 +28,8 @@ acceptance_protocol:
           | AC# | 要求 | Blake 报告状态 | Evidence 存在 | Alex 判定 |
           |-----|------|---------------|--------------|----------|
        5. 如有任何 AC 未满足 → 不通过，退回 Blake
-       6. Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run;
-          Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output → that item FAIL and gate4_delta.
+       6. Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run;
+          Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs → that item FAIL and gate4_delta.
     blocking: true
     # ⚠️ ANTI-RATIONALIZATION: "仔细审查了 completion report，功能看起来完全符合"
     # → "看起来符合"≠实际验证。必须输出逐条对照表。
@@ -376,7 +376,7 @@ acceptance_protocol:
     acceptor_items:
       - "Acceptance by real use: what the human will do, done once for real or in a browser (evidence under gate4/)"
       - "Judged against ## Requirement + Result contract; Assumptions, not-run and human-only items listed"
-      - "Gate 3 files complete; gate3-check.sh paths exit 0"
+      - "Gate 3 files complete; gate3-check.sh exit 0"
     human_approval:
       - "Verdict + 3-5 evidence lines relayed; his answer recorded"
     knowledge_assessment:

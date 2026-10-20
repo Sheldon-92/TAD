@@ -38,7 +38,7 @@ SUBSTITUTION_HEURISTICS_LIST="self-review feedback-integration"
 
 # Lens file names of the review contract (run = gate3-verdict, consistency-review,
 # domain-review) are in the counted list above: each counts once as a lens.
-# IGNORED_LIST: files that are not reviewers (the scripted AC re-run output and the
+# IGNORED_LIST: files that are not reviewers (legacy ac-run output files written before Phase 3 rework 3, and the
 # Gate 4 acceptor's report): not counted, no unknown-name WARN.
 IGNORED_LIST="ac-rerun gate4-report"
 

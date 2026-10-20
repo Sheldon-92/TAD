@@ -227,7 +227,7 @@ handoff_creation_protocol:
         runnable command in backticks | evidence path-check | fixture runner | rubric-spawn |
         light-tier N/A with reason (light tiers only). An ILLEGAL (prose-only) Method cell is
         NOT shippable: rewrite it into a runnable command BEFORE ship — Gate 3 marks the row
-        FAIL (prose-only Verification Method = FAIL) and the Gate 3 script re-run (gate3-check.sh) cannot
+        FAIL (prose-only Verification Method = FAIL) and the Gate 3 run reviewer cannot
         record a not-scriptable row as run. Do NOT invent a new `verify:` column or frontmatter key; tighten the Method cell.
 
     step1a:

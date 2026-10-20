@@ -180,7 +180,7 @@ Gate 4: 真实使用验收了吗？   ← acceptor 做（没参与；人类只�
 **Layer 1（自检）**：Blake 自己跑 build、test、lint。最多重试 15 次。
 
 **Layer 2（Gate 3 reviewers）**：Blake 派发 AI 子 agent，各用不同的 lens：
-- run — 真跑每条 §9.1 方法和 real path（`gate3-check.sh rerun`），签 Gate 3 verdict
+- run — 真跑每条 §9.1 方法和 real path（在一份一次性项目副本里手动跑；`gate3-check.sh` 只查证据），签 Gate 3 verdict
 - consistency — 查矛盾和被改行的所有使用方
 - domain — 仅当 risk_triggers 含 security / data / money
 

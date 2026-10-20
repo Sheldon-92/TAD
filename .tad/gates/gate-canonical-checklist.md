@@ -56,8 +56,8 @@ Checklist items:
 - [ ] Git commit done — hash recorded (or NONE for doc-only). Why ME: 版本控制
 - [ ] Knowledge Assessment complete — journal or "no discovery". Why ME: 知识捕获
 - [ ] Provenance non-empty (advisory) — ≥1 row per CREATE file. Why ME: 生成可追溯性
-- [ ] AC re-run by script — gate3-check.sh rerun output file present (dispatch_id of the run reviewer); every row compared with Expected Evidence. Why ME: 重算是否真跑
-- [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh paths exit 0). Why ME: 真实路径覆盖
+- [ ] ACs re-run by the run reviewer in one throwaway project copy — its verdict file's `## AC runs` table has every §9.1 AC row (or a not-run reason); every row compared with Expected Evidence. Why ME: 重算是否真跑
+- [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh exit 0). Why ME: 真实路径覆盖
 
 Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 + 脚本重跑 + 真实路径 — 九个独立 artifact。
 
@@ -66,8 +66,8 @@ Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 + 脚本
 
 Checklist items:
 - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract. Why ME: 只检查"从人的一侧真跑过"
-  Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output -> that item FAIL and gate4_delta.
-- [ ] Gate 3 evidence complete — every contract §8 lens file, ac-rerun file, gate3-check.sh paths exit 0 (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
+  Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs -> that item FAIL and gate4_delta.
+- [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
 - [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
 

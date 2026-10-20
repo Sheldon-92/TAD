@@ -933,8 +933,8 @@ ralph_loop_execution:
         reviewers:
           run:
             blocking: true  # MUST run every §9.1 method and real_path
-            writes: ".tad/evidence/reviews/blake/<slug>/gate3-verdict.md, ac-rerun.md and the gate3_verdict: marker (the run reviewer writes them, never Blake)"
-            runs_first: "bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out .tad/evidence/reviews/blake/<slug>/ac-rerun.md --id <id>; gate3-check.sh paths <handoff> <its gate3-verdict.md> before saving (review contract §5 run)"
+            writes: ".tad/evidence/reviews/blake/<slug>/gate3-verdict.md (with its `## AC runs` table) and the gate3_verdict: marker (the run reviewer writes them, never Blake)"
+            runs: "every §9.1 row and real_path by hand in one throwaway copy of the project (no script executes handoff commands); bash .tad/hooks/lib/gate3-check.sh <handoff> <its gate3-verdict.md> before saving — evidence check only (review contract §5 run)"
             subagent: "general-purpose (test-runner for a test suite)"
           consistency:
             blocking: true
@@ -1672,7 +1672,7 @@ completion_protocol:
     trigger: "*develop [task-id]"
     layer1: "Self-Check (max 15 retries, circuit breaker @ 3)"
     layer2: "Gate 3 reviewers (round 3 with an open P0 → escalate to Alex)"
-    gate3_v2: "Gate 3 reviewers + scripted AC re-run (the run reviewer signs)"
+    gate3_v2: "Gate 3 reviewers; the run reviewer re-runs the ACs in a throwaway project copy and signs"
     completion: "Report + handoff to Alex for Gate 4 (acceptor)"
 
   # ⚠️ step3b 详细执行协议 (Acceptance Verification)
@@ -1990,7 +1990,7 @@ on_start: |
 - `*layer1` - Run Layer 1 self-check only
 - `*layer2` - Run Layer 2 expert review only
 - `*parallel` - Start parallel-coordinator (for multi-component)
-- `*gate 3` - Run Gate 3 preparation (reviewers + script re-run)
+- `*gate 3` - Run Gate 3 preparation (reviewers; the run reviewer re-runs the ACs)
 - `*gate 4` - Hand over to Alex for Gate 4 (acceptor, by real use)
 
 ### Ralph Loop Rules

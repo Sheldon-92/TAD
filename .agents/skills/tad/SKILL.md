@@ -64,7 +64,7 @@ Select 0-9:
 
 ### 🔄 v2.0 Highlights (Preserved)
 - **Ralph Loop**: Blake's iterative quality cycle (Layer 1 self-check + Layer 2 expert review)
-- **Gate 3**: run + consistency reviewers (+ domain), scripted AC re-run; the run reviewer signs
+- **Gate 3**: run + consistency reviewers (+ domain); the run reviewer re-runs the ACs in a throwaway project copy and signs
 - **Gate 4**: an acceptor that took no part accepts by real use
 - **Circuit Breaker**: Auto-escalate after 3 same errors
 - **State Persistence**: Resume from crash without losing progress
@@ -112,7 +112,7 @@ Select 0-9:
 2. **Blake** (`/blake`, direct use) → Activate Blake
    - Verify handoff from Alex (auto-detect on startup)
    - `*develop` → Ralph Loop (Layer 1 + Layer 2)
-   - Gate 3 → reviewers + scripted re-run (the run reviewer signs)
+   - Gate 3 → reviewers; the run reviewer re-runs the ACs and signs
    - Report to Alex for Gate 4 (acceptor, by real use)
 
 ## Quality Gates (Mandatory)
