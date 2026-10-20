@@ -1,0 +1,15 @@
+echo ok
+git status --short
+git log -1 --format=%s
+git rev-parse HEAD
+git ls-files
+grep -c base canary.txt
+T=$(mktemp -d); echo x > $T/a.txt; cat $T/a.txt; wc -l < $T/a.txt
+for f in a b; do echo $f; done | sort | head -1
+f(){ echo hi; }; f
+sed -n 1p canary.txt
+awk 'BEGIN{print 1+1}'
+diff <(echo a) <(echo a)
+bash -n .tad/hooks/lib/hello.sh
+bash .tad/hooks/lib/hello.sh
+echo $(git rev-parse --short HEAD) | head -1

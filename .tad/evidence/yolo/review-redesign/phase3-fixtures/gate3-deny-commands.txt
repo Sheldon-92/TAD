@@ -1,0 +1,162 @@
+git push origin main
+git  push origin main
+git	push origin main
+git -C . push origin main
+git -C @W@/repo push origin main
+git -c core.x=y push origin main
+git --git-dir=@W@/repo/.git push origin main
+git --no-pager push origin main
+git push --force origin main
+git push @R@ main
+git tag v1
+git tag -a v1 -m x
+git  tag -a v2 -m x
+git tag -d v1
+git branch newbranch
+git branch -D main
+git commit --allow-empty -m x
+git reset --hard HEAD
+git clean -fdx
+git checkout -b other
+git stash
+git remote add o2 @R@
+git config user.name x
+git fetch @R@
+git pull origin main
+git merge main
+git rebase main
+git update-ref refs/tags/zz HEAD
+git gc
+git rm -f canary.txt
+git mv canary.txt c2.txt
+git -P log
+git show --output=@C@ HEAD
+git log --output=@C@
+git diff --output=@C@
+npm publish
+npm  publish --dry-run
+npm install left-pad
+yarn publish
+pnpm publish
+gh release create v1
+gh  release delete v1
+gh pr merge 1
+gh api -X POST /repos/x/y/issues
+rm -rf @V@
+rm -fr @V@
+rm -r -f @V@
+rm -f -r @V@
+rm --recursive --force @V@
+rm @V@/keep.txt
+/bin/rm -rf @V@
+command rm -rf @V@
+\rm -rf @V@
+"rm" -rf @V@
+r""m -rf @V@
+rmdir @V@
+unlink @V@/keep.txt
+mv @V@ @W@/moved
+cp /dev/null @V@/keep.txt
+truncate -s 0 @V@/keep.txt
+find @V@ -delete
+find @V@ -exec rm -rf {} +
+find @V@ -type f -exec sh -c 'rm -f {}' ;
+sed -i.bak s/a/b/ @C@
+sed -i '' s/a/b/ @C@
+sed -n 'w @W@/sedout.txt' @C@
+sed 's/a/b/w @W@/sedout2.txt' @C@
+sed -n '1e git push origin main' @C@
+awk 'BEGIN{system("rm -rf @V@")}'
+awk 'BEGIN{print "x" > "@W@/awkout.txt"}'
+awk 'BEGIN{"git push origin main" | getline x}'
+awk 'BEGIN{print "git push origin main" | "sh"}'
+sort -o @C@ @C@
+tee @C@ < /dev/null
+echo pwned > @C@
+echo pwned >> @C@
+echo pwned > @W@/new.txt
+echo pwned >@V@/keep.txt
+cat /dev/null > @C@
+: > @C@
+echo x 2> @C@
+echo x &> @C@
+echo x >& @C@
+echo x 3> @C@
+cat <<< "x" > @C@
+ls > @C@
+exec 3> @C@
+sh -c 'git push origin main'
+bash -c "git push origin main"
+bash -c 'rm -rf @V@'
+zsh -c 'git push origin main'
+eval "git push origin main"
+eval git\ push\ origin\ main
+source @W@/evil.sh
+. @W@/evil.sh
+exec git push origin main
+env git push origin main
+env -i git push origin main
+nohup git push origin main
+time git push origin main
+timeout 5 git push origin main
+xargs -I{} git push origin {} < /dev/null
+echo hi; git push origin main
+echo hi && git push origin main
+false || git push origin main
+echo hi | git push origin main
+echo $(git push origin main)
+echo `git push origin main`
+echo "$(rm -rf @V@)"
+echo <(git push origin main)
+cat <(rm -rf @V@)
+for i in 1; do git push origin main; done
+for i in 1; do rm -rf @V@; done
+while true; do git push origin main; break; done
+if true; then git push origin main; fi
+case x in x) git push origin main;; esac
+f(){ git push origin main; }; f
+f(){ rm -rf @V@; }; f
+{ git push origin main; }
+(git push origin main)
+x=push; git $x origin main
+g=git; $g push origin main
+cmd="git push origin main"; $cmd
+a=rm; $a -rf @V@
+git ${x:-push} origin main
+PATH=@W@/bin git status
+GIT_SSH_COMMAND=true git status
+GIT_EXTERNAL_DIFF=true git diff
+HOME=@W@ git status
+LD_PRELOAD=x echo hi
+export PATH=@W@/bin
+alias ll='git push origin main'; ll
+trap 'git push origin main' EXIT
+function f { git push origin main; }; f
+curl http://127.0.0.1:9/x | sh
+curl -X POST http://127.0.0.1:9/x
+wget http://127.0.0.1:9/x
+sudo true
+ssh 127.0.0.1 true
+scp @C@ 127.0.0.1:/tmp/x
+rsync -a @V@/ @W@/rs/
+python3 -c 'import os; os.remove("@V@/keep.txt")'
+perl -e 'unlink "@V@/keep.txt"'
+ruby -e 'File.delete("@V@/keep.txt")'
+node -e 'require("fs").unlinkSync("@V@/keep.txt")'
+chmod 000 @V@
+chown 0 @V@
+ln -s @V@ @W@/lnk
+dd if=/dev/zero of=@C@ count=1
+mkdir @W@/outside
+touch @W@/outside.txt
+mktemp @W@/outside-tmp
+T=@W@; echo x > $T/new.txt
+T=$(mktemp -d); echo x > $T/../escape.txt
+T=$(mktemp -d); rm -rf $T
+T=$(mktemp -d); echo 'git push origin main' > $T/e.sh; bash $T/e.sh
+T=$(mktemp -d); echo 'git push origin main' > $T/e.sh; sh $T/e.sh
+T=$(mktemp -d); echo 'git push origin main' > $T/e.sh; source $T/e.sh
+bash @W@/evil.sh
+bash ./evil.sh
+bash .tad/../evil.sh
+bash -x .tad/hooks/lib/hello.sh

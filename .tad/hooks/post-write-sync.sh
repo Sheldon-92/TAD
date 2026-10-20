@@ -308,7 +308,7 @@ case "$FILE_PATH" in
     else
       record_trace "handoff_created" "$FILE_PATH" "" || true   # malformed slug → legacy emit
     fi
-    output_response "PostToolUse" "Handoff created. BEFORE sending to Blake: 1. Call 2+ expert sub-agents (code-reviewer REQUIRED + 1 domain expert) 2. Fix ALL P0 issues from expert review 3. Run /gate 2 4. Generate Blake message (Step 7). Skipping expert review = VIOLATION. (Alex dispatched by Cora: stop here; Cora dispatches the reviewers.)"
+    output_response "PostToolUse" "Handoff created. BEFORE sending to Blake: 1. Run the Gate 2 review (review-contract section 8): fresh subagents on different lenses - consistency plus risk (one per listed risk trigger), or fit when risk_triggers is none 2. Fix ALL P0 findings; carry P1 3. Run /gate 2 4. Generate Blake message (Step 7). Skipping the Gate 2 review = VIOLATION. (Alex dispatched by Cora: stop here; Cora dispatches the reviewers.)"
     ;;
   *.tad/active/handoffs/COMPLETION-*.md)
     update_session_state_metadata "$FILE_PATH"

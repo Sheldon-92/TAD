@@ -42,6 +42,16 @@ has() {
   fi
 }
 
+# hasf TEXT ERE [-i] : like has, but only a matching line that is FILLED counts: a line
+# still holding a template placeholder `{...}` does not satisfy a check.
+hasf() {
+  if [ "$3" = "-i" ]; then
+    printf '%s\n' "$1" | command grep -Ei -- "$2" | command grep -Evq '\{[^{}]+\}'
+  else
+    printf '%s\n' "$1" | command grep -E -- "$2" | command grep -Evq '\{[^{}]+\}'
+  fi
+}
+
 base=$(basename "$f")
 case "$base" in
   HANDOFF-*) mode=handoff ;;
@@ -55,19 +65,23 @@ whole=$(cat "$f")
 if [ "$mode" = epic ]; then
   req=$(sec '^## Requirement' '^## ')
   rc=$(sec '^## Result contract' '^## ')
-  has "$req" '^- \*\*' && ok c0a "Requirement has block lines" || bad c0a "Requirement has block lines"
+  hasf "$req" '^- \*\*' && ok c0a "Requirement has a filled block line" || bad c0a "Requirement has a filled block line"
   has "$whole" '^### Q→A log' && ok c0b "Q->A log" || bad c0b "Q->A log"
   has "$whole" '^### Assumptions' && ok c0c "Assumptions" || bad c0c "Assumptions"
-  has "$rc" 'What the human gets' && ok c1a "Result contract: What the human gets" || bad c1a "Result contract: What the human gets"
-  has "$rc" 'Not wanted' && ok c1b "Result contract: Not wanted" || bad c1b "Result contract: Not wanted"
-  has "$req" '^- \*\*([A-Za-z0-9]+\. )?Done check' -i && ok c2 "Requirement: Done check block" || bad c2 "Requirement: Done check block"
-  has "$whole" '^### Decisions for the human' && ok c3a "Decisions for the human heading" || bad c3a "Decisions for the human heading"
-  has "$rc" '^Premise:' && ok c3b "Result contract: Premise" || bad c3b "Result contract: Premise"
-  has "$whole" '^\*\*Depth\*\*:.*blast radius' && ok c3c "Depth line with blast radius" || bad c3c "Depth line with blast radius"
-  has "$whole" '^\*\*Budget\*\*:.*[0-9]' && ok c4 "Budget line with an estimate" || bad c4 "Budget line with an estimate"
+  hasf "$rc" 'What the human gets' && ok c1a "Result contract: What the human gets (filled)" || bad c1a "Result contract: What the human gets (filled)"
+  hasf "$rc" 'Not wanted' && ok c1b "Result contract: Not wanted (filled)" || bad c1b "Result contract: Not wanted (filled)"
+  hasf "$req" '^- \*\*([A-Za-z0-9]+\. )?Done check' -i && ok c2 "Requirement: Done check block (filled)" || bad c2 "Requirement: Done check block (filled)"
+  dec=$(sec '^### Decisions for the human' '^#{1,3} ')
+  { has "$dec" '^### Decisions for the human' && hasf "$dec" '^- '; } && ok c3a "Decisions for the human: heading and a filled line" || bad c3a "Decisions for the human: heading and a filled line"
+  hasf "$rc" '^Premise:' && ok c3b "Result contract: Premise (filled)" || bad c3b "Result contract: Premise (filled)"
+  hasf "$whole" '^\*\*Depth\*\*:.*blast radius' && ok c3c "Depth line with blast radius (filled)" || bad c3c "Depth line with blast radius (filled)"
+  hasf "$whole" '^\*\*Budget\*\*:.*[0-9]' && ok c4 "Budget line with an estimate (filled)" || bad c4 "Budget line with an estimate (filled)"
 
 elif [ "$mode" = handoff ]; then
-  ep=$(command grep -m1 -E '\*\*Epic:\*\* *EPIC-' "$f" | sed -E 's/.*\*\*Epic:\*\* *//; s/ .*//')
+  # The Epic pointer counts only as a header line: line-anchored, between the first
+  # `# ` title and the first `---` after it. A quote of the string in the body does not.
+  hdr=$(awk '!on { if ($0 ~ /^# /) on = 1; next } /^---$/ { exit } { print }' "$f")
+  ep=$(printf '%s\n' "$hdr" | command grep -m1 -E '^\*\*Epic:\*\* *EPIC-' | sed -E 's/.*\*\*Epic:\*\* *//; s/ .*//')
   if [ -n "$ep" ]; then
     ok g0 "Gate 1 is the Epic's: run on $ep"
   elif command grep -q '^## Bug Description' "$f"; then
@@ -81,8 +95,8 @@ elif [ "$mode" = handoff ]; then
       /^## / || /^---$/ { exit }
       { print }' "$f")
     has "$h" '^### 1\.5 Requirement' && ok c0 "1.5 Requirement heading" || bad c0 "1.5 Requirement heading"
-    has "$h" '^- \*\*([A-Za-z0-9]+\. )?Done check' -i && ok c2 "1.5: Done check line" || bad c2 "1.5: Done check line"
-    has "$h" '^- \*\*([A-Za-z0-9]+\. )?Not wanted' -i && ok c1 "1.5: Not wanted line" || bad c1 "1.5: Not wanted line"
+    hasf "$h" '^- \*\*([A-Za-z0-9]+\. )?Done check' -i && ok c2 "1.5: Done check line (filled)" || bad c2 "1.5: Done check line (filled)"
+    hasf "$h" '^- \*\*([A-Za-z0-9]+\. )?Not wanted' -i && ok c1 "1.5: Not wanted line (filled)" || bad c1 "1.5: Not wanted line (filled)"
     has "$h" '^#### Q→A log' && ok c0b "1.5: Q->A log" || bad c0b "1.5: Q->A log"
     has "$h" '^#### Assumptions' && ok c0c "1.5: Assumptions" || bad c0c "1.5: Assumptions"
   fi
