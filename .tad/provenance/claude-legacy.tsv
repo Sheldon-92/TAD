@@ -1,4 +1,4 @@
-# schema=1 rows=1949
+# schema=1 rows=1952
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -367,6 +367,7 @@ skill	06dd8793673e20b4457054b6886bc4dd18217256	release-runbook/SKILL.md
 skill	06f0d48483fa80e4fb2e0950c1478d0c87326b87	synthetic-data/references/deduplication-rules.md
 skill	06fde29f31da9e061a962cca602f33325ac61167	blake/SKILL.md
 skill	071a392bf57dac1caadb015ec1634a0b13dcb6e8	code-security/examples/sast-dast-triage-pipeline.md
+skill	071d914263c7abdc5e5019f2a5f35c714d08819a	blake/SKILL.md
 skill	075d139b55ff85fab3f1ba6d941a84aaa8ebc51c	alex/SKILL.md
 skill	080a8dfc511393fac3e15616f428ac71dbfc75d6	cora/SKILL.md
 skill	083aa177a22b727079947f4212b9ab12b64d4376	alex/SKILL.md
@@ -744,6 +745,7 @@ skill	4158a385c33552d8d55b7b1ba0f299f1295eb045	web-deployment/references/domain-
 skill	4166ebf19a4110b5c64947bf43e7bb109fd314cd	alex/references/acceptance-protocol.md
 skill	418f2a0ed72ed655d760578f879278e1ca05eecc	supply-chain-security/references/typosquat-detection.md
 skill	41be54fee284db92ab262a0eabbdcad64d8a2863	alex/references/research-plan-protocol.md
+skill	41d4fe52ca16cd49c5c0878576c945e3679058b9	tad-help/SKILL.md
 skill	4215a6eeaa9b7486558be4895ade0ce2a2c7331b	knowledge-graph/references/entity-resolution.md
 skill	42222192c4ac5f26674736f3c84934dd240e5d36	web-ui-design/SKILL.md
 skill	42381e06e9f0ed252dde6911e2c98687dda932d3	alex/SKILL.md
@@ -1723,6 +1725,7 @@ skill	e224d488e75c61203894c50c98af33163ce419c0	ai-voice-production/scripts/lufs-
 skill	e246dcdc8f672b27dff882c2bf7cc094a03073a4	blake/SKILL.md
 skill	e2884337c9dd5c3255d85ee184fa39f48397a352	data-engineering/references/dimensional-modeling-rules.md
 skill	e2cf4364de737d8949a79aa9ad68ae48204d006e	agent-memory/references/memgpt-letta-mem0.md
+skill	e3619e5cdd80d7e7ef75491d58c178434b954a02	alex/SKILL.md
 skill	e367e43967cebdab04806d7b7eb5a7c2391a6a13	surplus/SKILL.md
 skill	e3914d08b616002c268978d9d7a400510af39944	alex/references/learn-path-protocol.md
 skill	e3db17d4a702c56b2f38cf7be4d7f8dddae0d09d	data-engineering/references/transformation-stack-rules.md
