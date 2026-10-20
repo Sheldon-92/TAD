@@ -7,15 +7,19 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.4（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.3）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.5（发布准备完成，未 push、未打标签，等人确认；上一已发布版本 4.0.4）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
 
+### ✅ DONE 2026-10-20. EPIC-20261020 installer fixes — released in v4.0.5 (prepared locally)
+
+- Epic: `.tad/active/epics/EPIC-20261020-installer-fixes.md` (accepted 2026-10-20; archive pending). Skill-link check, backup naming and `changes.tsv`, retention keeps the pre-upgrade backup, non-ASCII backup dir, rulings file optional (8528b948, 951e71e3). Push and tag wait for the human.
+
 ### ✅ DONE 2026-10-19. EPIC-20261019 requirement clarification + review redesign — released in v4.0.4, archived
 
-- Epic: `.tad/archive/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Release 4.0.4 prepared locally; push and tag wait for the human.
+- Epic: `.tad/archive/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Released as v4.0.4 (tagged, pushed).
 
 ### ✅ FIXED 2026-10-16（v4.0.3）. **安装器 tar-slip 误杀官方包 — 下载更新路径断裂（TASK-20261016-INSTALLER-TARSLIP-FIX）**
 

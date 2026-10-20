@@ -1,6 +1,6 @@
 # TAD Installation Guide
 
-**Version 4.0.4 — Cora, Alex and Blake are the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
+**Version 4.0.5 — Cora, Alex and Blake are the Default, Codex / OpenCode / Cursor / Claude Code are supported runtimes**
 
 ## 安装方式
 
@@ -62,7 +62,7 @@ cd .. && rm -rf .tad-source
 
 ```bash
 # 验证安装
-cat .tad/version.txt          # 应显示 4.0.4
+cat .tad/version.txt          # 应显示 4.0.5
 ls .agents/skills/ | wc -l    # 应 >= 20（框架 skills + packs）
 
 # 默认：从 Cora 开始（Codex 用 $cora）。说清想要的结果，她安排 Epic，你说「继续」后她通过 subagent 和 gate 跑完

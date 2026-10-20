@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.5] - 2026-10-20
+
+Patch release. Installer fixes only, found when a downstream project (买卖) was upgraded from 4.0.3 to 4.0.4. No change to Cora, Alex, Blake, the gates or the reviewer rules. Change: `tad.sh`, its fixture, one shipped script line and three protocol lines (EPIC-20261020-installer-fixes, commits 8528b948 and 951e71e3).
+
+### What changed
+
+- **Post-install skill-link check.** After an install or update the installer looks at every entry under `.claude/skills/` and `.agents/skills/` (except `_archived*`) and reports each one that does not resolve to a regular `SKILL.md` (broken link, not a directory, no `SKILL.md`). It only reports; it never fails the run and never deletes. It runs after the stale-link prune, so links removed a moment earlier are not listed.
+- **Accurate backup folder names and a per-file manifest.** The in-project backup folder now names the real versions (`<from>-to-<to>`); a 4.0.3 to 4.0.4 run used to write removed files into `.tad-backup/4.0.3-to-4.0.3/`. The deprecation backup uses `<from>-to-<to>-deprecations`, so it cannot collide with the migration backup. Each backup carries `changes.tsv`, one row per file the installer added, changed or removed, taken from a snapshot of the write surface before and after the run, and a `removed.txt` list for removals.
+- **Retention keeps the last pre-upgrade backup.** A group of backups is trimmed to the newest 2 complete backups plus the newest complete backup whose version differs from the newest one's (at most 3 survive). Repeated same-version `--force` runs can no longer delete the only backup taken before a version change (the 4.0.3 framework backup in the 买卖 project was lost to three such runs).
+- **Readable backup directory for non-ASCII project names.** The home-level backup directory for a project whose folder name has non-ASCII characters is now `<readable name>-<8-character hash of the project path>` instead of a run of underscores, so projects stay told apart. If an older all-underscore group of the same project exists, it is mentioned in a read-only notice and left alone.
+- **Rulings file is optional.** Three shipped protocol lines referred to `.tad/project-knowledge/rulings/human-rulings.md`, which new and old projects do not have. They now say "if it exists". The installer does not create the file.
+- **Dangling path fixed.** A citation in `.tad/project-knowledge/principles.md` still pointed at an Epic file that had been archived; it now points at `.tad/archive/epics/`.
+
+### Upgrading
+
+Run `bash tad.sh --platform claude-code` (or `codex|opencode|cursor`) from your project, or the installer from a checkout with `--source`. `4.0.4-to-4.0.5.yaml` removes and renames nothing. Backups from earlier versions keep their old folder names and have no `changes.tsv`.
+
+### Known limits
+
+- The full test suite was not re-run on a machine with free disk space (the build machine had about 1 GB free and an earlier run was killed with exit 139); the new fixture cases and the real-run checks on one throwaway project passed. Linux was not exercised.
+- Installer fixes only; the 4.0.4 limits (protocol not yet observed in a real session, browser-driven Gate 4 not exercised) still apply.
+
 ## [4.0.4] - 2026-10-19
 
 Patch release. Cora now clarifies a request by breaking it into blocks, and every review path uses at least two reviewers with different lenses. The gates have written conditions, the builder never signs Gate 3, and Gate 4 is an AI real run. The Full Layer 2 review brakes accepted on 2026-10-18 are merged in as limits inside the new review rules. The lighter Cora flow shipped in 4.0.3 is not repeated here.

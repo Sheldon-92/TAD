@@ -1,0 +1,12 @@
+schema_version: 1
+from: "4.0.4"
+to: "4.0.5"
+generated_by: "manual"
+note: |
+  Patch v4.0.5 - installer fixes only (post-install skill-link check, accurate
+  backup folder names and per-file manifest, backup retention keeps the last
+  pre-upgrade backup, readable backup directory for non-ASCII project names,
+  rulings file reference made optional). No framework files are removed or
+  renamed by this hop.
+delete: []
+rename: []

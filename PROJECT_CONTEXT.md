@@ -1,10 +1,10 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 4.0.4 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
+- **Version**: 4.0.5 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
 - **Last Updated**: 2026-10-18
 - **How work goes**: three roles. You talk to Cora and agree a result; she has an Epic written and stops; you say "continue" and she runs it through Alex, Blake and the gates via subagents; you look at the result. `/alex` and `/blake` still work directly.
-- **Framework**: TAD v4.0.4 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
+- **Framework**: TAD v4.0.5 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - **EPIC: Capability Builder v1** — Phases 1–3 of 4 Gate 4 accepted (Phase 1 on 2026-09-02 at `2d7e359b`; Phases 2+3 on 2026-09-03 at `bba6ce84`, acceptance confirmed by the human 2026-10-10). TAD provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof, plus signal-driven `evolve` and explicit one-Skill/one-Plugin `package`. Phase 4 (Voice Studio dogfood) is parked and is started by the human from that project.
@@ -20,7 +20,9 @@
 
 ## Recently Completed
 
-- **EPIC-20261019 requirement clarification + review redesign** (2026-10-19) — 3 phases done, released in v4.0.4 (local, push/tag pending the human): clarification by decomposition for Cora and /alex; one reviewer contract with at least two different-lens reviewers on every path; Gate 1 conditions; Gate 3 run reviewer re-runs ACs by hand, `gate3-check.sh` checks evidence only; Gate 4 AI real-run acceptor; escape log.
+- **EPIC-20261020 installer fixes** (2026-10-20) — released in v4.0.5 (local, push/tag pending the human): post-install skill-link check, accurate backup names plus per-file `changes.tsv`, retention keeps the last pre-upgrade backup, readable backup dir for non-ASCII project names, rulings file reference optional.
+
+- **EPIC-20261019 requirement clarification + review redesign** (2026-10-19) — 3 phases done, released in v4.0.4: clarification by decomposition for Cora and /alex; one reviewer contract with at least two different-lens reviewers on every path; Gate 1 conditions; Gate 3 run reviewer re-runs ACs by hand, `gate3-check.sh` checks evidence only; Gate 4 AI real-run acceptor; escape log.
 
 - **Full Layer 2 review brakes** (2026-10-18) — Gate 4 `PASS_WITH_APPROVED_KNOWN_DEVIATION`, archived the same day, merged into v4.0.4 (2026-10-19) as limits inside the review contract's round rule (round count includes R1, never reset by recovery; no round 4 without a re-plan; standing BLOCKED_RISK veto). AC-01..07 PASS; AC-08 raw exit 1 kept as the GM 14:06 E1 known deviation (complete failed paths: `.tad/evidence/pm/last-cursor.POINTER.md` and `.tad/evidence/traces/2026-10-18.jsonl` only). Approved deviations: timeout exception, F1 exact skill patch, AC-07/AC-08 exact-path exemptions, unrecoverable 11:17 `now.md`, frozen-prompt file read, that E1 list, no commit. Not approved: R2 chat-card `chat_sent: relayed` / `PM_CHAT_RELAY_OK=1` (GM 14:04). Archive sha256: handoff `0466d98191bf808b684f8777fab2daae5763f74f7b592f213ce8451ca9cf8dd4`, completion `ef81f41b998b442f80bc7b34632a71527352c754fa4278a2fb56fad00b41f81c`. Task ID: `TASK-20261017-FULL-LAYER2-REVIEW-BRAKES`.
 
