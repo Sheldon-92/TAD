@@ -124,20 +124,32 @@ ralph_loop:
 
     # Layer 2 specific limits
     limits:
-      max_rounds: 5  # Max Layer 2 retry count
+      max_rounds: 3  # Round 3 (from R1 or the last re-plan) with an open P0 -> Alex; no round 4 without a re-plan (review contract §7)
 
+    # Execution guards live in Blake SKILL 3_layer2_loop (prompt protocol, not runtime engine).
+    # AFTER Layer 1 PASS freeze input; BEFORE first dispatch increment layer2_rounds and
+    # current_iteration once, persist STARTED + round/input manifest. No failure-time increment.
+    # Lenses per review contract §5/§7/§8 (run + consistency, + domain): round 1 every lens;
+    # later rounds the lenses with an open P0/FAIL/PARTIAL plus run after every rework.
+    # Every lens covered on the same final commit, no open P0/FAIL/PARTIAL -> COMPLETED (P1 carried).
+    # R3 STARTED/INTERRUPTED same-input unfinished calls may resume without new count.
+    # R3 with an open P0 or a lens it cannot complete -> ESCALATED_TO_ALEX; stop repairs/re-review, no round 4 without a re-plan.
+    # Original raw severity/counts retained; contract §7 blocking (P0/FAIL/PARTIAL; P1 carried) counts independently recognized
+    # valid unresolved task findings, not Blake's closure proposals. Unmet AC stays unmet.
+    # Standing risk veto before dispatch/report/error/completion: unresolved serious
+    # out-of-scope safety/delivery risk -> BLOCKED_RISK for Alex/human, overriding COMPLETED.
     # Escalation threshold
     escalation:
       enabled: true
       threshold: 3  # 3 failed rounds on same issue category -> escalate
       action: "escalate_to_alex"
-      message: "Layer 2 escalation triggered. Same category of issue failed {count} times. Returning to Alex for re-design."
+      message: "Layer 2 escalation: {escalation_reason}. Round-3 branch: round 3 (from R1 or the last re-plan, {layer2_rounds} started) still has an open P0; preserve input/open findings/NOT_RUN, stop repair/re-review, no round 4 without a re-plan, return to Alex. Same-category branch only when its threshold fired: {category} failed {count} times; preserve evidence and return to Alex."
 
   # ==================== Global Limits (Clear Semantics) ====================
   limits:
     description: "Total limits for entire Ralph Loop execution"
 
-    # Iteration counting: Layer 1 retry = 1, Layer 2 round = 1
+    # Iteration counting: Layer 1 retry = 1, STARTED Layer 2 round = 1 (before dispatch)
     total_iterations: 30  # Combined Layer 1 + Layer 2 count
     timeout_minutes: 120  # Global timeout (2 hours)
     per_iteration_timeout: 15  # Max time per single iteration (minutes)
@@ -165,12 +177,26 @@ ralph_loop:
     description: "Persist loop state for crash recovery"
 
     state_file: ".tad/evidence/ralph-loops/{task_id}_state.yaml"
-    checkpoint_frequency: "after_each_layer"  # Checkpoint after Layer 1 and Layer 2
+    checkpoint_frequency: "after_each_layer"  # Schema-compatible; plus mandatory checkpoints below
+    # Also BEFORE round dispatch, after each reviewer/group/round, on error and terminal state.
+    # State is authoritative; summary/session-state are derived pointers, never smaller budgets.
 
     state_schema:
       current_iteration: 0
       layer1_retries: 0
-      layer2_rounds: 0
+      layer2_rounds: 0  # Started rounds including R1; 0..3 for new tasks, not legacy failures
+      review_brakes_version: 1
+      task_identity:
+        handoff_path: null
+        handoff_digest: null
+        baseline_ref: null  # starting HEAD + task-start byte manifest
+        budget_origin: null
+      layer2_status: NOT_STARTED
+      active_round: null
+      round_history: []  # number/input_id/input_manifest/status, append STARTED BEFORE dispatch
+      lens_progress: {}  # EACH lens status/report/last_reviewed_input
+      findings_ref: null  # immutable originals + stable ID/proposal/independent decision/final ledger
+      escalation_reason: null
       last_completed_layer: null  # "layer1" or "layer2"
       last_error_category: null
       consecutive_same_error: 0
@@ -180,7 +206,20 @@ ralph_loop:
     recovery:
       enabled: true
       on_resume: "continue_from_last_checkpoint"
-      stale_threshold_minutes: 30  # If state older than 30 min, start fresh
+      stale_threshold_minutes: 30  # Reload context/revalidate input, never clear budget/history
+      # Missing/legacy state: reconstruct every started round/input/coverage only from complete
+      # dispatch/report proof, preserve old state + derivation; ambiguous -> BLOCKED_STATE.
+      # Legacy layer2_rounds counted failures: no direct reuse/fixed +1. Proven never dispatched
+      # permits 0; used >=3 unfinished -> Alex; historical >3 preserved, never clamped.
+      # *ralph-reset/fresh reruns Layer 1/context only. Compact/stale/crash/new ID cannot reset
+      # same baseline/handoff/budget_origin. Only a re-plan (review contract §7) restarts the count.
+      # Same-input unfinished calls resume without increment/refund; changed source/handoff/
+      # reviewer contract closes INTERRUPTED, Layer 1 -> next budgeted round or Alex.
+      # input_id: handoff + baseline + task delta bytes/deletions/renames + reviewer contract
+      # + executable AC scripts. Save replayable diff/content manifest, not floating HEAD.
+      # Continuous state/reports/ledger/summary/final/run logs excluded from input hash;
+      # label outputs with input_id. Read-only consumer observations carry digest/edge proof;
+      # relevant changes invalidate old conclusions. Old PASS never proves a new input.
 
   # ==================== Evidence and Logging ====================
   evidence:
@@ -200,7 +239,10 @@ ralph_loop:
       ## Execution Overview
       - Total Iterations: {total_iterations}
       - Layer 1 Retries: {layer1_retries}
-      - Layer 2 Rounds: {layer2_rounds}
+      - Layer 2 Started Rounds (includes R1): {layer2_rounds}
+      - Task identity / budget origin / baseline: {task_identity}
+      - Final input / manifest: {input_id} / {input_manifest}
+      - Escalation reason (if any): {escalation_reason}
       - Final Status: {status}
       - Duration: {duration}
 
@@ -213,6 +255,14 @@ ralph_loop:
       | Round | spec-compliance | code-reviewer | test-runner | security | performance | Result |
       |-------|-----------------|---------------|-------------|----------|-------------|--------|
       {layer2_table}
+
+      ## Input, Coverage and Dispositions
+      {round_input_history}
+      {per_expert_last_reviewed_input_and_NOT_RUN}
+      {raw_counts_and_valid_blocking_counts_with_IDs}
+      {independent_disposition_ledger_and_reopen_links}
+      COMPLETED requires every lens covered on the final commit with no open P0/FAIL/PARTIAL;
+      ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED are not clean completion.
 
       ## Evidence Files
       - Final spec compliance: {spec_compliance_link}

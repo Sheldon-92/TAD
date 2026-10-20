@@ -121,12 +121,20 @@ ralph_loop:
 ### State Persistence
 ```yaml
 state_file: ".tad/evidence/ralph-loops/{task_id}_state.yaml"
-checkpoint: "after_each_layer"
+checkpoint: "before_dispatch_and_after_each_reviewer_round_error_terminal"
 
 state_schema:
   current_iteration: 0
   layer1_retries: 0
-  layer2_rounds: 0
+  layer2_rounds: 0           # started rounds including R1, never a failure counter
+  review_brakes_version: 1
+  task_identity: {}          # handoff_path/digest, baseline_ref, budget_origin
+  layer2_status: NOT_STARTED
+  active_round: null
+  round_history: []
+  lens_progress: {}          # per lens status/report/last_reviewed_input
+  findings_ref: null
+  escalation_reason: null
   last_completed_layer: null  # "layer1" or "layer2"
   last_error_category: null
   consecutive_same_error: 0
@@ -136,7 +144,7 @@ state_schema:
 
 recovery:
   on_resume: |
-    continue_from_last_checkpoint
+    continue_from_last_checkpoint; apply state_management.recovery guards before any dispatch.
     If reflection_count > 0:
       Reload reflection history from trace JSONL:
         grep 'reflexion_diagnosis' .tad/evidence/traces/*.jsonl | \
@@ -241,7 +249,7 @@ commands:
   # Ralph Loop commands (TAD v2.0)
   ralph-status: Show current Ralph Loop state
   ralph-resume: Resume from last checkpoint
-  ralph-reset: Reset Ralph Loop state (start fresh)
+  ralph-reset: Refresh context or rerun Layer 1; preserve Layer 2 budget/history
   layer1: Run Layer 1 self-check only
   layer2: Run Layer 2 expert review only
 
@@ -485,8 +493,8 @@ ralph_loop_execution:
     steps:
       1_init:
         - "Load/create state file: .tad/evidence/ralph-loops/{task_id}_state.yaml"
-        - "Check for existing state (resume vs fresh start)"
-        - "Initialize iteration counter"
+        - "Check state and task lineage by handoff/baseline/budget_origin; apply state_management.recovery before initializing. Never infer a free R1 from missing state or a new task ID."
+        - "Only a demonstrably new authorized task starts layer2_rounds=0; preserve all existing counters/history on resume. Capture task-start bytes, HEAD and replayable task delta separately from dirty-tree foreign hunks."
         - "Create/overwrite .tad/active/session-state.md from .tad/templates/session-state-template.md (keep any `## Conductor run (Cora)` section unchanged):
            substitute ALL {placeholders} with actual values:
            - Status = ACTIVE
@@ -946,14 +954,68 @@ ralph_loop_execution:
             writes: ".tad/evidence/reviews/blake/<slug>/domain-review.md"  # MUST run when the trigger matches
             subagent: "security-auditor | database-expert | backend-architect on Claude Code"
         pass_rule: "no P0, no FAIL, no PARTIAL in the latest round; P1 carried (listed in the completion report); no P1/P2 cap; coverage thresholds only when §9.1 states one"
+        round_dispatch_guards: |
+          Full Layer 2 review brakes (1901b97e), kept as limits inside review contract §7:
+          Standing risk veto: whenever unresolved serious out-of-scope safety/delivery
+          risk is identified, persist BLOCKED_RISK and its evidence for Alex/human.
+          Check before dispatch, after every report/error, and BEFORE any completion
+          decision. This veto overrides COMPLETED even if every lens otherwise passes.
+          No self-waiver or out-of-scope repair; retain the round count and unfinished work.
+          After Layer 1 PASS, commit and freeze the input; BEFORE the first dispatch of a
+          round, increment layer2_rounds once (round 1 included), append round_history with
+          number/input_id/status=STARTED, set active_round and persist. Increment
+          current_iteration once per STARTED Layer 2 round (global total 30); reviewer calls
+          and same-input recovery do not increment or refund either count.
+          Lenses per contract §7: round 1 every lens; round k >= 2 only the lenses with an
+          open P0/FAIL/PARTIAL, plus the run lens after every rework. Checkpoint each report.
+          A same-input STARTED/INTERRUPTED round may finish only its unfinished calls.
+          Round 3 (from round 1 or the last re-plan) with an open P0, or a lens it cannot
+          complete: ESCALATED_TO_ALEX with open findings/NOT_RUN/escalation_reason; stop
+          repairs and re-review; never round 4 without a re-plan.
         on_failure:
-          - "Increment layer2_rounds"
+          - "Apply the standing BLOCKED_RISK veto first; unresolved serious out-of-scope risk goes to Alex/human before any repair/review continuation."
+          - "Preserve raw reports/findings and close the FAILED round; the count was consumed BEFORE dispatch, do not increment here."
+          - "Apply same-category >=3 and the existing global iteration/time/Layer 1 breaker exits first if triggered."
           - "Fix issues, re-run Layer 1, commit, then the next round per contract §7 (only the lenses with an open item, and the run lens after every rework)"
-          - "Round 3 with an open P0 (counted from round 1 or the last re-plan) → escalate_to_alex"
+          - "Round 3 with an open P0 (counted from round 1 or the last re-plan) → escalate_to_alex; stop repairs/re-review, no round 4 without a re-plan"
           - "A consistency file whose `risk_triggers:` header adds security, data or money not in the handoff's list → the domain lens runs in the next round, even with no P0"
         on_success:
-          - "Checkpoint state"
-          - "Proceed to Gate 3 v2"
+          - "Apply the standing BLOCKED_RISK veto BEFORE evaluating COMPLETED; unresolved serious out-of-scope risk prevents completion even if every lens passes."
+          - "Only after the risk veto is clear: a round in which every review-contract §8 lens is covered on the SAME final commit with no open P0/FAIL/PARTIAL (P1 carried) -> COMPLETED."
+          - "Persist terminal state and summary; COMPLETED allows Gate 3 checks, does not assert Gate 3 PASS."
+        input_and_findings: |
+          input_id binds handoff digest, task baseline, replayable task delta (bytes,
+          deletions/renames), applicable reviewer contract/set and executable AC scripts.
+          Save fixed input_manifest plus replayable diff/content snapshots; floating HEAD
+          or workspace timestamp is insufficient. Sources are read-only within a round.
+          Continuously generated state/reports/ledger/summary/final/AC run logs are outputs
+          labeled input_id, excluded from input hash (no self-reference). New read-only
+          consumer observations carry path/digest/dependency proof separately; relevant
+          source change invalidates old conclusions, never splice old PASS into new input.
+          Track EACH lens's last_reviewed_input; the run lens re-judges the final commit after
+          every rework (contract §7). Old PASS
+          is only incremental context; even zero repair delta needs independent confirmation.
+          Finding ledger keeps stable id, origin reviewer+round, original text+path+hunk
+          or command, original severity, baseline evidence, task causality, proposed
+          disposition, reason+proof, independent checker+checked input, decision,
+          final disposition, reopen link. Repeated finding reuses ID; new evidence may reopen.
+          Proposed fixed/pre-existing/dismissed stays decision=open, final=null until
+          relevant independent reviewer recognizes it on the checked input. fixed needs
+          repair diff and actual AC/check evidence; pre-existing needs baseline/history,
+          no task introduction/aggravation/new exposure, no AC violation and no unresolved
+          serious safety/delivery risk; dismissed needs locatable counterevidence proving
+          original premise wrong/inapplicable. Dispute/insufficient proof stays open.
+          Original reviewer may recheck (did not implement); if unavailable use fresh
+          equivalent-duty expert with objective original finding/evidence/repair input,
+          record replacement. Blake self-review never substitutes. Same unchanged input
+          may complete recognition in an unfinished current round, otherwise that lens
+          in the next round; changed input is never disguised as technical rebuttal.
+          Output raw counts/original severity AND valid unresolved task blocker counts/IDs
+          with closure evidence; contract §7 blocking (P0/FAIL/PARTIAL block, P1 carried) applies.
+          Never relabel new repair P0/P1 downward. AC NOT_SATISFIED remains independent:
+          disposition cannot turn an unmet AC into SATISFIED; Gate 3 verifies every row.
+          K1 optional same-delta falsify-only check is not repair review, does not advance
+          coverage or rounds and never substitutes for independent recognition.
 
       4_gate3_v2:
         description: "Expanded Gate 3 (Implementation & Integration)"
@@ -1014,15 +1076,20 @@ ralph_loop_execution:
 
   # Escalation Logic
   escalation:
-    trigger: "an open P0 in Layer 2 round 3, counted from round 1 or the last re-plan"
+    trigger: "an open P0 in Layer 2 round 3, counted from round 1 or the last re-plan, OR same_category_failures >= 3 in Layer 2"
     detection:
       - "Track which reviewer lens still has an open P0"
       - "Record the root cause the failed fixes share"
     action: "escalate_to_alex"
     message: |
+      Preserve escalation_reason, round/input/coverage and all open findings; no repair/re-review and no round 4 without a re-plan.
       ⚠️ ESCALATION TO ALEX
-      Layer 2 round 3 still has an open P0: {category}
-      Failed {count} rounds with the same open P0.
+      Reason: {escalation_reason}
+      Round-3 branch: Layer 2 round 3 (from round 1 or the last re-plan) still has an open P0: {category}.
+      Same-category branch ONLY when that threshold fired: {category} failed {count}
+      times on the same issue type.
+      Either branch: preserve input, open findings and NOT_RUN; stop repair/re-review;
+      no round 4 without a re-plan.
       Returning to Alex for re-design.
       Evidence: {evidence_path}
 
@@ -1031,12 +1098,28 @@ ralph_loop_execution:
     file: ".tad/evidence/ralph-loops/{task_id}_state.yaml"
     checkpoint_points:
       - "After Layer 1 success"
-      - "After each Layer 2 round"
-      - "On any error"
+      - "BEFORE first dispatch of each round (STARTED consumed)"
+      - "After each reviewer and Layer 2 round"
+      - "On any error and terminal state"
     recovery:
-      stale_check: "If state > 30 min old, ask user: resume or fresh?"
-      resume_action: "continue_from_last_checkpoint"
-      fresh_action: "reset state and start from Layer 1"
+      stale_check: "After 30 min reload context and revalidate input; never clear budget/history."
+      resume_action: |
+        Load sole authoritative .tad/evidence/ralph-loops/{task_id}_state.yaml and verify task_identity lineage:
+        handoff_path/digest, baseline_ref (starting HEAD + initial byte manifest), budget_origin.
+        Summary/session-state are pointers only; never reconstruct a smaller count from them.
+        Missing/contradictory state or missing review_brakes_version is BLOCKED_STATE unless
+        complete dispatch/report evidence reconstructs EVERY started round/input/coverage.
+        Preserve original legacy state and derivation evidence; legacy layer2_rounds counted
+        failures, so neither direct reuse nor a fixed +1 formula is valid. Proven never
+        dispatched may migrate to 0; used >=3 with an open P0 -> ESCALATED_TO_ALEX (historical
+        >3 retained honestly, not clamped). Ambiguous legacy zero is never a free R1.
+        Same-input unfinished round resumes ONLY unfinished calls, no refund or increment.
+        Input/handoff/applicable-expert contract change closes active round INTERRUPTED;
+        run Layer 1 and start the next counted round (round 3 with an open P0 returns to Alex).
+        Compact, crash, stale context, *ralph-reset/fresh or new task ID never reset the count;
+        same baseline/handoff/budget_origin remains same task. Only a re-plan (contract §7) restarts it.
+      fresh_action: "Refresh context or rerun Layer 1 only; keep used rounds, history and lineage."
+      terminal_states: "COMPLETED | ESCALATED_TO_ALEX | BLOCKED_STATE | BLOCKED_RISK | ABORTED; all except COMPLETED forbid clean completion."
 
   # Session State for Compact Recovery (v2.8.5)
   session_state_protocol:
@@ -1203,7 +1286,7 @@ mandatory:
   layer1_pass: "MUST pass all Layer 1 checks before Layer 2"
   layer2_pass: "MUST pass the Gate 3 reviewers of the review contract (run + consistency, + domain) before Gate 3"
   circuit_breaker: "MUST escalate to human after 3 consecutive same errors"
-  escalation: "MUST escalate to Alex when Layer 2 round 3 still has an open P0"
+  escalation: "MUST escalate to Alex when Layer 2 round 3 still has an open P0, or at the earlier same-category/global exit; no round 4 without a re-plan"
   evidence: "MUST create evidence files in .tad/evidence/reviews/"
   gate3_v2: "MUST pass Gate 3 v2 (expanded) after Ralph Loop completes"
   gate4_v2: "MUST get Gate 4 (the acceptor, acceptance by real use) before archive"
@@ -1351,6 +1434,7 @@ execution_checklist:
           "Load .tad/templates/review-contract.md and follow it. Lens: {lens}. Object: commit:<sha>. Reference: {handoff_path} §1.5 and §9. Previous round: {file|none}. Write {path}; start with the verdict header (model: key included)."
           Model provenance is the header `model:` key (non-blocking: a missing key marks the Layer 2 evidence provenance-incomplete and is bound into Completion; it MUST NOT override the review verdict).
           The narrow-scope rule of the old template is replaced by contract §2: read the object and the reference first; consistency needs the consumers of changed lines.
+          Old PASS is not PASS for a new input: every round judges the current commit. Do not give the reviewer the implementer's reasoning or a suggestion to pass (contract §2: the author's account is read after the reviewer's own judgment).
         enforcement: "prompt-level-only via Blake SKILL text"
 
         forbidden_implementations:
@@ -1671,7 +1755,7 @@ completion_protocol:
   ralph_loop_flow:
     trigger: "*develop [task-id]"
     layer1: "Self-Check (max 15 retries, circuit breaker @ 3)"
-    layer2: "Gate 3 reviewers (round 3 with an open P0 → escalate to Alex)"
+    layer2: "Gate 3 reviewers (round 3 with an open P0 → escalate to Alex; standing BLOCKED_RISK veto)"
     gate3_v2: "Gate 3 reviewers; the run reviewer re-runs the ACs in a throwaway project copy and signs"
     completion: "Report + handoff to Alex for Gate 4 (acceptor)"
 
@@ -1998,7 +2082,7 @@ on_start: |
 - **Same error 3x?** → Circuit breaker → escalate to human
 - **Layer 2 round 3 with an open P0?** → Escalation → return to Alex
 - **Layer 1 fail?** → Fix and retry (max 15)
-- **Layer 2 fail?** → Fix, restart from Layer 1; no round cap, round 3 with an open P0 escalates
+- **Layer 2 fail?** → Fix, restart from Layer 1; rounds converge (no fixed cap), round 3 with an open P0 escalates, no round 4 without a re-plan
 
 ### Gate 3 reviewers (review contract)
 ```

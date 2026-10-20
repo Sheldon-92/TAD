@@ -134,8 +134,8 @@ quality_gates:
       required: true
       config_file: ".tad/ralph-config/loop-config.yaml"
       checks:
-        - "Ralph Loop completed successfully (no abort/escalation)"
-        - "State file shows clean completion"
+        - "Ralph Loop COMPLETED on the final commit with every review-contract §8 lens covered; no ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED/NOT_RUN as clean completion"
+        - "State file shows clean completion with started-round/input history, per-lens coverage, original severity/raw counts and independent disposition ledger; no unresolved task blockers"
         - "Summary file generated"
       evidence_required:
         - ".tad/evidence/ralph-loops/{task_id}_state.yaml"
@@ -224,12 +224,12 @@ quality_gates:
       checks:
         - "Acceptance by real use — what the human will do, done once for real or in a browser; judged against ## Requirement + Result contract"
         - "Gate 3 evidence complete — every contract lens file, gate3-check.sh exit 0 on the run file"
-        - "Issues — every P0 resolved; open P1, Assumptions, not-run and human-only items listed for the human"
+        - "Issues — every P0 resolved; findings keep original severity and close only by a reviewer of that lens (fixed / pre-existing / dismissed with proof, never the builder); open P1, Assumptions, not-run and human-only items listed for the human"
         - "Knowledge Assessment complete — distillation or no discovery"
 
-      # Review evidence only - no re-run needed
+      # No repeated technical review; §9.1 results come from the Gate 3 run file's `## AC runs` table (quantitative ACs recomputed from raw files)
       evidence_review:
-        description: "Review Blake's Gate 3 evidence (not re-execute)"
+        description: "Review the Gate 3 evidence without a repeated technical review; every §9.1 row must appear in the run reviewer's `## AC runs` table (run or not-run with reason); quantitative ACs are recomputed from raw files; a missing or contradictory row fails. Not re-executing never waives AC verification or the evidence veto."
         files:
           - "{task_id}_summary.md"
           - "Gate 3 run verdict (with its AC runs table)"

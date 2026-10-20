@@ -5,6 +5,32 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Accepted locally on 2026-10-18. Committed to main on 2026-10-19 (user override of the GM 14:35 git-write ban); not tagged, not released.
+
+### Accepted
+
+- **Full Layer 2 review brakes** (`TASK-20261017-FULL-LAYER2-REVIEW-BRAKES`). Gate 4 verdict `PASS_WITH_APPROVED_KNOWN_DEVIATION`. GM 14:35 approved `*accept` and archive. A Full Layer 2 task has a three-round cap including R1; recovery does not mint a new budget. Handoff and completion are in `.tad/archive/handoffs/` (copy, sha256 match, then source removed): handoff `0466d98191bf808b684f8777fab2daae5763f74f7b592f213ce8451ca9cf8dd4`, completion `ef81f41b998b442f80bc7b34632a71527352c754fa4278a2fb56fad00b41f81c`. Gate 4 report: `.tad/evidence/acceptance-tests/TASK-20261017-FULL-LAYER2-REVIEW-BRAKES/gate4-acceptance-report.md`.
+
+### Approved deviations
+
+- GLOBAL_TIMEOUT exception for this run only (GM 07:25 ET, about 8h VM pause). Original `started_at` was not reset.
+- F1 one-time extra write, Blake skill directory only, exact pending patch (GM 12:27 ET).
+- AC-07/AC-08 single-path exemptions, this task only, exact paths (GM 12:54 A-prime and 12:59 A-double-prime).
+- `now.md` at 11:17 treated as unrecoverable; GM 12:59 accepted the restricted handling. Original bytes are not claimed restored.
+- Frozen prompts passed by reading the frozen file, sha256 checked, text unchanged (GM 14:04).
+- AC-08 E1 difference (GM 14:06 G): the complete failed-path list is exactly `.tad/evidence/pm/last-cursor.POINTER.md` and `.tad/evidence/traces/2026-10-18.jsonl`. Raw exit 1 is kept. AC-08 and the baseline were not edited.
+- No commit and no external action at accept time (`DEFERRED_BY_USER`); committed on 2026-10-19 by user approval, not tagged, not released. The tree was not described as clean.
+
+### Not approved
+
+- R2 chat-card stamps `chat_sent: relayed` with `PM_CHAT_RELAY_OK=1`. GM 14:04 ruled this not compliant. Technical R2 PASS does not make the PM delivery compliant.
+
+### Backlog
+
+- **AC-08 baseline design knife, named by GM, not opened.** The ignored-byte baseline is broken by ordinary PM, wrapper, and trace writes, and the script exits on the first mismatch so the first FAIL path is not the full set. A later ticket designs the boundary among stable sources, task artifacts, external-owner state, and runtime output, and reports the complete diff. Do not widen this task's allowlist. The GM 14:06 E1 known deviation belongs to that knife.
+
 ## [4.0.3] - 2026-10-16
 
 Patch release. v4.0.2's download install and update refused the release archive; this release fixes that, and carries a lighter Cora flow.

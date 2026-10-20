@@ -39,8 +39,8 @@ Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 # MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
 
 Checklist items:
-- [ ] Code/deliverable complete — all handoff tasks done. Why ME: 产出物完整性
-- [ ] §9.1 Spec Compliance — every row verified. Why ME: AC 逐条验证
+- [ ] Code/deliverable complete — all handoff tasks done; Ralph Layer 2 COMPLETED on the final commit with every review-contract §8 lens covered. ESCALATED_TO_ALEX / BLOCKED_STATE / BLOCKED_RISK / ABORTED / NOT_RUN are not clean completion. Why ME: 产出物完整性
+- [ ] §9.1 Spec Compliance — every row verified. Finding dispositions never make an unmet AC satisfied; every landing Method must actually hold. Why ME: AC 逐条验证
   Present-but-prose ≠ empty: any landing row whose Verification Method is prose-only FAILs
   that row → cannot Gate 3 PASS. Empty §9.1 still BLOCKS (separate guard).
   Evidence discipline (E维): 每行判定必须附证据指针（落盘路径＋行号/章节，或命令输出
@@ -49,7 +49,7 @@ Checklist items:
   不得以其他行结果抵消；不符属口径未注明者，须先注明口径再重算，仍不符按上行处理。
   Load-point claims: 声称某文件/条文构成装载或约束的 AC 行，Verification Method
   必须含位置断言（目标内容行号 ≤ 该载体单次可达范围）；只有 grep 在场不算装载成立。
-- [ ] Evidence files exist — per handoff manifest. Why ME: 证据存在性
+- [ ] Evidence files exist — per handoff manifest. Preserve original findings/severity and independent disposition ledger (checker, checked input, reason/proof): fixed / pre-existing / dismissed count as addressed only after relevant independent reviewer recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed requires counterevidence. Blake proposals alone remain open; only valid unresolved task findings count toward unchanged thresholds. Pure out-of-scope serious risk goes to Alex/human, never self-waived. Missing evidence and evidence veto still block. Why ME: 证据存在性
 - [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
       全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
       reviewer 无法 diff 只能重读全文 → 先修证据管道再谈验收。Why ME: 证据管道确定性
@@ -68,7 +68,7 @@ Checklist items:
 - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract. Why ME: 只检查"从人的一侧真跑过"
   Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs -> that item FAIL and gate4_delta.
 - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
-- [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态
+- [ ] Issues — every P0 resolved; a finding keeps its original severity and closes only when a reviewer of that lens (never the builder) recognizes it as fixed / pre-existing / dismissed with proof (不是强迫有效免卡项全修); reopening needs explicit new evidence; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
 
 Why CE: 真跑 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。

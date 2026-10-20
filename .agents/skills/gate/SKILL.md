@@ -281,9 +281,9 @@ Git_Commit_Verification:
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 # MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
 Critical Check (9 items):
-  - [ ] Code/deliverable complete (all handoff tasks done)
+  - [ ] Code/deliverable complete (all handoff tasks done; Ralph COMPLETED on the final commit with every review-contract §8 lens covered; ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED/NOT_RUN are not clean completion)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
-  - [ ] Evidence files exist per the handoff's Required Evidence Manifest
+  - [ ] Evidence files exist per the handoff's Required Evidence Manifest; preserve original severity/raw findings plus independent checked-input disposition ledger: fixed / pre-existing / dismissed count as addressed only after relevant independent recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed needs counterevidence. Blake proposals remain open. Pure out-of-scope serious risk goes to Alex/human. Unmet AC/missing evidence/evidence veto still block.
   - [ ] Evidence replayable (advisory, WARN-not-BLOCK): 证据采集命令重跑两次应 0 diff。
         若重跑产生全量改动（随机 ID / 时间戳 / commit SHA 入了证据体）→ WARN：
         任何改动都会触发全量重采，reviewer 无法 diff 只能重读全文，代价随轮数线性放大。
@@ -316,9 +316,9 @@ Output Format:
   #### Quality Checks
   | Item | Status | Note |
   |------|--------|------|
-  | Code/Deliverable Complete | ✅ Pass | ... |
+  | Code/Deliverable Complete | ✅ Pass | final commit, every review-contract §8 lens covered; no blocked/escalated/aborted/NOT_RUN |
   | §9.1 all rows pass | ✅ Pass | {P} pass, {F} fail (any fail → BLOCK) |
-  | Evidence | ✅ Pass | Files exist per Required Evidence Manifest |
+  | Evidence | ✅ Pass | Manifest + original severity/raw findings + independent disposition proof/input; valid unresolved blockers only; unmet AC/evidence veto still block |
 
   #### Knowledge Assessment (MANDATORY - must answer)
   | Question | Answer | Evidence |
@@ -691,7 +691,7 @@ Decision_Compliance:
 Critical Check (4 items):
   - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract
   - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing)
-  - [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human
+  - [ ] Issues — every P0 resolved; a finding keeps its original severity and closes only when a reviewer of that lens (never the builder) recognizes it as fixed / pre-existing / dismissed with proof; reopening needs explicit new evidence; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
 # Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs → that item FAIL and gate4_delta.
 Trust_Curve_Judgment: |

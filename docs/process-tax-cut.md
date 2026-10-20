@@ -42,19 +42,30 @@ Independent review is **required**. This block only stops **false P0** from pre-
 ```
 ### Layer 2 dirty-tree adjudicate (copy)
 
-Before raising P0 on a dirty worktree:
-1. Diff **this task’s pathspec** (handoff §7 / allowed files) vs the finding path.
-   Finding outside pathspec → not this knife’s defect unless the contract claimed
-   a clean whole-tree fence (then the fence, not the dirt, is in scope).
-2. Cross-check **prior knives’ known dirty patterns** in this repo (completion notes,
-   Gate 4 “do not absorb dirty NEXT/PROJECT_CONTEXT”, leftover twins, judge bundles,
-   gitignored fixtures). If the same path/class was already recorded as out-of-scope
-   dirt, mark **FALSE POSITIVE (pre-existing)** with that pointer — do not mint a new P0.
-3. Still write the finding. Adjudication is a **label + pointer**, not a skip of
-   the second reviewer.
-4. Raise P0 only when the defect is in **this delta** or the contract required
-   cleanliness of that path.
-5. Record: `{path} | P0 vs FALSE_POSITIVE | pointer to prior knife or “in-delta”`.
+1. Preserve the original finding and severity with a stable ID, original reviewer/round,
+   text, path+hunk or command. A path outside handoff §7 is not causal proof of exemption.
+2. Compare this task's delta to the initial-byte baseline and prior recorded dirt.
+   Prove whether the task introduced, worsened, or newly exposed the defect; merely
+   existing earlier or outside the diff is insufficient. Do not absorb others' hunks.
+3. Blake proposes a disposition with reason and replayable evidence. The independent
+   reviewer responsible for that check must approve it against the checked input.
+   If unavailable, an equivalent fresh independent reviewer gets the objective original
+   finding/evidence and fix input; record the replacement. Blake self-review never closes it.
+4. Final dispositions: fixed (verified fix + relevant AC/check evidence), pre-existing
+   (proved prior existence, no task introduction/worsening/new exposure, no AC violation,
+   no unresolved severe security/delivery risk), dismissed (locatable counterevidence
+   disproves the original premise or applicability). Proposal/uncertainty/dispute stays
+   decision=open, final=null. Pure out-of-scope severe risk goes to Alex/human as
+   BLOCKED_RISK; Blake neither silently fixes it nor grants an exemption.
+5. Ledger: id | origin reviewer+round | original text/path/hunk/command/severity |
+   baseline evidence | task causality | proposed disposition | reason+proof |
+   independent checker+checked input | decision | final disposition | reopen link.
+   Reuse IDs for rediscovery; new evidence may reopen an item. Retain raw reports/counts
+   alongside effective open blocking counts/IDs and closure evidence. Do not relabel P0 as P2.
+6. Valid independent dispositions affect blocker counts, never AC truth. An AC_FAIL or
+   NOT_SATISFIED cannot become satisfied by labeling. Missing counterevidence, a Blake-only
+   fixed/pre-existing claim, or unresolved dispute stays open; an open P0 at round 3
+   (from round 1 or the last re-plan) returns to Alex. Independent review and applicable expert coverage remain required.
 ```
 
 ---
@@ -95,9 +106,9 @@ Optional paste. Not a Gate. Land K1–K5 only; forbidden lines stay (no OCR CLI/
 ```
 Status: optional paste. Not a Gate. Not a substitute for Gate 2 dual disk reviews or Alex ≠ Blake.
 
-- K1 Asymmetric-bound, falsify-only second pass. A later look at the same delta sees less evidence (diff + claimed findings only). Veto only when the diff directly contradicts the claim. Do not mint new findings on this pass. Parse/format failure → fail-open (keep the finding).
+- K1 Asymmetric-bound, falsify-only second pass is optional for the same unchanged delta/report (diff + claimed findings only). Veto only when the diff directly contradicts the claim. Do not mint new findings on this optional pass. Parse/format failure → fail-open (keep the finding). It does not advance coverage, consume a new round, or replace independent disposition approval. R2/R3 repair review is different: it must check fixes and may report new regressions at their actual severity; K1 does not suppress those findings.
 - K2 Precision over recall as Layer 2 default. Prefer fewer P0/P1 with replayable evidence (path + command/hunk). Comment volume is not quality. Do not lower recall on security-auditor when that Group 2 trigger fired (see K5).
-- K3 Dispatch is the pathspec, not agent whim. Review handoff §7 / allowed files only. Do not expand the file set like a free agent. Do not add a rule.json or language-md rule engine.
+- K3 Dispatch starts at handoff §7 / task delta and §10. Follow only proven dependency edges (actual reference, configuration consumer, or call relation) for directed read-only checks, including newly identified consumers. Record origin → edge evidence → consumer path + content digest → check → result/proof/unproven. No proven chain means no free repository exploration; no search hit is not safety proof. An unproven dependency affecting AC, security, or necessary coverage stays open; an unrelated unsupported guess is not automatically P0. Read access never grants out-of-scope writes: return necessary changes to Alex. Do not add a rule.json or language-md rule engine.
 - K4 Claims must be localizable or labeled unanchored. Every finding cites path + command/hunk, or is labeled unanchored / extra-file. Do not treat model line numbers as SSOT.
 - K5 Recall-up is opt-in for high-risk deltas. Extra budget is the existing security-auditor Group 2 trigger — not a named Ultra Gate and not an extra Ralph round by default.
 
