@@ -654,7 +654,11 @@ resolve_backup_root() {
 
 # repo_group_key <target_root_physical> — compute the per-repo backup group
 # key into the global BACKUP_GROUP (C2). The target basename is sanitized to
-# [A-Za-z0-9._-]; if the plain group already belongs to a DIFFERENT target
+# [A-Za-z0-9._-]; a basename holding any non-ASCII byte (a CJK name) instead
+# keeps its readable UTF-8 text: <slug>-<hash8 of the target path>, and the
+# legacy all-underscore group of that project (if complete and owned by this
+# path) is recorded in BACKUP_GROUP_LEGACY for a read-only notice. If the
+# plain group already belongs to a DIFFERENT target
 # root (same basename, another repo), the key gains a cksum suffix of the
 # target path. Only COMPLETE backups speak for their group (SUPPLEMENT-1
 # N5): origin.txt is read only next to a manifest.txt; a group with no
@@ -663,10 +667,34 @@ resolve_backup_root() {
 # here for the group and in resolve_backup_root for the root).
 repo_group_key() {
     local _tgt="$1"
-    local _base _key _gdir _f _origin
+    local _base _key _gdir _f _origin _slug _lkey _lg
+    BACKUP_GROUP_LEGACY=""
     _base="$(basename "$_tgt")"
     _key="$(printf '%s' "$_base" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')"
     [ -n "$_key" ] || _key="repo"
+    # Non-ASCII basename (any byte >= 0x80; tr -d is portable, a grep byte
+    # class is not on BSD): readable slug + path hash, never the lossy key.
+    if [ "$(printf '%s' "$_base" | LC_ALL=C tr -d '\200-\377')" != "$_base" ]; then
+        _lkey="$_key"
+        _slug="$(printf '%s' "$_base" | LC_ALL=C tr '\000-\037\177' '_')"
+        case "$_slug" in .*|-*) _slug="_${_slug#?}" ;; esac
+        if [ "$(printf '%s' "$_slug" | wc -c | tr -d ' ')" -gt 64 ] || ! { printf '%s' "$_slug" | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1; }; then
+            _slug="$(printf '%s' "$_lkey" | LC_ALL=C tr -s '_' | sed 's/^_//;s/_$//')"
+            [ -n "$_slug" ] || _slug="project"
+        fi
+        _key="${_slug}-$(printf '%08x' "$(printf '%s' "$_tgt" | cksum | cut -d' ' -f1)")"
+        # Legacy group (read-only): today's lossy key, plain or with its
+        # collision cksum suffix, complete and owned by this very path.
+        for _lg in "$TAD_BACKUP_ROOT_ABS/$_lkey" "$TAD_BACKUP_ROOT_ABS/$_lkey-$(printf '%s' "$_tgt" | cksum | cut -d' ' -f1 | cut -c1-8)"; do
+            for _f in "$_lg"/*/origin.txt; do
+                [ -f "$_f" ] || continue
+                [ -f "$(dirname "$_f")/manifest.txt" ] || continue
+                _origin="$(cat "$_f" 2>/dev/null || true)"
+                if [ "$_origin" = "$_tgt" ]; then BACKUP_GROUP_LEGACY="$_lg"; break; fi
+            done
+            [ -z "$BACKUP_GROUP_LEGACY" ] || break
+        done
+    fi
     _gdir="$TAD_BACKUP_ROOT_ABS/$_key"
     if [ -d "$_gdir" ]; then
         for _f in "$_gdir"/*/origin.txt; do
@@ -687,18 +715,21 @@ repo_group_key() {
 }
 
 # prune_backups <group_dir> <just_written_backup> — retention (C4, FR-4):
-# after a backup completes, trim its group to the newest 2 COMPLETE backups.
+# after a backup completes, trim its group to the newest 2 COMPLETE backups
+# plus the newest complete backup whose version= differs from the newest
+# backup's version= (the last pre-version-change backup, max 3 survivors), so
+# same-version --force reruns cannot prune the only pre-upgrade backup.
 # A dir counts as a backup only under the strict timestamp name pattern; a
 # pattern dir WITHOUT manifest.txt is an interrupted run's residue (the
 # manifest is written last) — removed first, never counted. Deletion victims
-# are exactly: this group + name pattern + outside the newest 2 (REQ-2).
+# are exactly: this group + name pattern + outside the keep set (REQ-2).
 # Sort key is (timestamp, NUMERIC suffix) — a plain byte sort orders .10
 # before .2 and would prune a newer backup (SUPPLEMENT-1 N1). A deletion
 # failure warns and continues: pruning NEVER fails the backup (FR-4).
 prune_backups() {
     local _gdir="$1" _new="$2"
     [ -d "$_gdir" ] || return 0
-    local _path _name _ts _sfx _line _complete=""
+    local _path _name _ts _sfx _line _v _complete=""
     for _path in "$_gdir"/*; do
         [ -d "$_path" ] || continue
         _name="$(basename "$_path")"
@@ -719,13 +750,17 @@ prune_backups() {
             *) _sfx="0" ;;
         esac
         case "$_sfx" in ''|*[!0-9]*) _sfx="0" ;; esac
-        _line="$(printf '%s %012d %s' "$_ts" "$_sfx" "$_path")"
+        # 3rd field: the backup's version= (spaces/tabs stripped; empty -> "-").
+        _v="$(sed -n 's/^version=//p' "$_path/manifest.txt" | tail -1 | tr -d ' \t')"
+        [ -n "$_v" ] || _v="-"
+        _line="$(printf '%s %012d %s %s' "$_ts" "$_sfx" "$_v" "$_path")"
         _complete="${_complete}${_line}
 "
     done
-    local _sorted="" _victim _keep1="" _keep2=""
+    local _sorted="" _victim _keep1="" _keep2="" _keep3="" _vn="" _vl=""
     _sorted="$(printf '%s' "$_complete" | LC_ALL=C sort)"
-    # Keep set = the newest 2 by (timestamp, numeric suffix). Belt (N1): if
+    # Keep set = the newest 2 by (timestamp, numeric suffix) plus the version-
+    # change keep below. Belt (N1): if
     # the just-written backup is not among them (its name cannot be made
     # oldest by construction anymore, but a backwards clock jump still
     # could), it takes the second keep slot — the count invariant holds and
@@ -733,16 +768,28 @@ prune_backups() {
     while IFS= read -r _line; do
         [ -n "$_line" ] || continue
         _keep1="$_keep2"
-        _keep2="$(printf '%s' "$_line" | cut -d' ' -f3-)"
+        _keep2="$(printf '%s' "$_line" | cut -d' ' -f4-)"
+        _vn="$(printf '%s' "$_line" | cut -d' ' -f3)"
     done <<< "$_sorted"
     if [ "$_new" != "$_keep1" ] && [ "$_new" != "$_keep2" ] \
-       && printf '%s\n' "$_sorted" | cut -d' ' -f3- | grep -Fxq -e "$_new"; then
+       && printf '%s\n' "$_sorted" | cut -d' ' -f4- | grep -Fxq -e "$_new"; then
         _keep1="$_new"
     fi
+    # Third keep: walk newest -> oldest for the first backup whose version
+    # differs from the newest backup's (_vn). Equal versions everywhere
+    # (e.g. empty manifests) leave _keep3 empty: keep 2, as before.
     while IFS= read -r _line; do
         [ -n "$_line" ] || continue
-        _victim="$(printf '%s' "$_line" | cut -d' ' -f3-)"
-        if [ "$_victim" = "$_keep1" ] || [ "$_victim" = "$_keep2" ]; then
+        _vl="$(printf '%s' "$_line" | cut -d' ' -f3)"
+        if [ "$_vl" != "$_vn" ]; then
+            _keep3="$(printf '%s' "$_line" | cut -d' ' -f4-)"
+            break
+        fi
+    done <<< "$(printf '%s\n' "$_sorted" | LC_ALL=C sort -r)"
+    while IFS= read -r _line; do
+        [ -n "$_line" ] || continue
+        _victim="$(printf '%s' "$_line" | cut -d' ' -f4-)"
+        if [ "$_victim" = "$_keep1" ] || [ "$_victim" = "$_keep2" ] || { [ -n "$_keep3" ] && [ "$_victim" = "$_keep3" ]; }; then
             continue
         fi
         if [ "$(dirname "$_victim")" != "$_gdir" ]; then
@@ -750,7 +797,7 @@ prune_backups() {
             continue
         fi
         if rm -rf "$_victim"; then # RM-OK:tad-backup-retention
-            log_info "Pruned old backup (retention: latest 2 per repo): $_victim"
+            log_info "Pruned old backup (retention: latest 2 + last pre-version-change backup per repo): $_victim"
         else
             log_warn "prune: could not remove old backup (left in place): $_victim"
         fi
@@ -768,6 +815,9 @@ backup_existing() {
     local _tgt
     _tgt="$(pwd -P)" || { log_error "cannot resolve target root for backup"; return 1; }
     repo_group_key "$_tgt" || return 1
+    if [ -n "${BACKUP_GROUP_LEGACY:-}" ]; then
+        log_info "Older backups of this project (from before 4.0.5) are in $BACKUP_GROUP_LEGACY; they are no longer pruned automatically — delete them by hand when no longer needed."
+    fi
     local _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
     # Unique destination: same-second reruns must never overwrite or nest
     # into an existing backup (FR-5). The suffix is max(existing)+1 for
@@ -873,6 +923,106 @@ backup_existing() {
         log_info "Note: legacy backup '$_legacy' in the project root is left untouched; new backups live under $TAD_BACKUP_ROOT_ABS"
         break
     done
+    return 0
+}
+
+# surface_snapshot — print "<path><TAB><sig>" for every file or link of the
+# installer's write surface (the framework dirs/files the backup derivation
+# names, plus the platform projection roots), LC_ALL=C sorted. Used twice per
+# run (before the first mutation, after success) to build changes.tsv.
+# sig: link -> L:<link text>; regular file <= 1 MiB -> F:<cksum>:<size>;
+# larger -> S:<size> (no content read); listed but unreadable -> U:unreadable.
+# No row is dropped. Paths holding a newline or TAB are excluded in the find
+# predicate itself (-path matches the whole path), before any batching.
+surface_snapshot() {
+    local _nl _tab _tmp _r _d _f _p _sz
+    _nl=$'\n'
+    _tab=$'\t'
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-surface.XXXXXX")" || return 1
+    : > "$_tmp/roots"
+    while IFS= read -r _d; do
+        [ -n "$_d" ] || continue
+        if [ "$_d" = "$TAD_REGISTRY_ONLY" ]; then
+            printf '%s\n' ".tad/$_d/$TAD_REGISTRY_FILE" >> "$_tmp/roots"
+        else
+            printf '%s\n' ".tad/$_d" >> "$_tmp/roots"
+        fi
+    done <<< "$(derive_framework_dirs ".")"
+    while IFS= read -r _f; do
+        [ -n "$_f" ] || continue
+        printf '%s\n' ".tad/$_f" >> "$_tmp/roots"
+    done <<< "$(derive_framework_top_files ".")"
+    for _f in .agents/skills .claude/skills .claude/agents AGENTS.md CLAUDE.md .claude/settings.json .codex/hooks.json .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json; do
+        printf '%s\n' "$_f" >> "$_tmp/roots"
+    done
+    : > "$_tmp/links"; : > "$_tmp/small"; : > "$_tmp/bigl"; : > "$_tmp/allf"
+    while IFS= read -r _r; do
+        [ -n "$_r" ] || continue
+        if [ ! -e "$_r" ] && [ ! -L "$_r" ]; then continue; fi
+        find "$_r" -type l ! -path "*${_nl}*" ! -path "*${_tab}*" >> "$_tmp/links" 2>/dev/null || true
+        find "$_r" -type f ! -path "*${_nl}*" ! -path "*${_tab}*" >> "$_tmp/allf" 2>/dev/null || true
+        find "$_r" -type f ! -size +2048 ! -path "*${_nl}*" ! -path "*${_tab}*" -exec cksum {} + >> "$_tmp/small" 2>/dev/null || true
+        find "$_r" -type f -size +2048 ! -path "*${_nl}*" ! -path "*${_tab}*" >> "$_tmp/bigl" 2>/dev/null || true
+    done < "$_tmp/roots"
+    {
+        while IFS= read -r _p; do
+            [ -n "$_p" ] || continue
+            printf '%s\tL:%s\n' "$_p" "$(readlink "$_p" 2>/dev/null | LC_ALL=C tr '\n\t' '??')"
+        done < "$_tmp/links"
+        LC_ALL=C sed -e "s/^\([0-9][0-9]*\) \([0-9][0-9]*\) \(.*\)\$/\3${_tab}F:\1:\2/" "$_tmp/small"
+        while IFS= read -r _p; do
+            [ -n "$_p" ] || continue
+            _sz="$({ wc -c < "$_p"; } 2>/dev/null | tr -d ' ')"
+            [ -n "$_sz" ] || continue
+            printf '%s\tS:%s\n' "$_p" "$_sz"
+        done < "$_tmp/bigl"
+    } > "$_tmp/rows"
+    LC_ALL=C sort "$_tmp/allf" > "$_tmp/allf.s"
+    cut -f1 "$_tmp/rows" | LC_ALL=C sort > "$_tmp/have.s"
+    LC_ALL=C comm -23 "$_tmp/allf.s" "$_tmp/have.s" > "$_tmp/unread"
+    while IFS= read -r _p; do
+        [ -n "$_p" ] || continue
+        printf '%s\tU:unreadable\n' "$_p" >> "$_tmp/rows"
+    done < "$_tmp/unread"
+    LC_ALL=C sort "$_tmp/rows"
+    rm -rf -- "$_tmp" # RM-OK:surface-snapshot-tmp
+    return 0
+}
+
+# write_changes_tsv — after a successful run, diff the pre-run snapshot kept in
+# the backup dir (pre-surface.tsv) against a fresh one and write changes.tsv
+# next to it: header "kind<TAB>path", then added / changed / removed rows (each
+# kind sorted). Path sets are cut per column and sorted LC_ALL=C separately.
+write_changes_tsv() {
+    local _pre _out _tab _tmp
+    [ -n "${BACKUP_PATH_ABS:-}" ] || return 0
+    _pre="$BACKUP_PATH_ABS/pre-surface.tsv"
+    _out="$BACKUP_PATH_ABS/changes.tsv"
+    [ -f "$_pre" ] || return 0
+    _tab=$'\t'
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-changes.XXXXXX")" || return 1
+    if ! surface_snapshot > "$_tmp/post.tsv"; then
+        rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-1
+        return 1
+    fi
+    LC_ALL=C sort "$_pre" > "$_tmp/pre.s"
+    LC_ALL=C sort "$_tmp/post.tsv" > "$_tmp/post.s"
+    cut -f1 "$_tmp/pre.s" | LC_ALL=C sort > "$_tmp/pre.p"
+    cut -f1 "$_tmp/post.s" | LC_ALL=C sort > "$_tmp/post.p"
+    LC_ALL=C comm -23 "$_tmp/pre.p" "$_tmp/post.p" > "$_tmp/removed.p"
+    LC_ALL=C comm -13 "$_tmp/pre.p" "$_tmp/post.p" > "$_tmp/added.p"
+    LC_ALL=C comm -12 "$_tmp/pre.p" "$_tmp/post.p" > "$_tmp/common.p"
+    # comm -3 indents column-2 lines with one TAB: strip it before cutting.
+    LC_ALL=C comm -3 "$_tmp/pre.s" "$_tmp/post.s" | LC_ALL=C sed "s/^${_tab}//" | cut -f1 | LC_ALL=C sort -u > "$_tmp/diff.p"
+    LC_ALL=C comm -12 "$_tmp/diff.p" "$_tmp/common.p" > "$_tmp/changed.p"
+    {
+        printf 'kind\tpath\n'
+        LC_ALL=C sed "s/^/added${_tab}/" "$_tmp/added.p"
+        LC_ALL=C sed "s/^/changed${_tab}/" "$_tmp/changed.p"
+        LC_ALL=C sed "s/^/removed${_tab}/" "$_tmp/removed.p"
+    } > "$_out" || { rm -rf -- "$_tmp"; return 1; } # RM-OK:changes-tsv-tmp-2
+    rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-3
+    log_info "Change list: $_out"
     return 0
 }
 
@@ -2197,11 +2347,15 @@ apply_deprecations() {
         SOURCE="$src"
         # do_backup reads TARGET/M_FROM/M_TO (all three REQUIRED — an unset one is a
         # fatal `unbound variable` that neither `|| rc=$?` nor the ERR trap can catch).
-        # current→current keeps this backup namespace distinct from call_migration_engine's
-        # (${old_ver}-to-${new_ver}), so paths present in both manifests are not refused
-        # by do_backup's "refuse to overwrite existing backup" check.
-        M_FROM="$current_version"
-        M_TO="$current_version"
+        # <from>-to-<to>-deprecations keeps this backup namespace distinct from
+        # call_migration_engine's (${old_ver}-to-${new_ver}), so paths present in both
+        # manifests are not refused by do_backup's "refuse to overwrite existing
+        # backup" check. from = the pre-install version (or "none" on a fresh install),
+        # to = the version being installed; a same-version run is <v>-to-<v>-deprecations.
+        # do_backup's containment check builds the path from M_FROM/M_TO, so the real
+        # backup_base below must use the same two values.
+        M_FROM="${old_version:-none}"
+        M_TO="${TARGET_VERSION}-deprecations"
         backup_base="$TARGET/.tad-backup/${M_FROM}-to-${M_TO}"
         # ZT_LIST must come from derive-sync-set.sh (FR-4). Omitting this call fails
         # OPEN: an empty ZT_LIST makes check_zero_touch pass everything.
@@ -2339,6 +2493,8 @@ apply_deprecations() {
                     fi
                     if [ "$rc" -eq 0 ]; then
                         deleted=$(( deleted + 1 ))
+                        # removed.txt: one removed path per line, in removal order.
+                        printf '%s\n' "$target" >> "$backup_base/removed.txt" || log_warn "  ⚠ could not append to $backup_base/removed.txt"
                     else
                         refused=$(( refused + 1 ))
                         log_warn "  ⚠ refused (rc=$rc): $target"
@@ -4007,6 +4163,34 @@ claude_prune_stale() {
     return 0
 }
 
+# scan_skill_entries — report (never fail on) every skill entry that does not
+# resolve to a regular SKILL.md: non-dot entries of .claude/skills (when it is a
+# real directory) and of .agents/skills (except _archived*). Reasons: broken
+# link | not a directory | no SKILL.md. Runs after claude_prune_stale, in main.
+SKILL_ENTRY_UNRESOLVED=0
+scan_skill_entries() {
+    local _e _why _root
+    SKILL_ENTRY_UNRESOLVED=0
+    for _root in .claude/skills .agents/skills; do
+        if [ -L "$_root" ] || [ ! -d "$_root" ]; then continue; fi
+        if [ "$_root" = ".claude/skills" ] && [ -L ".claude" ]; then continue; fi
+        for _e in "$_root"/*; do
+            if [ ! -e "$_e" ] && [ ! -L "$_e" ]; then continue; fi
+            case "${_e##*/}" in _archived*) continue ;; esac
+            _why=""
+            if [ -L "$_e" ] && [ ! -e "$_e" ]; then _why="broken link"
+            elif [ ! -d "$_e" ]; then _why="not a directory"
+            elif [ ! -f "$_e/SKILL.md" ]; then _why="no SKILL.md"
+            fi
+            if [ -n "$_why" ]; then
+                log_warn "SKILL-ENTRY-UNRESOLVED $(claude_adopt_clean "$_e") ($_why)"
+                SKILL_ENTRY_UNRESOLVED=$((SKILL_ENTRY_UNRESOLVED + 1))
+            fi
+        done
+    done
+    return 0
+}
+
 # rollback_claude_projection — undo exactly what THIS run created (handoff
 # section 4.8): created skill links (only if still the link we made), created
 # pointer directories (their SKILL.md, then the directory), a created
@@ -5626,6 +5810,11 @@ main() {
     # resolution, OpenCode collision preflight, and human confirmation. A failed
     # backup aborts (set -e → EXIT trap → rollback) before any copy/migration.
     backup_existing
+    # Pre-run snapshot of the write surface, kept in the backup dir; the change
+    # list (changes.tsv) is the diff against it after a successful run.
+    if [ -n "${BACKUP_PATH:-}" ]; then
+        surface_snapshot > "$BACKUP_PATH/pre-surface.tsv" || log_warn "pre-run surface snapshot not written (no change list this run)"
+    fi
     # From here on, any non-success exit restores the project from the backup.
     NEED_ROLLBACK=1
     # F-06: absolutize target + backup and snapshot every mutable surface
@@ -5931,6 +6120,9 @@ NEXTEOF
     # known good, so a removal never has to be undone by a rollback. It cannot
     # fail the install (every failure inside is a warning).
     claude_prune_stale
+    # Report every skill entry that does not resolve (non-fatal, after the
+    # stale-link prune so links removed a moment ago are not reported).
+    scan_skill_entries
     # Success path: snapshot consumed (recovery copy no longer needed), then
     # disarm rollback so the EXIT trap leaves the tree in place.
     discard_rollback_snap
@@ -5938,6 +6130,7 @@ NEXTEOF
     # The one irreversible adoption step (tombstones are deleted), only now that
     # the install is verified and rollback is disarmed. It cannot fail the install.
     claude_adopt_commit
+    write_changes_tsv || log_warn "change list not written"
     CLAUDE_LEGACY_NOTE="$(claude_legacy_detected_note "$TAD_SRC")"
 
     # Cleanup
@@ -5948,6 +6141,7 @@ NEXTEOF
 
     # Claude projection summary (after the self-check passed, before the banner).
     claude_print_summary
+    log_info "SKILL-ENTRY-UNRESOLVED count: $SKILL_ENTRY_UNRESOLVED"
     if [ -n "${CLAUDE_LEGACY_NOTE:-}" ]; then echo "$CLAUDE_LEGACY_NOTE"; fi
 
     echo ""

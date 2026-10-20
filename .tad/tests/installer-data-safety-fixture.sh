@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -1781,6 +1781,284 @@ case_ac228() {
   assert_no_network
 }
 
+# ════════════ Installer fixes A-E (EPIC-20261020-installer-fixes, Phase 1) ════════════
+# fx.a  A: unresolved skill entries are reported (non-fatal, counted)
+# fx.b1 B1/B2: deprecation backup folder <from>-to-<to>-deprecations + removed.txt
+# fx.b3 B3: changes.tsv in the run's backup
+# fx.c  C: every shipped human-rulings reference is optional; installer creates nothing
+# fx.d  D: non-ASCII project name -> readable, hashed backup group key (+ legacy group notice)
+# fx.e  E: retention keeps the last pre-version-change backup
+
+# fx_upgrade_flow — one real 4.0.3 -> source-version upgrade in a fresh sandbox.
+# Sets FX_LOG (upgrade log), FX_SRCVER, FX_GROUP (backup group dir). The target
+# holds a deprecated file fx-deprecated.md (staged source deprecation entry
+# "4.0.3"), an edited source file and a new source file; $1 (optional) = extra
+# setup command name run in the target before the upgrade.
+fx_upgrade_flow() {
+  local rc
+  new_sandbox; stage_pruned_source
+  FX_SRCVER="$(source_version)"
+  rc="$(run_install_cc claude-code "$SANDBOX/fresh.log")"
+  if [ "$rc" != "0" ]; then fail "$CURRENT_CASE: fresh install failed (rc=$rc)"; return 1; fi
+  printf '4.0.3\n' > "$TARGET/.tad/version.txt"
+  printf 'deprecated\n' > "$TARGET/.tad/templates/fx-deprecated.md"
+  printf '\n  "4.0.3":\n    description: "fixture entry"\n    files:\n      - .tad/templates/fx-deprecated.md\n    date: "2026-10-20"\n' >> "$SOURCE/.tad/deprecation.yaml"
+  printf '\nfixture edit\n' >> "$SOURCE/.tad/templates/review-contract.md"
+  printf 'new in source\n' > "$SOURCE/.tad/templates/fx-new.md"
+  FX_LOG="$SANDBOX/upgrade.log"
+  rc="$(run_install_cc claude-code "$FX_LOG")"
+  if [ "$rc" != "0" ]; then fail "$CURRENT_CASE: upgrade failed (rc=$rc): $(tail -5 "$FX_LOG" | tr '\n' '|')"; return 1; fi
+  FX_GROUP="$(find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name claude-adopt | head -1)"
+  return 0
+}
+
+case_fxa() {
+  CURRENT_CASE="fx.a"
+  local rc log n
+  new_sandbox; stage_pruned_source
+  mkdir -p "$TARGET/.claude/skills/mine" "$TARGET/.claude/skills/cora" "$TARGET/.agents/skills/userdir"
+  printf 'x\n' > "$TARGET/.claude/skills/mine/notes.md"
+  printf 'x\n' > "$TARGET/.claude/skills/cora/notes.md"
+  printf 'x\n' > "$TARGET/.agents/skills/userdir/notes.md"
+  ln -s nowhere "$TARGET/.claude/skills/ghost"
+  rc="$(run_install_cc claude-code "$SANDBOX/a.log")"; log="$SANDBOX/a.log"
+  n="$(grep -c 'SKILL-ENTRY-UNRESOLVED .*(' "$log" || true)"
+  if [ "$rc" = "0" ] && [ "$n" = "4" ] \
+     && grep -qF 'SKILL-ENTRY-UNRESOLVED .claude/skills/mine (no SKILL.md)' "$log" \
+     && grep -qF 'SKILL-ENTRY-UNRESOLVED .claude/skills/ghost (broken link)' "$log" \
+     && grep -qF 'SKILL-ENTRY-UNRESOLVED .agents/skills/userdir (no SKILL.md)' "$log" \
+     && grep -qF 'SKILL-ENTRY-UNRESOLVED .claude/skills/cora (no SKILL.md)' "$log" \
+     && grep -qF 'SKILL-ENTRY-UNRESOLVED count: 4' "$log"; then
+    pass "fx.a: rc 0, exactly 4 unresolved entries named with reasons, count line 4"
+  else
+    fail "fx.a: unresolved-entry report wrong (rc=$rc lines=$n): $(grep 'SKILL-ENTRY' "$log" | tr '\n' '|')"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  new_sandbox; stage_pruned_source
+  rc="$(run_install_cc claude-code "$SANDBOX/a2.log")"; log="$SANDBOX/a2.log"
+  n="$(grep -c 'SKILL-ENTRY-UNRESOLVED .*(' "$log" || true)"
+  if [ "$rc" = "0" ] && [ "$n" = "0" ] && grep -qF 'SKILL-ENTRY-UNRESOLVED count: 0' "$log"; then
+    pass "fx.a: clean install: 0 entry lines, count: 0"
+  else
+    fail "fx.a: clean install report wrong (rc=$rc lines=$n)"
+  fi
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  # .claude/skills is a symlink: the scan skips it (nothing from it is reported)
+  new_sandbox; stage_pruned_source
+  mkdir -p "$SANDBOX/elsewhere/skills/loose" "$TARGET/.claude"
+  printf 'x\n' > "$SANDBOX/elsewhere/skills/loose/notes.md"
+  ln -s "$SANDBOX/elsewhere/skills" "$TARGET/.claude/skills"
+  rc="$(run_install_cc claude-code "$SANDBOX/a3.log")"; log="$SANDBOX/a3.log"
+  if ! grep -qF 'skills/loose' "$log" && grep -qF 'SKILL-ENTRY-UNRESOLVED count:' "$log"; then
+    pass "fx.a: .claude/skills as a symlink is skipped by the scan"
+  else
+    fail "fx.a: symlinked .claude/skills was scanned or the count line is missing (rc=$rc)"
+  fi
+  assert_no_network
+}
+
+case_fxb1() {
+  CURRENT_CASE="fx.b1"
+  local rc d
+  fx_upgrade_flow || return 0
+  d="$TARGET/.tad-backup/4.0.3-to-${FX_SRCVER}-deprecations"
+  if [ -f "$d/.tad/templates/fx-deprecated.md" ] && [ "$(cat "$d/removed.txt" 2>/dev/null)" = ".tad/templates/fx-deprecated.md" ] \
+     && [ ! -e "$TARGET/.tad/templates/fx-deprecated.md" ]; then
+    pass "fx.b1: file backed up under 4.0.3-to-$FX_SRCVER-deprecations, removed.txt names exactly it, file gone"
+  else
+    fail "fx.b1: deprecation backup folder/removed.txt wrong: $(ls -A "$TARGET/.tad-backup" 2>/dev/null | tr '\n' ' ')"
+  fi
+  if ! ls -d "$TARGET"/.tad-backup/4.0.3-to-4.0.3* >/dev/null 2>&1 && ! grep -qF 'refusing overwrite' "$FX_LOG"; then
+    pass "fx.b1: no 4.0.3-to-4.0.3 folder, no overwrite refusal"
+  else
+    fail "fx.b1: bare 4.0.3-to-4.0.3 folder created or overwrite refused"
+  fi
+  # rerun at the same version
+  printf 'deprecated again\n' > "$TARGET/.tad/templates/fx-deprecated.md"
+  rc="$(run_install_cc claude-code "$SANDBOX/rerun.log" --force)"
+  d="$TARGET/.tad-backup/${FX_SRCVER}-to-${FX_SRCVER}-deprecations"
+  if [ "$rc" = "0" ] && [ -f "$d/.tad/templates/fx-deprecated.md" ] && [ "$(cat "$d/removed.txt" 2>/dev/null)" = ".tad/templates/fx-deprecated.md" ] \
+     && [ ! -e "$TARGET/.tad/templates/fx-deprecated.md" ] && ! ls -d "$TARGET"/.tad-backup/4.0.3-to-4.0.3* >/dev/null 2>&1; then
+    pass "fx.b1: same-version rerun uses $FX_SRCVER-to-$FX_SRCVER-deprecations, still no 4.0.3-to-4.0.3"
+  else
+    fail "fx.b1: rerun folder wrong (rc=$rc): $(ls -A "$TARGET/.tad-backup" 2>/dev/null | tr '\n' ' ') :: $(tail -4 "$SANDBOX/rerun.log" | tr '\n' '|')"
+  fi
+  assert_no_network
+}
+
+case_fxb3() {
+  CURRENT_CASE="fx.b3"
+  local rc ct bad prefix
+  new_sandbox; stage_pruned_source
+  FX_SRCVER="$(source_version)"
+  rc="$(run_install_cc claude-code "$SANDBOX/fresh.log")"
+  if [ "$rc" != "0" ]; then fail "fx.b3: fresh install failed (rc=$rc)"; return 0; fi
+  printf '4.0.3\n' > "$TARGET/.tad/version.txt"
+  printf 'deprecated\n' > "$TARGET/.tad/templates/fx-deprecated.md"
+  printf '\n  "4.0.3":\n    description: "fixture entry"\n    files:\n      - .tad/templates/fx-deprecated.md\n    date: "2026-10-20"\n' >> "$SOURCE/.tad/deprecation.yaml"
+  printf '\nfixture edit\n' >> "$SOURCE/.tad/templates/review-contract.md"
+  printf 'new in source\n' > "$SOURCE/.tad/templates/fx-new.md"
+  mkdir -p "$TARGET/.agents/skills/fx-x
+y"
+  printf 'u\n' > "$TARGET/.agents/skills/fx-x
+y/f.md"
+  FX_LOG="$SANDBOX/upgrade.log"
+  rc="$(run_install_cc claude-code "$FX_LOG")"
+  if [ "$rc" != "0" ]; then fail "fx.b3: upgrade failed (rc=$rc): $(tail -5 "$FX_LOG" | tr '\n' '|')"; return 0; fi
+  FX_GROUP="$(find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name claude-adopt | head -1)"
+  ct="$(ls -d "$FX_GROUP"/*/ | LC_ALL=C sort | tail -1)changes.tsv"
+  if [ -f "$ct" ] && [ "$(head -1 "$ct")" = "$(printf 'kind\tpath')" ] \
+     && grep -qF "$(printf 'changed\t.tad/templates/review-contract.md')" "$ct" \
+     && grep -qF "$(printf 'added\t.tad/templates/fx-new.md')" "$ct" \
+     && grep -qF "$(printf 'removed\t.tad/templates/fx-deprecated.md')" "$ct" \
+     && grep -qF 'Change list: ' "$FX_LOG"; then
+    pass "fx.b3: changes.tsv has the header and a changed, an added and a removed row; the log names it"
+  else
+    fail "fx.b3: changes.tsv missing or incomplete: $ct"
+  fi
+  bad="$(tail -n +2 "$ct" | LC_ALL=C grep -vE "^(added|changed|removed)$(printf '\t')[^$(printf '\t')]+\$" | head -3 || true)"
+  prefix="$(tail -n +2 "$ct" | cut -f2 | LC_ALL=C grep -vE '^(\.tad/|\.agents/skills|\.claude/|AGENTS\.md|CLAUDE\.md|\.codex/|\.opencode/|\.cursor/)' | head -3 || true)"
+  if [ -f "$ct" ] && [ -z "$bad" ] && [ -z "$prefix" ]; then
+    pass "fx.b3: every row is kind<TAB>path under a write-surface prefix"
+  else
+    fail "fx.b3: malformed or out-of-surface rows: $bad / $prefix"
+  fi
+  if [ -f "$ct" ] && ! grep -qF 'y/f.md' "$ct" && ! grep -qF 'fx-x' "$ct"; then
+    pass "fx.b3: a path holding a newline is excluded (no partial rows)"
+  else
+    fail "fx.b3: newline path leaked into changes.tsv"
+  fi
+  rc="$(run_install_cc claude-code "$SANDBOX/rerun.log" --force)"
+  ct="$(ls -d "$FX_GROUP"/*/ | LC_ALL=C sort | tail -1)changes.tsv"
+  if [ "$rc" = "0" ] && [ -f "$ct" ] && [ "$(wc -l < "$ct" | tr -d ' ')" = "1" ]; then
+    pass "fx.b3: no-op --force rerun: changes.tsv is the header only"
+  else
+    fail "fx.b3: no-op rerun change list not header-only (rc=$rc): $(cat "$ct" 2>/dev/null | head -5 | tr '\n' '|')"
+  fi
+  assert_no_network
+}
+
+case_fxc() {
+  CURRENT_CASE="fx.c"
+  local rest l rc
+  rest="$(git -C "$REPO" grep -n 'human-rulings' -- AGENTS.md .agents .tad/templates .tad/hooks '.tad/*.yaml' | grep -viE 'if it exists|if it has one|created on first use|human-rulings\.md` exists' || true)"
+  if [ -z "$rest" ]; then
+    pass "fx.c: every shipped human-rulings reference carries an optional qualifier"
+  else
+    fail "fx.c: unqualified references: $(printf '%s' "$rest" | cut -c1-120 | tr '\n' '|')"
+  fi
+  local ok=1
+  for l in ".tad/templates/review-contract.md:54" ".agents/skills/cora/references/conductor-protocol.md:234" ".agents/skills/gate/SKILL.md:635"; do
+    local f="${l%%:*}" n="${l##*:}" line cnt
+    line="$(sed -n "${n}p" "$REPO/$f")"
+    cnt="$(printf '%s' "$line" | grep -oF '.tad/project-knowledge/rulings/human-rulings.md' | wc -l | tr -d ' ')"
+    if ! printf '%s' "$line" | grep -qF 'if it exists' || [ "$cnt" != "1" ]; then ok=0; fail "fx.c: $l lacks the qualifier or holds the full path $cnt times"; fi
+  done
+  [ "$ok" = "1" ] && pass "fx.c: each edited line holds 'if it exists' and the full path once"
+  new_sandbox; stage_pruned_source
+  rc="$(run_install_cc claude-code "$SANDBOX/c.log")"
+  if [ "$rc" = "0" ] && [ ! -e "$TARGET/.tad/project-knowledge/rulings" ]; then
+    pass "fx.c: a fresh install creates no .tad/project-knowledge/rulings"
+  else
+    fail "fx.c: rulings dir created or install failed (rc=$rc) :: $(tail -4 "$SANDBOX/c.log" | tr '\n' '|')"
+  fi
+}
+
+case_fxd() {
+  CURRENT_CASE="fx.d"
+  new_sandbox
+  extract_fn repo_group_key "$SANDBOX/rk.fn.sh" "BACKUP_GROUP_LEGACY"
+  local R="$SANDBOX/root" out k1 k2 sb="$SANDBOX" ck
+  mkdir -p "$R" "$SANDBOX/noiconv"
+  printf '#!/bin/sh\nexit 127\n' > "$SANDBOX/noiconv/iconv"; chmod +x "$SANDBOX/noiconv/iconv"
+  # key_of <path> [PATH prefix] -> "key|legacy|rc"
+  key_of() {
+    cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+${2:+PATH="$2:\$PATH"}
+log_error() { printf 'ERR: %s\n' "\$1"; }
+TAD_BACKUP_ROOT_ABS="$R"
+BACKUP_GROUP=""; BACKUP_GROUP_LEGACY=""
+. "$SANDBOX/rk.fn.sh"
+rc=0; repo_group_key "\$1" || rc=\$?
+printf '%s|%s|%s' "\$BACKUP_GROUP" "\$BACKUP_GROUP_LEGACY" "\$rc"
+HEOF
+    bash "$SANDBOX/h.sh" "$1" 2>&1
+  }
+  k1="$(key_of "$sb/a/买卖")"; k2="$(key_of "$sb/b/买卖")"
+  if printf '%s' "$k1" | grep -qE '^买卖-[0-9a-f]{8}\|\|0$' && printf '%s' "$k2" | grep -qE '^买卖-[0-9a-f]{8}\|\|0$' && [ "${k1%%|*}" != "${k2%%|*}" ]; then
+    pass "fx.d: two 买卖 projects get distinct readable keys 买卖-<hash8>"
+  else
+    fail "fx.d: CJK keys wrong: $k1 / $k2"
+  fi
+  out="$(key_of "$sb/demo")"
+  if [ "$out" = "demo||0" ]; then pass "fx.d: ASCII name keeps its key, no legacy group"; else fail "fx.d: demo key changed: $out"; fi
+  out="$(key_of "$(printf '%s/a/ab\ncd买' "$sb")")"
+  if printf '%s' "$out" | grep -qE '^[^/|]+-[0-9a-f]{8}\|\|0$'; then pass "fx.d: control byte + CJK name still yields <slug>-<hash8> without a slash"; else fail "fx.d: control-byte name key: $out"; fi
+  out="$(key_of "$sb/a/买卖" "$SANDBOX/noiconv")"
+  if printf '%s' "$out" | grep -qE '^project-[0-9a-f]{8}\|\|0$'; then pass "fx.d: no working iconv -> project-<hash8>, rc 0"; else fail "fx.d: iconv-less key: $out"; fi
+  # FR-D2: legacy plain group owned by this path, then the cksum-suffixed one
+  mkdir -p "$R/______/20260101_000000"
+  : > "$R/______/20260101_000000/manifest.txt"; printf '%s\n' "$sb/a/买卖" > "$R/______/20260101_000000/origin.txt"
+  out="$(key_of "$sb/a/买卖")"
+  if [ "$(printf '%s' "$out" | cut -d'|' -f2)" = "$R/______" ]; then pass "fx.d: legacy plain group owned by this path is reported"; else fail "fx.d: legacy group not found: $out"; fi
+  out="$(key_of "$sb/b/买卖")"
+  if [ -z "$(printf '%s' "$out" | cut -d'|' -f2)" ]; then pass "fx.d: a legacy group owned by another path is not reported"; else fail "fx.d: foreign legacy group reported: $out"; fi
+  ck="$(printf '%s' "$sb/b/买卖" | cksum | cut -d' ' -f1 | cut -c1-8)"
+  mkdir -p "$R/______-$ck/20260101_000000"
+  : > "$R/______-$ck/20260101_000000/manifest.txt"; printf '%s\n' "$sb/b/买卖" > "$R/______-$ck/20260101_000000/origin.txt"
+  out="$(key_of "$sb/b/买卖")"
+  if [ "$(printf '%s' "$out" | cut -d'|' -f2)" = "$R/______-$ck" ]; then pass "fx.d: collision-suffixed legacy group is reported too"; else fail "fx.d: suffixed legacy group not found: $out"; fi
+  out="$(key_of "$sb/demo")"
+  if [ "$out" = "demo||0" ]; then pass "fx.d: ASCII name: legacy variable stays empty"; else fail "fx.d: demo legacy: $out"; fi
+}
+
+case_fxe() {
+  CURRENT_CASE="fx.e"
+  new_sandbox
+  extract_fn prune_backups "$SANDBOX/pb.fn.sh" "retention"
+  local G out
+  # mk <group> <name> <version-or-empty>
+  mkb() { mkdir -p "$1/$2"; if [ -n "$3" ]; then printf 'data.txt\nversion=%s\n' "$3" > "$1/$2/manifest.txt"; else : > "$1/$2/manifest.txt"; fi; }
+  run_prune() { # $1 group $2 newest
+    cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+log_info() { :; }
+log_warn() { printf 'WARN: %s\n' "\$1"; }
+. "$SANDBOX/pb.fn.sh"
+prune_backups "$1" "$1/$2"
+HEOF
+    harness_run "$SANDBOX/h.sh"
+  }
+  survivors() { ls -1 "$1" | LC_ALL=C sort | tr '\n' ' '; }
+  G="$SANDBOX/g1"
+  mkb "$G" 20260102_000000 4.0.3; mkb "$G" 20260103_000000 4.0.4; mkb "$G" 20260104_000000 4.0.4; mkb "$G" 20260105_000000 4.0.4
+  out="$(run_prune "$G" 20260105_000000)"
+  if [ "$(survivors "$G")" = "20260102_000000 20260104_000000 20260105_000000 " ]; then
+    pass "fx.e: 4.0.3,4.0.4,4.0.4,4.0.4 -> the 4.0.3 backup survives with the newest two"
+  else fail "fx.e: survivors wrong: $(survivors "$G") $out"; fi
+  G="$SANDBOX/g2"
+  mkb "$G" 20260101_000000 4.0.3
+  local i
+  for i in 2 3 4 5 6; do mkb "$G" "2026010${i}_000000" 4.0.4; done
+  out="$(run_prune "$G" 20260106_000000)"
+  if [ "$(survivors "$G")" = "20260101_000000 20260105_000000 20260106_000000 " ]; then
+    pass "fx.e: 1x4.0.3 then 5x4.0.4 -> exactly 3 survivors including the 4.0.3"
+  else fail "fx.e: survivors wrong: $(survivors "$G") $out"; fi
+  G="$SANDBOX/g3"
+  for i in 1 2 3 4; do mkb "$G" "2026010${i}_000000" ""; done
+  out="$(run_prune "$G" 20260104_000000)"
+  if [ "$(survivors "$G")" = "20260103_000000 20260104_000000 " ]; then
+    pass "fx.e: all-empty manifests -> 2 survivors (today's behaviour)"
+  else fail "fx.e: empty-manifest survivors wrong: $(survivors "$G") $out"; fi
+  G="$SANDBOX/g4"
+  mkb "$G" 20260101_000000 4.0.4; mkb "$G" 20260101_000000.1 4.0.4; mkb "$G" 20260101_000000.2 4.0.4; mkb "$G" 20260101_000000.10 4.0.4
+  out="$(run_prune "$G" 20260101_000000.10)"
+  if [ "$(survivors "$G")" = "20260101_000000.10 20260101_000000.2 " ]; then
+    pass "fx.e: numeric suffix order (.10 newer than .2) holds with the version field"
+  else fail "fx.e: suffix order survivors wrong: $(survivors "$G") $out"; fi
+}
+
 # ── runner ───────────────────────────────────────────────────────────
 run_case() {
   case "$1" in
@@ -1813,6 +2091,12 @@ run_case() {
     ac2.27) case_ac227 ;;
     ac2.28) case_ac228 ;;
     r1) case_r1 ;;
+    fx.a) case_fxa ;;
+    fx.b1) case_fxb1 ;;
+    fx.b3) case_fxb3 ;;
+    fx.c) case_fxc ;;
+    fx.d) case_fxd ;;
+    fx.e) case_fxe ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
   if [ -n "$SANDBOX" ] && [ -d "$SANDBOX" ]; then guarded_cleanup "$SANDBOX" || true; fi
@@ -1832,6 +2116,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.18; run_case ac2.19; run_case ac2.20; run_case ac2.21
   run_case ac2.22; run_case ac2.23; run_case ac2.24
   run_case ac2.25; run_case ac2.26; run_case ac2.27; run_case ac2.28
+  run_case fx.a; run_case fx.b1; run_case fx.b3; run_case fx.c; run_case fx.d; run_case fx.e
   run_case r1
 else
   run_case "$CASE"
