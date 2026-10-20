@@ -64,8 +64,8 @@ Select 0-9:
 
 ### 🔄 v2.0 Highlights (Preserved)
 - **Ralph Loop**: Blake's iterative quality cycle (Layer 1 self-check + Layer 2 expert review)
-- **Gate 3 v2 Expanded**: All technical quality checks consolidated
-- **Gate 4 v2 Simplified**: Pure business acceptance by Alex
+- **Gate 3**: run + consistency reviewers (+ domain), scripted AC re-run; the run reviewer signs
+- **Gate 4**: an acceptor that took no part accepts by real use
 - **Circuit Breaker**: Auto-escalate after 3 same errors
 - **State Persistence**: Resume from crash without losing progress
 
@@ -112,17 +112,17 @@ Select 0-9:
 2. **Blake** (`/blake`, direct use) → Activate Blake
    - Verify handoff from Alex (auto-detect on startup)
    - `*develop` → Ralph Loop (Layer 1 + Layer 2)
-   - Gate 3 v2 → Technical verification
-   - Report to Alex for Gate 4 v2
+   - Gate 3 → reviewers + scripted re-run (the run reviewer signs)
+   - Report to Alex for Gate 4 (acceptor, by real use)
 
 ## Quality Gates (Mandatory)
 
 | Gate | Owner | When | Purpose |
 |------|-------|------|---------|
-| Gate 1 | Alex | After elicitation | Requirements clarity |
-| Gate 2 | Alex | Before handoff | Design completeness (with expert review) |
-| Gate 3 | Blake | After Ralph Loop | Implementation & integration quality |
-| Gate 4 | Alex | After Gate 3 | Acceptance & archive (business-only) |
+| Gate 1 | the human + Alex (+ format script) | After the confirmed playback | Requirements clarity |
+| Gate 2 | Alex + two lens reviewers | Before handoff | Design completeness (two lenses) |
+| Gate 3 | the run reviewer (Blake prepares) | After Ralph Loop | Implementation quality (run + consistency, + domain) |
+| Gate 4 | an acceptor that took no part | After Gate 3 | Acceptance by real use & archive |
 
 ## Success Patterns
 

@@ -227,8 +227,8 @@ handoff_creation_protocol:
         runnable command in backticks | evidence path-check | fixture runner | rubric-spawn |
         light-tier N/A with reason (light tiers only). An ILLEGAL (prose-only) Method cell is
         NOT shippable: rewrite it into a runnable command BEFORE ship — Gate 3 marks the row
-        FAIL (prose-only Verification Method = FAIL) and Gate 4 cannot PASS on missing/unrun
-        Methods. Do NOT invent a new `verify:` column or frontmatter key; tighten the Method cell.
+        FAIL (prose-only Verification Method = FAIL) and the Gate 3 script re-run (gate3-check.sh) cannot
+        record a not-scriptable row as run. Do NOT invent a new `verify:` column or frontmatter key; tighten the Method cell.
 
     step1a:
       name: "Capability Pack Injection"
@@ -278,6 +278,7 @@ handoff_creation_protocol:
         research_required: "must be yes or no"
         risk_triggers: "list from the closed set security | data | money | ui | platform | domain, or [none]"
         real_paths: "≥1 entry {id, path, run} or {id, path, not-run: <reason>}; protocol text: a named scenario walk"
+      gate1_format: "run `bash .tad/hooks/lib/gate1-format-check.sh <draft handoff>` (handoff mode: an Epic pointer prints OK g0; a bug handoff checks Bug Description and the repro row; otherwise §1.5 needs the `- **Done check**: …` and `- **Not wanted**: …` lines, `#### Q→A log` and `#### Assumptions`). Advisory, exit 1 = fill the missing item or ask the human that block; express and *bug use it the same way. Content is the human's confirmed playback plus my line 'can design from it'."
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
 
     step1c:

@@ -43,7 +43,7 @@ express_path_protocol:
     - "step5 Gate 2 check"
     - "step7 Blake message generation with 人话版"
     - "Gate 3 (Blake side: Layer 1, then the Gate 3 reviewers run + consistency per the review contract)"
-    - "Gate 4 v2 acceptance (Alex side)"
+    - "Gate 4: the acceptor at *accept (acceptance-protocol step3)"
 
   skipped_steps:
     - "Adaptive Complexity Protocol step2 (no scope choice — *express IS the scope)"

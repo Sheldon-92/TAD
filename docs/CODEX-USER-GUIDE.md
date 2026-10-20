@@ -92,13 +92,13 @@ Alex: "Handoff 已准备好，请切换到 Blake 执行。"
 你: 执行登录功能的 handoff
 
 Blake: [读取 handoff，实现代码]
-Blake: [运行 Gate 3 质量检查：build + test + 专家审查]
+Blake: [Layer 1 自检，然后 Gate 3 reviewers（run + consistency）审查]
 Blake: [生成完工报告]
 
 你: $alex
 你: Blake 完成了，这是完工报告
 
-Alex: [审查完工报告，执行 Gate 4 业务验收]
+Alex: [派发 Gate 4 acceptor（没参与设计和实现），按真实使用验收，转交 verdict 和 3–5 行证据]
 Alex: "验收通过，已归档。"
 ```
 
@@ -171,18 +171,18 @@ TAD 有 4 个质量门（Gate），确保每一步都有人检查：
 ```
 Gate 1: 需求清晰吗？         ← Alex 负责
 Gate 2: 设计完整吗？         ← Alex 负责（含专家审查）
-Gate 3: 代码质量过关吗？     ← Blake 负责（含 build/test + 专家审查）
-Gate 4: 业务需求满足了吗？   ← Alex 负责（人类确认）
+Gate 3: 实现过关吗？         ← run reviewer 签（Blake 准备；run + consistency reviewers）
+Gate 4: 真实使用验收了吗？   ← acceptor 做（没参与；人类只收 verdict + 证据）
 ```
 
 ### Gate 3 的两层检查
 
 **Layer 1（自检）**：Blake 自己跑 build、test、lint。最多重试 15 次。
 
-**Layer 2（专家审查）**：Blake 调用 AI 子 agent 做代码审查：
-- `spec-compliance-reviewer` — 对照 handoff 逐条验证
-- `code-reviewer` — 代码质量、安全、性能
-- `test-runner` / `security-auditor`（按需）
+**Layer 2（Gate 3 reviewers）**：Blake 派发 AI 子 agent，各用不同的 lens：
+- run — 真跑每条 §9.1 方法和 real path（`gate3-check.sh rerun`），签 Gate 3 verdict
+- consistency — 查矛盾和被改行的所有使用方
+- domain — 仅当 risk_triggers 含 security / data / money
 
 ---
 
@@ -383,7 +383,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 ```
 
 ### "Gate 3 失败 — 没有 evidence 文件"
-Blake 必须调用子 agent 做代码审查才能通过 Gate 3。检查 `.tad/evidence/reviews/` 目录。
+Gate 3 需要 run 和 consistency reviewer 的文件才能通过。检查 `.tad/evidence/reviews/` 目录。
 
 ### "Handoff 创建了但 Blake 看不到"
 TAD 有三个角色：Cora 是你对话的入口并负责调度，Alex 设计，Blake 执行。正常流程是：用 `$cora` 和她商定结果，她让人写好 Epic 后停下；你说「继续」，她通过 subagent 和 gate 跑完；你看结果。检查的人不应看到做事的人的推理，分开的会话（Alex 一个、Blake 一个，你手动传 handoff 路径）只是做到这一点的一种方式，`$alex` / `$blake` 仍可直接使用。

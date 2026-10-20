@@ -3,7 +3,7 @@
 TAD (Triangle Agent Development) uses three roles:
 - **Cora** (Conductor): The human's entry point and conductor: triages each request (simple, handoff or Epic) and states the plan, writes the Epic where one is needed, dispatches Alex, Blake and reviewers as subagents; writes no implementation, edits no handoff, gives no verdict
 - **Alex** (Solution Lead): Requirements (clarified block by block), design, handoffs, Gate 4 acceptance
-- **Blake** (Execution Master): Implementation, Ralph Loop, expert review, Gate 3 verification
+- **Blake** (Execution Master): Implementation, Ralph Loop, Gate 3 preparation (the run reviewer signs it)
 
 All three roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 Independence of judgment is the rule: no one judges their own work. Separate terminals with the human as the bridge are one way; a fresh subagent dispatched by Cora is another.
@@ -40,7 +40,7 @@ If a phrase above did not load the skill by itself, read `.agents/skills/<role>/
 
 Cora is the human's entry point: she triages each request and runs it by dispatching subagents.
 Alex is the Solution Lead: technical design, handoffs, Gate 4.
-Blake is the Execution Master: implementation, Ralph Loop, Gate 3.
+Blake is the Execution Master: implementation, Ralph Loop, Gate 3 preparation.
 Cora is additive: `/alex` and `/blake` stay available directly for single handoffs, bugs and technical discussion; a matter brought to Cora is triaged and run by her at any tier. Claude Code and Codex: measured in Phase 2 (headless activation sessions). Cursor and OpenCode: same method, not yet run.
 
 Roles on every harness use a shared `.tad/` knowledge, state, and journal

@@ -34,15 +34,23 @@ gate3_verdict:
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| run (Gate 3 verdict) | ✅/⚠️/❌ | [every §9.1 row and real_path] |
+| run (Gate 3 verdict + ac-rerun.md) | ✅/⚠️/❌ | [every §9.1 row (gate3-check.sh rerun) and real_path] |
 | consistency | ✅/⚠️/❌ | [P0=0; open P1 carried, listed] |
 | domain (if security/data/money) | ✅/⚠️/❌/N/A | [N/A or result] |
+
+### Real paths
+
+List each `real_paths` id from the handoff and any path you expect to end `not-run: <reason>`. The run reviewer records the runs in its own file (`## Real paths`, `## Not run`).
+
+| id | expected | note |
+|----|----------|------|
+| RP1 | run / not-run: <reason> | |
 
 ### Evidence
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| Expert Evidence | ✅/⚠️/❌ | [.tad/evidence/reviews/ 下有审查文件] |
+| Expert Evidence | ✅/⚠️/❌ | [the lens files (gate3-verdict, consistency, domain) and ac-rerun file] |
 | Ralph Loop Summary | ✅/⚠️/❌ | [Ralph Loop 执行摘要] |
 | Acceptance Verification | ✅/⚠️/❌ | [AC 验证脚本执行通过] |
 
@@ -251,10 +259,10 @@ Every claim in this report must have an on-disk carrier file (claims-need-carrie
 - [ ] Summary: .tad/evidence/ralph-loops/{task_id}_summary.md
 
 ### Expert Review Evidence
-- [ ] Code review: .tad/evidence/reviews/{date}-code-review-{task}-final.md
-- [ ] Testing review: .tad/evidence/reviews/{date}-testing-review-{task}-final.md
-- [ ] Security review: .tad/evidence/reviews/{date}-security-review-{task}-*.md (if triggered)
-- [ ] Performance review: .tad/evidence/reviews/{date}-performance-review-{task}-*.md (if triggered)
+- [ ] Gate 3 run verdict: .tad/evidence/reviews/blake/{slug}/gate3-verdict.md (Cora's runs: phase{N}-gate3-verdict.md)
+- [ ] AC re-run: .tad/evidence/reviews/blake/{slug}/ac-rerun.md (Cora's runs: phase{N}-ac-rerun.md)
+- [ ] Consistency review: .tad/evidence/reviews/blake/{slug}/consistency-review.md
+- [ ] Domain review (if security, data or money is listed): .tad/evidence/reviews/blake/{slug}/domain-review.md
 
 ### Acceptance Verification Evidence
 - [ ] Report: .tad/evidence/acceptance-tests/{task_id}/acceptance-verification-report.md
@@ -307,7 +315,9 @@ PM-Blockers: <one line>
 
 ---
 
-## 📝 Human 验收区
+## 📝 Gate 4 (acceptor) and the human's answer
+
+**Gate 4 report**: [pointer to the acceptor's gate report and its `## For the human` block]
 
 **验收时间**: [YYYY-MM-DD HH:MM]
 

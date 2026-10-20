@@ -1,4 +1,6 @@
 # Gate Execution Guide for Agents
+> SUPERSEDED: the gate items live in `.tad/gates/gate-canonical-checklist.md`; this guide points to a superseded checklist and is not loaded.
+
 
 ## 🎯 When to Execute Gates
 

@@ -11,13 +11,14 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 - Show the blocks. Never announce a problem type.
 - Big blocks first; an unclear block is split further.
 - Use the matching table in `decomposition-tables.md`; with no match, decompose on the spot.
-- A block for the done check (how the result is judged) is always present, and so is a block for what he does not want.
+- A block for the done check (how the result is judged) is always present, and so is a block for what he does not want; they are recorded as the lines `- **Done check**: …` and `- **Not wanted**: …` (a letter prefix such as `- **E. Done check**:` is fine).
 
 ## 3. Ask
 - One block at a time, at most 4 questions per block.
+- A block she can look up (a file, a line, current behaviour) she reads it before asking; the view-first rule is for judgment questions.
 - Before the options, Cora states her own professional view on the question, with its reason, in plain words. She does not open with "what do you suggest?" or any bare menu: the human came to hear her judgment.
 - Each question then has concrete options that show the current understanding, one marked "recommended" (kept as answered; the anchoring risk is watched), and "other". Options are numbered. They exist for him to correct her, not to replace her judgment: the marked option is the view she just gave.
-- When he hands a question back ("你的建议呢", "you decide"), she answers with her recommendation and its reason, and carries on from it. She never asks the same question again.
+- When he hands a question back ("你的建议呢", "you decide"), she answers with her recommendation and its reason, and carries on from it. She never asks the same question again. A handed-back question is logged in the Q→A log as `→ handed back; logged as her recommendation: <it>`.
 - An answer through "other": restate that block in one line in his words, and update the Q→A log.
 
 ## 4. Playback and start
@@ -28,10 +29,10 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 - Unsure whether he is discussing or asking for work: ask which, as a choice question. No clarification and no work start before the answer.
 
 ## 5. Record
-- Epic: `## Requirement` (one line per block in his words), then `### Q→A log`, then `### Assumptions (not asked; Gate 4 lists them)`. A handoff-tier Epic gets the same section, copied from the confirmed playback.
-- Simple tier: the journal entry fields `blocks:`, `qa:`, `assumptions:`.
-- Direct `/alex` without an Epic: handoff `### 1.5 Requirement`, same three parts. A direct `/alex` that creates an Epic runs this method first and writes `## Requirement` before the Phase Map.
-- Gate 1, requirement half: his confirmed playback, plus an Alex subagent confirming it can design from it (the conditions list: Phase 3 of EPIC-20261019).
+- Epic: `## Requirement` (one line per block in his words, including the lines `- **Done check**: …` and `- **Not wanted**: …`), then `### Q→A log`, then `### Assumptions (not asked; Gate 4 lists them)`. A handoff-tier Epic gets the same section, copied from the confirmed playback.
+- Simple tier: the journal entry fields `blocks:` (including `Done check` and `Not wanted`), `qa:`, `assumptions:`.
+- Direct `/alex` without an Epic: handoff `### 1.5 Requirement`: block lines including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`. A direct `/alex` that creates an Epic runs this method first and writes `## Requirement` before the Phase Map.
+- Gate 1: the four conditions in `.tad/gates/gate-canonical-checklist.md`; his confirmed playback plus Alex's "can design from it"; the format is checked by `gate1-format-check.sh`.
 - If the request is a pure explanation or lookup that creates no work, no record is written.
 
 ## 6. Downstream

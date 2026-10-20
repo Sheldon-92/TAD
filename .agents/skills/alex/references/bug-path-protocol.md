@@ -22,6 +22,7 @@ bug_path_protocol:
       action: |
         Read relevant code files.
         Optionally call bug-hunter subagent for complex issues.
+        When the bug is in an accepted result (an archived handoff or a completed Epic), write one escape-log line with the diagnosis into `.tad/evidence/escape-log.md` (created from `.tad/templates/escape-log.md` when absent; its rule table names the gate that should have caught it).
         Identify root cause and affected files.
         Output diagnosis to user:
         - Root cause
@@ -81,9 +82,11 @@ bug_path_protocol:
 
         ## Blake Instructions
         - This is an express bugfix — requirement clarification was a playback (no unclear block)
-        - Apply fix → Layer 1 → commit → Gate 3 reviewers run + consistency (+ domain if security/data/money) per the review contract → done
-        - If fix turns out to be more complex than described, escalate to user
+        - Apply fix → Layer 1 → commit → Gate 3 reviewers run + consistency (+ domain if security/data/money) per the review contract → then Alex `*accept` (Gate 4 acceptor, runs the reported repro)
+        - If fix turns out to be more complex than described, escalate to Alex
         ```
+
+        Gate 1 (bug mode): run `bash .tad/hooks/lib/gate1-format-check.sh` on the mini-handoff (Bug Description present, §9.1 has the repro row); the human's confirmed playback of the symptom is the content half.
 
         Generate Blake message (same format as standard handoff step7).
 

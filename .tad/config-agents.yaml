@@ -271,14 +271,13 @@ human_role_v13:
       time_budget: "5-10分钟/Phase"
 
     gate3_implementation:
-      when: "所有Phase完成"
-      human_action: "最终验证"
+      when: "所有Phase完成，Gate 3 通过后"
+      human_action: "Gate 4: reads the verdict + 3–5 evidence lines; does only device / payment / own-login items"
       evidence_to_review:
-        - "完整的测试报告"
-        - "完整的UI截图"
-        - "性能测试结果（如需要）"
-      decision: "通过→交付 / 问题→修复"
-      time_budget: "10-15分钟"
+        - "the acceptor's verdict and 3-5 evidence lines (## For the human)"
+        - "Needs you / Not run items with their reasons"
+      decision: "accept / reject"
+      time_budget: "5分钟"
 
   total_time_investment:
     per_feature:

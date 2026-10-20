@@ -5,7 +5,7 @@
 
 **When**: writing §9 ACs; Layer 2 raising P0 on a dirty tree; Gate 2 / dispatch to Blake.
 
-**Teeth**: min 2 independent Gate 2 reviews stay; Alex ≠ Blake stays. This pattern does not skip review.
+**Teeth**: two reviewers with different lenses at Gate 2 stay; Alex ≠ Blake stays. This pattern does not skip review.
 
 ## Pointers
 

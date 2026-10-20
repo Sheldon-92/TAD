@@ -933,7 +933,8 @@ ralph_loop_execution:
         reviewers:
           run:
             blocking: true  # MUST run every §9.1 method and real_path
-            writes: ".tad/evidence/reviews/blake/<slug>/gate3-verdict.md and the gate3_verdict: marker (the run reviewer writes both, never Blake)"
+            writes: ".tad/evidence/reviews/blake/<slug>/gate3-verdict.md, ac-rerun.md and the gate3_verdict: marker (the run reviewer writes them, never Blake)"
+            runs_first: "bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out .tad/evidence/reviews/blake/<slug>/ac-rerun.md --id <id>; gate3-check.sh paths <handoff> <its gate3-verdict.md> before saving (review contract §5 run)"
             subagent: "general-purpose (test-runner for a test suite)"
           consistency:
             blocking: true
@@ -949,6 +950,7 @@ ralph_loop_execution:
           - "Increment layer2_rounds"
           - "Fix issues, re-run Layer 1, commit, then the next round per contract §7 (only the lenses with an open item, and the run lens after every rework)"
           - "Round 3 with an open P0 (counted from round 1 or the last re-plan) → escalate_to_alex"
+          - "A consistency file whose `risk_triggers:` header adds security, data or money not in the handoff's list → the domain lens runs in the next round, even with no P0"
         on_success:
           - "Checkpoint state"
           - "Proceed to Gate 3 v2"
@@ -1145,11 +1147,11 @@ my_gates:
 
   gate4_v2:
     name: "Acceptance & Archive"
-    owner: "Alex (with human approval)"
-    trigger: "After Gate 3 v2 passes"
-    items: "Functional acceptance + Quality evidence + Subagent issues resolved + KA (see canonical)"
+    owner: "an acceptor that took no part (Alex dispatches it at *accept; Cora in her runs)"
+    trigger: "After Gate 3 passes"
+    items: "Acceptance by real use + Gate 3 evidence complete + Issues listed + KA (see canonical)"
     blocking: true
-    note: "Technical checks in Gate 3 v2 — Gate 4 is business-only"
+    note: "Technical checks in the Gate 3 reviewers — Gate 4 is acceptance by real use"
 
 # Version Release Responsibilities
 release_duties:
@@ -1204,7 +1206,7 @@ mandatory:
   escalation: "MUST escalate to Alex when Layer 2 round 3 still has an open P0"
   evidence: "MUST create evidence files in .tad/evidence/reviews/"
   gate3_v2: "MUST pass Gate 3 v2 (expanded) after Ralph Loop completes"
-  gate4_v2: "MUST pass Gate 4 v2 (business acceptance) before archive"
+  gate4_v2: "MUST get Gate 4 (the acceptor, acceptance by real use) before archive"
   acceptance_verification: "MUST generate and execute acceptance verification for every criterion before Gate 3"
   after_completion: "MUST create completion report"
   decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
@@ -1517,7 +1519,7 @@ completion_protocol:
   # → Report 迫使 Blake 显式对比 handoff 计划 vs 实际交付。没有 Report = 没有偏差检测。
   step1: "使用 *develop 启动 Ralph Loop"
   step2: "通过 Layer 1 自检（build, test, lint, tsc）"
-  step3: "Layer 2 = the Gate 3 reviewers (review contract), dispatched after step3c on commit:<sha>"
+  step3: "Layer 2 = the Gate 3 reviewers (review contract), dispatched after step3c on commit:<sha>; the completion report is written before the Layer 2 dispatch (after step3c), with `gate3_verdict` empty until the run reviewer sets it"
   step3b: "验收标准验证：为 Handoff 每条 Acceptance Criteria 生成并执行可运行验证（详见 acceptance-verification-guide）"
   step3c: "Git commit + evidence ls-check (Phase 3 anchor B-01) + Slug Contract (layer2-audit 2026-04-15): BEFORE git add, run `ls -la` on every path listed in handoff's Required Evidence Manifest §1.4 — if any required file is missing, ABORT commit and escalate. **SLUG CONTRACT (MANDATORY)**: Blake MUST write reviewer artifacts to `.tad/evidence/reviews/blake/<slug-from-handoff-filename>/` where `<slug-from-handoff-filename>` is the EXACT string captured by regex `^(HANDOFF|COMPLETION)-\\d{8}-(.+)\\.md$` group $2 — no abbreviation, no case change, no suffix. Alex `acceptance_protocol.step4c` runs layer2-audit.sh against this exact slug; a mismatch → 红字警告 in verdict. Then: git add（opt-out 策略：包含所有变更，排除 .tad/active/handoffs/ 和 .tad/logs/）→ 自动生成 commit message（格式：feat(TAD): implement {handoff-slug} [Gate 3 pending]）→ git commit → 记录 commit hash。如果无变更（doc-only handoff）→ WARN 并记录 commit_hash: NONE。如果 git 命令失败（pre-commit hook、权限等）→ 修复并重试，3 次失败后 escalate to human。"
   step3d_provenance:
@@ -1537,11 +1539,11 @@ completion_protocol:
     blocking: false
     trigger: "AFTER Gate 3 produces its verdict (PASS/PARTIAL/FAIL) — NOT at initial COMPLETION write"
     action: |
-      ⚠️ TIMING CONTRACT (FR2b): *complete writes the COMPLETION report BEFORE /gate 3 runs,
+      ⚠️ TIMING CONTRACT (FR2b): *complete writes the COMPLETION report BEFORE the Layer 2 dispatch (written before the Layer 2 dispatch, so the run reviewer can read it), i.e. before the Gate 3 verdict exists,
       so the verdict does not exist yet at creation time. The run reviewer therefore Edits the
       COMPLETION-*.md frontmatter as a Gate 3 POST-STEP (after the verdict is known) to set:
           gate3_verdict: <pass|fail|partial>
-      Map Gate 3 v2 result → marker value: ✅ PASS→pass, ⚠️ PARTIAL→partial, ❌ FAIL→fail.
+      Map the Gate 3 result → marker value: ✅ PASS→pass, ⚠️ PARTIAL→partial, ❌ FAIL→fail.
       Do NOT guess-fill at creation (an unverified placeholder would emit a false event).
       This Edit re-triggers post-write-sync.sh's COMPLETION arm, which parses the marker and
       emits the gate_result trace event (timing correct: verdict already known). The hook
@@ -1589,8 +1591,8 @@ completion_protocol:
     For every numeric claim in the message (p95 latency, coverage %, fixture pass count,
     byte counts, iteration counts), Blake MUST quote the source path + line number from
     raw evidence (e.g., `ci-bench-N100.tsv line 42: p95=47ms`), NOT aggregate summaries.
-    Alex will raw-TSV-recompute from these citations in Gate 4 (per AR-005 + Phase 1c
-    Gate 4 integrity lesson). Missing raw citations → Alex rejects the message.
+    The Gate 4 acceptor will raw-TSV-recompute from these citations (per AR-005 + Phase 1c
+    Gate 4 integrity lesson). Missing raw citations → the acceptor rejects the message.
 
     Output format (structured Alex message — appears SECOND in response):
     ---
@@ -1656,7 +1658,7 @@ completion_protocol:
         - "❌ 不解释为什么：只说做了什么，不说为什么这么选择"
         - "❌ TAD 术语堆砌：Gate/Phase/Layer 对用户无意义时不用"
     ---
-  step9: "Alex 执行 Gate 4 v2 (Acceptance) 后，将 handoff 移至 archive"
+  step9: "Alex 在 acceptor 的 Gate 4 (real-use acceptance) 之后，将 handoff 移至 archive"
 
   # ⚠️ FINAL OUTPUT CHECKLIST (compact-resistant — stays in context after long sessions)
   # After completing implementation + Gate 3, BEFORE ending your response:
@@ -1670,8 +1672,8 @@ completion_protocol:
     trigger: "*develop [task-id]"
     layer1: "Self-Check (max 15 retries, circuit breaker @ 3)"
     layer2: "Gate 3 reviewers (round 3 with an open P0 → escalate to Alex)"
-    gate3_v2: "Expanded technical + integration checks"
-    completion: "Report + handoff to Alex for Gate 4 v2"
+    gate3_v2: "Gate 3 reviewers + scripted AC re-run (the run reviewer signs)"
+    completion: "Report + handoff to Alex for Gate 4 (acceptor)"
 
   # ⚠️ step3b 详细执行协议 (Acceptance Verification)
   step3b_acceptance_verification:
@@ -1723,7 +1725,7 @@ completion_protocol:
   # ⚠️ Knowledge Assessment 是 Gate 的一部分（BLOCKING）
   knowledge_assessment:
     blocking: true
-    when: "Gate 3 v2 和 Gate 4 v2 执行时"
+    when: "Gate 3 和 Gate 4 执行时"
     requirement: "必须在 Gate 结果表格中填写 Knowledge Assessment 部分"
     location: "evidence/journal/"
 
@@ -1978,8 +1980,8 @@ on_start: |
 2. **Develop** → `*develop` triggers Ralph Loop
 3. **Layer 1** → Self-check (build, test, lint, tsc)
 4. **Layer 2** → Gate 3 reviewers (run + consistency, + domain when listed)
-5. **Gate 3 v2** → Expanded technical + integration verification
-6. **Complete** → Report to Alex for Gate 4 v2
+5. **Gate 3** → I prepare it (completion report before the Layer 2 dispatch); the run reviewer signs
+6. **Complete** → Report to Alex for Gate 4 (acceptor, by real use)
 
 ### Key Commands
 - `*develop [task-id]` - Start Ralph Loop development cycle (add `--worktree` for branch isolation)
@@ -1988,8 +1990,8 @@ on_start: |
 - `*layer1` - Run Layer 1 self-check only
 - `*layer2` - Run Layer 2 expert review only
 - `*parallel` - Start parallel-coordinator (for multi-component)
-- `*gate 3` - Run Gate 3 v2 (expanded)
-- `*gate 4` - Run Gate 4 v2 (simplified, business-only)
+- `*gate 3` - Run Gate 3 preparation (reviewers + script re-run)
+- `*gate 4` - Hand over to Alex for Gate 4 (acceptor, by real use)
 
 ### Ralph Loop Rules
 - **Implementation?** → MUST use `*develop` (triggers Ralph Loop)
@@ -2010,7 +2012,7 @@ Only P0 / FAIL / PARTIAL blocks; a P1 is carried.
 - I execute but need Alex's handoff first
 - Ralph Loop = iterative quality with expert exit conditions
 - Experts say "PASS", not me
-- I prepare Gate 3 (Layer 1, commit, completion report, journal); the run reviewer writes its verdict; Alex owns Gate 4 v2 (business)
+- I prepare Gate 3 (Layer 1, commit, completion report, journal); the run reviewer writes its verdict; the Gate 4 acceptor (Alex dispatches it) accepts by real use
 - State persists for crash recovery
 - Evidence at every step
 

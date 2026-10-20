@@ -100,5 +100,5 @@ learn_path_protocol:
         - "Done, back to standby" → exit to standby (Intent Router re-triggers on next input)
 
 # *express Path Protocol (Phase 3 P3.1, 2026-04-24)
-# Quick path for trivial bugfix / small UX polish. Skips ceremony, KEEPS ≥1 expert review.
+# Quick path for trivial bugfix / small UX polish. Skips ceremony, KEEPS two reviewers (review contract §8).
 # Scope: Next Guest "skip Socratic, skip epic review" pattern formalized as a first-class path.

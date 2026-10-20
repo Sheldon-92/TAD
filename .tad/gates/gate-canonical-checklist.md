@@ -6,18 +6,17 @@
 > **装载纪律：放进文件的东西必须有装载点位。** 每条规程、模板与文件必须能指名它在哪个既有装载面、何时被读到或触发；指不出装载点位的条文等于没写。
 
 ## Gate 1: Requirements Clarity
-**Owner:** Alex | **When:** After Socratic Inquiry, before *design
+**Owner:** the human (content: per-block playback) + Alex (content: "can design from it") + gate1-format-check.sh (format) | **When:** after the per-block playback is confirmed, before design (Cora: before the intake dispatch)
 
 Checklist items:
-- [ ] Problem defined — 问题定义清晰（Socratic Q2）. Why ME: 只检查"问题是什么"
-- [ ] User identified — ICP 或目标用户已定义（Socratic Q1）. Why ME: 只检查"给谁用"
-- [ ] Scope bounded (including edge cases) — 范围、排除项、边界条件明确（Socratic Q3a/Q3b）. Why ME: 只检查"做什么/不做什么/边界在哪"
-- [ ] Acceptance criteria verifiable — 每个 AC 有可运行的验证方法. Why ME: 只检查"怎么验收"
-  Method grammar (2026-09-10 verify-delta): a legal Verification Method is exactly one of
-  command | path-check | fixture | rubric-spawn | light-tier N/A — prose-only cells are
-  illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS.
+- [ ] What the human gets / Not wanted — the Result contract lines `What the human gets:` and `Not wanted:`. Why ME: 只检查"给什么、不要什么"
+- [ ] Done check per deliverable — a `Done check` block in `## Requirement` (handoff: §1.5) that can judge done / not done. Why ME: 只检查"怎么判完成"
+- [ ] Decisions for the human listed; Premise and size (blast radius) stated. Why ME: 只检查"要他拍板的事、前提和规模"
+- [ ] Estimate stated — **Budget**. Why ME: 只检查"估算"
 
-Why CE: What / Who / Boundary / How-to-verify — 四个独立需求维度。
+Checked by: format -> `bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal>` (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line "can design from it" (or the block it cannot). No self-score.
+
+Why CE: 结果 / 完成判据 / 决策与规模 / 估算 — 四个独立条件。
 
 ## Gate 2: Design Completeness
 **Owner:** Alex | **When:** Before handoff to Blake
@@ -25,6 +24,7 @@ Why CE: What / Who / Boundary / How-to-verify — 四个独立需求维度。
 Checklist items:
 - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md). Why ME: 流程检查（审查是否发生）
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
+- [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). Why ME: 只检查"验证方法合法"
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
 - [ ] Functions verified. Why ME: 代码级引用正确性（grep 可验证）
@@ -36,7 +36,7 @@ Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 
 ## Gate 3: Implementation Quality
 **Owner:** the Gate 3 run reviewer — not the builder (Blake prepares: completion report, journal, commit) | **When:** After implementation (Layer 1 and commit)
-# MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts
+# MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
 
 Checklist items:
 - [ ] Code/deliverable complete — all handoff tasks done. Why ME: 产出物完整性
@@ -56,25 +56,19 @@ Checklist items:
 - [ ] Git commit done — hash recorded (or NONE for doc-only). Why ME: 版本控制
 - [ ] Knowledge Assessment complete — journal or "no discovery". Why ME: 知识捕获
 - [ ] Provenance non-empty (advisory) — ≥1 row per CREATE file. Why ME: 生成可追溯性
+- [ ] AC re-run by script — gate3-check.sh rerun output file present (dispatch_id of the run reviewer); every row compared with Expected Evidence. Why ME: 重算是否真跑
+- [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh paths exit 0). Why ME: 真实路径覆盖
 
-Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 — 七个独立 artifact。
+Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 + 脚本重跑 + 真实路径 — 九个独立 artifact。
 
-## Gate 4: Business Acceptance
-**Owner:** Alex | **When:** After Gate 3 passes
+## Gate 4: Acceptance by Real Use
+**Owner:** an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer | **When:** After Gate 3 passes
 
 Checklist items:
-- [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Why ME: 只检查"功能达标+可交付"
-  Fail-close (2026-09-10 verify-delta): cannot Gate 4 PASS if landing Verification Method missing or unrun.
-  Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
-  Gate 4 复算发现自报与盘上不符的条目 → 该条目判 FAIL 并记入 gate4_delta，
-  不得以被审方总结覆盖重算结果。
-- [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality) — 以下 evidence 逐项确认; FAIL must enumerate which are missing:
-  - [ ] Code review evidence exists
-  - [ ] Security review evidence exists (code/mixed only)
-  - [ ] Performance review evidence exists (code/mixed only)
-  - [ ] UX review evidence exists (if UI involved)
-  Why ME: 只检查 evidence 存在性
-- [ ] Subagent issues resolved — every P0 resolved; each open P1 listed (fixed, or carried with reason). Why ME: 只检查问题修复状态
+- [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract. Why ME: 只检查"从人的一侧真跑过"
+  Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output -> that item FAIL and gate4_delta.
+- [ ] Gate 3 evidence complete — every contract §8 lens file, ac-rerun file, gate3-check.sh paths exit 0 (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
+- [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
 
-Why CE: 功能 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。
+Why CE: 真跑 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。

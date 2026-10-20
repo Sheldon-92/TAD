@@ -1,6 +1,6 @@
 # Spec Compliance Review Output Format
 
-> Use this format when running spec-compliance-reviewer (Ralph Loop Layer 2 Group 0)
+> Optional consistency-lens format (Gate 3 consistency reviewer; review contract §5)
 
 ## Task Completion Matrix
 

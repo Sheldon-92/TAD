@@ -68,7 +68,7 @@ circuit_breaker:
 
 **Group 1 (Sequential, Blocking)**:
 - `code-reviewer`: Must pass before Group 2 runs
-- Pass criteria: P0=0, P1=0, P2≤10
+- Pass criteria: no P0/FAIL/PARTIAL; P1 carried (listed)
 
 **Group 2 (Parallel, after Group 1)**:
 - `test-runner`: 100% pass rate, 70% coverage
@@ -259,19 +259,19 @@ rollback:
 
 ## Integration with Gates
 
-### Gate 3 v2 (Expanded)
+### Gate 3 (run + consistency reviewers)
 
-Gate 3 now includes all Ralph Loop verification:
+Gate 3 includes all Ralph Loop verification (the run reviewer signs):
 - Layer 1 self-check results
 - Layer 2 expert review results
 - Evidence file verification
 - Knowledge Assessment
 
-### Gate 4 v2 (Simplified)
+### Gate 4 (acceptor, by real use)
 
-Gate 4 is now pure business acceptance:
-- No technical review (moved to Gate 3 v2)
-- Human approval required
+Gate 4 is acceptance by real use:
+- No technical review (done by the Gate 3 reviewers)
+- An acceptor that took no part; the human receives the verdict and 3-5 evidence lines
 - Archive handoff
 
 ## Best Practices

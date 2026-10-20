@@ -11,16 +11,16 @@ description: Execute TAD Quality Gate. Gate 1 (pre-design), Gate 2 (pre-handoff)
 **Claude 应主动调用此 skill 的场景：**
 
 ### 必须执行 Gate 的时机
-- **Gate 1**: Alex 完成 3-5 轮需求挖掘后，**进入设计前**
+- **Gate 1**: 逐块回放（per-block playback）经人确认后，**进入设计前**（Cora: 派发 intake 之前）
 - **Gate 2**: Alex 完成设计，**创建 handoff 前**
-- **Gate 3**: Blake 完成实现，**提交代码前**
-- **Gate 4**: Blake 完成集成，**交付用户前**
+- **Gate 3**: 实现并提交后 — the run reviewer（不是 builder）
+- **Gate 4**: Gate 3 之后 — the acceptor (Alex that took no part)
 
 ### ⚠️ 强制规则
 ```
 规则 1: Alex 创建 handoff → 必须先执行 Gate 2
-规则 2: Blake 完成实现 → 必须执行 Gate 3
-规则 3: Blake 完成集成 → 必须执行 Gate 4
+规则 2: Blake 完成实现并提交 → 必须有 Gate 3（run reviewer 写 verdict）
+规则 3: Gate 3 通过 → 必须有 Gate 4（acceptor 真实使用验收）
 规则 4: Gate 不通过 → 阻塞下一步，必须修复
 ```
 
@@ -52,27 +52,28 @@ Quality Gate Execution
 Detecting current context...
 
 Available Gates:
-1. Gate 1: Requirements Clarity (Agent A - After elicitation)
+1. Gate 1: Requirements Clarity (playback + format script, before design)
 2. Gate 2: Design Completeness (Agent A - Before handoff)
 3. Gate 3: Implementation Quality (run reviewer, not the builder - After coding)
-4. Gate 4: Integration Verification (Agent B - Before delivery)
+4. Gate 4: Acceptance (Alex acceptor that took no part, after Gate 3)
 
 Which gate to execute? (1-4):
 ```
 
-## Gate 1: Requirements Clarity (Alex) - Optional Quick Check
+## Gate 1: Requirements Clarity (the human + Alex + format script)
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 ```yaml
-When: After Socratic Inquiry, before *design
-Owner: Agent A (Alex)
-Quick Check (4 items):
-  - [ ] Problem defined — 问题定义清晰（Socratic Q2）
-  - [ ] User identified — ICP 或目标用户已定义（Socratic Q1）
-  - [ ] Scope bounded (including edge cases) — 范围、排除项、边界条件明确
-  - [ ] Acceptance criteria verifiable — 每个 AC 有可运行的验证方法
-Output: Quick summary, no formal evidence required
+When: after the per-block playback is confirmed, before design (Cora: before the intake dispatch)
+Owner: the human (content: per-block playback) + Alex (content: "can design from it") + gate1-format-check.sh (format)
+Checklist (4 conditions):
+  - [ ] What the human gets / Not wanted — the Result contract lines `What the human gets:` and `Not wanted:`
+  - [ ] Done check per deliverable — a `Done check` block in `## Requirement` (handoff: §1.5) that can judge done / not done
+  - [ ] Decisions for the human listed; Premise and size (blast radius) stated
+  - [ ] Estimate stated — **Budget**
+Checked_by: "format -> bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal> (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line 'can design from it' (or the block it cannot). No self-score."
+Output: the script's OK / MISSING lines
 ```
 
 ## Gate 2: Design Completeness (Alex) - **MANDATORY** 🔴
@@ -82,9 +83,10 @@ Output: Quick summary, no formal evidence required
 ```yaml
 When: Before creating handoff (BLOCKING)
 Owner: Agent A (Alex)
-Critical Check (8 items):
+Critical Check (9 items):
   - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md).
   - [ ] All P0 resolved
+  - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run)
   - [ ] Architecture complete
   - [ ] Components specified
   - [ ] Functions verified
@@ -167,7 +169,7 @@ Spec_Compliance_Verification:
   description: "Gate 3 的主验证源是 Handoff 的 §9.1 Spec Compliance Checklist 表格。逐行执行 Verification Method，对比 Expected Evidence，判断 pass/fail。"
   source: "active handoff 的 §9.1 Spec Compliance Checklist（每行：AC 编号 + Verification Method + Expected Evidence）"
   process:
-    step1: "读取 active handoff 的 §9.1 表格"
+    step1: "The run reviewer starts from `bash .tad/hooks/lib/gate3-check.sh rerun <handoff> --out <its ac-rerun path> --id <its id>` (review contract §5 run), then reads the active handoff 的 §9.1 表格 and runs by hand every row the script marks not-scriptable or denied that is safe to run"
     step2_classify: "classify Method legality before execute — each landing row's Verification Method cell is LEGAL iff exactly one of: runnable command in backticks | evidence path-check | fixture runner | rubric-spawn | light-tier N/A with reason. prose-only Verification Method = FAIL for that row (present-but-prose is NOT the Empty Guard — it is a row FAIL → cannot Gate 3 PASS)."
     step3: "对每个 LEGAL 行，实际执行其 Verification Method（grep/命令/脚本）；ILLEGAL 行直接记 FAIL，不执行"
     step4: "对比执行结果与 Expected Evidence → 标记该行 pass / fail"
@@ -277,8 +279,8 @@ Git_Commit_Verification:
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
-# MECE: verified 2026-08-04 — 7 items check 7 distinct artifacts (2026-10-05 recount fix: Provenance item restored to the inline copy)
-Critical Check (7 items):
+# MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
+Critical Check (9 items):
   - [ ] Code/deliverable complete (all handoff tasks done)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
   - [ ] Evidence files exist per the handoff's Required Evidence Manifest
@@ -289,6 +291,8 @@ Critical Check (7 items):
   - [ ] Git commit done (commit hash recorded, or NONE for doc-only)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
   - [ ] Provenance non-empty (advisory, WARN-not-BLOCK): ≥1 provenance row per CREATE file
+  - [ ] AC re-run by script — gate3-check.sh rerun output file present (dispatch_id of the run reviewer); every row compared with Expected Evidence
+  - [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh paths exit 0)
 Evidence: Record in completion report + evidence file
 Output Format:
   ### Gate 3 Result
@@ -574,17 +578,15 @@ Rubric_AC_Integration:
   note: "Prerequisite / Git Commit / Knowledge Assessment are NOT re-declared here — the universal Gate 3 block already enforces them for ALL task_types (no deliverable-only duplication)."
 ```
 
-## Gate 4: Integration Verification (Blake + Alex) - **MANDATORY** 🔴
-> Gate 4 is HYBRID and UNIVERSAL across all task_types (FR5): the structural subagent
-> requirements (security-auditor / performance-optimizer / code-reviewer) are PRESERVED as
-> BLOCKING role-enforcement for `task_type: code` and `task_type: mixed` — they are NOT
-> AC-driven and cannot be skipped by omitting an AC. The business-acceptance checks are read
-> from the handoff's §9 Acceptance Criteria. When the §9.1 ACs are rubric-based, the Gate 3
-> rubric-eval `verdict: PASS` is the prerequisite (see Rubric Evaluation Protocol) and code
-> subagents are not applicable (a report/audio/video artifact has no code surface).
+## Gate 4: Acceptance (Alex acceptor that took no part) - **MANDATORY** 🔴
+> Gate 4 is one acceptor on every path and task_type: an Alex subagent that took no part in the
+> design or the build does once, for real, what the human will do with the result (or drives a
+> browser), and hands him a verdict plus 3-5 evidence lines. The Gate 3 lenses, including the
+> domain lens when risk_triggers lists security, data or money, are its prerequisite; for rubric
+> ACs the Gate 3 judge verdict PASS is the prerequisite (see Rubric Evaluation Protocol).
 ```yaml
-When: Before delivery (BLOCKING)
-Owner: Agent B (Blake) executes, Agent A (Alex) verifies with subagents
+When: After Gate 3 (BLOCKING)
+Owner: an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer
 
 # ⚠️ PREREQUISITE CHECK (BLOCKING)
 Prerequisite:
@@ -622,11 +624,20 @@ Gate4_Friction_Review:
       bash .tad/hooks/lib/friction-status-check.sh <completion-report.md>
     Same tool as Gate 3 advisory. Alex may run it before Gate 4 acceptance to catch report drift.
 
-# ⚠️ TASK-TYPE CONDITIONALITY (BLOCKING for code/mixed) — structural role enforcement, NOT AC-driven
-Structural_Subagent_Conditionality:
-  rule: "security-auditor / performance-optimizer / code-reviewer are BLOCKING-required when task_type IN {code, mixed}. They review a code surface — role separation, NOT derivable from §9 ACs."
-  for_rubric_based: "When the handoff's §9.1 ACs are rubric-based (report/audio/video artifacts, no code surface), code subagents are NOT applicable; the Gate 3 rubric-eval verdict: PASS is the structural prerequisite instead. ux-expert-reviewer stays conditional ('if UI involved')."
-  anti_skip: "VIOLATION: making the structural subagents AC-driven so Alex could skip security review by not writing an AC. They are role enforcement and MUST NOT be omittable via AC authoring."
+# ⚠️ ACCEPTANCE BY REAL USE (BLOCKING) — one acceptor, every path and task_type
+Acceptance_By_Real_Use:
+  rule: "MANDATORY: acceptance by real use — reading files is not acceptance (no paper acceptance); for protocol or prompt text the real use is a named scenario walk quoting file:line (contract §6)"
+  duties:
+    1: "Reads ## Requirement, the Result contract and Assumptions (Epic; direct: handoff §1.5 and §9), the Gate 3 files, the completion report. Runs `gate3-check.sh paths <handoff> <Gate 3 run file>`: MISSING → FAIL."
+    2: "Acts as the human: lists what he will do with the result, and does each once for real (install, build, call, open the page) in a scratch location — or drives a browser where its own tool list has one (Claude Code examples: the Browser pane, Claude in Chrome, a Playwright MCP); protocol text: named scenario walks quoting file:line. Evidence (screenshots, run logs, quoted lines) under .tad/evidence/yolo/{slug}/phase{N}-gate4/ (Cora) or .tad/evidence/reviews/alex/<slug>/gate4/ (direct). One real use per path, never a batch or a measurement (contract §6)."
+    3: "Judges against ## Requirement + Result contract (a departure names the requirement line). Recomputes quantitative ACs from raw files (AR-005) and any PARTIAL in play ([A089]); every other §9.1 row is read from the Gate 3 ac-rerun file, not re-run. A self-report that disagrees with disk counts as failed ([A037])."
+    4: "What only the human can do — a real device, a payment, his own account login — goes under `## For the human` as `Needs you: <item> — <reason>`; no other item is asked of him. No browser tool on this harness/subagent: `not-run: no browser tool on <harness>` under `## Not run` and as a `Not run:` line in `## For the human` (shown to him, never asked; not a `Needs you:` item); the verdict is given on what ran, and a UI deliverable whose real use did not run caps it at CONDITIONAL (a carried item, contract §7). The dispatcher (Cora step_Y7 3; Alex at *accept step3) re-dispatches the acceptor once on a subagent whose tool list has a browser when the harness offers one, before relaying. Installing a browser tool is a new dependency: a question (risk card [A036], pinned version, lock file), never silent and never a precondition. A paid call: stop — Cora run: class 3 question (stop reason 3); direct: Alex asks the human."
+    5: "Release (the Result contract or phase includes a tag or publish): honours .tad/project-knowledge/rulings/human-rulings.md 2026-10-16 — installs the release archive shape (git archive of the release commit) end to end into a throwaway project before the tag. The real download install right after the tag is run by the party that pushes the tag (the release step, under the same confirmation as the tag), never handed to the human; the acceptor records it under `## Not run` as `not-run: after the tag — run by the release step (human-rulings.md 2026-10-16)` and as a `Not run:` line in `## For the human`."
+    6: "Report (`lens: acceptor` header) ends with `## For the human`: line 1 `verdict: <…> — <one sentence>`; then 3–5 lines `- <what was done> → <what it showed> (<pointer>)`; then `Needs you:` items, `Not run:` items, `Assumptions:`, `Open P1:`. Knowledge Assessment and `## Knowledge candidates` unchanged."
+  violation: "VIOLATION: a Gate 4 PASS while a security, data or money trigger has no Gate 3 domain review file; the domain lens MUST NOT be skipped by leaving a trigger the change has off the list."
+
+Gate3_Evidence_Check:
+  rule: "Gate 3 files present for every lens of contract §8 — run, consistency, and domain when risk_triggers lists security/data/money; ac-rerun file present; `gate3-check.sh paths` exit 0; FAIL enumerates what is missing."
 
 # Feedback Collection Check (BLOCKING — Phase 3, 2026-06-10)
 # Conditional: only applies when handoff §8.5 feedback_required: true.
@@ -652,59 +663,6 @@ Gate4_Feedback_Check:
     Gate 4 report as "Feedback skipped: human approved at [timestamp]" and proceed.
     The blocking check prevents SILENT skipping, not intentional skipping.
 
-# ⚠️ REQUIRED SUBAGENT CALLS (BLOCKING) — for task_type IN {code, mixed}
-Required_Subagents:
-  - subagent: "security-auditor"
-    required: true
-    template: ".tad/templates/output-formats/security-review-format.md"
-    output_to: ".tad/evidence/reviews/{date}-security-review-{task}.md"
-
-  - subagent: "performance-optimizer"
-    required: true
-    template: ".tad/templates/output-formats/performance-review-format.md"
-    output_to: ".tad/evidence/reviews/{date}-performance-review-{task}.md"
-
-  - subagent: "code-reviewer"
-    required: true
-    output_to: ".tad/evidence/reviews/{date}-code-review-{task}.md"
-
-  - subagent: "ux-expert-reviewer"
-    required: "if UI involved"
-    output_to: ".tad/evidence/reviews/{date}-ux-review-{task}.md"
-
-# Evidence File Naming Convention
-Evidence_Naming:
-  pattern: ".tad/evidence/reviews/{YYYY-MM-DD}-{type}-{brief-description}.md"
-  types: [testing-review, security-review, performance-review, code-review, ux-review]
-  examples:
-    - "2026-02-01-testing-review-user-flow.md"
-    - "2026-02-01-security-review-auth-api.md"
-    - "2026-02-01-performance-review-menu-load.md"
-
-# Recommended Templates (Non-blocking, for reference)
-Recommended_Templates:
-  - subagent: code-reviewer
-    template: git-workflow-format
-    when: "*review 命令"
-  - subagent: refactor-specialist
-    template: refactoring-review-format
-    when: "重构任务"
-
-  if_not_called:
-    action: "BLOCK Gate 4"
-    message: |
-      ⚠️ Gate 4 无法通过 - 缺少必要的 subagent 审查
-
-      必须调用以下 subagents 并生成审查报告：
-      1. security-auditor → .tad/evidence/reviews/{date}-security-review-{task}.md
-      2. performance-optimizer → .tad/evidence/reviews/{date}-performance-review-{task}.md
-
-      执行步骤：
-      1. 调用 security-auditor subagent，使用 security-review-format 模板
-      2. 调用 performance-optimizer subagent，使用 performance-review-format 模板
-      3. 保存输出到 .tad/evidence/reviews/ 目录
-      4. 重新执行 Gate 4
-
 # ⚠️ DECISION COMPLIANCE CHECK (Cognitive Firewall - Pillar 1 verification)
 Decision_Compliance:
   description: "Verify implementation follows the technical decisions made by human during design"
@@ -726,26 +684,18 @@ Decision_Compliance:
       |---|----------------------|---------------------|--------|
       | 1 | {decision title} | {does code match decision?} | ✅/❌ |
 
-# Gate 4 检查项（Prerequisite 和 Subagent 要求通过后执行）
+# Gate 4 检查项（Prerequisite 和 Gate3_Evidence_Check 通过后执行）
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (4 items):
-  - [ ] Functional acceptance — §9 AC met AND no open post-implementation blockers (list any). Fail-close: cannot Gate 4 PASS if landing Verification Method missing or unrun — Gate 4 must recompute landing Verification Methods from disk; Blake summary is not Gate 4 evidence.
-  Gate 4 复算发现自报与盘上不符的条目 → 该条目判 FAIL 并记入 gate4_delta，
-  不得以被审方总结覆盖重算结果。
-  - [ ] Quality evidence complete (BLOCKING per Structural_Subagent_Conditionality):
-    - [ ] Code review evidence exists
-    - [ ] Security review evidence exists (code/mixed only)
-    - [ ] Performance review evidence exists (code/mixed only)
-    - [ ] UX review evidence exists (if UI involved)
-    FAIL must enumerate which evidence is missing.
-  - [ ] Subagent issues resolved — every P0 resolved; each open P1 listed (fixed, or carried with reason)
+  - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract
+  - [ ] Gate 3 evidence complete — every contract §8 lens file, ac-rerun file, gate3-check.sh paths exit 0 (FAIL enumerates missing)
+  - [ ] Issues — every P0 resolved; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
-# Note: Functional acceptance reads from handoff §9 (not hardcoded). Quality evidence is structural role enforcement (see Structural_Subagent_Conditionality).
-# Functional acceptance fail-close detail: for every landing-tier §9.1 row, Gate 4 re-runs the declared Verification Method from the on-disk artifact. A row whose Method is missing, illegal (prose-only), or never executed → Functional acceptance cannot PASS. Blake summary is not Gate 4 evidence — only recomputed command output counts.
+# Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output → that item FAIL and gate4_delta.
 Trust_Curve_Judgment: |
-  Do not expand parallelism, add bots, or claim an unverified capability until that capability's evidence chain has actually run — the Gate 3 §9.1 rows and Gate 4 recompute are the chain. A green verdict on prose-only verification is validation theater, not trust. This is judgment applied at each Gate, not a checklist row and not an L1 principle.
+  Do not expand parallelism, add bots, or claim an unverified capability until that capability's evidence chain has actually run — the Gate 3 §9.1 rows, the Gate 3 script re-run and the Gate 4 real use are the chain. A green verdict on prose-only verification is validation theater, not trust. This is judgment applied at each Gate, not a checklist row and not an L1 principle.
 Evidence: Record in NEXT.md or completion report + evidence files
 Output Format:
   ### Gate 4 Result
@@ -756,21 +706,24 @@ Output Format:
   | Gate 3 Passed | ✅ Yes |
   | Gate 3 Evidence | ✅ Exists (§9.1-driven result for code/mixed, or rubric-eval verdict: PASS) |
 
-  #### Quality Evidence (BLOCKING)
-  | Evidence Type | Required | Exists | File | Status |
-  |---------------|----------|--------|------|--------|
-  | Code review | ✅ Yes | ✅ Yes | {file} | ✅ |
-  | Security review | code/mixed | ✅ Yes | {file} | ✅ |
-  | Performance review | code/mixed | ✅ Yes | {file} | ✅ |
-  | UX review | if UI | ... | ... | ... |
+  #### Real use
+  | What the human will do | What was done | Result | Evidence pointer |
+  |------------------------|---------------|--------|------------------|
+  | {action} | {run / browser} | ✅/❌ | {gate4 dir file} |
 
-  #### Acceptance Checks
+  #### Gate 3 evidence
   | Item | Status | Note |
   |------|--------|------|
-  | Functional acceptance | ✅ Pass | §9 AC met, no open blockers |
-  | Quality evidence complete | ✅ Pass | All required evidence exists |
-  | Subagent issues resolved | ✅ Pass | Every P0 resolved; each open P1 listed (fixed, or carried with reason) |
-  | Knowledge Assessment | ✅ Pass | ... |
+  | Lens files (run, consistency, domain if listed) | ✅ Present | {files} |
+  | ac-rerun file | ✅ Present | {file} |
+  | gate3-check.sh paths | ✅ exit 0 | {output} |
+
+  #### For the human
+  | Item | Content |
+  |------|---------|
+  | verdict | {PASS / CONDITIONAL / FAIL} — {one sentence} |
+  | evidence (3-5 lines) | {what was done → what it showed (pointer)} |
+  | Needs you / Not run / Assumptions / Open P1 | {items with reasons} |
 
   #### Knowledge Assessment (MANDATORY - must answer)
   | Question | Answer | Evidence |
@@ -783,61 +736,6 @@ Output Format:
   No overlap: Blake owns Gate 3 knowledge, Alex owns Gate 4 knowledge.
   Tiebreaker: HOW code works (tool quirks, build issues, API gotchas) → Blake Gate 3.
              WHY a design should change (architecture patterns, requirement gaps) → Alex Gate 4.
-
-## ⚠️ Gate 4 Subagent Requirement (CRITICAL)
-Alex 必须调用 subagents 进行实际验收，不可仅做纸面验收：
-
-Required Subagents (MANDATORY - Gate will BLOCK without these):
-  - security-auditor → Evidence in .tad/evidence/reviews/
-  - performance-optimizer → Evidence in .tad/evidence/reviews/
-  - code-reviewer (ALWAYS required)
-
-Conditional Subagents:
-  - ux-expert-reviewer (if UI involved)
-
-Workflow:
-  1. Blake completes Gate 3, creates completion report + testing evidence
-  2. Blake calls security-auditor → saves security-review evidence
-  3. Blake calls performance-optimizer → saves performance-review evidence
-  4. Alex reads completion report and evidence files
-  5. Alex calls code-reviewer (and ux-expert if UI involved)
-  6. Alex summarizes all subagent feedback
-  7. Alex decides: PASS / CONDITIONAL PASS / REJECT
-  8. If PASS: Gate 4 complete, deliver to user
-
-# Alex Acceptance Report Format (used in Gate 4)
-Acceptance_Report_Format: |
-  ## Alex 验收报告
-
-  ### 1. Subagent 审查结果
-
-  **code-reviewer 结果：**
-  - 审查范围：[文件列表]
-  - 发现问题：[问题数量]
-  - 关键反馈：[摘要]
-  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
-
-  **security-auditor 结果：**
-  - 审查范围：[模块/API]
-  - 关键反馈：[摘要]
-  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
-
-  **performance-optimizer 结果：**（如适用）
-  - 关键反馈：[摘要]
-  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
-
-  **ux-expert-reviewer 结果：**（如适用）
-  - 审查范围：[页面/组件]
-  - UX 评分：[分数/等级]
-  - 结论：✅ 通过 / ⚠️ 需修改 / ❌ 打回
-
-  ### 2. 综合验收结论
-  - [ ] 代码质量符合标准
-  - [ ] 用户体验达到要求
-  - [ ] 安全性无明显漏洞
-  - [ ] 性能满足预期
-
-  **最终结论**：✅ 验收通过 / ⚠️ 条件通过（需修复 N 项）/ ❌ 打回重做
 
 # ⚠️ KNOWLEDGE ASSESSMENT (BLOCKING - Part of Gate 4)
 # 必须在 Gate 结果表格中显式回答，不可跳过

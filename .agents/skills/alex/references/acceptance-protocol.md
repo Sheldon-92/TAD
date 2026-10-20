@@ -3,19 +3,21 @@
 # Extracted: 2026-06-08 (EPIC-20260608-skill-progressive-loading Phase 2)
 
 acceptance_protocol:
-  # ⚠️ TAD v2.0 变更：技术审查已移至 Blake 的 Gate 3 v2
-  # Alex 的 Gate 4 v2 只负责业务验收
+  # Gate 3: run + consistency (+ domain) reviewers; the run reviewer signs the verdict (Blake only prepares).
+  # Gate 4: an acceptor that took no part, by real use (gate skill Gate 4, Acceptance_By_Real_Use).
   # Gate 4 checklist items: see .tad/gates/gate-canonical-checklist.md (SSOT)
   v2_note: |
-    Gate 3 v2 (Blake): 所有技术检查 - build, test, lint, tsc + 专家审查
-    Gate 4 v2 (Alex): 业务验收 - 需求符合度 + 用户确认 + 归档
+    Gate 3: run + consistency (+ domain) reviewers, the run reviewer signs; Gate 4: an acceptor that took no part, by real use
 
-  step1: "Blake 完成 Gate 3 v2 后，会创建 completion-report.md"
-  step2: "Alex 确认 Gate 3 v2 已通过（检查 completion report）"
-  step3: "执行 Gate 4 v2: 业务验收"
+  step1: "Blake's completion report exists (written before the Layer 2 dispatch)"
+  step2: "Confirm the Gate 3 files exist: the run reviewer's gate3-verdict.md (PASS or CONDITIONAL) with ac-rerun.md, plus the consistency (and domain) files (review contract §8)"
+  step3: |
+    Dispatch the acceptor — a fresh subagent that took no part (never me: I designed it), prompt as conductor step_Y7 2 with direct paths (handoff, completion, `.tad/evidence/reviews/blake/<slug>/`, output `.tad/evidence/reviews/alex/<slug>/gate4-report.md`, evidence `…/gate4/`); a paid call or a browser install: I ask the human.
+    The acceptor acts as the human: does once for real what he will do with the result, or drives a browser (screenshots / run logs under `…/gate4/`); judges against `## Requirement` (handoff §1.5 in direct mode), the Result contract (handoff §1.1/§1.3 when there is no Epic) and Assumptions; runs `gate3-check.sh paths <handoff> <gate3-verdict.md>`; only a real device, a payment or his own account login go to the human, as `Needs you:` with the reason; no browser tool: `not-run: no browser tool on <harness>` (then I re-dispatch once on a subagent with a browser when this harness offers one); the report ends with `## For the human`.
   step4:
     action: "【业务检查 — 逐条 AC 对照】"
     details: |
+      0. The per-AC table below comes from the acceptor's report; I read its header and relay `## For the human`.
       1. 读取 handoff 的 Acceptance Criteria section
       2. 读取 Blake 的 completion report
       3. 逐条对照每个 AC：
@@ -26,10 +28,8 @@ acceptance_protocol:
           | AC# | 要求 | Blake 报告状态 | Evidence 存在 | Alex 判定 |
           |-----|------|---------------|--------------|----------|
        5. 如有任何 AC 未满足 → 不通过，退回 Blake
-       6. Fail-close on Verification Methods: recompute landing Verification Methods from disk —
-          re-run each landing-tier §9.1 Verification Method against the on-disk artifact instead of
-          trusting Blake's reported output. cannot Gate 4 PASS if landing Verification Method missing or unrun.
-          Blake summary is not Gate 4 evidence — only recomputed command output counts.
+       6. Fail-close: cannot Gate 4 PASS if the Gate 3 ac-rerun file is missing or a row is neither run nor recorded not-run;
+          Blake summary is not Gate 4 evidence; a self-report that disagrees with the ac-rerun output → that item FAIL and gate4_delta.
     blocking: true
     # ⚠️ ANTI-RATIONALIZATION: "仔细审查了 completion report，功能看起来完全符合"
     # → "看起来符合"≠实际验证。必须输出逐条对照表。
@@ -66,30 +66,16 @@ acceptance_protocol:
            bash .tad/hooks/lib/layer2-audit.sh <slug>
          capturing exit code + stderr (DISTINCT_COUNT field appears in stderr summary).
 
-      3.5. **Read task_type** from handoff frontmatter (L1 tier rule, 2026-04-27).
-           Active-first path (CR-P1-5): try `.tad/active/handoffs/HANDOFF-*-${slug}.md`
-           via `ls` glob; if empty, fall back to `.tad/archive/handoffs/HANDOFF-*-${slug}.md`.
-           Then extract:
-             awk '/^---$/{c++; if(c>=2)exit; next} c==1 && /^task_type:/{print $2}' "$HANDOFF_FILE"
-           Map TASK_TYPE → tier_threshold:
-           - TASK_TYPE = `code` OR `mixed` → tier_threshold=2, tier_name="Tier 1"
-           - TASK_TYPE = `yaml` OR `research` OR `doc-only` → tier_threshold=1, tier_name="Tier 2"
-           - TASK_TYPE = `e2e` → tier_threshold=2, tier_name="Tier e2e (test-runner + code-reviewer)"
-           - TASK_TYPE empty / unrecognized → tier_threshold=2, tier_name="Tier 1 (fallback)"
-             (NFR1+NFR4 safe default — silent quality loss is more dangerous than silent token waste)
-           - If slug matches *express pattern (already detected by layer2-audit.sh via
-             word-boundary case match `express|*-express|*-express-*|express-*`) →
-             tier_threshold=1, tier_name="Express (≥1 expert per existing exception)".
-             *express exception takes precedence over task_type.
+      3.5. Threshold (review contract §8): two lenses on every path — run + consistency, plus domain when risk_triggers lists security, data or money. lens_floor=2; the *express exception no longer lowers it.
 
       4. Interpret:
-         - exit 0 AND DISTINCT_COUNT ≥ tier_threshold → acceptance report: "✅ Layer 2 artifacts verified: .tad/evidence/reviews/blake/<slug>/ (N reviewer artifacts, DISTINCT_COUNT={n}/{tier_threshold}, tier={tier_name}, size-check is smoke-alarm heuristic)"
-         - exit 0 AND DISTINCT_COUNT < tier_threshold → acceptance report inserts VISIBLE warning (before Gate 4 checklist):
+         - exit 0 AND DISTINCT_COUNT ≥ 2 → acceptance report: "✅ Layer 2 artifacts verified: .tad/evidence/reviews/blake/<slug>/ (N reviewer artifacts, DISTINCT_COUNT={n}/2, size-check is smoke-alarm heuristic)"
+         - exit 0 AND DISTINCT_COUNT < 2 → acceptance report inserts VISIBLE warning (before Gate 4 checklist):
              ```
-             ⚠️ LAYER 2 TIER UNDER-MET
-             DISTINCT_COUNT={n} < tier threshold {tier_threshold} for task_type={task_type} ({tier_name}).
-             Required: ≥{tier_threshold} distinct sub-agents per Blake SKILL hard_requirement_distinct_reviewers tier rule.
-             Human accepter: confirm tier assignment correct, or require Blake to add another reviewer.
+             ⚠️ LAYER 2 UNDER-MET
+             DISTINCT_COUNT={n} < 2 lenses (review contract §8: run + consistency).
+             Required: two lens files per Blake SKILL hard_requirement_distinct_reviewers.
+             Human accepter: confirm, or require Blake to add the missing lens.
              ```
          - exit 1  → acceptance report inserts at a VISIBLE position (before Gate 4 checklist):
              ```
@@ -184,8 +170,8 @@ acceptance_protocol:
       the local semantic index (non-blocking, WARN-only — never blocks Gate 4):
         bash .tad/hooks/lib/brain-index-gen.sh >/dev/null 2>&1 || true
 
-  step5: "【业务检查】确认用户面向的行为正确"
-  step6: "【人类确认】演示/走查功能，获得用户确认"
+  step5: "The acceptor's real use covers the user-facing behaviour (no separate check by me)"
+  step6: "【人】He receives the verdict and 3–5 evidence lines, plus any `Needs you:` items with reasons, and answers accept or reject; no demo or walkthrough is asked of him."
   step7:
     name: "Knowledge Assessment — Write + Verify + raw-TSV recompute (with skip_KA branch routing — P3.3 2026-04-24)"
     blocking: true
@@ -381,21 +367,18 @@ acceptance_protocol:
   step8: "【强制】执行 *accept 命令完成归档流程"
   step9: "限制 active handoffs 不超过 3 个"
 
-  # Gate 4 v2 不再需要调用技术专家（已在 Gate 3 v2 完成）
+  # The technical experts belong to Gate 3 (the lenses of review contract §8); Gate 4 is the acceptor by real use.
   technical_review_note: |
-    ⚠️ TAD v2.0 变更：
-    - code-reviewer, test-runner, security-auditor, performance-optimizer
-    - 这些专家现在在 Blake 的 Gate 3 v2 中调用
-    - Alex 的 Gate 4 v2 只负责业务验收，不重复技术审查
+    Gate 3 reviewers (run, consistency, domain) carry the technical review; the Gate 4 acceptor
+    does not repeat it: it acts as the human and judges against ## Requirement and the Result contract.
 
   gate4_v2_checklist:
-    business_acceptance:
-      - "实现符合 handoff 中定义的需求"
-      - "用户面向的行为符合预期"
-      - "无明显的用户体验退化"
+    acceptor_items:
+      - "Acceptance by real use: what the human will do, done once for real or in a browser (evidence under gate4/)"
+      - "Judged against ## Requirement + Result contract; Assumptions, not-run and human-only items listed"
+      - "Gate 3 files complete; gate3-check.sh paths exit 0"
     human_approval:
-      - "演示/走查完成"
-      - "用户确认满意"
+      - "Verdict + 3-5 evidence lines relayed; his answer recorded"
     knowledge_assessment:
       - "A. 验证 Blake Gate 3 知识：读 completion report 引用 → 确认 project-knowledge 条目存在"
       - "B. Alex 自己的发现：(Yes/No) — Yes 时填写文件路径 + 条目标题"
@@ -404,5 +387,5 @@ acceptance_protocol:
       # → 即使无新发现也必须显式写 "No" + 原因。跳过 = 表格不完整 = Gate 无效。
 
   violation: "不 review Blake 的 completion report 直接开新任务 = VIOLATION"
-  violation2: "Gate 3 v2 未通过就执行 Gate 4 v2 = VIOLATION"
+  violation2: "Gate 3 未通过就执行 Gate 4 = VIOLATION"
   violation3: "验收通过后不执行 *accept 归档 = VIOLATION"

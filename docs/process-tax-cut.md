@@ -61,7 +61,7 @@ Before raising P0 on a dirty worktree:
 
 ## 3) Gate 2 = disk dual review (paste into handoff Gate 2 / PM dispatch notes)
 
-Canonical Gate 2 (`gate-canonical-checklist.md`): expert review **min 2**, P0 resolved, design layers. **Process** Gate 2 for dispatch is those **files on disk**, not a human typing `/gate 2` (HO §3.13; retro §4 “Ceremony vs HO”).
+Canonical Gate 2 (`gate-canonical-checklist.md`): two reviewers with different lenses, P0 resolved, design layers. **Process** Gate 2 for dispatch is those **files on disk**, not a human typing `/gate 2` (HO §3.13; retro §4 “Ceremony vs HO”).
 
 Alex running the Gate 2 **protocol** (spawn two reviewers, write evidence) is required. Waiting for a **human chat string** `/gate 2` is forbidden.
 

@@ -147,7 +147,7 @@ emit_expert_findings() {
   slug=$(printf '%s' "$slug" | tr -cd 'A-Za-z0-9._-' | cut -c1-100)
   [ -n "$slug" ] || return 0
   local base; base=$(basename "$file")
-  [ "$base" = "gate3-verdict.md" ] && return 0   # Blake's own verdict, not external review
+  [ "$base" = "gate3-verdict.md" ] && return 0   # the run reviewer's Gate 3 verdict, not a finding list
   local reviewer
   case "$base" in
     code-reviewer.md)     reviewer=code-reviewer ;;

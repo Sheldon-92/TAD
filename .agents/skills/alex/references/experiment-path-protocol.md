@@ -56,15 +56,15 @@ experiment_path_protocol:
     - "step4 Audit Trail integration (P1.5 — record reviewer findings)"
     - "step5 Gate 2 check (Design Completeness)"
     - "step7 Blake message generation with 人话版"
-    - "Gate 3 v2 (Blake side: build/test/lint on harness AUGMENTED with 5 experiment-validity checks)"
-    - "Gate 4 v2 acceptance (Alex side: business AC AUGMENTED with 4 experiment outcome checks)"
+    - "Gate 3 (run + consistency reviewers per the review contract, AUGMENTED with 5 experiment-validity checks)"
+    - "Gate 4 (the acceptor by real use, acceptance-protocol step3, AUGMENTED with 4 experiment outcome checks)"
 
   experiment_specific_gates:
     gate3_focus_AUGMENTATION:
       # ⚠️ AUGMENT not REPLACE (BA-P0-2 critical fix).
-      # Original Gate 3 v2 still applies to any harness code.
+      # The Gate 3 run still applies to any harness code.
       semantics: |
-        Original Gate 3 v2 (build / test / lint / coverage) STILL APPLIES to any
+        The Gate 3 run (build / test / lint / coverage) STILL APPLIES to any
         harness/runner code in the experiment. The following 5 checks are ADDITIONAL —
         BOTH layers must PASS. A harness syntax error → Gate 3 FAIL even if all 5
         experiment checks pass (verified by AC-P3.2-h fixture).
@@ -78,7 +78,7 @@ experiment_path_protocol:
     gate4_focus_AUGMENTATION:
       # ⚠️ AUGMENT not REPLACE.
       semantics: |
-        Original Gate 4 v2 (user-facing behavior + business AC) STILL APPLIES.
+        The acceptor's real use against `## Requirement` STILL APPLIES.
         The following 4 checks are ADDITIONAL — BOTH layers must PASS.
       additional_checks:
         - "1. Score improvement statistically meaningful (not within noise)"

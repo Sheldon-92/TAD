@@ -219,16 +219,27 @@ if [ "$GATE_NUM" = "3" ]; then
   if [ -n "$RALPH_STATE" ]; then
     L2_DONE=$(grep '^last_completed_layer:.*layer2' "$RALPH_STATE" 2>/dev/null | wc -l | tr -d ' ')
     if [ "$L2_DONE" = "0" ]; then
-      WARNINGS="${WARNINGS}"$'\n'"WARNING: Ralph Loop state exists but last_completed_layer is not layer2. Did Layer 2 expert review complete?"
+      WARNINGS="${WARNINGS}"$'\n'"WARNING: Ralph Loop state exists but last_completed_layer is not layer2. Did the Gate 3 reviewers (review contract) run?"
     fi
   fi
 
-  # Check 11: Expert review files ≥ 2 (code-reviewer required + 1 domain)
-  if [ -d ".tad/evidence/reviews" ]; then
-    REVIEW_COUNT=$(find .tad/evidence/reviews -maxdepth 1 -name "*.md" -size +100c 2>/dev/null | wc -l | tr -d ' ')
-    if [ "$REVIEW_COUNT" -lt 2 ]; then
-      WARNINGS="${WARNINGS}"$'\n'"WARNING: Only ${REVIEW_COUNT} expert review file(s) found (≥2 required: code-reviewer + domain expert)."
-    fi
+  # Check 11: Gate 3 reviewer files — the run verdict and the consistency review (review contract §8).
+  # Direct /blake: .tad/evidence/reviews/blake/*/ newer than the completion report;
+  # Cora's runs: .tad/evidence/yolo/*/phase*-gate3-verdict.md + phase*-impl-review-consistency*.md.
+  G3_RUN=0
+  G3_CONS=0
+  for d in .tad/evidence/reviews/blake/*/; do
+    for f in "${d}gate3-verdict.md"; do
+      if [ -f "$f" ] && { [ -z "$COMPLETION_FILE" ] || [ "$f" -nt "$COMPLETION_FILE" ]; }; then G3_RUN=1; fi
+    done
+    for f in "${d}consistency-review.md"; do
+      if [ -f "$f" ] && { [ -z "$COMPLETION_FILE" ] || [ "$f" -nt "$COMPLETION_FILE" ]; }; then G3_CONS=1; fi
+    done
+  done
+  for f in .tad/evidence/yolo/*/phase*-gate3-verdict.md; do [ -f "$f" ] && G3_RUN=1; done
+  for f in .tad/evidence/yolo/*/phase*-impl-review-consistency*.md; do [ -f "$f" ] && G3_CONS=1; done
+  if [ "$G3_RUN" = "0" ] || [ "$G3_CONS" = "0" ]; then
+    WARNINGS="${WARNINGS}"$'\n'"WARNING: Gate 3 needs the run and consistency reviewer files (review contract §8)."
   fi
 
   # Check 12: Commit hash not a placeholder

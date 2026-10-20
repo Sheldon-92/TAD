@@ -240,7 +240,7 @@ Producer 在开始产出前，请确认：
 2. **Judge** = a SEPARATE fresh sub-agent spawned by the gate/Conductor at Gate 3. judge ≠ producer
    is defined relative to THIS producer (if the Conductor produced, the judge MUST be a distinct sub-agent).
 3. Pipeline: producer → artifact at `deliverable_paths` → deliverable-completion report →
-   Gate 3 spawns judge → `{date}-rubric-eval-{task}.md` → verdict → Gate 4 (business acceptance).
+   Gate 3 spawns judge → `{date}-rubric-eval-{task}.md` → verdict → Gate 4 (the acceptor, by real use).
 
 ---
 

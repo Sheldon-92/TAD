@@ -44,6 +44,23 @@ fi
 SLUG="$1"
 EVIDENCE_DIR=".tad/evidence/yolo/${SLUG}"
 
+# Review file names (review contract §8): the consistency lens file first, the legacy
+# -cr file as a fallback for Epics run before the lens names.
+_design_review_file() {
+  if [ -f "${EVIDENCE_DIR}/phase${1}-design-review-consistency.md" ]; then
+    printf '%s' "${EVIDENCE_DIR}/phase${1}-design-review-consistency.md"
+  else
+    printf '%s' "${EVIDENCE_DIR}/phase${1}-design-review-cr.md"
+  fi
+}
+_impl_review_file() {
+  if [ -f "${EVIDENCE_DIR}/phase${1}-impl-review-consistency.md" ]; then
+    printf '%s' "${EVIDENCE_DIR}/phase${1}-impl-review-consistency.md"
+  else
+    printf '%s' "${EVIDENCE_DIR}/phase${1}-impl-review-cr.md"
+  fi
+}
+
 if [ ! -d "$EVIDENCE_DIR" ]; then
   _err "Evidence directory not found: ${EVIDENCE_DIR}"
   exit 2
@@ -108,15 +125,15 @@ for n in "${PHASES_ARR[@]}"; do
   fi
 
   # Design reviews (≥2 files: cr + domain)
-  cr_design="${EVIDENCE_DIR}/phase${n}-design-review-cr.md"
+  cr_design=$(_design_review_file "$n")
   if [ -f "$cr_design" ]; then
     lines=$(wc -l < "$cr_design" | tr -d ' ')
-    _pass "design-review-cr.md exists (${lines} lines)"
+    _pass "design review (consistency lens, or legacy cr) exists (${lines} lines)"
   else
-    _fail "phase${n}-design-review-cr.md missing"
+    _fail "phase${n}-design-review-consistency.md missing (legacy: phase${n}-design-review-cr.md)"
   fi
 
-  domain_design_count=$(find "$EVIDENCE_DIR" -name "phase${n}-design-review-*.md" -not -name "*-cr.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+  domain_design_count=$(find "$EVIDENCE_DIR" -name "phase${n}-design-review-*.md" -not -name "*-cr.md" -not -name "*-consistency*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
   domain_design_count=${domain_design_count:-0}
   if [ "$domain_design_count" -ge 1 ]; then
     _pass "design-review domain expert exists (${domain_design_count} file(s))"
@@ -125,20 +142,24 @@ for n in "${PHASES_ARR[@]}"; do
   fi
 
   # Impl reviews (≥2 files: cr + domain)
-  cr_impl="${EVIDENCE_DIR}/phase${n}-impl-review-cr.md"
+  cr_impl=$(_impl_review_file "$n")
   if [ -f "$cr_impl" ]; then
     lines=$(wc -l < "$cr_impl" | tr -d ' ')
-    _pass "impl-review-cr.md exists (${lines} lines)"
+    _pass "impl review (consistency lens, or legacy cr) exists (${lines} lines)"
   else
-    _fail "phase${n}-impl-review-cr.md missing"
+    _fail "phase${n}-impl-review-consistency.md missing (legacy: phase${n}-impl-review-cr.md)"
   fi
 
-  domain_impl_count=$(find "$EVIDENCE_DIR" -name "phase${n}-impl-review-*.md" -not -name "*-cr.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+  domain_impl_count=$(find "$EVIDENCE_DIR" -name "phase${n}-impl-review-*.md" -not -name "*-cr.md" -not -name "*-consistency*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
   domain_impl_count=${domain_impl_count:-0}
+  # The Gate 3 run reviewer's verdict (phase{n}-gate3-verdict.md) counts as the second impl review.
+  if [ -f "${EVIDENCE_DIR}/phase${n}-gate3-verdict.md" ]; then
+    domain_impl_count=$((domain_impl_count + 1))
+  fi
   if [ "$domain_impl_count" -ge 1 ]; then
-    _pass "impl-review domain expert exists (${domain_impl_count} file(s))"
+    _pass "impl second review (gate3 verdict or domain) exists (${domain_impl_count} file(s))"
   else
-    _fail "phase${n}-impl-review-{domain}.md missing (need ≥1 domain expert review)"
+    _fail "phase${n}-gate3-verdict.md or phase${n}-impl-review-{domain}.md missing (need the run verdict or a domain review)"
   fi
 
   # Gate report
@@ -193,7 +214,7 @@ fi
 
 for n in "${PHASES_ARR[@]}"; do
   # Design review: min lines + P0/P1/P2 classification
-  cr_design="${EVIDENCE_DIR}/phase${n}-design-review-cr.md"
+  cr_design=$(_design_review_file "$n")
   if [ -f "$cr_design" ]; then
     review_lines=$(wc -l < "$cr_design" | tr -d ' ')
     review_lines=${review_lines:-0}
@@ -210,7 +231,7 @@ for n in "${PHASES_ARR[@]}"; do
   fi
 
   # Impl review: min lines + P0/P1/P2 classification (symmetric with design review)
-  cr_impl="${EVIDENCE_DIR}/phase${n}-impl-review-cr.md"
+  cr_impl=$(_impl_review_file "$n")
   if [ -f "$cr_impl" ]; then
     review_lines=$(wc -l < "$cr_impl" | tr -d ' ')
     review_lines=${review_lines:-0}
@@ -303,8 +324,8 @@ _hdr "Timing:"
 prev_gate_time=0
 for n in "${PHASES_ARR[@]}"; do
   grounding="${EVIDENCE_DIR}/phase${n}-grounding.md"
-  cr_design="${EVIDENCE_DIR}/phase${n}-design-review-cr.md"
-  cr_impl="${EVIDENCE_DIR}/phase${n}-impl-review-cr.md"
+  cr_design=$(_design_review_file "$n")
+  cr_impl=$(_impl_review_file "$n")
   gate="${EVIDENCE_DIR}/phase${n}-gate-report.md"
 
   if [ -f "$grounding" ] && [ -f "$cr_design" ] && [ -f "$gate" ]; then

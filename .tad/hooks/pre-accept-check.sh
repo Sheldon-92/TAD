@@ -47,7 +47,7 @@ fi
 COMPLETION=$(safe_count ".tad/active/handoffs/COMPLETION-*.md")
 
 if [ "$COMPLETION" = "0" ]; then
-  echo "Cannot accept: no completion report found in .tad/active/handoffs/. Blake must run *complete + /gate 3 first." >&2
+  echo "Cannot accept: no completion report found in .tad/active/handoffs/. Blake's completion report and the Gate 3 reviewer files (review contract §8) come first." >&2
   exit 2  # BLOCK
 fi
 

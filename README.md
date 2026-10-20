@@ -48,8 +48,8 @@ Cora has been run on Claude Code and Codex, to the extent listed in [What has be
 | Role | Command | What she or he does |
 |------|---------|---------------------|
 | **Cora** (Conductor) | `/cora` (Codex: `$cora`) | The one you talk to. Triages each request (simple task, single handoff or Epic) and tells you which, with the plan; dispatches Alex, Blake and the reviewers as subagents (an Epic after your "continue"; a simple task or a reversible handoff right after stating the plan; a one-way handoff after your answer) and runs the work to the end. Writes no implementation, gives no verdict. |
-| **Alex** (Solution Lead) | `/alex` | Requirements, design, handoffs, and Gate 4 acceptance. |
-| **Blake** (Execution Master) | `/blake` | Implementation, the Ralph Loop, and Gate 3 verification. |
+| **Alex** (Solution Lead) | `/alex` | Requirements, design, handoffs, and relaying Gate 4 (the acceptor that took no part dispatched by Alex). |
+| **Blake** (Execution Master) | `/blake` | Implementation, the Ralph Loop; prepares Gate 3 (the run reviewer signs it). |
 
 You are the fourth part: you decide what the result should be, and you accept it at the end.
 
@@ -66,7 +66,7 @@ While she runs, she stops for only three things: something she cannot get past o
 ## Where quality comes from
 
 - **The checker did not see the doer's reasoning.** Whoever reviews a piece of work is a fresh agent that was not part of building it. An agent that reviews its own work will usually approve it.
-- **Four gates:** Gate 1 requirements clarity, Gate 2 design completeness, Gate 3 implementation and integration (Blake), Gate 4 business acceptance (Alex). Evidence goes to files, not to claims.
+- **Four gates:** Gate 1 requirements (your confirmed playback), Gate 2 design (two lens reviewers), Gate 3 implementation (run + consistency reviewers), Gate 4 acceptance (an AI acceptor that did not build it, by real use). Evidence goes to files, not to claims.
 - **Only human-answerable questions go to the human:** what, why, whether, what next. Questions that a command or a file can answer do not.
 - **Separate terminals are one way to get the same independence.** Running `/alex` in one session and `/blake` in another, with you passing the handoff between them, still works and is a fine choice for a single handoff.
 

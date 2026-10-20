@@ -27,7 +27,7 @@ gate4_delta: []
 
 # risk_triggers: closed list — security | data | money | ui | platform | domain, or [none] (review contract §5; Gate 2 risk or fit, Gate 3 domain for security/data/money)
 risk_triggers: [none]
-# real_paths: each path the change takes in the real environment, run once by the Gate 3 run reviewer; protocol text = a named scenario walk; impossible → not-run: <reason> (paid, the human's own account or device, production/outward, a capability this harness lacks)
+# real_paths: each path the change takes in the real environment, run once by the Gate 3 run reviewer (the Gate 4 acceptor also does what the human will do); protocol text = a named scenario walk; impossible → not-run: <reason> (paid, the human's own account or device, production/outward, a capability this harness lacks)
 real_paths:
   - id: RP1
     path: "[the path a user takes]"
@@ -125,7 +125,7 @@ Blake在开始实现前，请确认：
 
 ### 1.5 Requirement (human's words)
 
-Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines, `Q→A log`, `Assumptions (not asked; Gate 4 lists them)`.
+Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines `- **<block>**: …` including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`.
 
 ---
 
@@ -501,7 +501,7 @@ path/to/existing.ts  # Changes
 | *Example: dependency install required* | *Install package/tool* | *Request install via user/sandbox approval* | *DEGRADED_WITH_APPROVAL with approval source, date/context, accepted risk, rationale* | *Unresolved BLOCKED prevents Gate 3 PASS* |
 | *Example: auth/approval required* | *Obtain auth token or approval* | *Request auth renewal or approval from user/admin* | *DEGRADED_WITH_APPROVAL if user accepts risk* | *Unresolved BLOCKED prevents Gate 3 PASS* |
 | *Example: platform sandbox/network restriction* | *Network access for external API* | *Request sandbox approval (Codex) or permission (Claude Code)* | *Offline fallback if equivalent and documented* | *Unresolved BLOCKED prevents Gate 3 PASS* |
-| *Example: `spec-compliance-reviewer` agent type not registered in the harness* | *Spec compliance review (Layer 2 Group 0)* | *Spawn a general sub-agent and give it the body of `.tad/agents/claude/spec-compliance-reviewer.md` as its task text* | *EQUIVALENT_SUBSTITUTE with the definition path as evidence* | *Missing Group 0 review prevents Gate 3 PASS* |
+| *Example: a reviewer lens unavailable (agent type not registered in the harness)* | *Gate 3 lens review (review contract)* | *Any fresh subagent given the lens (contract §9); self-review is never equivalent* | *EQUIVALENT_SUBSTITUTE with the lens and subagent as evidence* | *A missing lens prevents Gate 3 PASS* |
 
 **Status Enum** (use exactly these values in Friction Status table at completion):
 `READY` / `BLOCKED` / `DEGRADED_WITH_APPROVAL` / `EQUIVALENT_SUBSTITUTE` / `NOT_APPLICABLE_WITH_REASON`
@@ -540,8 +540,8 @@ Blake的实现被认为完成，当且仅当：
 - [ ] 所有FR实现并验证
 - [ ] 所有Phase完成并提供证据
 - [ ] 所有测试通过（有截图证明）
-- [ ] UI符合设计（有截图证明）
-- [ ] Human验证"这是我期望的"
+- [ ] UI符合设计（acceptor screenshots）
+- [ ] Gate 4 acceptor (AI, took no part) accepts by real use; only device/payment/own login go to the human, with reason
 
 ---
 

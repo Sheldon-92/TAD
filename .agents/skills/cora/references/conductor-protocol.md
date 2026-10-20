@@ -51,9 +51,11 @@ yolo_execution_protocol:
       - "phase{N}-design-review-consistency.md"
       - "phase{N}-design-review-risk.md or phase{N}-design-review-fit.md (the second Gate 2 reviewer; fit when the handoff's risk_triggers is [none])"
       - "phase{N}-gate3-verdict.md (Gate 3 run reviewer)"
+      - "phase{N}-ac-rerun.md (the run reviewer's gate3-check.sh rerun output; round k ≥ 2: -r<k>)"
       - "phase{N}-impl-review-consistency.md"
       - "phase{N}-impl-review-domain.md (only when security, data or money is listed)"
       - "phase{N}-gate-report.md"
+      - "phase{N}-gate4/ (the acceptor's evidence: screenshots, run logs, quoted lines)"
       - "phase{N}-premise-<m>.md (only after a re-plan)"
       - "phase{N}-spike-<k>.md (only after a spike)"
       - "phase{N}-questions.md (only when a subagent asked)"
@@ -199,6 +201,7 @@ yolo_execution_protocol:
         2. Dispatch the run reviewer (MANDATORY; it writes the Gate 3 verdict):
            prompt: "Load .tad/templates/review-contract.md and follow it; its P0 rule includes AR-001 ('this P0 is not important' = VIOLATION) [A118]. Lens: run.
                    Object: the commits listed in {completion_path}. Reference: {epic_path} ## Requirement and ## Result contract, and {handoff_path} (§9.1 and real_paths). Previous round: {same lens's file or none}. Spike/premise: {file or none}.
+                   Run `bash .tad/hooks/lib/gate3-check.sh rerun {handoff_path} --out .tad/evidence/yolo/{epic-slug}/phase{N}-ac-rerun.md --id {id}` first, and `gate3-check.sh paths {handoff_path} <your file>` before saving (review contract §5 run).
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md and set the completion report's gate3_verdict marker. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
         3. Dispatch the consistency reviewer (MANDATORY; code-reviewer on Claude Code) [A117]:
            prompt: "Load .tad/templates/review-contract.md and follow it; its P0 rule includes AR-001 ('this P0 is not important' = VIOLATION) [A118]. Lens: consistency.
@@ -208,6 +211,7 @@ yolo_execution_protocol:
            prompt: "Load .tad/templates/review-contract.md and follow it; its P0 rule includes AR-001 ('this P0 is not important' = VIOLATION). Lens: domain (the security, data or money entries of the handoff's risk_triggers).
                    Object: the commits listed in {completion_path}. Reference: {epic_path} ## Requirement and ## Result contract, and {handoff_path}. Previous round: {same lens's file or none}. Spike/premise: {file or none}.
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-impl-review-domain.md. Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
+        3c. A consistency file whose `risk_triggers:` header adds security, data or money not in the handoff's list: the domain lens runs in the next round, even with no P0 (routing, not a verdict).
         4. If ANY P0, FAIL or PARTIAL across the files (a PARTIAL whose `## Blocked` names friction a rework cannot fix, such as a dependency to install or an approval, is a stop, reason 1, reported as it is; a CONDITIONAL's review file path goes into the next dispatch prompt):
            0. Empirical P0 spike (skipped when the re-plan trigger of 4c fires: its empirical P0s go to the re-plan). If any file of the round has `empirical_p0` above 0, Cora first dispatches one Blake spike (middle tier) for all empirical P0s of the round: id `p{N}-y6-sp<k>`, pointer `step Y6 spike`, output `.tad/evidence/yolo/{epic-slug}/phase{N}-spike-<k>.md`, prompt and limits as in step_Y4 5.0. Route: `confirmed` or `unsettled` above 0, or `p0_count` above `empirical_p0` in any file -> 4a (rework), its prompt naming the review files and the spike file; otherwise (every P0 empirical and all refuted) -> 4b on the unchanged code. Either way the next round's reviewer prompts name the spike file. A spike is not a review round (no `new_p0` effect, no round number), at most one per round, counted toward the Budget estimate.
            a. Re-dispatch a Blake subagent with the handoff path and the review file path. Write the pointer first (id p{N}-y6-<n>, output {completion_path}). Prompt:
@@ -219,7 +223,7 @@ yolo_execution_protocol:
         5. Re-read the review files' headers from disk before routing (not from memory) [A120].
         6. Write the pointer: step Y6.
         → Proceed to step_Y7.
-      output: "Gate 3 review files on disk: phase{N}-gate3-verdict.md (run), phase{N}-impl-review-consistency.md (+ phase{N}-impl-review-domain.md)"
+      output: "Gate 3 review files on disk: phase{N}-gate3-verdict.md (run) with phase{N}-ac-rerun.md, phase{N}-impl-review-consistency.md (+ phase{N}-impl-review-domain.md)"
 
     step_Y7:
       name: "Gate 4 (one independent dispatch; Cora writes no verdict)"
@@ -228,6 +232,7 @@ yolo_execution_protocol:
         1. Gate 3 was settled in step_Y6: the run reviewer's phase{N}-gate3-verdict.md (latest round) with the consistency (and domain) files; Cora dispatches no separate verifier.
         2. Gate 4: dispatch an Alex subagent that took no part in this phase.
            prompt: "You are Alex, dispatched by the conductor (Cora) for one step: Gate 4 for Phase {N}. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it. Read {handoff_path}, {completion_path}, the design review files and the Gate 3 review files (phase{N}-gate3-verdict*.md, phase{N}-impl-review-*.md).
+                   Act as the human (gate skill Acceptance_By_Real_Use): what he will do with the result, done once for real or in a browser (screenshots / run logs under .tad/evidence/yolo/{epic-slug}/phase{N}-gate4/), judged against {epic_path} ## Requirement, Result contract and Assumptions; run `gate3-check.sh paths {handoff_path} <latest gate3 verdict>`. Only a real device, a payment or his own account login goes to the human, with the reason. No browser tool: `not-run: no browser tool on <harness>`, verdict on what ran. A paid call or a browser-tool install: write a class 3 question to the phase questions file and stop. A release honours .tad/project-knowledge/rulings/human-rulings.md. End with `## For the human`: the verdict and 3-5 evidence lines.
                    A P0 states a failure scenario and what it blocks (verdict_header).
                    Record the gate4_delta (design intent vs. what was built, surprises, deviations) and the knowledge assessment.
                    The knowledge assessment must iterate three explicit checks: (a) did this acceptance reveal anything new, (b) is it already in project-knowledge, (c) where does it belong [A095].
@@ -236,7 +241,7 @@ yolo_execution_protocol:
                    If a Blake PARTIAL is in play, recompute from the raw files before accepting it [A089].
                    Write no knowledge entry. In the gate report keep the Knowledge Assessment and list candidate discoveries under `## Knowledge candidates`.
                    Write .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md (not the Epic). Put `dispatch_id: {id}` in your file's first lines and start your file with the verdict header."
-        3. Cora reads the gate report header. A gate report with no Knowledge Assessment section is incomplete: re-dispatch the Gate 4 subagent, never fill it in herself [A007].
+        3. Cora reads the gate report header. A gate report with no Knowledge Assessment section, or with no `## For the human` section, is incomplete: re-dispatch the Gate 4 subagent, never fill it in herself [A007]. A report with `not-run: no browser tool on <harness>`: one re-dispatch of the acceptor on a subagent type whose tool list has a browser when her harness offers one (routing, not a verdict), else relay it as it is.
         4. A step is not done without a completion report and its evidence files; never route forward on a step that lacks them [A020]. A Blake self-report that disagrees with the disk counts as failed [A037].
         5. Gate 4 PASS (or CONDITIONAL with no P0):
            a. Update Epic Phase status 🔄 Active → ✅ Done (both Phase Map table AND Phase Detail Block Status field)
@@ -267,11 +272,11 @@ yolo_execution_protocol:
          Include: per-Phase summary, total files changed, total commits, all review references
       2. Run .tad/hooks/lib/audit-yolo.sh {epic-slug} (skip if the script is not available)
       3. Assess pair testing: if any Phase involved UI/user-flow changes, suggest pair testing
-      3b. Dispatch the distillation: an Alex subagent that did not conduct. Write the pointer first (`Pointer: phase <N> | step distill`, N = the Epic's last phase; id `p<N>-distill-<n>`; output `.tad/evidence/yolo/{epic-slug}/distillation-report.md`). Its inputs, named in the prompt: Blake's journals (selected only by every `Journal:` line in each completion report (a rework section adds its own)), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) and the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md`; it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
+      3b. Dispatch the distillation: an Alex subagent that did not conduct. Write the pointer first (`Pointer: phase <N> | step distill`, N = the Epic's last phase; id `p<N>-distill-<n>`; output `.tad/evidence/yolo/{epic-slug}/distillation-report.md`). Its inputs, named in the prompt: Blake's journals (selected only by every `Journal:` line in each completion report (a rework section adds its own)), Cora's journal (`.tad/evidence/journal/conductor-{epic-slug}-{date}.md`) the `## Knowledge candidates` of every `.tad/evidence/yolo/{epic-slug}/phase*-gate-report.md` and the escape-log lines dated since the last distillation (`.tad/evidence/escape-log.md`); it is the only writer of entries. Put `dispatch_id: {id}` in its output file's first lines. Prompt opens: "You are Alex, dispatched by the conductor (Cora) for one step: distillation. Read .agents/skills/alex/references/conductor-dispatch-mode.md and follow it."
           (alex/references/distillation-loop-protocol.md). Gaps it cannot fill are not answered by Cora: no entry is written, and the gaps are listed in her acceptance question.
       3c. Read the distillation report. In the same edit that records the distillation result, mark the Epic `done` in the queue block, clear its `Owner:` to "—", and move `current` to the next approved Epic. If an approved Epic is waiting, start it with no question.
       Queue-wide, when no Epic is waiting:
-      4. Record the acceptance question in the `Stopped:` line of every Epic it covers and clear their `Owner:` to "—" (one edit per Epic file), then write `Conductor status: IDLE`, then ask acceptance alone: one question; each Epic of the queue listed with its result, every phase closed PARTIAL and every open P0 named, distillation gaps listed.
+      4. Record the acceptance question in the `Stopped:` line of every Epic it covers and clear their `Owner:` to "—" (one edit per Epic file), then write `Conductor status: IDLE`, then ask acceptance alone: one question; each Epic of the queue listed with its result and each phase's `## For the human` block quoted with its pointer (relay, not a judgment), every phase closed PARTIAL and every open P0 named, distillation gaps listed.
       5. After the human accepts: ask archiving as its own question, after acceptance, recorded the same way. Nothing is archived before both answers.
       6. On yes, archive each accepted Epic:
          a. Archive the Epic .tad/active/epics/ → .tad/archive/epics/ (two-phase safety: copy first, verify, then delete source)

@@ -3,6 +3,8 @@
 **Epic ID**: EPIC-{YYYYMMDD}-{slug}
 **Created**: {date}
 **Owner**: Alex
+**Budget**: {estimate: expected subagent dispatches per phase and in all}
+**Depth**: {level} — Risk: {reversible | one-way}; blast radius: {what is affected}
 
 ---
 
@@ -12,12 +14,23 @@
 ## Requirement
 {One line per block, in the human's words (requirement-clarification method). Gate 1: he confirmed this playback.}
 - **{block}**: {his words}
+- **Not wanted**: {what he does not want}
+- **Done check**: {how each deliverable is judged done / not done}
 
 ### Q→A log
 - {block}{n}: {question} → {his answer, in his words}
 
 ### Assumptions (not asked; Gate 4 lists them)
 - {what was not asked, and what is assumed}
+
+## Result contract
+
+What the human gets: {the result, in his words}
+Not wanted: {what is out}
+Premise: {what must be true for this to be worth doing}
+
+### Decisions for the human (settled before "continue")
+- {decision} → {his answer, or "none"}
 
 ## Success Criteria
 - [ ] {measurable outcome 1}

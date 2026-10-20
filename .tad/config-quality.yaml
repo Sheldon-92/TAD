@@ -63,10 +63,10 @@ quality_gates:
     gate1_requirement:
       name: "需求完整性"
       checks:
-        - "Problem defined — 问题定义清晰"
-        - "User identified — ICP 或目标用户已定义"
-        - "Scope bounded — 范围和排除项明确"
-        - "Acceptance criteria defined — AC 可验证"
+        - "What the human gets / Not wanted — Result contract lines"
+        - "Done check per deliverable — a Done check block in ## Requirement"
+        - "Decisions for the human listed; Premise and size (blast radius) stated"
+        - "Estimate stated — Budget (format by gate1-format-check.sh; content by the human's confirmed playback and Alex's can-design-from-it)"
       violation_action: "阻止进入设计阶段"
 
     gate2_design:
@@ -121,7 +121,7 @@ quality_gates:
   # ==================== TAD v2.0 Gate Redefinition ====================
   # Gate 3 and Gate 4 are redefined with Ralph Loop integration
   # Gate 3: Expanded to include all technical quality checks
-  # Gate 4: Simplified to pure business acceptance
+  # Gate 4: Acceptance by real use (an acceptor that took no part)
 
   gate3_v2_implementation_integration:
     name: "Implementation & Integration Quality"
@@ -211,20 +211,20 @@ quality_gates:
   gate4_v2_acceptance_archive:
     name: "Acceptance & Archive"
     version: "2.0"
-    owner: "Alex"
-    description: "Pure business validation - technical quality already verified by Gate 3"
+    owner: "an Alex acceptor that took no part (Cora dispatches it in her runs; the designing Alex at *accept)"
+    description: "Acceptance by real use from the human's side - technical quality already verified by the Gate 3 reviewers"
 
     # Pre-condition
     prerequisite:
-      - "Gate 3 v2 passed"
+      - "Gate 3 passed (run + consistency, domain when listed; ac-rerun file; gate3-check.sh paths exit 0)"
       - "Blake's completion report received"
 
     # Business Acceptance (aligned with canonical — MECE 4 items)
     acceptance:
       checks:
-        - "Functional acceptance — §9 AC met AND no post-impl blockers"
-        - "Quality evidence complete — code/security/perf/ux review evidence exists"
-        - "Subagent issues resolved — every P0 resolved; open P1 listed (carried with reason)"
+        - "Acceptance by real use — what the human will do, done once for real or in a browser; judged against ## Requirement + Result contract"
+        - "Gate 3 evidence complete — every contract lens file, ac-rerun file, gate3-check.sh paths exit 0"
+        - "Issues — every P0 resolved; open P1, Assumptions, not-run and human-only items listed for the human"
         - "Knowledge Assessment complete — distillation or no discovery"
 
       # Review evidence only - no re-run needed
@@ -232,8 +232,8 @@ quality_gates:
         description: "Review Blake's Gate 3 evidence (not re-execute)"
         files:
           - "{task_id}_summary.md"
-          - "Final code-review report"
-          - "Final testing-review report"
+          - "Gate 3 run verdict and ac-rerun file"
+          - "Gate 3 consistency (and domain) review file"
 
       # Optional subagent calls (business focus)
       optional_experts:
@@ -264,7 +264,7 @@ quality_gates:
 
     human_trigger:
       command: "/gate 4"
-      description: "Alex reviews completion report and triggers Gate 4"
+      description: "Gate 3 passed: the acceptor is dispatched for Gate 4"
 
   # Gate Responsibility Matrix (TAD v2.0)
   gate_responsibility_matrix:
@@ -272,39 +272,34 @@ quality_gates:
     version: "2.0"
 
     matrix:
-      test-runner:
-        gate3: "Required (Layer 2)"
+      run:
+        gate3: "Required (run reviewer signs the verdict; gate3-check.sh rerun and paths)"
         gate4: "N/A"
-        notes: "Already verified by Blake"
+        notes: "Runs every §9.1 row and real_path"
 
-      code-reviewer:
-        gate3: "Required (Layer 2)"
-        gate4: "Optional (second opinion)"
-        notes: "Alex can re-run if concerned"
+      consistency:
+        gate2: "Required"
+        gate3: "Required"
+        gate4: "N/A"
+        notes: "Contradictions and consumers of every changed line"
 
-      security-auditor:
-        gate3: "Conditional (Layer 2)"
-        gate4: "Optional (verification)"
-        notes: "Alex reviews evidence only"
+      domain:
+        gate3: "Conditional (risk_triggers lists security, data or money)"
+        gate4: "N/A"
+        notes: "Security, data or money lens on the built change"
 
-      performance-optimizer:
-        gate3: "Conditional (Layer 2)"
-        gate4: "Optional (verification)"
-        notes: "Alex reviews evidence only"
-
-      ux-expert-reviewer:
+      risk-or-fit:
+        gate2: "Required (risk when triggers are listed, fit when none)"
         gate3: "N/A"
-        gate4: "Optional (if UI involved)"
-        notes: "Business/UX focus"
+        notes: "Second Gate 2 lens"
 
-      product-expert:
-        gate3: "N/A"
-        gate4: "Optional (business logic)"
-        notes: "Business focus"
+      acceptor:
+        gate4: "Required (one acceptor that took no part)"
+        notes: "Acts as the human: real use or a browser; verdict + 3-5 evidence lines"
 
     principles:
-      - "Gate 3 (Blake): Technical quality verification - MANDATORY technical experts"
-      - "Gate 4 (Alex): Business value acceptance - OPTIONAL business experts, technical experts only review evidence"
+      - "Gate 3: run reviewer signs; the run + consistency reviewers are required (MANDATORY), domain when listed"
+      - "Gate 4: acceptor by real use; the Gate 3 lenses are its prerequisite"
 
 # ==================== 证据式验证系统 ====================
 evidence_based_verification:
@@ -701,25 +696,17 @@ template_triggers:
   # MANDATORY: Subagent 必须输出，Gate 检查文件存在
   mandatory:
     gate_3:
-      subagent: test-runner
-      template: testing-review-format
-      template_path: ".tad/templates/output-formats/testing-review-format.md"
-      evidence_path: ".tad/evidence/reviews/{date}-testing-review-{task}.md"
+      subagent: "run + consistency reviewers (review contract §8)"
+      evidence_path: ".tad/evidence/reviews/blake/{slug}/gate3-verdict.md and consistency-review.md (Cora's runs: .tad/evidence/yolo/{epic-slug}/phase{N}-gate3-verdict.md and phase{N}-impl-review-consistency.md)"
       blocking: true
-      description: "Gate 3 通过前必须有测试审查证据"
+      description: "Gate 3 通过前必须有 run 和 consistency 审查文件（及 ac-rerun）"
 
     gate_4:
       subagents:
-        - subagent: security-auditor
-          template: security-review-format
-          template_path: ".tad/templates/output-formats/security-review-format.md"
-          evidence_path: ".tad/evidence/reviews/{date}-security-review-{task}.md"
-        - subagent: performance-optimizer
-          template: performance-review-format
-          template_path: ".tad/templates/output-formats/performance-review-format.md"
-          evidence_path: ".tad/evidence/reviews/{date}-performance-review-{task}.md"
+        - subagent: "acceptor (an Alex subagent that took no part)"
+          evidence_path: ".tad/evidence/reviews/alex/{slug}/gate4-report.md (Cora's runs: .tad/evidence/yolo/{epic-slug}/phase{N}-gate-report.md)"
       blocking: true
-      description: "Gate 4 通过前必须有安全和性能审查证据"
+      description: "Gate 4 通过前必须有 acceptor 的 gate report（含 ## For the human）"
 
   # RECOMMENDED: Subagent 应该输出，但不阻塞
   recommended:
@@ -764,17 +751,15 @@ template_triggers:
       description: "Gate 3 通过条件"
       requirements:
         - "COMPLETION-*.md exists in .tad/active/handoffs/"
-        - "test-runner subagent was called"
-        - "testing-review evidence file exists in .tad/evidence/reviews/"
+        - "the Gate 3 run reviewer's gate3-verdict file and the ac-rerun file exist"
+        - "the consistency review file exists (and the domain file when risk_triggers lists security, data or money)"
       blocking: true
 
     gate_4_check:
       description: "Gate 4 通过条件"
       requirements:
-        - "security-auditor subagent was called"
-        - "performance-optimizer subagent was called"
-        - "security-review evidence file exists in .tad/evidence/reviews/"
-        - "performance-review evidence file exists in .tad/evidence/reviews/"
+        - "the acceptor's gate report exists and ends with ## For the human"
+        - "gate3-check.sh paths exit 0 on the Gate 3 run file"
       blocking: true
 
 # ==================== Pillar 3: Fatal Operation Protection ====================
