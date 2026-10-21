@@ -367,3 +367,23 @@
 - **failure_mode**: Naive default: `git stash; <check>; git stash pop`, then trust that the tree is back because the files are. Why wrong: the index state is gone, so the next commit (by the human or a later step) includes or omits the wrong changes.
 - **Validator**: `git status --porcelain` before and after the check are identical in both columns; no `git stash` appears in the session where unrelated staged work existed.
 - **Grounded in**: `.tad/evidence/journal/installer-skill-nesting-phase1-2026-10-16.md` Surprise 1 (stash commit `5f17cc1b`, repair commands, final status match). Related: the 2026-09-03 entry above (`git stash list` after a cancelled agent)
+
+### `shopt -s globstar` Does Not Exist in macOS `/bin/bash` 3.2 and the Script Goes On — Walk Directories With `find` and Check the Option's Exit Code - 2026-10-21
+- **Source confidence**: 实测
+- **Selector**: Triggers when a script uses `**` globs, `globstar`, or any `shopt -s` option and may run under the system bash on macOS (3.2.x), or when a script must run both there and on newer bash. Near-miss exclusion: does NOT trigger for scripts that pin a newer bash by absolute path.
+- **Context**: A design premise check ran `shopt -s globstar` and a `**/*.md` loop under bash 3.2. The `shopt` call reported an error, the script continued, and the pattern was treated as a single-level `*`, so deeper files were silently missed. A `find`-based walk reached every depth and ran identically on both bash versions. The script chose to take its input root from the current directory instead of locating it by walking up from its own path.
+- **Discovery**: An unsupported `shopt` option fails open: the error goes to stderr, execution continues, and the globs match less than the author believed.
+- **Action**: Use `find "$root" -name ... ` for recursive walks. If an option is required, test `shopt -s name || exit` and run the test under `/bin/bash`, not the interactive shell. Run fixtures and acceptance commands with the same `/bin/bash` that users will get.
+- **failure_mode**: Naive default: write `shopt -s globstar; for f in "$root"/**/*.x` after testing on a newer bash. Why wrong: on 3.2 the loop silently covers one level, and a count or check reports a smaller number than the truth with exit 0.
+- **Validator**: `grep -nE 'globstar|\*\*/' {script}` returns nothing; a fixture with files at depth 3 gives the same result under `/bin/bash` 3.2 and a newer bash.
+- **Grounded in**: `.tad/evidence/yolo/cora-loop-fixes/phase2-premise-1.md` observed item 1; `phase2-gate-report.md` candidate 5; `phase2-completion.md` AC11 row.
+
+### `$?` After a Pipeline Is the Last Command's Status — Re-Run Without the Pipe or Read `PIPESTATUS` Before Recording an Exit Code as Evidence - 2026-10-21
+- **Source confidence**: 实测
+- **Selector**: Triggers when an exit code is recorded as acceptance evidence from a command that was piped to `tr`, `head`, `tee`, `sed` or similar, or captured as `cmd | filter; echo $?`. Near-miss exclusion: does NOT trigger for a pipeline whose last command is the one under test.
+- **Context**: A rework ran six report fragments through a checker and printed `$?` after `checker file | tr ...`. The value was the status of the filter, not of the checker. The six runs were repeated without the pipe to obtain the real exit codes.
+- **Discovery**: Pipeline status is the last stage's status unless `pipefail` is set; an exit code taken that way is evidence of the wrong command.
+- **Action**: Capture the status of the command under test without a pipe (`out=$(cmd); rc=$?`), or read `PIPESTATUS` immediately in the same shell line. Record the code beside the exact command text.
+- **failure_mode**: Naive default: pipe to a filter for readable output and then echo `$?`. Why wrong: the recorded code belongs to the filter, so a failing checker appears to pass.
+- **Validator**: Each recorded exit code comes from a command line containing no pipe, or from `PIPESTATUS`.
+- **Grounded in**: `.tad/evidence/journal/cora-loop-fixes-phase2-2026-10-21.md` Surprise 2.

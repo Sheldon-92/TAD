@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-20 10:55
+Generated: 2026-10-21 17:31
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,10 +24,10 @@ Generated: 2026-10-20 10:55
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template |
-| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references |
-| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss |
-| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template, format-line gates advisory |
+| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references, stage-split shared steps, format change replace old shape in every copy, disk count is a floor |
+| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss, globstar absent on bash 3.2, $? after pipe |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault, replay recorded case through protocol change, run new check on old-shape input |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
@@ -66,13 +66,14 @@ Generated: 2026-10-20 10:55
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-20-installer-fixes-phase1.md | code#tad.sh+oneshippedscriptline+3protocoltextlines+1citationpathinprinciples.md+fixturecases | Five small, independent fixes in `tad.sh` (A, B, D, E) plus a wording fix in three shipped protocol lines (C), each with |
+| HANDOFF-2026-10-21-cora-loop-fixes-phase1.md | mixed#protocoltextonly:Alex/Cora/gateskillandreferencefiles(md+yaml-in-md),twotemplates,onechecklistline;noscript,nocode | Text changes to Alex's design flow and to the Gate 2 (design review) loop so a design converges instead of being patched |
+| HANDOFF-2026-10-21-cora-loop-fixes-phase2.md | mixed#Cora/Alex/gateskillandreferencetext,threetemplates,onechecklist;oneshellscriptchanged(gate1-format-check.sh),onecreated(cora-check.sh),withcommittedfixturesunder.tad/tests/ | Text changes to Cora's skill and its references, the gate skill, the Gate 1/Gate 4 checklist and three templates, plus t |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261020-installer-fixes.md | **Epic ID**: EPIC-20261020-installer-fixes |
+| EPIC-20261021-cora-loop-fixes.md | **Epic ID**: EPIC-20261021-cora-loop-fixes |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -156,7 +157,7 @@ Generated: 2026-10-20 10:55
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 59 | journal |
+| evidence/journal/ | 62 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -176,19 +177,19 @@ Generated: 2026-10-20 10:55
 | evidence/ralph-loops/ | 16 | ralph-loops |
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 16 | releases |
+| evidence/releases/ | 17 | releases |
 | evidence/research/ | 194 | research |
 | evidence/reviews/ | 845 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
-| evidence/simple/ | 14 | simple |
+| evidence/simple/ | 17 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 10050 | yolo |
+| evidence/yolo/ | 10084 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
