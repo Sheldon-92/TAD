@@ -1,4 +1,4 @@
-# schema=1 rows=1979
+# schema=1 rows=1982
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -533,6 +533,7 @@ skill	1d9253c9a8372e9978765484d4d571aab6cc3aa9	llm-observability/scripts/otel-co
 skill	1de306af62f1f6758f45d2b5058d4f238d7fe695	blake/SKILL.md
 skill	1e0c17664dfb939303121b6e4e40dbe1830bc604	alex/SKILL.md
 skill	1e494fbfa5ddfe59ae6cd80d3682952c2bb79a2e	tad-help/SKILL.md
+skill	1e66f9924484a62ed25018cb17812017910c3d23	tad-help/SKILL.md
 skill	1e8d2a036b05262737357dd95bf7663bd4e4cb76	cora/references/conductor-protocol.md
 skill	1f439e655baced01836e27cd7bc1c2d0d465f479	knowledge-graph/SKILL.md
 skill	200e01e86c8359613165c3748c453cf25d3e1879	video-creation/references/ai-asset-generation.md
@@ -1580,6 +1581,7 @@ skill	c339adb606e8daf460beebd931ccb90bd518c53b	blake/SKILL.md
 skill	c35a16cf1e021b64ecbdf69d7b567c5e89ae301c	cora/SKILL.md
 skill	c365c51b288046213aee1d3a87be28fa174201a9	alex/SKILL.md
 skill	c39afe7b2fea2acbc7eca313efde5978c97896f7	research-methodology/SKILL.md
+skill	c3c642fbaa500e5b5ef1df09406a478721c53c54	alex/SKILL.md
 skill	c45216489ba259505d1ad3561a58073274b6e63e	mobile-development/references/platform-features.md
 skill	c4530fac63410d8bcff1992ce14644bdcaff2a6b	ai-tool-integration/SKILL.md
 skill	c4e78d5ff0ce4cfa224197c2d94e548aff0ca511	research-methodology/references/output.md
@@ -1688,6 +1690,7 @@ skill	d457b573bf76a5ca8e1643a61a48e560415318b4	alex/references/conductor-dispatc
 skill	d4846d080c29d385e4d17afed3b872ea56819784	alex/SKILL.md
 skill	d48626d25bb07af1249151f1066083bcd7af37ba	alex/references/release-duties.md
 skill	d511cbe0a30d33876d850ab05d45bb31106c41ff	alex/references/conductor-dispatch-mode.md
+skill	d589a64a62bd43db4f7dfb097c803f1f298f6bc4	blake/SKILL.md
 skill	d5e95fe710f4158e0e09a0c85944f030c687b15f	web-frontend/references/visual-code-bridge.md
 skill	d65f88e996dc5604d77541d45dece53a58a85734	video-creation/SKILL.md
 skill	d6bfcb7d25afa19698978f37c77764d5d82a8390	ai-evaluation/SKILL.md
