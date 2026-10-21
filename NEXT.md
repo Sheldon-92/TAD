@@ -13,6 +13,12 @@
 
 ## 🔴 优先队列
 
+### ✅ DONE 2026-10-21. EPIC-20261021 cora-loop-fixes — accepted and archived, not yet released
+- Epic: `.tad/archive/epics/EPIC-20261021-cora-loop-fixes.md`. Fixes from real use in 买卖 / 阿里 / TAD: design loop (look first, decisions not code, no rule-on-rule fixes, convergence stop), clarification check, disk-based dispatch count, no pushing work onto the human, Gate 4 real-run record and resume.
+- [x] Phase 1 design loop — 1aa6db58, fbd8d749; Gate 4 CONDITIONAL (阿里 replay: patch chain stopped at round 2 instead of a re-plan at dispatch 12)
+- [x] Phase 2 clarification, dispatch count, human work, acceptance and resume — 18d15b99, 9db6a6ef; Gate 4 CONDITIONAL; accepted 2026-10-21
+
+
 ### ✅ DONE 2026-10-20. EPIC-20261020 installer fixes — released in v4.0.5
 
 - Epic: `.tad/archive/epics/EPIC-20261020-installer-fixes.md` (accepted and archived 2026-10-20). Skill-link check, backup naming and `changes.tsv`, retention keeps the pre-upgrade backup, non-ASCII backup dir, rulings file optional (8528b948, 951e71e3). Pushed and tagged v4.0.5; post-tag download install verified.
