@@ -1,4 +1,4 @@
-# schema=1 rows=1964
+# schema=1 rows=1965
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -762,6 +762,7 @@ skill	4327b5271ab546c8496cb31bae423c6553be1561	web-testing/references/pair-testi
 skill	437fccdde5a49c22056006c518560684429228bd	product-thinking/adapters/service.md
 skill	43c202b46d653aca24a44d72212b3ddada7bed5e	_archived/media-processing.md
 skill	43d09f063d43ecaf2feb726de4d23932205720ec	blake/SKILL.md
+skill	43f1ec51ade989e1ac20664c4d810f4502d06ce4	alex/references/conductor-dispatch-mode.md
 skill	43f48c79c07f1415bd0fbd557f139daf74a204bd	gate/SKILL.md
 skill	43fca737e40df7326adc05f89ef8f1a6aa436210	knowledge-graph/references/graphrag-architecture.md
 skill	4400a5e72bfce6ca734f030e24f49bc5723f1647	alex/references/socratic-inquiry-protocol.md
