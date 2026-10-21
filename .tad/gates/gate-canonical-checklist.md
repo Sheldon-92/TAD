@@ -25,6 +25,7 @@ Checklist items:
 - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md). Why ME: 流程检查（审查是否发生）
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
 - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). Why ME: 只检查"验证方法合法"
+- [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
 - [ ] Functions verified. Why ME: 代码级引用正确性（grep 可验证）

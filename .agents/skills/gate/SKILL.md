@@ -83,10 +83,11 @@ Output: the script's OK / MISSING lines
 ```yaml
 When: Before creating handoff (BLOCKING)
 Owner: Agent A (Alex)
-Critical Check (9 items):
+Critical Check (10 items):
   - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md).
   - [ ] All P0 resolved
   - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run)
+  - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
   - [ ] Architecture complete
   - [ ] Components specified
   - [ ] Functions verified

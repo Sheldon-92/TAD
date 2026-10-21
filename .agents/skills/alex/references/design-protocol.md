@@ -11,6 +11,13 @@ design_protocol:
       name: "Review the Requirement"
       action: "Confirm every block of the requirement is clear or listed as an assumption"
 
+    step1_2_look_first:
+      name: "Look first (read-only)"
+      action: |
+        Look first when the work's result acts on a system outside this repo (a website or platform, a third-party API, a device) or reads or writes real user or project data. Before step3, inside your own design dispatch (Cora: Y3 or a re-plan; direct /alex: before step3), do a read-only look: a walk-through, a read, a listing; never a write, an outward post, a login with the human's own account, or a paid call. No new dispatch.
+        Record: Cora run `.tad/evidence/yolo/{epic-slug}/phase{N}-look.md`; direct /alex `.tad/evidence/reviews/alex/<slug>/look.md`. Line 1 `dispatch_id: <id>` (Cora run: the design dispatch's id). List what was looked at, each fact with a pointer (output, screenshot path), and what could not be looked at as `not-run: <reason>` (review contract §6).
+        The handoff frontmatter carries `look_first: <record path>` or `look_first: "not-needed: <reason>"`; §2.2 cites facts from the record by path; facts not seen are listed as assumptions. Cora does not route on the look file; the Gate 2 reviewers read it.
+
     step1_5:
       name: "Capability Pack Loading"
       action: |
@@ -220,7 +227,7 @@ design_protocol:
         If the requirement has a "who uses it" block, use that line as the design test anchor:
           Use as design test anchor throughout architecture decisions.
           For each major design decision, ask: "Would [ICP] understand/value this?"
-        Design system architecture, data flow, API contracts.
+        Design system architecture, data flow, API contracts. Cite the look record (step1_2_look_first) for facts about the outside system. Write decisions, each with how it is accepted (a §9.1 row or a real_path id); code, scripts and rule lists are Blake's (handoff code bound, handoff-creation-protocol step1).
 
     step4:
       name: "Create Data Flow / State Flow Diagrams"

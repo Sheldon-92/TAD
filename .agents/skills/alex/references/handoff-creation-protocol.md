@@ -145,7 +145,7 @@ handoff_creation_protocol:
       content:
         - Executive Summary
         - Task breakdown (numbered)
-        - Implementation details (code snippets)
+        - "Decisions — each with how it is accepted (a §9.1 row or a real_path id); code, scripts and rule lists are Blake's, proven by §9.1 and real_paths"
         - Acceptance criteria
         - Files to modify
         - Testing checklist
@@ -154,6 +154,10 @@ handoff_creation_protocol:
         - "Capability Pack References (if packs loaded in *design step1_5b)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
         - "(skip when dispatched by a conductor: the conductor owns session-state during a run) Write .tad/active/session-state.md (keep any `## Conductor run (Cora)` section unchanged): Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
+      code_bound: |
+        The code bound: no fenced block in the handoff over 15 lines and at most 80 fenced lines in all (frontmatter and §9.1 table cells are not fenced). It applies to every handoff that goes through Gate 2 (spike and *experiment included); a *bug mini-handoff has no Gate 2 and is not measured. Measured per handoff file f (counts ``` and ~~~ fences; an unclosed one shows as open=1):
+          awk '/^[[:space:]>]*(\140\140\140|~~~)/{ if (f) { if (n>m) m=n; f=0 } else { f=1; n=0 }; next } f{n++; t++} END{ if (f && n>m) m=n; printf "max=%d total=%d open=%d\n", m, t, f}' "$f"
+        Over the bound (max above 15, total above 80 or open=1) = a Gate 2 consistency P0.
       epic_linkage: |
         If this session was dispatched by a conductor (references/conductor-dispatch-mode.md): do steps 1, 1b and 2 only. The conductor has already set this phase 🔄 Active and owns the Epic file: do not edit it, except your own phase's Phase Detail block (skip 3 and 3b). Step 4 then means: the only 🔄 Active phase is the one named in the dispatch; if another phase is Active, stop and report to the conductor.
         If an active Epic exists in .tad/active/epics/:
@@ -278,6 +282,7 @@ handoff_creation_protocol:
         research_required: "must be yes or no"
         risk_triggers: "list from the closed set security | data | money | ui | platform | domain, or [none]"
         real_paths: "≥1 entry {id, path, run} or {id, path, not-run: <reason>}; protocol text: a named scenario walk"
+        look_first: "a record path (Cora run `.tad/evidence/yolo/{epic-slug}/phase{N}-look.md`, direct /alex `.tad/evidence/reviews/alex/<slug>/look.md`) or `\"not-needed: <reason>\"`; `not-needed` while the result acts on a system outside the repo or on real data is a Gate 2 finding (design-protocol step1_2_look_first)"
       gate1_format: "run `bash .tad/hooks/lib/gate1-format-check.sh <draft handoff>` (handoff mode: an Epic pointer prints OK g0; a bug handoff checks Bug Description and the repro row; otherwise §1.5 needs the `- **Done check**: …` and `- **Not wanted**: …` lines, `#### Q→A log` and `#### Assumptions`). Advisory, exit 1 = fill the missing item or ask the human that block; express and *bug use it the same way. Content is the human's confirmed playback plus my line 'can design from it'."
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
 
@@ -666,14 +671,14 @@ handoff_creation_protocol:
     when_none: "fit (is this what the requirement asks, is the size proportionate, does the premise hold); yields questions or P1, never P0"
     examples: "the review contract §9 mapping (Claude Code examples: security-auditor, database-expert, backend-architect, ux-expert-reviewer, devops-engineer, product-expert)"
 
-  reviewer_prompt: "Load .tad/templates/review-contract.md and follow it. Lens: {lens}. Object: {handoff_path}. Reference: the handoff's §1.5 (carrying the human's request verbatim) and §9 (or the Epic's ## Requirement and ## Result contract). Previous round: {file|none}. Questions path (fit only): {path}. Write {path}; start with the verdict header (model: key included)."
+  reviewer_prompt: "Load .tad/templates/review-contract.md and follow it. Lens: {lens}. Object: {handoff_path}. Reference: the handoff's §1.5 (carrying the human's request verbatim) and §9 (or the Epic's ## Requirement and ## Result contract). Previous round: {file|none}. Earlier rounds: {every earlier review file of the phase, all lenses, or none}. Questions path (fit only): {path}. Write {path}; start with the verdict header (model: key included; a design-review file also carries fix_introduced_p0, repeat_class_p0, enumerate_p0)."
   # The narrow-scope rule of the old prompt template is replaced by review contract §2 ("read the object and the reference first"): consistency needs the consumers of changed lines.
 
   minimum_reviewers: 2  # two different lenses; never below one independent reviewer (AR-001)
 
   # Rounds (review contract §7), restated for direct /alex. History: the 2026-08-17 cap of 2 rounds
-  # (EPIC-20260816: a single review ran 5 rounds polishing one markdown link) is replaced by the
-  # round-3 upstream rule below; the rule keeps the loop bounded without forcing new findings to P1.
+  # (EPIC-20260816: a single review ran 5 rounds polishing one markdown link) was replaced by a round-count
+  # upstream rule; Gate 2 now stops by a shrinking test on header values, not by a count (Gate 3 (implementation) keeps its round-3 rule in the contract).
   rounds:
     round_1: "both lenses review the whole handoff."
     round_k_ge_2: |
@@ -681,15 +686,16 @@ handoff_creation_protocol:
         (a) the fix diff
         (b) the open P0 list with the full reason of each, not only the title
         (c) the full text of every section the diff touches
+        (d) `Earlier rounds: {every earlier review file of the phase, all lenses}`: it judges the current version first and forms its findings, then opens them only to label repeat_of, new_p0 and origin (other lenses' files are never a source of findings)
       MUST NOT re-send the whole handoff: re-reading everything lets a reviewer re-open parts unrelated to the fix, which feeds the loop.
-      A fix that changes risk_triggers re-dispatches the risk lens. Each reviewer labels new_p0 and origin from its own lens's previous file; an introduced_by_fix P0 is fixed as a class.
-    round_3_open_p0: |
-      Round 3 (counted from round 1 or the last re-plan) with an open P0 -> stop reviewing and look upstream: Alex writes the premise (one sentence the failed fixes share, one observation that differs if it is false), checks it by a read, grep or local command, and re-plans the handoff once.
-      A second time, or a re-plan that would change the result or scope, goes to the human:
-        "本单 3 轮审查后仍有 P0，任务可能超出范围或方案不成立。P0 列表：{每条含标题 + 完整理由 + 影响面}。请裁定：缩小范围 / 换方案 / 撤单。"
+      A fix that changes risk_triggers re-dispatches the risk lens. Each reviewer labels new_p0 and origin from its own lens's previous file; an introduced_by_fix P0 is fixed as a class, inside the re-plan below (it never reaches a plain design fix).
+    no_patch_or_not_shrinking: |
+      A no-patch trigger = fix_introduced_p0, repeat_class_p0 or enumerate_p0 above 0 in any file of the round. A round k >= 2 with at least one P0 is not shrinking when the sum of p0_count of its files is not below the sum of p0_count of the same lenses' latest files before it (a lens not re-dispatched, or with no earlier file, is left out; a round with no P0 is never tested; the first round after a re-plan is a new baseline).
+      On a no-patch trigger or a round that is not shrinking -> no plain design fix; stop reviewing and look upstream: Alex writes the premise record `.tad/evidence/reviews/alex/<slug>/premise-<m>.md` (m counts the re-plans of the handoff; no header, no spike in direct /alex) with `premise:` (one sentence the failed fixes share), `observation:` (one that differs if it is false), `observed:` (checked by a read, grep or local command) and `replaces:` (the mechanism the failed fixes share -> the structure that takes its place), and re-plans the handoff.
+      The human is asked instead of re-planning when (a) the re-plan would change the result or scope, (b) no structure that replaces rather than adds can be named (the replacement would be one more rule beside the old ones), or (c) an earlier premise-*.md in that directory names the same mechanism in its `replaces:` line (read from disk, so it survives a restart):
+        "本单审查没有收敛（出现不打补丁触发条件，或 P0 数没有变少），任务可能超出范围或方案不成立。P0 列表：{每条含标题 + 完整理由 + 影响面}。请裁定：砍掉这一项 / 缩小范围 / 换方案 / 撤单。"
       There is no option "accept the risk and continue": it turns an agent-side loop into a human-side one, Alex controls the wording, and an unfixed P0 vanishes at the human's nod.
-      There is no round 4 without a re-plan, whatever the human says.
-      MUST NOT start a 4th review round with an open P0 before the premise re-plan.
+      MUST NOT send a plain design fix for a round with a no-patch trigger or one that is not shrinking.
       MUST NOT hand a FAIL handoff to Blake.
 
   p0_resolved_definition: |
@@ -697,11 +703,11 @@ handoff_creation_protocol:
     Alex's own assertion "fixed" is not resolved.
     A "fixed" claim MUST NOT stand in for the latest round's files.
     A CONDITIONAL file has no P0; its open P1s go into handoff §10 as known trade-offs (carried).
-    There is no third way: "the human decides to go on" is not a resolution; the human's options at round 3 are narrow the scope / change the approach / withdraw, none of which leads into Gate 2 with an unresolved P0.
+    There is no third way: "the human decides to go on" is not a resolution; the human's options on the no-convergence question are cut this item / narrow the scope / change the approach / withdraw, none of which leads into Gate 2 with an unresolved P0.
 
   violations:
     - "No handoff to Blake without the two Gate 2 lenses = VIOLATION"
     - "Ignoring a P0 a reviewer found = VIOLATION"
-    - "A 4th review round with an open P0 and no premise re-plan = VIOLATION (whatever the human says)"
+    - "A plain design fix after a no-patch trigger or a round that is not shrinking, with no premise re-plan = VIOLATION (whatever the human says)"
     - "A FAIL handoff to Blake, or re-sending the whole handoff from round 2 instead of the diff = VIOLATION"
     - "Offering 'accept the risk and continue' = VIOLATION"

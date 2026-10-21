@@ -27,6 +27,8 @@ gate4_delta: []
 
 # risk_triggers: closed list — security | data | money | ui | platform | domain, or [none] (review contract §5; Gate 2 risk or fit, Gate 3 domain for security/data/money)
 risk_triggers: [none]
+# look_first: a read-only look first when the result acts on a system outside this repo or on real user or project data: the record path (Cora run .tad/evidence/yolo/{epic-slug}/phase{N}-look.md; direct /alex .tad/evidence/reviews/alex/<slug>/look.md), or "not-needed: <reason>" (design-protocol step1_2_look_first)
+look_first: "not-needed: <reason>"
 # real_paths: each path the change takes in the real environment, run once by the Gate 3 run reviewer (the Gate 4 acceptor also does what the human will do); protocol text = a named scenario walk; impossible → not-run: <reason> (paid, the human's own account or device, production/outward, a capability this harness lacks)
 real_paths:
   - id: RP1
@@ -190,7 +192,7 @@ Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase
 [已有代码或模式]
 
 ### 2.2 Current State
-[现状 vs 目标]
+[现状 vs 目标. Facts about a system outside the repo or about real data are cited from the look record by path; facts not seen are listed as assumptions]
 
 ### 2.3 Dependencies
 [外部依赖]
@@ -233,6 +235,13 @@ optimization_target:
 ---
 
 ## 4. Technical Design
+
+Decisions, not code. The code bound: no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`); code, scripts and rule lists are Blake's, proven by §9.1 and real_paths.
+
+### 4.0 Decisions
+| # | Decision | Lands in | Accepted by |
+|---|---|---|---|
+| D1 | [the decision, in words] | [file or section it lands in] | [a §9.1 row or a real_path id] |
 
 ### 4.1 Architecture Overview
 [架构描述]

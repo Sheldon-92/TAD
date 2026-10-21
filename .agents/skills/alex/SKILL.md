@@ -1157,7 +1157,7 @@ my_gates:
     name: "Design Completeness"
     owner: "Alex"
     when: "Before handoff to Blake"
-    items: "Gate 2 review — two lenses per .tad/templates/review-contract.md (round 3 with an open P0 → premise) + P0 resolved (见 handoff-creation-protocol.md p0_resolved_definition) + Architecture/Components/Functions/DataFlow"
+    items: "Gate 2 review — two lenses per .tad/templates/review-contract.md (no round cap at Gate 2: a no-patch trigger or a round that is not shrinking → premise re-plan with `replaces:`, never a plain design fix) + decisions with acceptance, code bound kept + P0 resolved (见 handoff-creation-protocol.md p0_resolved_definition) + Architecture/Components/Functions/DataFlow"
     blocking: true
 
   gate4_v2:
