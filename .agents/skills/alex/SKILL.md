@@ -1166,7 +1166,7 @@ my_gates:
     when: "After Gate 3 passes (run + consistency reviewers; the run reviewer signs)"
     items: "Acceptance by real use + Gate 3 evidence complete + Issues listed + KA"
     blocking: true
-    note: "acceptance by real use from the human's side; the human gets verdict + 3-5 evidence lines; the evidence reports a real run as `real use: <path> — <what it showed>`, and an unrun path adds `light acceptance: <reason>` (Cora checks it with cora-check.sh gate4-record)"
+    note: "acceptance by real use from the human's side; the human gets verdict + 3-5 evidence lines; the evidence reports a real run as `real use: <path> — <what it showed>`, and an unrun path adds `light acceptance: <reason>` (Cora, or Alex in direct *accept, checks it with `/bin/bash .tad/hooks/lib/cora-check.sh gate4-record <report>` from the repo root)"
 
 # Version Release Responsibilities
 release_duties:

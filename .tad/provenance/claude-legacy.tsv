@@ -1,4 +1,4 @@
-# schema=1 rows=1973
+# schema=1 rows=1979
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -414,6 +414,7 @@ skill	0d39ca39d68c353dd450e6cee9160854ffa2d664	alex/SKILL.md
 skill	0d5d4d5b495ae0a97f9b8265508584232dd92aeb	alex/SKILL.md
 skill	0d7369a4201a56add368ac541a614b6f604ec0b3	tad-help/SKILL.md
 skill	0d7ac721eb9f547a06285e8d6e232c2bcd85d299	blake/SKILL.md
+skill	0d8b986c7f86dccf8381a86c5fd89553fc431a4d	cora/references/conductor-protocol.md
 skill	0d9035aca9e9dc6f7d743318150199ea62994922	product-thinking/adapters/marketplace.md
 skill	0dd24b0a5de4a4acbd2ad765a2376d0e28720abe	synthetic-data/SKILL.md
 skill	0de968365e60ce98aecefa8105ecf067bd23fda9	research-notebook/SKILL.md
@@ -751,6 +752,7 @@ skill	418f2a0ed72ed655d760578f879278e1ca05eecc	supply-chain-security/references/
 skill	41ab9b4f61d3e105bf31e3969ba29e4d994bf6e7	blake/SKILL.md
 skill	41be54fee284db92ab262a0eabbdcad64d8a2863	alex/references/research-plan-protocol.md
 skill	41d4fe52ca16cd49c5c0878576c945e3679058b9	tad-help/SKILL.md
+skill	41eae65af97ad2f39cfaf05f83f0100236fcb0b1	cora/SKILL.md
 skill	4215a6eeaa9b7486558be4895ade0ce2a2c7331b	knowledge-graph/references/entity-resolution.md
 skill	42222192c4ac5f26674736f3c84934dd240e5d36	web-ui-design/SKILL.md
 skill	42381e06e9f0ed252dde6911e2c98687dda932d3	alex/SKILL.md
@@ -1244,6 +1246,7 @@ skill	91db037df45a2e6e5a222a5be1b0997cf5518ce6	academic-research/scripts/academi
 skill	91f8ea174d332e266ad0ec4af54000ab975094b6	video-creation/examples/single-clip-narration.md
 skill	91fce76abaa018f40066766115061755b791eacc	hw-circuit-design/references/component-selection.md
 skill	9250ff20edaec14a808051902cf3e12f451c984d	alex/references/design-protocol.md
+skill	9254c320169250f7709853cb903c525f48ad1924	gate/SKILL.md
 skill	925970c8c590637e1386f889eb229adcb58948ea	release-runbook/SKILL.md
 skill	9295e3bf40befe59217d55aee6a26034ebebeab2	tad/SKILL.md
 skill	92acbae84cf04c380769ebcced435f79fe743848	blake/SKILL.md
@@ -1458,6 +1461,7 @@ skill	b0fb9bca110906aab0aceaaf9ada1722820fd396	web-frontend/README.md
 skill	b106c681f77d09d9c14f41e18cac9614361129bf	data-engineering/SKILL.md
 skill	b1097bf857ed6cb0fcdb0509a4a71c51e34d891e	tad-help/SKILL.md
 skill	b11bf248cdecf1b41e69b94913644fb821aa36b5	_archived/skill-creator.md
+skill	b12e30fd37d97bf53d63a99c754c8839aa9d3ce2	alex/references/acceptance-protocol.md
 skill	b184af3fa2189fdc2aa0bdf742323264e6b8e9e2	code-security/SKILL.md
 skill	b1ad8256040556e9d5096c3e77d9235deff270aa	release-runbook/references/publish-ops.md
 skill	b1b6c211abf75c262edf6b0fcf84591bf2b4f19c	blake/references/notebooklm-access.md
@@ -1581,6 +1585,7 @@ skill	c4530fac63410d8bcff1992ce14644bdcaff2a6b	ai-tool-integration/SKILL.md
 skill	c4e78d5ff0ce4cfa224197c2d94e548aff0ca511	research-methodology/references/output.md
 skill	c4edf16bbe1e09099aa43a68b6067496c5f4e103	tad-scenario/SKILL.md
 skill	c58f1cfe1ded61fb1faab1959f267bee1dfed118	alex/references/intent-router-protocol.md
+skill	c5cbf9c7b22d3e7286eb0bd3f88d4b2f10814a57	alex/SKILL.md
 skill	c5f11c90b8ef69cb534f8cdd680e1141e4747a5d	blake/SKILL.md
 skill	c603aac423a3490cb16daea45170b29ba052f3a7	product-thinking/tools/tool-registry.md
 skill	c60cace5e79b193a5b546b6f61f801cd27046543	video-creation/references/tool-selection.md
@@ -1899,6 +1904,7 @@ skill	f9c9b0aca1e6965ee941185cf84b9653184e273a	research/SKILL.md
 skill	f9cac46a0d94b84d0276387b2e2fa38fbc8a9eb5	hw-firmware/references/peripheral-drivers.md
 skill	f9d1823a179dcbc8c53e2527e467a32191aed62d	product-thinking/SKILL.md
 skill	fa261faa792ec77ff269d3a59d147c10f3ab6ccf	academic-research/references/database-apis-general.md
+skill	fa7ea8c03cf76c3f0816c344275d46b2e6914285	alex/references/conductor-dispatch-mode.md
 skill	faa402a58326cedb750f13b953665591a2099647	blake/SKILL.md
 skill	faab6534c717ef7ca865aeb45a6be6a3b86e57a2	ai-agent-architecture/references/context-compression.md
 skill	fab0e12fc5c58cd64ee0e92fb52390081a7160bf	alex/references/design-protocol.md
