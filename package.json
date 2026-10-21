@@ -1,6 +1,6 @@
 {
   "name": "tad-framework",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Triangle Agent Development - Cora conducts, Alex designs, Blake builds; independent gates check the work",
   "type": "module",
   "bin": {

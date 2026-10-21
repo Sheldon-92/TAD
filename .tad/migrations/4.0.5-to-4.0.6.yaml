@@ -1,0 +1,11 @@
+schema_version: 1
+from: "4.0.5"
+to: "4.0.6"
+generated_by: "manual"
+note: |
+  Patch v4.0.6 - Cora and design-loop protocol changes (design loop rules,
+  clarification playback check, disk-based dispatch count in cora-check.sh,
+  "Why not me" rule, Gate 4 record, resume from disk). No framework files are
+  removed or renamed by this hop.
+delete: []
+rename: []

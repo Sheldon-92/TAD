@@ -5,6 +5,32 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.6] - 2026-10-21
+
+Patch release. Cora and the design loop, fixed from real use in three projects (EPIC-20261021-cora-loop-fixes, commits 1aa6db58, fbd8d749, 18d15b99, 9db6a6ef). No installer change.
+
+### What changed
+
+- **Design loop rules (Phase 1).** Look first before designing; a design step asks for decisions, not code; no rule-on-rule fixes; a convergence stop so a patch chain ends in a re-plan instead of running on. The Gate 2 re-plan rules are scoped off the shared design-fix step.
+- **Clarification playback check (Phase 2).** Cora checks the one-line-per-block playback before the human confirms it.
+- **Disk-based dispatch count.** `cora-check.sh dispatches` counts dispatches from the files on disk, so the guard no longer depends on Cora's own tally.
+- **Why not me.** Cora states why a piece of work is not hers or the subagent's before handing it to the human, so work is not pushed onto the human by default.
+- **Gate 4 record.** One Gate 4 report shape across all copies; `cora-check.sh gate4-record` checks it.
+- **Resume from disk.** Cora resumes an Epic from what is on disk, not from memory of the conversation.
+
+### Upgrading
+
+Run `bash tad.sh --platform claude-code` (or `codex|opencode|cursor`) from your project, or the installer from a checkout with `--source`. `4.0.5-to-4.0.6.yaml` removes and renames nothing.
+
+### Known gaps (open P1s from the Epic's gate reports)
+
+- Look-first has no path when a subagent cannot see the human's browser (partly covered by Why not me).
+- `repeat_class_p0` and `enumerate_p0` rest on reviewer judgment; a single local defect forces a re-plan.
+- Resume's `cora-check.sh dispatches` exits 2 on Epics whose Budget has no `estimate <N>`, with no fallback sentence.
+- `gate4-record` and the playback check accept filler content; the disk dispatch count is a floor when files are overwritten.
+- `AGENTS.md` "How a piece of work goes" still says the tier comes after playback; the release-check rows cannot pass in a clone (untracked TICKET, gitignored session-state).
+- The first live Cora run on a downstream project after release is the real test of the new rules.
+
 ## [4.0.5] - 2026-10-20
 
 Patch release. Installer fixes only, found when a downstream project (买卖) was upgraded from 4.0.3 to 4.0.4. No change to Cora, Alex, Blake, the gates or the reviewer rules. Change: `tad.sh`, its fixture, one shipped script line and three protocol lines (EPIC-20261020-installer-fixes, commits 8528b948 and 951e71e3).

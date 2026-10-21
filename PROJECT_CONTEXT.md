@@ -1,10 +1,10 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 4.0.5 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
-- **Last Updated**: 2026-10-18
+- **Version**: 4.0.6 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
+- **Last Updated**: 2026-10-21
 - **How work goes**: three roles. You talk to Cora and agree a result; she has an Epic written and stops; you say "continue" and she runs it through Alex, Blake and the gates via subagents; you look at the result. `/alex` and `/blake` still work directly.
-- **Framework**: TAD v4.0.5 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
+- **Framework**: TAD v4.0.6 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - **EPIC: Capability Builder v1** — Phases 1–3 of 4 Gate 4 accepted (Phase 1 on 2026-09-02 at `2d7e359b`; Phases 2+3 on 2026-09-03 at `bba6ce84`, acceptance confirmed by the human 2026-10-10). TAD provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof, plus signal-driven `evolve` and explicit one-Skill/one-Plugin `package`. Phase 4 (Voice Studio dogfood) is parked and is started by the human from that project.
@@ -20,7 +20,9 @@
 
 ## Recently Completed
 
-- **EPIC-20261020 installer fixes** (2026-10-20) — released in v4.0.5 (local, push/tag pending the human): post-install skill-link check, accurate backup names plus per-file `changes.tsv`, retention keeps the last pre-upgrade backup, readable backup dir for non-ASCII project names, rulings file reference optional.
+- **EPIC-20261021 cora-loop-fixes** (2026-10-21) — released in v4.0.6 (prepared locally, push/tag pending the human): design loop rules, clarification playback check, disk-based dispatch count, Why not me, Gate 4 record, resume from disk; 5 open P1s listed in the v4.0.6 release note.
+
+- **EPIC-20261020 installer fixes** (2026-10-20) — released in v4.0.5: post-install skill-link check, accurate backup names plus per-file `changes.tsv`, retention keeps the last pre-upgrade backup, readable backup dir for non-ASCII project names, rulings file reference optional.
 
 - **EPIC-20261019 requirement clarification + review redesign** (2026-10-19) — 3 phases done, released in v4.0.4: clarification by decomposition for Cora and /alex; one reviewer contract with at least two different-lens reviewers on every path; Gate 1 conditions; Gate 3 run reviewer re-runs ACs by hand, `gate3-check.sh` checks evidence only; Gate 4 AI real-run acceptor; escape log.
 
