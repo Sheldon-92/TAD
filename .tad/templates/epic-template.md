@@ -3,7 +3,7 @@
 **Epic ID**: EPIC-{YYYYMMDD}-{slug}
 **Created**: {date}
 **Owner**: Alex
-**Budget**: {estimate: expected subagent dispatches per phase and in all}
+**Budget**: estimate {N} subagent dispatches in all: {per phase}
 **Depth**: {level} — Risk: {reversible | one-way}; blast radius: {what is affected}
 
 ---
@@ -16,6 +16,7 @@
 - **{block}**: {his words}
 - **Not wanted**: {what he does not want}
 - **Done check**: {how each deliverable is judged done / not done}
+playback confirmed: "{his words}"
 
 ### Q→A log
 - {block}{n}: {question} → {his answer, in his words}
@@ -75,9 +76,9 @@ Status and progress are computed from the Phase Map:
 {What this Phase delivers when complete: new files, new capabilities, user-visible changes}
 
 #### Acceptance Criteria
-- [ ] {specific, verifiable condition 1}
-- [ ] {specific, verifiable condition 2}
-- [ ] {specific, verifiable condition 3}
+- [ ] EAC1 {specific, verifiable condition 1}
+- [ ] EAC2 {specific, verifiable condition 2}
+- [ ] EAC3 {specific, verifiable condition 3}
 
 #### Files Likely Affected
 - {path/to/file} (CREATE / MODIFY)
@@ -103,9 +104,9 @@ Status and progress are computed from the Phase Map:
 {What this Phase delivers when complete: new files, new capabilities, user-visible changes}
 
 #### Acceptance Criteria
-- [ ] {specific, verifiable condition 1}
-- [ ] {specific, verifiable condition 2}
-- [ ] {specific, verifiable condition 3}
+- [ ] EAC1 {specific, verifiable condition 1}
+- [ ] EAC2 {specific, verifiable condition 2}
+- [ ] EAC3 {specific, verifiable condition 3}
 
 #### Files Likely Affected
 - {path/to/file} (CREATE / MODIFY)

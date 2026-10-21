@@ -6,6 +6,7 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 - It applies to every work request, at every tier Cora or Alex runs. Depth is set by whether the request itself is clear, not by tier.
 - Decompose first. Ask only the blocks still unclear, until every block is clear or is written down as an assumption.
 - A clear request leaves no unclear block: zero questions, and the per-block playback is still shown and confirmed.
+- The three doors: a requirement can arrive already looking clarified through one of three doors, and each still gets the per-block playback and the `playback confirmed:` line. (1) One grown out of a discussion (a direction discussion or talk that turned into "do it"). (2) One Cora assembled herself (for example her own A–E list of fixes that he answers with "do it"): it is her list, not his playback. (3) One relayed from another session or agent. None of them is a reason to skip step 1 of the Triage list.
 
 ## 2. Decompose
 - Show the blocks. Never announce a problem type.
@@ -23,16 +24,16 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 
 ## 4. Playback and start
 - Per-block playback: one line per block, in his words, numbered. Blocks that were not asked appear as assumptions.
-- He confirms before any work starts, also when he says "just do it" (then there are no questions, but the playback is still confirmed).
-- The confirmation is a choice, not a bare verification question: "confirm all / change block N / other". On "change block N" only that block is asked again and restated.
-- For a simple or reversible matter the confirmation is the only question before start; tier and plan follow in the same turn.
+- The playback goes out in the same message as the tier and the plan (tier, plan, estimate, depth line, task list): one message, one reply. He confirms before any work starts, also when he says "just do it" (then there are no questions, but the playback is still confirmed).
+- The confirmation is a choice, not a bare verification question: "confirm all / change block N / other". On "change block N" only that block is re-played and the plan is stated again, in the same message.
+- For a simple or reversible matter that one reply is the only question before start; she writes the record line `playback confirmed: "<his words>"` (his confirming reply, verbatim) and starts in that turn. An Epic still waits for "continue" after Intake; a one-way handoff gets its start question as its own message after that reply.
 - Unsure whether he is discussing or asking for work: ask which, as a choice question. No clarification and no work start before the answer.
 
 ## 5. Record
 - Epic: `## Requirement` (one line per block in his words, including the lines `- **Done check**: …` and `- **Not wanted**: …`), then `### Q→A log`, then `### Assumptions (not asked; Gate 4 lists them)`. A handoff-tier Epic gets the same section, copied from the confirmed playback.
 - Simple tier: the journal entry fields `blocks:` (including `Done check` and `Not wanted`), `qa:`, `assumptions:`.
 - Direct `/alex` without an Epic: handoff `### 1.5 Requirement`: block lines including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`. A direct `/alex` that creates an Epic runs this method first and writes `## Requirement` before the Phase Map.
-- Gate 1: the four conditions in `.tad/gates/gate-canonical-checklist.md`; his confirmed playback plus Alex's "can design from it"; the format is checked by `gate1-format-check.sh`.
+- Gate 1: the four conditions in `.tad/gates/gate-canonical-checklist.md`; his confirmed playback plus Alex's "can design from it"; the format, including the record line `playback confirmed: "<his words>"`, is checked by `gate1-format-check.sh`.
 - If the request is a pure explanation or lookup that creates no work, no record is written.
 
 ## 6. Downstream
@@ -43,7 +44,7 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 
 ## 7. Relation to rules
 - Clarification questions and the confirmed playback come before any run. They are not a stop of a run and not "blocking the human": the stop reasons govern execution only.
-- In a direction discussion only discussion happens; work starts when he says to do it, then clarification begins, then tier and plan.
+- In a direction discussion only discussion happens; work starts when he says to do it, then clarification begins, then playback with tier and plan in one message.
 - Direct `/alex` uses this method; it replaces the earlier inquiry protocol and the menu-style elicitation skill.
 
 ## 8. Forbidden

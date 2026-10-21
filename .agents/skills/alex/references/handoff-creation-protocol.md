@@ -283,7 +283,7 @@ handoff_creation_protocol:
         risk_triggers: "list from the closed set security | data | money | ui | platform | domain, or [none]"
         real_paths: "≥1 entry {id, path, run} or {id, path, not-run: <reason>}; protocol text: a named scenario walk"
         look_first: "a record path (Cora run `.tad/evidence/yolo/{epic-slug}/phase{N}-look.md`, direct /alex `.tad/evidence/reviews/alex/<slug>/look.md`) or `\"not-needed: <reason>\"`; `not-needed` while the result acts on a system outside the repo or on real data is a Gate 2 finding (design-protocol step1_2_look_first)"
-      gate1_format: "run `bash .tad/hooks/lib/gate1-format-check.sh <draft handoff>` (handoff mode: an Epic pointer prints OK g0; a bug handoff checks Bug Description and the repro row; otherwise §1.5 needs the `- **Done check**: …` and `- **Not wanted**: …` lines, `#### Q→A log` and `#### Assumptions`). Advisory, exit 1 = fill the missing item or ask the human that block; express and *bug use it the same way. Content is the human's confirmed playback plus my line 'can design from it'."
+      gate1_format: "run `bash .tad/hooks/lib/gate1-format-check.sh <draft handoff>` (handoff mode: an Epic pointer prints OK g0; a bug handoff checks Bug Description and the repro row; otherwise §1.5 needs the `- **Done check**: …` and `- **Not wanted**: …` lines, the record line `playback confirmed: "<his words>"`, `#### Q→A log` and `#### Assumptions`). Advisory, exit 1 = fill the missing item or ask the human that block; express and *bug use it the same way. Content is the human's confirmed playback plus my line 'can design from it'."
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
 
     step1c:

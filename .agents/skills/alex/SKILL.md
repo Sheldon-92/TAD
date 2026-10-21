@@ -1150,7 +1150,7 @@ my_gates:
     owner: "Alex"
     when: "After the per-block playback is confirmed (requirement clarification), before *design"
     items: "What the human gets + Not wanted + Done check + Decisions for the human + Premise + size (blast radius) + estimate (Budget)"
-    checked_by: "gate1-format-check.sh (format); the human's confirmed per-block playback and my line 'can design from it' (content); no self-score"
+    checked_by: "gate1-format-check.sh (format, including the record line `playback confirmed: \"<his words>\"`); the human's confirmed per-block playback and my line 'can design from it' (content); no self-score"
     blocking: true
 
   gate2:
@@ -1166,7 +1166,7 @@ my_gates:
     when: "After Gate 3 passes (run + consistency reviewers; the run reviewer signs)"
     items: "Acceptance by real use + Gate 3 evidence complete + Issues listed + KA"
     blocking: true
-    note: "acceptance by real use from the human's side; the human gets verdict + 3-5 evidence lines"
+    note: "acceptance by real use from the human's side; the human gets verdict + 3-5 evidence lines; the evidence reports a real run as `real use: <path> — <what it showed>`, and an unrun path adds `light acceptance: <reason>` (Cora checks it with cora-check.sh gate4-record)"
 
 # Version Release Responsibilities
 release_duties:

@@ -127,7 +127,9 @@ Blake在开始实现前，请确认：
 
 ### 1.5 Requirement (human's words)
 
-Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines `- **<block>**: …` including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`.
+Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines `- **<block>**: …` including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`. A direct /alex handoff also carries the record line (checked by `gate1-format-check.sh`):
+
+playback confirmed: "{his words}"
 
 ---
 
@@ -594,6 +596,8 @@ Gate 3 的 run reviewer（review contract）逐行运行以下条目和每个 re
 > When extracting commands to run in bash, **un-escape**: `grep -cE 'a\|b\|c'` (rendered) → `grep -cE 'a|b|c'` (run).
 > Step1d Sub-rule 1 mandates dry-running from raw form, not rendered.
 >
+> **Row keys**: §9.1 rows are keyed `AC<n>` (`gate3-check.sh` reads only those); criteria of an Epic or its intake Detail Block are cited as `EAC<n>`.
+>
 > The `Verified Output` column is filled by Alex during step1d for pre-impl rows;
 > by Blake during Gate 3 for post-impl rows. Empty Verified Output post step1d
 > with non-empty Verification Method = handoff incomplete.
@@ -614,7 +618,7 @@ Gate 3 的 run reviewer（review contract）逐行运行以下条目和每个 re
 
 | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |
 |---|---------------------|-------------------|--------------------|--------------------|-------------------------------|
-| 1 | {same as AC above} | pre-impl-verifiable / post-impl-verifiable | {how to verify: file check, grep, test run} | {what the reviewer should find} | {Alex paste raw output, OR "(post-impl)" for post-impl rows} |
+| AC1 | {same as AC above} | pre-impl-verifiable / post-impl-verifiable | {how to verify: file check, grep, test run} | {what the reviewer should find} | {Alex paste raw output, OR "(post-impl)" for post-impl rows} |
 
 > ⚠️ This section is now MANDATORY (TAD v3.1) — it is the PRIMARY VERIFICATION SOURCE Gate 3
 > executes row-by-row. An empty/missing §9.1 → Gate 3 BLOCKS. Every row's Verification Method

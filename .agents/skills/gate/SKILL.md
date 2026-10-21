@@ -71,8 +71,8 @@ Checklist (4 conditions):
   - [ ] What the human gets / Not wanted — the Result contract lines `What the human gets:` and `Not wanted:`
   - [ ] Done check per deliverable — a `Done check` block in `## Requirement` (handoff: §1.5) that can judge done / not done
   - [ ] Decisions for the human listed; Premise and size (blast radius) stated
-  - [ ] Estimate stated — **Budget**
-Checked_by: "format -> bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal> (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line 'can design from it' (or the block it cannot). No self-score."
+  - [ ] Estimate stated — **Budget** as `estimate <N>`
+Checked_by: "format (the record line `playback confirmed: \"<his words>\"` included) -> bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal> (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line 'can design from it' (or the block it cannot). No self-score."
 Output: the script's OK / MISSING lines
 ```
 
@@ -632,9 +632,9 @@ Acceptance_By_Real_Use:
     1: "Reads ## Requirement, the Result contract and Assumptions (Epic; direct: handoff §1.5 and §9), the Gate 3 files, the completion report. Runs `gate3-check.sh <handoff> <Gate 3 run file>`: MISSING or UNEXPLAINED → FAIL."
     2: "Acts as the human: lists what he will do with the result, and does each once for real (install, build, call, open the page) in a scratch location — or drives a browser where its own tool list has one (Claude Code examples: the Browser pane, Claude in Chrome, a Playwright MCP); protocol text: named scenario walks quoting file:line. Evidence (screenshots, run logs, quoted lines) under .tad/evidence/yolo/{slug}/phase{N}-gate4/ (Cora) or .tad/evidence/reviews/alex/<slug>/gate4/ (direct). One real use per path, never a batch or a measurement (contract §6)."
     3: "Judges against ## Requirement + Result contract (a departure names the requirement line). Recomputes quantitative ACs from raw files (AR-005) and any PARTIAL in play ([A089]); every other §9.1 row is read from the `## AC runs` table of the Gate 3 run file, not re-run. A self-report that disagrees with disk counts as failed ([A037])."
-    4: "What only the human can do — a real device, a payment, his own account login — goes under `## For the human` as `Needs you: <item> — <reason>`; no other item is asked of him. No browser tool on this harness/subagent: `not-run: no browser tool on <harness>` under `## Not run` and as a `Not run:` line in `## For the human` (shown to him, never asked; not a `Needs you:` item); the verdict is given on what ran, and a UI deliverable whose real use did not run caps it at CONDITIONAL (a carried item, contract §7). The dispatcher (Cora step_Y7 3; Alex at *accept step3) re-dispatches the acceptor once on a subagent whose tool list has a browser when the harness offers one, before relaying. Installing a browser tool is a new dependency: a question (risk card [A036], pinned version, lock file), never silent and never a precondition. A paid call: stop — Cora run: class 3 question (stop reason 3); direct: Alex asks the human."
+    4: "What only the human can do — a real device, a payment, his own account login — goes under `## For the human` as `Needs you: <item> — <reason>` (the same rule as Cora's Why not me: before any ask the acceptor checks that neither it nor a subagent nor another facility can do it); no other item is asked of him. No browser tool on this harness/subagent: `not-run: no browser tool on <harness>` under `## Not run` and as a `Not run:` line in `## For the human` (shown to him, never asked; not a `Needs you:` item); the verdict is given on what ran, and a UI deliverable whose real use did not run caps it at CONDITIONAL (a carried item, contract §7). The dispatcher (Cora step_Y7 3; Alex at *accept step3) re-dispatches the acceptor once on a subagent whose tool list has a browser when the harness offers one, before relaying. Installing a browser tool is a new dependency: a question (risk card [A036], pinned version, lock file), never silent and never a precondition. A paid call: stop — Cora run: class 3 question (stop reason 3); direct: Alex asks the human."
     5: "Release (the Result contract or phase includes a tag or publish): applies the rule stated here in full (origin: the 2026-10-16 ruling in `.tad/project-knowledge/rulings/human-rulings.md`, if it exists) — installs the release archive shape (git archive of the release commit) end to end into a throwaway project before the tag. The real download install right after the tag is run by the party that pushes the tag (the release step, under the same confirmation as the tag), never handed to the human; the acceptor records it under `## Not run` as `not-run: after the tag — run by the release step (human-rulings.md 2026-10-16)` and as a `Not run:` line in `## For the human`."
-    6: "Report (`lens: acceptor` header) ends with `## For the human`: line 1 `verdict: <…> — <one sentence>`; then 3–5 lines `- <what was done> → <what it showed> (<pointer>)`; then `Needs you:` items, `Not run:` items, `Assumptions:`, `Open P1:`. Knowledge Assessment and `## Knowledge candidates` unchanged."
+    6: "Report (`lens: acceptor` header) ends with `## For the human`: line 1 `verdict: <…> — <one sentence>`; then 3–5 lines `- <what was done> → <what it showed> (<pointer>)`; then `Needs you:` items, `Not run:` items, `Assumptions:`, `Open P1:`. Knowledge Assessment and `## Knowledge candidates` unchanged. The evidence of a real run is written `real use: <evidence path under the gate4 dir> — <what it showed>` (the same pointer as its `#### Real use` row); when at least one path the human will use did not run (a not-run item, a login only he has, a release's `not-run: after the tag`) the section also carries `light acceptance: <reason>`, shown to him. Cora checks both with `cora-check.sh gate4-record`; a report with neither is incomplete and is re-dispatched."
   violation: "VIOLATION: a Gate 4 PASS while a security, data or money trigger has no Gate 3 domain review file; the domain lens MUST NOT be skipped by leaving a trigger the change has off the list."
 
 Gate3_Evidence_Check:
@@ -690,7 +690,7 @@ Decision_Compliance:
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
 Critical Check (4 items):
-  - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract
+  - [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir, reported in `## For the human` as `real use: <evidence path> — <what it showed>`, and an unrun path adds `light acceptance: <reason>`; judged against ## Requirement + Result contract
   - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing)
   - [ ] Issues — every P0 resolved; a finding keeps its original severity and closes only when a reviewer of that lens (never the builder) recognizes it as fixed / pre-existing / dismissed with proof; reopening needs explicit new evidence; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human
   - [ ] Knowledge Assessment complete — distillation loop or "no new discovery"
@@ -722,7 +722,7 @@ Output Format:
   | Item | Content |
   |------|---------|
   | verdict | {PASS / CONDITIONAL / FAIL} — {one sentence} |
-  | evidence (3-5 lines) | {what was done → what it showed (pointer)} |
+  | evidence (3-5 lines) | real use: <evidence path> — <what it showed>; light acceptance: <reason> (when a path did not run) |
   | Needs you / Not run / Assumptions / Open P1 | {items with reasons} |
 
   #### Knowledge Assessment (MANDATORY - must answer)

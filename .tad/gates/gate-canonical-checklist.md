@@ -12,9 +12,9 @@ Checklist items:
 - [ ] What the human gets / Not wanted — the Result contract lines `What the human gets:` and `Not wanted:`. Why ME: 只检查"给什么、不要什么"
 - [ ] Done check per deliverable — a `Done check` block in `## Requirement` (handoff: §1.5) that can judge done / not done. Why ME: 只检查"怎么判完成"
 - [ ] Decisions for the human listed; Premise and size (blast radius) stated. Why ME: 只检查"要他拍板的事、前提和规模"
-- [ ] Estimate stated — **Budget**. Why ME: 只检查"估算"
+- [ ] Estimate stated — **Budget** as `estimate <N>`. Why ME: 只检查"估算"
 
-Checked by: format -> `bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal>` (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line "can design from it" (or the block it cannot). No self-score.
+Checked by: format (the record line `playback confirmed: "<his words>"` included) -> `bash .tad/hooks/lib/gate1-format-check.sh <Epic | handoff | journal>` (advisory, exit 1 = something missing); content -> his confirmed playback and Alex's line "can design from it" (or the block it cannot). No self-score.
 
 Why CE: 结果 / 完成判据 / 决策与规模 / 估算 — 四个独立条件。
 
@@ -66,7 +66,7 @@ Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 + 脚本
 **Owner:** an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer | **When:** After Gate 3 passes
 
 Checklist items:
-- [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir; judged against ## Requirement + Result contract. Why ME: 只检查"从人的一侧真跑过"
+- [ ] Acceptance by real use — what the human will do, done once for real or in a browser; evidence under the gate4 dir, reported in `## For the human` as `real use: <evidence path> — <what it showed>`, and an unrun path adds `light acceptance: <reason>`; judged against ## Requirement + Result contract. Why ME: 只检查"从人的一侧真跑过"
   Fail-close: cannot Gate 4 PASS if the Gate 3 run file's `## AC runs` table is missing or a row is neither run nor recorded not-run; Blake summary is not Gate 4 evidence; a self-report that disagrees with the run reviewer's AC runs -> that item FAIL and gate4_delta.
 - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
 - [ ] Issues — every P0 resolved; a finding keeps its original severity and closes only when a reviewer of that lens (never the builder) recognizes it as fixed / pre-existing / dismissed with proof (不是强迫有效免卡项全修); reopening needs explicit new evidence; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态

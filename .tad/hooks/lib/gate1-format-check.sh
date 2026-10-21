@@ -9,7 +9,10 @@
 # Mode by content: basename HANDOFF-* -> handoff; a file with **Epic ID** -> Epic;
 # anything else -> journal line (simple tier).
 # Content is judged by the human's confirmed playback and Alex's "can design from
-# it"; this script only checks that the lines exist.
+# it"; this script only checks that the lines exist. Check `pb`: the record line
+# `playback confirmed: "<his words>"` (Epic: inside ## Requirement; handoff: inside
+# 1.5; journal: on the request: line); the text up to the LAST ASCII `"` on the
+# line must be non-blank and not, as a whole, one {...} placeholder.
 
 f="$1"
 if [ -z "$f" ] || [ -d "$f" ] || [ ! -r "$f" ]; then
@@ -52,6 +55,27 @@ hasf() {
   fi
 }
 
+# pbok TEXT : does TEXT hold a filled `playback confirmed: "..."` line (not its own
+# check via hasf: a confirming reply that merely contains a brace stays OK).
+pbok() {
+  local l t
+  while IFS= read -r l; do
+    case "$l" in
+      *'playback confirmed: "'*)
+        t="${l#*playback confirmed: \"}"
+        case "$t" in *'"'*) t="${t%\"*}" ;; *) continue ;; esac
+        t=$(printf '%s' "$t" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
+        [ -n "$t" ] || continue
+        printf '%s\n' "$t" | command grep -Eq '^\{[^{}]*\}$' && continue
+        return 0
+        ;;
+    esac
+  done <<EOF_PB
+$1
+EOF_PB
+  return 1
+}
+
 base=$(basename "$f")
 case "$base" in
   HANDOFF-*) mode=handoff ;;
@@ -75,7 +99,8 @@ if [ "$mode" = epic ]; then
   { has "$dec" '^### Decisions for the human' && hasf "$dec" '^- '; } && ok c3a "Decisions for the human: heading and a filled line" || bad c3a "Decisions for the human: heading and a filled line"
   hasf "$rc" '^Premise:' && ok c3b "Result contract: Premise (filled)" || bad c3b "Result contract: Premise (filled)"
   hasf "$whole" '^\*\*Depth\*\*:.*blast radius' && ok c3c "Depth line with blast radius (filled)" || bad c3c "Depth line with blast radius (filled)"
-  hasf "$whole" '^\*\*Budget\*\*:.*[0-9]' && ok c4 "Budget line with an estimate (filled)" || bad c4 "Budget line with an estimate (filled)"
+  hasf "$whole" '^\*\*Budget\*\*:.*estimate [0-9]' && ok c4 "Budget line with an estimate (filled)" || bad c4 "Budget line with an estimate (filled)"
+  pbok "$req" && ok pb "Requirement: playback confirmed line (filled)" || bad pb "Requirement: playback confirmed line (filled)"
 
 elif [ "$mode" = handoff ]; then
   # The Epic pointer counts only as a header line: line-anchored, between the first
@@ -106,6 +131,7 @@ elif [ "$mode" = handoff ]; then
     hasf "$h" '^- \*\*([A-Za-z0-9]+\. )?Not wanted' -i && ok c1 "1.5: Not wanted line (filled)" || bad c1 "1.5: Not wanted line (filled)"
     has "$h" '^#### Q→A log' && ok c0b "1.5: Q->A log" || bad c0b "1.5: Q->A log"
     has "$h" '^#### Assumptions' && ok c0c "1.5: Assumptions" || bad c0c "1.5: Assumptions"
+    pbok "$h" && ok pb "1.5: playback confirmed line (filled)" || bad pb "1.5: playback confirmed line (filled)"
   fi
 
 else
@@ -120,6 +146,7 @@ else
     chk j4 'qa:'
     chk j5 'assumptions:'
     chk j6 'risk_triggers:'
+    pbok "$line" && ok pb "journal line has playback confirmed (filled)" || bad pb "journal line has playback confirmed (filled)"
   fi
 fi
 
