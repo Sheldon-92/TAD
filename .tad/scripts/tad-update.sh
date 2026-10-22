@@ -310,6 +310,10 @@ print_check() {
 # ============================================
 # Main flow
 # ============================================
+# The whole flow is one function: the installer this helper runs overwrites .tad/scripts/tad-update.sh
+# in place while bash is still reading it, and bash must not read a new file at an old offset after
+# the install. A function body and the call line below are parsed before anything runs.
+main_flow() {
 run_check
 print_check
 
@@ -390,3 +394,5 @@ echo "Applying TAD update to v${REMOTE_VERSION} (platform: ${platform})..."
 "$installer_bash" "$tmp_file" --release-ref "$ref" --expected-version "$REMOTE_VERSION" --platform "$platform" --yes
 rc=$?
 exit "$rc"
+}
+main_flow "$@"; exit $?

@@ -72,7 +72,7 @@ if [ "${TAD_TEST_FULL:-}" = "1" ]; then
   TMP_ROOT="$(mktemp -d)" || exit 2
   export TAD_BACKUP_ROOT="$TMP_ROOT/backups"
   run_test installer-data-safety-fixture /bin/bash .tad/tests/installer-data-safety-fixture.sh --case all
-  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape; do
+  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop; do
     run_test "tad-update-fixture:$c" /bin/bash .tad/tests/tad-update-fixture.sh --case "$c"
   done
   excluded tad-update-fixture:remote-release "needs network"

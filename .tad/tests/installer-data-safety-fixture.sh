@@ -2104,6 +2104,15 @@ fx_setup() {
   new_sandbox; stage_pruned_source; stage_provenance; fx_stage_projected
   fx_old_project
 }
+# fx_tree_sig <dir> — path<TAB>kind:content for every entry (files by cksum, links by link text,
+# dirs), LC_ALL=C sorted; link-safe, unlike diff -r (which follows the Claude skill links).
+fx_tree_sig() {
+  ( cd "$1" && { find . -mindepth 1 -type f -exec cksum {} + | sed 's/^\([0-9]*\) \([0-9]*\) \(.*\)$/\3\tF:\1:\2/'
+                 find . -mindepth 1 -type l | while IFS= read -r p; do printf '%s\tL:%s\n' "$p" "$(readlink "$p")"; done
+                 find . -mindepth 1 -type d | sed 's/$/\tD/'; } | LC_ALL=C sort )
+}
+# fx_diff <a> <b> — the first differing entries of two trees (empty = identical), recovery copies ignored
+fx_diff() { diff <(fx_tree_sig "$1") <(fx_tree_sig "$2") | grep -v -e '.tad-backup' | head -5 || true; }
 # fx_shim <name> <body> — a shim in $SHIMBIN; <body> runs before `exec /bin/<name> "$@"`
 fx_shim() {
   { printf '#!/bin/sh\n'; printf '%s\n' "$2"; printf 'exec /bin/%s "$@"\n' "$1"; } > "$SHIMBIN/$1"
@@ -2142,7 +2151,7 @@ case_fxp() {
     fx_setup || return 0
     snapshot_target "$SNAP/pre"
     rc="$(run_install_cc "$el" "$SANDBOX/bad.log")"
-    n="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | head -3 || true)"
+    n="$(fx_diff "$SNAP/pre" "$TARGET")"
     if [ "$rc" != "0" ] && [ -z "$n" ] && [ "$(fx_ndirs)" = "0" ] && grep -qE 'not a valid target|Unknown platform' "$SANDBOX/bad.log"; then
       pass "fx.p: --platform '$el' refused before any mutation"
     else
@@ -2198,6 +2207,8 @@ case_fxf() {
   # (d) an after-only process file is an added path
   guarded_cleanup "$SANDBOX"; SANDBOX=""
   fx_setup || return 0
+  # the staged source carries the README seed (zero-touch dirs are not staged by default)
+  mkdir -p "$SOURCE/.tad/project-knowledge"; cp "$REPO/.tad/project-knowledge/README.md" "$SOURCE/.tad/project-knowledge/README.md"
   rm -f "$TARGET/.tad/project-knowledge/README.md"
   log="$SANDBOX/f2.log"
   rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
@@ -2309,7 +2320,7 @@ HEOF
   # (k5) the retire removal fails: two complete backups, the guard accepts both
   guarded_cleanup "$SANDBOX"; SANDBOX=""
   fx_setup || return 0
-  fx_shim rm "for a in \"\$@\"; do case \"\$a\" in \"$SANDBOX/cc-backups/\"*/2*) exit 1 ;; esac; done"
+  fx_shim rm "for a in \"\$@\"; do case \"\$a\" in *\"$SANDBOX/cc-backups/\"*/2*) exit 1 ;; esac; done"
   log="$SANDBOX/k5.log"
   rc="$(fx_up "$log")"; g="$(fx_gdir)"
   bad=0
@@ -2353,7 +2364,7 @@ case_fxrb() {
     # the released-older OpenCode command and plugin are replaced first (D8), then the Cursor copy fails
     fx_shim cp "case \"\$*\" in *\"$SOURCE/.cursor/hooks.json\"*) exit 1 ;; esac"
     rc="$(run_install_cc "$plat" "$SANDBOX/rb.log")"
-    d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | grep -v -e '.tad-backup' || true)"
+    d="$(fx_diff "$SNAP/pre" "$TARGET")"
     if [ "$rc" != "0" ] && [ -z "$d" ] && grep -qF 'Rollback coverage' "$SANDBOX/rb.log"; then
       pass "fx.rb: [$plat] fault after the OpenCode replacement -> whole tree identical after rollback"
     else
@@ -2368,7 +2379,7 @@ case_fxrb() {
   snapshot_target "$SNAP/pre"
   fx_shim cp "case \"\$*\" in *\"$SOURCE/.tad/templates/claude/settings.json\"*) exit 1 ;; esac"
   rc="$(fx_up "$SANDBOX/rb2.log")"
-  d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | grep -v -e '.tad-backup' || true)"
+  d="$(fx_diff "$SNAP/pre" "$TARGET")"
   if [ "$rc" != "0" ] && [ -z "$d" ]; then
     pass "fx.rb: [codex,claude-code] fault after the CLAUDE.md append -> whole tree identical after rollback"
   else
@@ -2396,9 +2407,10 @@ case_fxrep() {
   empty="$(LC_ALL=C grep -c "$(printf '\t')\$" "$R" || true)"
   [ "$empty" = "0" ] || { bad=1; fail "fx.rep: $empty empty values"; }
   if [ "$(fx_rv "$R" skill_entries_unresolved)" = "1" ] && fx_rv "$R" unresolved_entry | grep -qF '.agents/skills/x (broken link)'; then :; else bad=1; fail "fx.rep: the broken link is not reported"; fi
+  grep -E '^Report file: .*/update-report.tsv$' "$log" >/dev/null || { bad=1; fail "fx.rep: Report file line wrong"; }
   grep -qF 'Skill entries unresolved: 1' "$log" && grep -qF '.agents/skills/x (broken link)' "$log" || { bad=1; fail "fx.rep: the printed report misses the broken link"; }
   if [ "$(fx_rv "$R" report_version)" = "1" ] && [ "$(fx_rv "$R" platforms)" = "codex,claude-code" ] && [ "$(fx_rv "$R" claude_code)" = "full" ]; then :; else bad=1; fail "fx.rep: report_version/platforms/claude_code wrong"; fi
-  for k in "TAD update report" "Version: 4.0.5 ->" "Platforms refreshed: codex, claude-code" "Claude Code: full" "Process files:" "TAD areas:" "AGENTS.md:" "Backup:" "Not backed up:" "Report file: $R"; do
+  for k in "TAD update report" "Version: 4.0.5 ->" "Platforms refreshed: codex, claude-code" "Claude Code: full" "Process files:" "TAD areas:" "AGENTS.md:" "Backup:" "Not backed up:" "Report file: "; do
     grep -qF -e "$k" "$log" || { bad=1; fail "fx.rep: printed report lacks '$k'"; }
   done
   if [ "$bad" = "0" ]; then pass "fx.rep: every report key present once, no empty value, the broken entry listed, printed block complete"; fi
@@ -2436,6 +2448,10 @@ case_fxagm() {
   guarded_cleanup "$SANDBOX"; SANDBOX=""
   fx_setup || return 0
   rm -f "$SOURCE/.tad/provenance/claude-legacy.tsv" "$SOURCE/.tad/provenance/MANIFEST.sha1"
+  # without a ledger a projected file that differs from the source is refused (strict), so start from the source's bytes
+  cp "$SOURCE/.opencode/commands/tad-update.md" "$TARGET/.opencode/commands/tad-update.md"
+  cp "$SOURCE/.opencode/plugins/tad-hooks.ts" "$TARGET/.opencode/plugins/tad-hooks.ts"
+  cp "$SOURCE/.cursor/hooks.json" "$TARGET/.cursor/hooks.json"
   git -C "$REPO" show v4.0.3:AGENTS.md > "$TARGET/AGENTS.md"
   snapshot_target "$SNAP/pre"
   log="$SANDBOX/c.log"; rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
@@ -2466,7 +2482,7 @@ case_fxoc() {
     { git -C "$REPO" show "v4.0.5:$f"; printf 'x'; } > "$TARGET/$f"
     snapshot_target "$SNAP/pre"
     rc="$(fx_up "$SANDBOX/oc2.log")"
-    d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | head -3 || true)"
+    d="$(fx_diff "$SNAP/pre" "$TARGET")"
     if [ "$rc" != "0" ] && [ -z "$d" ] && grep -qF 'Recovery:' "$SANDBOX/oc2.log" && [ "$(fx_ndirs)" = "0" ]; then
       pass "fx.oc: $f with one edited byte is refused, tree unchanged, recovery text printed"
     else

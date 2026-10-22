@@ -13,6 +13,10 @@
 #   --case release-gates          AC10 release preflight order
 #   --case remote-release         AC14 publication verification (post-Gate-4)
 #   --case archive-shape          real `git archive HEAD` shape through the pinned download path
+#   --case bash-pin               every bash level is /bin/bash: installer entry pin, re-exec, no leftover dir
+#   --case multi-platform         one confirmed run updates every installed platform
+#   --case first-hop              the v4.0.5 helper with the candidate installer
+#   --emit-mock-curl <dir>        write the mock curl stub into <dir> (for the real-path runs) and exit
 #
 # Deterministic by construction: NO real network. A temporary mock curl in PATH
 # intercepts the fixed official URLs and serves fixture payloads built from a
@@ -51,20 +55,21 @@ _derive_old_version() {
 OLD_VERSION="${OLD_VERSION:-$(_derive_old_version)}"
 [ -n "${OLD_VERSION:-}" ] || { echo "tad-update-fixture: could not derive OLD_VERSION from .tad/migrations/*-to-$FIXTURE_VERSION.yaml" >&2; exit 2; }
 
-CASE="" EXPECTED_COMMIT=""
+CASE="" EXPECTED_COMMIT="" EMIT_DIR=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --case) CASE="$2"; shift 2 ;;
         --expected-version) FIXTURE_VERSION="$2"; shift 2 ;;
         --expected-commit) EXPECTED_COMMIT="$2"; shift 2 ;;
         --old-version) OLD_VERSION="$2"; shift 2 ;;
+        --emit-mock-curl) EMIT_DIR="$2"; shift 2 ;;
         --help|-h)
             sed -n '2,15p' "$0"; exit 0 ;;
         *) echo "tad-update-fixture: unknown option '$1'" >&2; exit 2 ;;
     esac
 done
 
-if [ -z "$CASE" ]; then
+if [ -z "$CASE" ] && [ -z "$EMIT_DIR" ]; then
     echo "tad-update-fixture: --case is required" >&2
     exit 2
 fi
@@ -364,6 +369,8 @@ case_backup() {
         sed -n '/^_literal_has_prefix() {/,/^}/p' "$TAD_SH"
         sed -n '/^resolve_backup_root() {/,/^}/p;/^repo_group_key() {/,/^}/p;/^prune_backups() {/,/^}/p' "$TAD_SH"
         sed -n '/^derive_framework_dirs() {/,/^}/p;/^derive_framework_top_files() {/,/^}/p' "$TAD_SH"
+        # alloc_backup_dir: backup_existing takes its destination from it (D6), so it is extracted too.
+        sed -n '/^alloc_backup_dir() {/,/^}/p' "$TAD_SH"
         sed -n '/^backup_existing() {/,/^}/p' "$TAD_SH"
         echo 'backup_existing'
     } > "$bext"
@@ -554,6 +561,49 @@ case_states() {
     printf '%s\n' "$out" | grep -q "cannot determine the installed platform" \
         && ok "ambiguous layout → apply refuses with guidance" \
         || bad "ambiguous layout → apply did not refuse"
+
+    # D2 (Phase 1): detection stays explicit-only; the check may DISPLAY claude-code when the
+    # installer's own claude_projection_present conditions hold, and the human's yes carries the
+    # list as an explicit --platform token. A bare --yes still resolves exactly as above.
+    local mark='<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->'
+    rm -rf "$proj/.claude" "$proj/.agents" "$proj/CLAUDE.md"
+    mkdir -p "$proj/.agents/skills/alex" "$proj/.claude/skills/alex"
+    printf -- '---\nname: alex\n---\n' > "$proj/.agents/skills/alex/SKILL.md"
+    printf 'leftover\n' > "$proj/.claude/skills/alex/stub.md"
+    out="$(run_updater "$proj" --check 2>&1)" || true
+    printf '%s\n' "$out" | grep -q '^Platforms: codex (' && ! printf '%s\n' "$out" | grep -q 'claude-code' \
+        && ok "states D2: a real .claude/skills/alex directory alone does not show claude-code" \
+        || bad "states D2: leftover .claude dir showed claude-code: $(printf '%s\n' "$out" | grep Platforms)"
+    printf '%s\n' "$mark" > "$proj/CLAUDE.md"
+    out="$(run_updater "$proj" --check 2>&1)" || true
+    printf '%s\n' "$out" | grep -q '^Platforms: codex (' && ! printf '%s\n' "$out" | grep -q 'claude-code' \
+        && ok "states D2: a forged managed marker alone does not show claude-code" \
+        || bad "states D2: forged marker showed claude-code: $(printf '%s\n' "$out" | grep Platforms)"
+    rm -rf "$proj/.claude/skills/alex"
+    ln -s ../../.agents/skills/alex "$proj/.claude/skills/alex"
+    out="$(run_updater "$proj" --check 2>&1)" || true
+    if printf '%s\n' "$out" | grep -Fxq 'Platforms: codex, claude-code (OpenCode and Cursor wiring is always refreshed)' \
+       && printf '%s\n' "$out" | grep -q '^Claude Code: full refresh; .claude/settings.json absent, will be created;' \
+       && printf '%s\n' "$out" | grep -Fxq 'To apply: /bin/bash .tad/scripts/tad-update.sh --yes --platform codex,claude-code'; then
+        ok "states D2: the full projection shows codex, claude-code and the explicit To apply list"
+    else
+        bad "states D2: full projection check wrong: $(printf '%s\n' "$out" | sed -n '4,12p' | tr '\n' '|')"
+    fi
+    local args_installer="$SANDBOX/args-installer.sh"
+    printf '#!/bin/bash\n# TAD Framework installer stub\necho "ARGS: $*"\nexit 0\n' > "$args_installer"
+    chmod +x "$args_installer"
+    out="$(run_updater_platform "$proj" "$args_installer" --yes)"
+    printf '%s\n' "$out" | grep -q 'ARGS: .*--platform codex --yes' && ! printf '%s\n' "$out" | grep -q 'ARGS: .*claude-code' \
+        && ok "states D2: a bare --yes on that layout forwards codex only (a displayed fact never applies)" \
+        || bad "states D2: bare --yes forwarded: $(printf '%s\n' "$out" | grep ARGS)"
+    rm -rf "$proj/.claude" "$proj/.agents" "$proj/CLAUDE.md"
+    out="$(run_updater "$proj" --check 2>&1)" || true
+    if printf '%s\n' "$out" | grep -Fxq 'Platforms: not determined (.agents/skills/alex not found)' \
+       && printf '%s\n' "$out" | grep -qF -e '--platform <codex,claude-code,opencode,cursor: choose>'; then
+        ok "states D2: nothing detected -> not determined, no runnable To apply line"
+    else
+        bad "states D2: undetected layout check wrong: $(printf '%s\n' "$out" | sed -n '3,12p' | tr '\n' '|')"
+    fi
 }
 
 # ══════════════════════════════════════════════════════════════════
@@ -616,6 +666,21 @@ case_consent() {
         bad "updater references --force"
     else
         ok "updater never passes --force"
+    fi
+
+    # Phase 1: on a genuine v4.0.5 multi-platform project the check runs no installer and changes nothing
+    if mp_prepare && mp_project "$SANDBOX/mpc" multi; then
+        mp_candidate_helper "$SANDBOX/mpc"
+        local dg bk
+        dg="$(digest_tree "$SANDBOX/mpc")"; bk="$(backup_dir_count)"
+        : > "$counts"
+        run_cand "$SANDBOX/mpc" --check >/dev/null 2>&1 || true
+        calls="$(grep -c "/tad.sh" "$counts" || true)"
+        if [ "$calls" = "0" ] && [ "$(digest_tree "$SANDBOX/mpc")" = "$dg" ] && [ "$(backup_dir_count)" = "$bk" ]; then
+            ok "multi-platform --check: installer invoked 0 times"
+        else
+            bad "multi-platform --check: installer calls=$calls or the project changed"
+        fi
     fi
 }
 
@@ -775,6 +840,35 @@ case_download_safety() {
         fi
     else
         bad "check failed under env-var override attempt"
+    fi
+
+    # Phase 1: the same three failures on a v4.0.5 multi-platform project change nothing
+    if mp_prepare && mp_project "$SANDBOX/mpd" multi; then
+        mp_candidate_helper "$SANDBOX/mpd"
+        local dgm bkm evil="$SANDBOX/evil2.tgz" ev="$SANDBOX/evil2" rcm
+        mkdir -p "$ev/TAD-main/.tad" "$ev/TAD-main/x"
+        printf '%s\n' "$FIXTURE_VERSION" > "$ev/TAD-main/.tad/version.txt"
+        ln -s ../../etc "$ev/TAD-main/x/evil"
+        ( cd "$ev" && tar -czf "$evil" TAD-main )
+        dgm="$(digest_tree "$SANDBOX/mpd")"; bkm="$(backup_dir_count)"
+        rcm=0; MOCK_INSTALLER="" run_cand "$SANDBOX/mpd" --yes --platform codex,claude-code >/dev/null 2>&1 || rcm=$?
+        if [ "$rcm" -ne 0 ] && [ "$(digest_tree "$SANDBOX/mpd")" = "$dgm" ] && [ "$(backup_dir_count)" = "$bkm" ]; then
+            ok "multi-platform download-safety: download failure changes nothing"
+        else
+            bad "multi-platform download-safety: download failure rc=$rcm or the project changed"
+        fi
+        rcm=0; MOCK_REMOTE_VERSION="9.9.9" run_cand "$SANDBOX/mpd" --yes --platform codex,claude-code >/dev/null 2>&1 || rcm=$?
+        if [ "$rcm" -ne 0 ] && [ "$(digest_tree "$SANDBOX/mpd")" = "$dgm" ] && [ "$(backup_dir_count)" = "$bkm" ]; then
+            ok "multi-platform download-safety: tag/version mismatch changes nothing"
+        else
+            bad "multi-platform download-safety: version mismatch rc=$rcm or the project changed"
+        fi
+        rcm=0; MOCK_TAG_TARBALL="$evil" run_cand "$SANDBOX/mpd" --yes --platform codex,claude-code >/dev/null 2>&1 || rcm=$?
+        if [ "$rcm" -ne 0 ] && [ "$(digest_tree "$SANDBOX/mpd")" = "$dgm" ] && [ "$(backup_dir_count)" = "$bkm" ]; then
+            ok "multi-platform download-safety: rejected archive changes nothing"
+        else
+            bad "multi-platform download-safety: rejected archive rc=$rcm or the project changed"
+        fi
     fi
 }
 
@@ -1284,6 +1378,18 @@ case_archive_shape() {
         echo "  SKIP: tag v4.0.2 absent; real-defect negative controls (2 checks) not run"
     fi
 
+    # Phase 1: a genuine v4.0.5 install upgraded by the helper's pinned path with the unextracted candidate archive
+    if mp_prepare && mp_project "$SANDBOX/mpa" multi; then
+        mp_candidate_helper "$SANDBOX/mpa"
+        local rca=0
+        run_cand "$SANDBOX/mpa" --yes --platform codex,claude-code >/dev/null 2>&1 || rca=$?
+        if [ "$rca" -eq 0 ] && [ "$(cat "$SANDBOX/mpa/.tad/version.txt")" = "$ver" ]; then
+            ok "v4.0.5 -> candidate via helper pinned path: rc 0, version matches"
+        else
+            bad "v4.0.5 -> candidate via helper pinned path: rc=$rca version=$(cat "$SANDBOX/mpa/.tad/version.txt" 2>/dev/null)"
+        fi
+    fi
+
     # HEAD and its archive pass
     rc=0; bash "$RV" archive-links "$REPO_ROOT" HEAD >/dev/null 2>&1 || rc=$?
     [ "$rc" -eq 0 ] && ok "archive-links HEAD exit 0" || bad "archive-links HEAD expected 0, got $rc"
@@ -1292,8 +1398,185 @@ case_archive_shape() {
 }
 
 # ══════════════════════════════════════════════════════════════════
+# Update flow, Phase 1 helpers: a genuine v4.0.5 multi-platform project, the candidate (HEAD)
+# served as the unextracted git archive through the mock curl.
+# ══════════════════════════════════════════════════════════════════
+MP_OLD=""; MP_CAND=""; MP_CAND_INSTALLER=""
+mp_prepare() {
+    if ! git -C "$REPO_ROOT" rev-parse -q --verify 'v4.0.5^{commit}' >/dev/null 2>&1; then
+        bad "tag v4.0.5 missing (cannot build the old install)"; return 1
+    fi
+    MP_OLD="$SANDBOX/old"; mkdir -p "$MP_OLD"
+    git -C "$REPO_ROOT" archive v4.0.5 | tar -x -C "$MP_OLD" || { bad "git archive v4.0.5 failed"; return 1; }
+    MP_CAND="$SANDBOX/cand.tgz"
+    git -C "$REPO_ROOT" archive --format=tar.gz --prefix="TAD-$FIXTURE_VERSION/" HEAD > "$MP_CAND" || { bad "git archive HEAD failed"; return 1; }
+    MP_CAND_INSTALLER="$SANDBOX/cand-tad.sh"
+    git -C "$REPO_ROOT" show HEAD:tad.sh > "$MP_CAND_INSTALLER" || { bad "git show HEAD:tad.sh failed"; return 1; }
+    return 0
+}
+# mp_project <dir> multi|codex — the v4.0.5 install (codex; then claude-code over a CLAUDE.md with project text)
+mp_project() {
+    local d="$1" mode="$2" rc=0
+    mkdir -p "$d"
+    ( cd "$d" && /bin/bash "$MP_OLD/tad.sh" --source "$MP_OLD" --platform codex --yes ) >"$SANDBOX/mp-old1.log" 2>&1 || rc=$?
+    if [ "$mode" = "multi" ] && [ "$rc" = "0" ]; then
+        printf '# My rules\nkeep me\n' > "$d/CLAUDE.md"
+        ( cd "$d" && /bin/bash "$MP_OLD/tad.sh" --source "$MP_OLD" --platform claude-code --yes --force ) >"$SANDBOX/mp-old2.log" 2>&1 || rc=$?
+    fi
+    if [ "$rc" != "0" ] || [ "$(head -1 "$d/.tad/version.txt" 2>/dev/null | tr -d '[:space:]')" != "4.0.5" ]; then
+        bad "could not build the v4.0.5 $mode project (rc=$rc)"; return 1
+    fi
+    return 0
+}
+# run_cand <project> [helper args] — the helper inside the project, the candidate served by the mock curl
+run_cand() {
+    local wd="$1"; shift
+    ( cd "$wd" && PATH="$SANDBOX/bin:$PATH" MOCK_REMOTE_VERSION="${MOCK_REMOTE_VERSION:-$FIXTURE_VERSION}" \
+        MOCK_TAG_TARBALL="${MOCK_TAG_TARBALL:-$MP_CAND}" MOCK_SRC_TARBALL="$SRC_TARBALL" \
+        MOCK_INSTALLER="${MOCK_INSTALLER-$MP_CAND_INSTALLER}" /bin/bash .tad/scripts/tad-update.sh "$@" )
+}
+mp_candidate_helper() { cp "$REPO_ROOT/.tad/scripts/tad-update.sh" "$1/.tad/scripts/tad-update.sh"; }
+backup_dir_count() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l | tr -d ' '; }
+
+case_bash_pin() {
+    echo "== bash-pin: every bash level is /bin/bash, decided once at installer entry =="
+    setup_sandbox
+    local srcdir="$SANDBOX/srcdir" tmpd="$SANDBOX/tmp" marker="$SANDBOX/crash-marker" spy="$SANDBOX/spy-marker"
+    mkdir -p "$srcdir" "$tmpd" "$SANDBOX/crashbin" "$SANDBOX/spybin" "$SANDBOX/rebin"
+    tar -xzf "$SRC_TARBALL" -C "$srcdir"
+    local SRC="$srcdir/TAD-main" out rc n
+    printf '#!/bin/sh\necho crashed >> "%s"\nexit 139\n' "$marker" > "$SANDBOX/crashbin/bash"; chmod +x "$SANDBOX/crashbin/bash"
+    printf '#!/bin/sh\necho spy >> "%s"\nexec /bin/bash "$@"\n' "$spy" > "$SANDBOX/spybin/bash"; chmod +x "$SANDBOX/spybin/bash"
+    ln -s /bin/bash "$SANDBOX/rebin/bash"
+    # (a) a crash stub `bash` first on PATH: helper via /bin/bash, installer with the migration engine
+    local pa="$SANDBOX/pa"
+    make_old_project "$pa" "$OLD_VERSION"
+    rc=0
+    out="$( cd "$pa" && TMPDIR="$tmpd" PATH="$SANDBOX/crashbin:$SANDBOX/bin:$PATH" MOCK_REMOTE_VERSION="$FIXTURE_VERSION" \
+        MOCK_SRC_TARBALL="$SRC_TARBALL" MOCK_INSTALLER="$TAD_SH" /bin/bash "$UPDATER" --yes --platform codex 2>&1 )" || rc=$?
+    if [ "$rc" -eq 0 ] && [ ! -e "$marker" ] && ! printf '%s\n' "$out" | grep -qF 'ZERO_TOUCH authority unavailable' \
+       && ! printf '%s\n' "$out" | grep -qF 'Migration skipped' && printf '%s\n' "$out" | grep -qF 'TAD update report' \
+       && [ "$(cat "$pa/.tad/version.txt")" = "$FIXTURE_VERSION" ]; then
+        ok "bash-pin: crash stub never reached"
+    else
+        bad "bash-pin: (a) rc=$rc marker=$([ -e "$marker" ] && echo present || echo absent): $(printf '%s\n' "$out" | tail -3 | tr '\n' '|')"
+    fi
+    # (b) started by a PATH bash (the first-hop shape): the outer start is the only spy hit
+    local pb="$SANDBOX/pb"
+    make_old_project "$pb" "$OLD_VERSION"
+    rc=0
+    ( cd "$pb" && TMPDIR="$tmpd" PATH="$SANDBOX/spybin:$PATH" bash "$TAD_SH" --source "$SRC" --platform codex --yes ) >"$SANDBOX/b.log" 2>&1 || rc=$?
+    n="$(wc -l < "$spy" 2>/dev/null | tr -d ' ' || true)"
+    if [ "$rc" -eq 0 ] && [ "${n:-0}" = "1" ]; then
+        ok "bash-pin: spy reached once (outer start only)"
+    else
+        bad "bash-pin: (b) rc=$rc spy lines=${n:-0}"
+    fi
+    # (d) re-exec: $BASH is not /bin/bash, so the installer re-executes itself once
+    local pd="$SANDBOX/pd"
+    make_old_project "$pd" "$OLD_VERSION"
+    rc=0
+    out="$( cd "$pd" && TMPDIR="$tmpd" PATH="$SANDBOX/rebin:$PATH" bash "$TAD_SH" --source "$SRC" --platform codex --yes 2>&1 >/dev/null )" || rc=$?
+    n="$(printf '%s\n' "$out" | grep -cxF "TAD_BASH: re-exec $SANDBOX/rebin/bash -> /bin/bash" || true)"
+    if [ "$rc" -eq 0 ] && [ "$n" = "1" ]; then
+        ok "bash-pin: re-exec observed once"
+    else
+        bad "bash-pin: (d) rc=$rc re-exec lines=$n: $(printf '%s\n' "$out" | head -3 | tr '\n' '|')"
+    fi
+    # (c) no pin dir remains after those runs, a --help run and an argument-error run (the re-exec'd shape)
+    ( cd "$pd" && TMPDIR="$tmpd" PATH="$SANDBOX/rebin:$PATH" bash "$TAD_SH" --help ) >/dev/null 2>&1 || true
+    ( cd "$pd" && TMPDIR="$tmpd" PATH="$SANDBOX/rebin:$PATH" bash "$TAD_SH" --no-such-option ) >/dev/null 2>&1 || true
+    n="$(ls "$tmpd" | grep -c '^tad-bash-pin\.' || true)"
+    if [ "$n" = "0" ]; then ok "bash-pin: pin dir removed"; else bad "bash-pin: $n pin dir(s) left in $tmpd"; fi
+}
+
+case_multi_platform() {
+    echo "== multi-platform: one confirmed run updates every installed platform =="
+    setup_sandbox
+    mp_prepare || return 0
+    local p="$SANDBOX/mp" out rc line args f ok_all
+    mp_project "$p" multi || return 0
+    mp_candidate_helper "$p"
+    # stale surfaces: a Claude link, the Cursor hooks and the OpenCode plugin are gone
+    rm -f "$p/.claude/skills/blake" "$p/.cursor/hooks.json" "$p/.opencode/plugins/tad-hooks.ts"
+    out="$(run_cand "$p" --check 2>&1)" || true
+    if printf '%s\n' "$out" | grep -Fxq 'Platforms: codex, claude-code (OpenCode and Cursor wiring is always refreshed)' \
+       && printf '%s\n' "$out" | grep -q '^Claude Code: full refresh; .claude/settings.json present, kept;'; then
+        ok "multi-platform: the check lists exactly codex, claude-code"
+    else
+        bad "multi-platform: check platforms wrong: $(printf '%s\n' "$out" | sed -n '2,6p' | tr '\n' '|')"
+    fi
+    line="$(printf '%s\n' "$out" | sed -n 's/^To apply: //p')"
+    if [ "$line" = "/bin/bash .tad/scripts/tad-update.sh --yes --platform codex,claude-code" ]; then
+        ok "multi-platform: the To apply line carries the explicit list"
+    else
+        bad "multi-platform: To apply line wrong: '$line'"
+    fi
+    args="${line#/bin/bash .tad/scripts/tad-update.sh }"
+    rc=0
+    # shellcheck disable=SC2086
+    out="$(run_cand "$p" $args 2>&1)" || rc=$?
+    ok_all=1
+    for f in .codex/hooks.json .cursor/hooks.json .opencode/plugins/tad-hooks.ts .opencode/commands/tad-update.md; do
+        cmp -s "$REPO_ROOT/$f" "$p/$f" || { ok_all=0; bad "multi-platform: $f differs from the candidate"; }
+    done
+    [ -L "$p/.claude/skills/blake" ] && [ -f "$p/.claude/skills/blake/SKILL.md" ] || { ok_all=0; bad "multi-platform: the removed Claude link was not restored"; }
+    grep -Fxq -e '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' "$p/CLAUDE.md" || { ok_all=0; bad "multi-platform: CLAUDE.md block missing"; }
+    printf '%s\n' "$out" | grep -qF 'Claude Code: full' || { ok_all=0; bad "multi-platform: report does not say Claude Code: full"; }
+    if [ "$rc" -eq 0 ] && [ "$ok_all" = "1" ] && [ "$(cat "$p/.tad/version.txt")" = "$FIXTURE_VERSION" ]; then
+        ok "multi-platform: one run refreshed every surface (cmp-equal to the candidate), Claude Code: full"
+    else
+        bad "multi-platform: apply rc=$rc: $(printf '%s\n' "$out" | tail -3 | tr '\n' '|')"
+    fi
+    # a codex-only project stays codex-only
+    local q="$SANDBOX/mq"
+    mp_project "$q" codex || return 0
+    mp_candidate_helper "$q"
+    out="$(run_cand "$q" --check 2>&1)" || true
+    if printf '%s\n' "$out" | grep -Fxq 'Platforms: codex (OpenCode and Cursor wiring is always refreshed)' \
+       && ! printf '%s\n' "$out" | grep -q '^Claude Code:'; then
+        ok "multi-platform: a codex-only project shows codex only"
+    else
+        bad "multi-platform: codex-only check wrong"
+    fi
+    rc=0
+    run_cand "$q" --yes --platform codex >/dev/null 2>&1 || rc=$?
+    if [ "$rc" -eq 0 ] && [ ! -e "$q/.claude" ] && [ ! -e "$q/CLAUDE.md" ]; then
+        ok "multi-platform: the codex-only run created no .claude and no CLAUDE.md"
+    else
+        bad "multi-platform: codex-only run rc=$rc or created Claude files"
+    fi
+}
+
+case_first_hop() {
+    echo "== first-hop: the v4.0.5 helper with the candidate installer =="
+    setup_sandbox
+    mp_prepare || return 0
+    local p="$SANDBOX/fh" out rc=0
+    mp_project "$p" multi || return 0
+    out="$(run_cand "$p" --yes 2>&1)" || rc=$?
+    # The v4.0.5 helper is overwritten in place by this very update while bash is still reading it, so its
+    # own exit status after the install is not reliable (rc is recorded, not asserted; see the Phase 1
+    # completion report, Escalations). What counts: the project is updated and the report was printed.
+    if printf '%s\n' "$out" | grep -qF 'TAD update report' && printf '%s\n' "$out" | grep -qF 'Claude Code: links only (sticky)' \
+       && [ "$(cat "$p/.tad/version.txt")" = "$FIXTURE_VERSION" ]; then
+        ok "first-hop: the v4.0.5 helper updated the project (helper rc=$rc); the report says Claude Code: links only (sticky)"
+    else
+        bad "first-hop: rc=$rc: $(printf '%s\n' "$out" | tail -4 | tr '\n' '|')"
+    fi
+}
+
+# ══════════════════════════════════════════════════════════════════
 # Dispatch
 # ══════════════════════════════════════════════════════════════════
+if [ -n "$EMIT_DIR" ]; then
+    # Real-path runs (RP1-RP3) serve the fetch with this same mock: write the curl stub and stop.
+    mkdir -p "$EMIT_DIR"
+    make_mock_curl "$EMIT_DIR"
+    echo "$EMIT_DIR/curl"
+    exit 0
+fi
+
 case "$CASE" in
     backup) case_backup ;;
     states) case_states ;;
@@ -1304,6 +1587,9 @@ case "$CASE" in
     release-gates) case_release_gates ;;
     remote-release) case_remote_release ;;
     archive-shape) case_archive_shape ;;
+    bash-pin) case_bash_pin ;;
+    multi-platform) case_multi_platform ;;
+    first-hop) case_first_hop ;;
     *) echo "tad-update-fixture: unknown --case '$CASE'" >&2; exit 2 ;;
 esac
 
