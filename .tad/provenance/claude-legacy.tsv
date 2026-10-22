@@ -1,4 +1,4 @@
-# schema=1 rows=1982
+# schema=1 rows=1985
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -1075,6 +1075,7 @@ skill	73fc794816ae17848b0dbf8ac5d286249e113602	alex/references/handoff-creation-
 skill	740b64ca9ded7000cc29a123271e8ecfd2c79142	web-ui-design/SKILL.md
 skill	7422596c1e23ec01dcaa359858c6fda01e20fc85	web-frontend/LICENSE
 skill	74277a9eaed9a3704a11ab04f03d3b56b7b8cebf	alex/SKILL.md
+skill	7443c0bd10a87179ee08906da4830a479dc4539a	cora/references/conductor-protocol.md
 skill	744a0e5764d7da02f7c61a646898af496a0ed141	alex/references/knowledge-bootstrap.md
 skill	7473cd9a80890a49950d858e6511e09dec0b49b7	blake/SKILL.md
 skill	74943b2c281861af3f81f69e85512b06dcf04c69	alex/references/bug-path-protocol.md
@@ -1752,6 +1753,7 @@ skill	e23a27543e5e10b7861c643baded0cce200139e3	alex/SKILL.md
 skill	e246dcdc8f672b27dff882c2bf7cc094a03073a4	blake/SKILL.md
 skill	e2884337c9dd5c3255d85ee184fa39f48397a352	data-engineering/references/dimensional-modeling-rules.md
 skill	e2cf4364de737d8949a79aa9ad68ae48204d006e	agent-memory/references/memgpt-letta-mem0.md
+skill	e30c940c0627500b7983528f0de4c15df0e6b8b5	alex/references/conductor-dispatch-mode.md
 skill	e32c4cac0c8244a6c57aceb32219f4ea3f9d1b75	gate/SKILL.md
 skill	e3619e5cdd80d7e7ef75491d58c178434b954a02	alex/SKILL.md
 skill	e367e43967cebdab04806d7b7eb5a7c2391a6a13	surplus/SKILL.md
@@ -1896,6 +1898,7 @@ skill	f856a0b8efbba91f2f93eb7fac0aee7321c12848	alex/SKILL.md
 skill	f8896ebd6c0f34c396cc808ae643e616dabdda2d	alex/SKILL.md
 skill	f8a3fd4ea2115072b997d677b1e26373c09a57da	alex/references/conductor-dispatch-mode.md
 skill	f8bf6964da902ec6c614ac018d79d6b9351055ad	blake/SKILL.md
+skill	f8c59306505e5427b4f170ef249e12a37b43f609	cora/SKILL.md
 skill	f900bb87b69c16372664cb444e86fa64c045023b	product-thinking/examples/pressure-test-example.md
 skill	f90c534823892dc47b68b2b229e2224ccc9e2eb5	web-testing/SKILL.md
 skill	f9395e216e9895ebfb735a9c6122a90d7aa94d06	blake/SKILL.md

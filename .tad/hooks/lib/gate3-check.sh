@@ -8,7 +8,7 @@
 # of the project; this script only reads the run reviewer's verdict file and checks
 # that the evidence is complete:
 #   - the verdict file exists;
-#   - every AC row of the handoff's §9.1 table is accounted for by `## AC runs`
+#   - every AC row of the handoff's AC table (found by its header row) is accounted for by `## AC runs`
 #     (`| AC<n>[/sub] | command | exit | result |`), `## Not run` or `## Blocked`;
 #   - every real_paths id of the handoff front matter is accounted for by
 #     `## Real paths`, `## Not run` or `## Blocked`;
@@ -218,15 +218,35 @@ done <<EOF
 $nr
 EOF
 
-# ---- AC rows of the handoff's §9.1 table
+# ---- AC rows of the handoff's AC table, found by its header row (not by a heading):
+# a markdown table row whose cells include `Expected Evidence` and an AC-criterion
+# column (`Acceptance Criterion`/`Acceptance Criteria`/`Criterion`); the rows below it
+# (until the table ends) are read, first cell `AC<n>`.
 acs=$(awk '
-  !on { if ($0 ~ /^## 9\.1/) on = 1; next }
-  /^## / { exit }
-  /^\| *AC[0-9]+/ { if (match($0, /AC[0-9]+/)) print substr($0, RSTART, RLENGTH) }
+  function lowcells(line,   n, i, t) {
+    n = split(line, c, "|")
+    for (i = 1; i <= n; i++) { t = tolower(c[i]); gsub(/^[ \t]+|[ \t]+$/, "", t); c[i] = t }
+    return n
+  }
+  /^[[:space:]]*\|/ {
+    if (!intab) {
+      n = lowcells($0); ev = 0; cr = 0
+      for (i = 1; i <= n; i++) {
+        if (c[i] ~ /^expected evidence/) ev = 1
+        if (c[i] ~ /^(acceptance criteri|criterion)/) cr = 1
+      }
+      if (ev && cr) { intab = 1 }
+      next
+    }
+    if ($0 ~ /^[[:space:]]*\|[-:| \t]*$/) next
+    if ($0 ~ /^[[:space:]]*\| *AC[0-9]+/) { if (match($0, /AC[0-9]+/)) print substr($0, RSTART, RLENGTH) }
+    next
+  }
+  { intab = 0 }
 ' "$handoff" | awk '!seen[$0]++')
 
 if [ -z "$acs" ]; then
-  echo "MISSING ac-table (no AC row in the handoff's §9.1)"
+  echo "MISSING ac-table (no AC table with an Expected Evidence header, or no AC row in it)"
   rc=1
 elif ! printf '%s\n' "$acr" | command grep -q '^|'; then
   echo "MISSING section ## AC runs"

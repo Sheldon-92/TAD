@@ -8,8 +8,11 @@
 # Usage (run from the repo root, the directory that holds .tad/):
 #   cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-....md>
 #   cora-check.sh gate4-record <gate report .md>
+#   cora-check.sh gate3-files <.tad/{active,archive}/epics/EPIC-....md> <phase N>
 # Exit: 0 = fine, 1 = ALARM / MISSING, 2 = usage (also: not run from a root, absolute
-#       or odd Epic path, unreadable file, no `estimate <N>` on the Budget line).
+#       or odd Epic path, unreadable file). An Epic whose Budget line has no
+#       `estimate <N>` is not an error: `dispatches` prints the count and
+#       `estimate: none (old Epic; no 2x alarm)` and exits 0.
 #
 # dispatches: counts this Epic's dispatches from the files on disk: ids in the first
 #   15 lines of every *.md under .tad/evidence/yolo/<slug>/ (any depth) and of the
@@ -18,12 +21,20 @@
 #   lines (a dispatch in flight is spent). An id ending -t<m> counts m, merged with
 #   its base. ALARM (exit 1) when count + 1 >= 2 x estimate: the next dispatch would be
 #   the 2E-th. Per `Dispatched:` line prints present / other-id <x> / missing.
+# gate3-files: by file name only, in .tad/evidence/yolo/<slug>/ (cwd = repo root): the
+#   Gate 3 files the protocol (step_Y6) requires for phase N exist: the run verdict
+#   phase<N>-gate3-verdict, the consistency review phase<N>-impl-review-consistency,
+#   and phase<N>-impl-review-domain when the `risk_triggers:` header line of the
+#   phase's latest risk or fit design review (phase<N>-design-review-risk|fit) names
+#   security, data or money. For each, the latest round counts (`<base>.md` is round 1,
+#   `<base>-r<k>.md` round k). Prints `OK <file>` or `MISSING <what>`; exit 1 on any
+#   MISSING. It reads no verdict: it does not replace reading the headers.
 # gate4-record: the `## For the human` section of a Gate 4 report holds a
 #   `light acceptance: <reason>` line, or at least one `real use: <path> ...` line and
 #   every such path exists (paths from the current directory).
 
 usage() {
-  echo "Usage: cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-*.md> | gate4-record <report.md>" >&2
+  echo "Usage: cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-*.md> | gate4-record <report.md> | gate3-files <.tad/{active,archive}/epics/EPIC-*.md> <phase N>" >&2
   exit 2
 }
 
@@ -55,7 +66,7 @@ cmd_dispatches() {
   slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
   [ -n "$slug" ] || usage
   est=$(command grep -m1 '^\*\*Budget\*\*:' "$epic" | sed -nE 's/.*estimate[[:space:]]+([0-9]+).*/\1/p')
-  [ -n "$est" ] || { echo "cora-check.sh: no 'estimate <N>' on the Budget line of $epic" >&2; exit 2; }
+  # no `estimate <N>` (an old Epic): count anyway, note it, no alarm (est stays empty)
 
   ids=""
   # evidence tree, any depth, listed by find
@@ -116,8 +127,13 @@ EOF_R
       else { base = id; m = 1 }
       if (!(base in w) || m > w[base]) w[base] = m }
     END { n = 0; for (b in w) n += w[b]; print n }')
-  guard=$((est * 2))
   echo "count: $cnt"
+  if [ -z "$est" ]; then
+    echo "estimate: none (old Epic; no 2x alarm)"
+    printf '%s\n' "$out" | sed '/^$/d'
+    exit 0
+  fi
+  guard=$((est * 2))
   echo "estimate: $est"
   echo "guard: $guard"
   printf '%s\n' "$out" | sed '/^$/d'
@@ -161,8 +177,57 @@ EOF_G
   exit 1
 }
 
+# latestof SLUGDIR PREFIX : latest round file of PREFIX (`PREFIX.md` = round 1,
+# `PREFIX-r<k>.md` = round k), found by `find`; prints the path or nothing
+latestof() {
+  find "$1" -maxdepth 1 -type f \( -name "$2.md" -o -name "$2-r*.md" \) 2>/dev/null | awk -v pre="$1/$2" '
+    { f = $0; k = 0; ok = 0
+      if (f == pre ".md") { k = 1; ok = 1 }
+      else if (index(f, pre "-r") == 1) {
+        t = substr(f, length(pre) + 3); sub(/\.md$/, "", t)
+        if (t ~ /^[0-9]+$/) { k = t + 0; ok = 1 }
+      }
+      if (ok && k >= best) { best = k; bf = f } }
+    END { if (bf != "") print bf }'
+}
+
+cmd_gate3files() {
+  local epic="$1" n="$2" slug dir f rt need bad=0 base
+  [ -n "$epic" ] && [ -n "$n" ] && [ -d .tad ] || usage
+  case "$epic" in
+    .tad/active/epics/*|.tad/archive/epics/*) ;;
+    *) usage ;;
+  esac
+  case "$epic" in *..*) usage ;; esac
+  case "$n" in ''|*[!0-9]*) usage ;; esac
+  [ -f "$epic" ] && [ -r "$epic" ] || usage
+  slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
+  [ -n "$slug" ] || usage
+  dir=".tad/evidence/yolo/$slug"
+  need="gate3-verdict impl-review-consistency"
+  # domain lens: the latest risk or fit design review of the phase lists security, data or money
+  rt=""
+  f=$(latestof "$dir" "phase$n-design-review-risk")
+  [ -n "$f" ] || f=$(latestof "$dir" "phase$n-design-review-fit")
+  if [ -n "$f" ]; then
+    rt=$(first15 "$f" | command grep -m1 '^risk_triggers:')
+    if printf '%s\n' "$rt" | command grep -Eiq 'security|data|money'; then
+      need="$need impl-review-domain"
+    fi
+  else
+    echo "note: no risk or fit design review file for phase $n in $dir; domain file not decidable"
+  fi
+  for base in $need; do
+    f=$(latestof "$dir" "phase$n-$base")
+    if [ -n "$f" ]; then echo "OK $f"; else echo "MISSING $dir/phase$n-$base.md (or its -r<k> round file)"; bad=1; fi
+  done
+  [ "$bad" -eq 0 ] && exit 0
+  exit 1
+}
+
 case "$1" in
   dispatches) cmd_dispatches "$2" ;;
   gate4-record) cmd_gate4 "$2" ;;
+  gate3-files) cmd_gate3files "$2" "$3" ;;
   *) usage ;;
 esac
