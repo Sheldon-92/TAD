@@ -29,6 +29,7 @@ Run `bash tad.sh --platform claude-code` (or `codex|opencode|cursor`) from your 
 - Resume's `cora-check.sh dispatches` exits 2 on Epics whose Budget has no `estimate <N>`, with no fallback sentence.
 - `gate4-record` and the playback check accept filler content; the disk dispatch count is a floor when files are overwritten.
 - `AGENTS.md` "How a piece of work goes" still says the tier comes after playback; the release-check rows cannot pass in a clone (untracked TICKET, gitignored session-state).
+- On macOS with Homebrew bash 5.3.x first on PATH, the installer can occasionally exit 139 (a crash inside that bash's locale reset, not in TAD). Nothing is half-installed. Run the same command again, or use `/bin/bash tad.sh` (or pipe to `/bin/bash -s --` instead of `bash -s --`).
 - The first live Cora run on a downstream project after release is the real test of the new rules.
 
 ## [4.0.5] - 2026-10-20
