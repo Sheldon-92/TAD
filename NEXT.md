@@ -7,13 +7,13 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.6 (prepared locally, not pushed or tagged)（上一已发布版本 4.0.5，tag v4.0.5 = 4bf0e848）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.6（已发布 2026-10-21，main = tag v4.0.6 = a759ab70）（上一已发布版本 4.0.5，tag v4.0.5 = 4bf0e848）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
 
-### ✅ DONE 2026-10-21. EPIC-20261021 cora-loop-fixes — accepted and archived, released in v4.0.6 (prepared locally)
+### ✅ DONE 2026-10-21. EPIC-20261021 cora-loop-fixes — accepted and archived, released in v4.0.6
 - Epic: `.tad/archive/epics/EPIC-20261021-cora-loop-fixes.md`. Fixes from real use in 买卖 / 阿里 / TAD: design loop (look first, decisions not code, no rule-on-rule fixes, convergence stop), clarification check, disk-based dispatch count, no pushing work onto the human, Gate 4 real-run record and resume.
 - [x] Phase 1 design loop — 1aa6db58, fbd8d749; Gate 4 CONDITIONAL (阿里 replay: patch chain stopped at round 2 instead of a re-plan at dispatch 12)
 - [x] Phase 2 clarification, dispatch count, human work, acceptance and resume — 18d15b99, 9db6a6ef; Gate 4 CONDITIONAL; accepted 2026-10-21
