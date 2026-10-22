@@ -1,4 +1,4 @@
-# schema=1 rows=1985
+# schema=1 rows=1986
 cmd	012f8c42dde5d9a23bbec4764f9e3b25ef532b12	tad-scenario.md
 cmd	017f0414f2a0166214b361616b119f9d1b24abaf	tad-blake.md
 cmd	02f37cd5a4ca79b08931f5a99df547e5a4cb73a8	tad-blake.md
@@ -860,6 +860,7 @@ skill	5020a467298c1a219fd4b1610bac79cac98a7fa4	_archived/parallel-agents.md
 skill	505ad4c6c5a9aed7af0b54d6d97980d5797c615f	alex/SKILL.md
 skill	506af159e5d5f89b7affedc9b0bce77847449815	alex/references/adaptive-complexity-protocol.md
 skill	5095c6a1b9a82973048d4bc64b0678a5c242574e	_archived/systematic-debugging.md
+skill	50afa3f3fdb236e24aa7c8a8b0c025f6b11cc59e	cora/SKILL.md
 skill	50f674692518e69c1c5e1e08c7efd9fc77f9b110	alex/SKILL.md
 skill	512818383fa02fcb3f14f3f64a4fe5e12dd5cf57	video-creation/references/audio-design.md
 skill	514544f4361a5e38e111d8baa17bd8f3cba49751	alex/SKILL.md

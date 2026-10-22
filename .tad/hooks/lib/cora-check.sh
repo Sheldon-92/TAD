@@ -11,7 +11,7 @@
 #   cora-check.sh gate3-files <.tad/{active,archive}/epics/EPIC-....md> <phase N>
 # Exit: 0 = fine, 1 = ALARM / MISSING, 2 = usage (also: not run from a root, absolute
 #       or odd Epic path, unreadable file). An Epic whose Budget line has no
-#       `estimate <N>` is not an error: `dispatches` prints the count and
+#       `estimate <N>` (or a leading `约 N 次派发` / `N dispatches`) is not an error: `dispatches` prints the count and
 #       `estimate: none (old Epic; no 2x alarm)` and exits 0.
 #
 # dispatches: counts this Epic's dispatches from the files on disk: ids in the first
@@ -65,8 +65,16 @@ cmd_dispatches() {
   [ -f "$epic" ] && [ -r "$epic" ] || usage
   slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
   [ -n "$slug" ] || usage
-  est=$(command grep -m1 '^\*\*Budget\*\*:' "$epic" | sed -nE 's/.*estimate[[:space:]]+([0-9]+).*/\1/p')
-  # no `estimate <N>` (an old Epic): count anyway, note it, no alarm (est stays empty)
+  # Estimate from the Budget line (bytewise sed, so UTF-8 約/次派发 work under any locale):
+  #   1. the number right after `estimate` (optionally `~`, `约` or `about` between);
+  #   2. else a number that STARTS the Budget text (optionally after 约 / ~ / about / at most)
+  #      and is directly followed by [subagent] dispatch(es) / 次派发 / 次;
+  #   3. else none. A number later in the line is never read (a date such as
+  #      `from 2026-10-16, ... 2 subagent dispatches` gives no estimate, not 2026 or 2).
+  bline=$(command grep -m1 '^\*\*Budget\*\*:' "$epic")
+  est=$(printf '%s\n' "$bline" | LC_ALL=C sed -nE 's/.*estimate[[:space:]]+(~|约|about[[:space:]]+)?[[:space:]]*([0-9]+).*/\2/p')
+  [ -n "$est" ] || est=$(printf '%s\n' "$bline" | LC_ALL=C sed -nE 's/^\*\*Budget\*\*:[[:space:]]*(约|~|about|at most)?[[:space:]]*([0-9]+)[[:space:]]*(subagent[[:space:]]+)?(dispatch|次派发|次).*/\2/p')
+  # no estimate (an old Epic): count anyway, note it, no alarm (est stays empty)
 
   ids=""
   # evidence tree, any depth, listed by find

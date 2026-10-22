@@ -40,6 +40,7 @@ run_test() {
 excluded() { echo "EXCLUDED $1: $2"; }
 
 # Present and expected to pass.
+run_test cora-check-budget-fixture /bin/bash .tad/tests/cora-check-budget-fixture.sh
 run_test detect-state-fixture /bin/bash .tad/tests/detect-state-fixture.sh
 run_test yolo-harness-runner.test node .tad/scripts/yolo-harness-runner.test.mjs
 
