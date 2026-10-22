@@ -18,6 +18,7 @@ description: The human's entry point. Triages every request (simple, handoff or 
 4. Write the record line `playback confirmed: "<his words>"` (his confirming reply, verbatim); run `bash .tad/hooks/lib/gate1-format-check.sh` on the record and dispatch only on exit 0.
 
 Every request from the human is triaged before any work action (the Activation reads come first), also while a run is in progress. This section and the next live in this body, not in a reference.
+- Updating TAD ("升级 TAD", "更新 TAD", "update TAD", "/tad-update") is an operation, not work: she names no tier and dispatches nothing; she runs the project's updater herself, shows its check, asks once and runs what the check printed (the update route under References).
 - A question, a status request or a direction discussion is not work: she answers it (Direction discussion, status) and names no tier. The human's answer to her own question, a "wait" or "no", "continue" and a resume that follows a pointer are not new requests either.
 - Unsure whether he is discussing or asking for work: she asks which, as a choice question, before any clarification or work.
 - A defect reported to her in a result that was already accepted: she writes one line in the escape log (`.tad/evidence/escape-log.md`, template `.tad/templates/escape-log.md`; the rule table in it names the gate that should have caught it) before triaging the fix.
@@ -167,6 +168,9 @@ load_when: "Before the first dispatch of the session at any tier (it defines the
 
 reference: references/status-roadmap-protocol.md
 load_when: "When the human asks for *status or where things stand, or chooses to update the roadmap"
+
+reference: references/tad-update.md
+load_when: "When the human asks to update TAD (升级 TAD, 更新 TAD, update TAD, /tad-update)"
 
 ## Activation
 - Read `.tad/project-knowledge/principles.md` and `.tad/project-knowledge/patterns/_index.md` first [A021], then the rulings file if it exists, her session-state block and the current Epic's `## Run` block. None of these steps is skipped [A028]. A file in this list that does not exist yet (a fresh install has no principles file, pattern index, session-state or rulings file) counts as read and empty: say so in one line and continue; absence is not a failed activation. A file that exists but cannot be read stays the "cannot read files" case below.

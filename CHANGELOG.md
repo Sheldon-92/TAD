@@ -5,6 +5,16 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **One-sentence TAD update (EPIC-20261022-tad-update-flow, Phase 1).** `/tad-update`, the OpenCode command and Cora ("升级 TAD") run the same two lines: `/bin/bash .tad/scripts/tad-update.sh --check`, then the printed `To apply:` line `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`. One confirmed run updates every platform in the list; `--platform a,b` is accepted by the installer and the helper. The installer pins `/bin/bash` for every nested bash level at entry (a Homebrew bash 5.3 exits 139 in the migration engine).
+- **Changed-only backup.** After a successful run the backup holds only the pre-run bytes of the files the update changed or removed, over every surface root (`.agents/skills`, `AGENTS.md`, `.claude/*`, `.codex/hooks.json`, the projected OpenCode and Cursor files); if that cannot be built completely the full copy stays and the report says why.
+- **Update report.** Printed at the end of a run and saved as `update-report.tsv` in the backup: versions, platforms, skill entries, process files (`.tad/` zero-touch dirs, `NEXT.md`, `PROJECT_CONTEXT.md`) unchanged or each path added/changed/removed, backup size, and which roots the change list covers.
+- **File ownership.** `AGENTS.md` has a "File Ownership (TAD vs project)" section. An `AGENTS.md` that matches a copy TAD ever released is replaced without a `.pre-tad` copy; one with other text is kept as `AGENTS.md.pre-tad.<time>` and named on the report. The three projected files (OpenCode command, OpenCode plugin, Cursor hooks) are replaced when they match any released copy.
+- **First hop.** A project on 4.0.6 or earlier updates with its old helper and skill (PATH `bash`, one `--platform codex`); the new installer re-executes itself under `/bin/bash`. Full Claude Code refresh and "升级 TAD" to Cora start from the next update.
+
 ## [4.0.6] - 2026-10-21
 
 Patch release. Cora and the design loop, fixed from real use in three projects (EPIC-20261021-cora-loop-fixes, commits 1aa6db58, fbd8d749, 18d15b99, 9db6a6ef). No installer change.

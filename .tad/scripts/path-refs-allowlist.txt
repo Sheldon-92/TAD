@@ -68,3 +68,4 @@ tad.sh	.tad/migrations/genesis.yaml	Guarded by an existence test in tad.sh befor
 .agents/skills/cora/SKILL.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling
 .agents/skills/cora/references/conductor-protocol.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
 AGENTS.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling; the Ingress line is conditional on it existing
+AGENTS.md	.tad/skillify-candidates/	Zero-touch dir named by the File Ownership section; created in a downstream project by the skillify flow, has no committed file in this repo

@@ -20,6 +20,11 @@
 #     the installer itself re-validates before any project mutation.
 #   - Fixed endpoints: compiled-in official HTTPS URLs only. No environment
 #     variable can override them (code-execution injection surface is closed).
+#   - Interpreter: the helper runs the downloaded installer with /bin/bash (else
+#     the running interpreter), never a PATH `bash` found first; the installer then
+#     pins every nested bash level itself. Call this helper as
+#     `/bin/bash .tad/scripts/tad-update.sh` (a Homebrew bash 5.3 can exit 139).
+#   - One run updates every platform in the confirmed list: `--platform a,b`.
 
 set -euo pipefail
 
@@ -38,13 +43,15 @@ PLATFORM_ARG=""
 
 usage() {
     cat <<'EOF'
-Usage: tad-update.sh [--check] [--yes] [--platform <codex|claude-code>] [--help]
+Usage: tad-update.sh [--check] [--yes] [--platform <list>] [--help]
 
   --check                read-only check: print current/remote versions and
                          whether an update is available. Never mutates.
   --yes                  apply the update. ONLY after explicit human approval;
                          the helper itself never infers consent.
-  --platform <name>      explicit platform (codex or claude-code).
+  --platform <list>      explicit platform(s), comma separated, no spaces, from
+                         codex, claude-code, opencode, cursor. The check prints the
+                         exact line to run ("To apply:").
   --help                 this help.
 
 Default (no flag): with a controlling TTY, check then prompt once for
@@ -73,13 +80,36 @@ if [ "$MODE_CHECK" = "1" ] && [ "$MODE_YES" = "1" ]; then
     exit 2
 fi
 
+# --platform takes a comma list (no spaces) from the four names; each element is checked
+# exactly as one value always was (`both` and every other *claude* spelling are refused),
+# duplicates are dropped and the list is kept in canonical order (codex, claude-code,
+# opencode, cursor). A single value behaves as before.
+PLATFORM_NAMES="codex, claude-code, opencode, cursor"
 if [ -n "$PLATFORM_ARG" ]; then
-    case "$PLATFORM_ARG" in
-        codex|claude-code) ;;
-        both|*claude*)
-            echo "tad-update: --platform '$PLATFORM_ARG' is not a valid target. Valid for this updater: codex, claude-code" >&2; exit 2 ;;
-        *) echo "tad-update: --platform '$PLATFORM_ARG' is not a valid target. Valid for this updater: codex, claude-code" >&2; exit 2 ;;
-    esac
+    _bad=0
+    case "$PLATFORM_ARG" in ,*|*,|*,,*) _bad=1 ;; esac
+    _canon=""
+    if [ "$_bad" = "0" ]; then
+        _rest="$PLATFORM_ARG,"
+        while [ -n "$_rest" ]; do
+            _el="${_rest%%,*}"
+            _rest="${_rest#*,}"
+            case "$_el" in
+                codex|claude-code|opencode|cursor) ;;
+                *) _bad=1; break ;;
+            esac
+        done
+    fi
+    if [ "$_bad" = "1" ]; then
+        echo "tad-update: --platform '$PLATFORM_ARG' is not a valid target. Valid for this updater: $PLATFORM_NAMES" >&2
+        exit 2
+    fi
+    for _c in codex claude-code opencode cursor; do
+        case ",$PLATFORM_ARG," in
+            *",$_c,"*) _canon="${_canon:+$_canon,}$_c" ;;
+        esac
+    done
+    PLATFORM_ARG="$_canon"
 fi
 
 # ============================================
@@ -119,20 +149,68 @@ ver_cmp() {
 # A leftover downstream .claude tree is NEVER auto-deleted and never
 # re-detected as an install target (see tad.sh tombstone).
 # else → ambiguous/absent (check may report; apply REQUIRES --platform)
-# This updater's --platform accepts only codex and claude-code. tad.sh and bin/tad-install.mjs
-# accept four (codex, opencode, cursor, claude-code); that difference is known and intentional.
+# This updater's --platform accepts the four names tad.sh accepts (codex, claude-code, opencode,
+# cursor), as a comma list.
 # Platform stickiness: for a project installed with --platform claude-code and updated without
 # --platform, tad.sh keeps the Claude Code skill links that already exist up to date, but does not
-# redo the rest of the Claude Code projection. To refresh the whole projection, pass
-# --platform claude-code explicitly. Detection is deliberately not extended to recognise Claude Code
-# projects: a fact that can be forged inside the project must not decide whether settings.json or
-# CLAUDE.md gets written.
+# redo the rest of the Claude Code projection. The check may display claude-code when the
+# installer's own claude_projection_present conditions hold; a fact found in the project never
+# applies it: only an explicit --platform token on the confirmed To-apply line does.
 detect_platform() {
     if [ -d "$PROJECT_ROOT/.agents/skills/alex" ]; then
         echo "codex"
     else
         echo "ambiguous"
     fi
+}
+
+# claude_shown — display-only mirror of tad.sh claude_projection_present (the installer's own
+# predicate decides what an install does; this only decides whether the check SHOWS claude-code):
+# .tad/version.txt and .agents/skills/alex/SKILL.md regular files, .claude and .claude/skills real
+# directories (no symlinked parent), .claude/skills/alex the standard link ../../.agents/skills/alex
+# or a TAD pointer directory, and either the exact managed BEGIN line in a regular CLAUDE.md or at
+# least 3 other TAD-made entries. It never writes and never decides an apply.
+claude_entry_tad_made() {
+    local _n="$1" _e="$PROJECT_ROOT/.claude/skills/$1"
+    if [ -L "$_e" ]; then
+        [ "$(readlink "$_e" 2>/dev/null || true)" = "../../.agents/skills/$_n" ]
+        return $?
+    fi
+    if [ -d "$_e" ] && [ ! -L "$_e/SKILL.md" ] && [ -f "$_e/SKILL.md" ]; then
+        head -n 40 "$_e/SKILL.md" 2>/dev/null | grep -Fxq -e 'tad_pointer: true'
+        return $?
+    fi
+    return 1
+}
+claude_shown() {
+    local _e _n _c=0
+    [ ! -L "$PROJECT_ROOT/.tad" ] && [ ! -L "$PROJECT_ROOT/.tad/version.txt" ] && [ -f "$PROJECT_ROOT/.tad/version.txt" ] || return 1
+    [ ! -L "$PROJECT_ROOT/.agents" ] && [ ! -L "$PROJECT_ROOT/.agents/skills" ] && [ ! -L "$PROJECT_ROOT/.agents/skills/alex" ] \
+        && [ ! -L "$PROJECT_ROOT/.agents/skills/alex/SKILL.md" ] && [ -f "$PROJECT_ROOT/.agents/skills/alex/SKILL.md" ] || return 1
+    [ ! -L "$PROJECT_ROOT/.claude" ] && [ -d "$PROJECT_ROOT/.claude" ] && [ ! -L "$PROJECT_ROOT/.claude/skills" ] && [ -d "$PROJECT_ROOT/.claude/skills" ] || return 1
+    claude_entry_tad_made "alex" || return 1
+    if [ ! -L "$PROJECT_ROOT/CLAUDE.md" ] && [ -f "$PROJECT_ROOT/CLAUDE.md" ] \
+       && grep -Fxq -e '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' "$PROJECT_ROOT/CLAUDE.md" 2>/dev/null; then
+        return 0
+    fi
+    for _e in "$PROJECT_ROOT"/.claude/skills/*; do
+        _n="${_e##*/}"
+        [ "$_n" != "alex" ] || continue
+        if claude_entry_tad_made "$_n"; then
+            _c=$((_c + 1))
+            if [ "$_c" -ge 3 ]; then return 0; fi
+        fi
+    done
+    return 1
+}
+
+# shown_platforms — the list the check displays and the To-apply line carries: the detect_platform
+# result plus claude-code iff claude_shown. Empty when nothing is detected.
+shown_platforms() {
+    local _p
+    _p="$(detect_platform)"
+    if [ "$_p" = "ambiguous" ]; then return 0; fi
+    if claude_shown; then echo "codex,claude-code"; else echo "codex"; fi
 }
 
 # ============================================
@@ -192,8 +270,33 @@ print_check() {
     echo "Remote:  $REMOTE_VERSION"
     case "$UPDATE_STATE" in
         newer)
-            echo "Backup:  ~/.tad-backups/<repo>/<timestamp> (framework only, keeps latest 2 + the last backup before a version change)"
+            local _shown _human _settings
+            _shown="$(shown_platforms)"
+            if [ -z "$_shown" ]; then
+                echo "Platforms: not determined (.agents/skills/alex not found)"
+            else
+                _human="$(printf '%s' "$_shown" | sed 's/,/, /g')"
+                echo "Platforms: $_human (OpenCode and Cursor wiring is always refreshed)"
+                case ",$_shown," in
+                    *",claude-code,"*)
+                        if [ -f "$PROJECT_ROOT/.claude/settings.json" ] && [ ! -L "$PROJECT_ROOT/.claude/settings.json" ]; then
+                            _settings="present, kept"
+                        else
+                            _settings="absent, will be created"
+                        fi
+                        echo "Claude Code: full refresh; .claude/settings.json $_settings; CLAUDE.md @AGENTS.md block appended only to an existing CLAUDE.md"
+                        ;;
+                esac
+            fi
+            echo "Changes: only TAD-owned files (AGENTS.md \"File Ownership\"); process files (.tad/active, evidence, project-knowledge, memory and the other zero-touch dirs, NEXT.md, PROJECT_CONTEXT.md) are checked before and after; changes to TAD's framework files and surface roots are listed and backed up; other files under .claude/ .opencode/ .cursor/ are neither checked nor backed up"
+            echo "AGENTS.md: replaced by the release copy; a copy that matches no TAD release is first kept as AGENTS.md.pre-tad.<time>"
+            echo "Backup: ~/.tad-backups/<project>/<time> (only the files this update changes or removes)"
             echo "Update available."
+            if [ -z "$_shown" ]; then
+                echo "To apply: /bin/bash .tad/scripts/tad-update.sh --yes --platform <codex,claude-code,opencode,cursor: choose>"
+            else
+                echo "To apply: /bin/bash .tad/scripts/tad-update.sh --yes --platform $_shown"
+            fi
             ;;
         equal)
             echo "Already up to date."
@@ -280,7 +383,10 @@ if ! grep -q "TAD Framework" "$tmp_file" 2>/dev/null; then
     exit 1
 fi
 
+# Interpreter (D1 b): /bin/bash, else the running interpreter; never a PATH `bash`.
+installer_bash="/bin/bash"
+[ -x "$installer_bash" ] || installer_bash="$BASH"
 echo "Applying TAD update to v${REMOTE_VERSION} (platform: ${platform})..."
-bash "$tmp_file" --release-ref "$ref" --expected-version "$REMOTE_VERSION" --platform "$platform" --yes
+"$installer_bash" "$tmp_file" --release-ref "$ref" --expected-version "$REMOTE_VERSION" --platform "$platform" --yes
 rc=$?
 exit "$rc"

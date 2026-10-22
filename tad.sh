@@ -6,6 +6,54 @@
 
 set -euo pipefail
 
+# ============================================
+# D1: one interpreter decision at installer entry (before argument parsing)
+# ============================================
+# Every bash level of this run is /bin/bash (else the running interpreter), never a
+# PATH `bash` found first (a Homebrew bash 5.3 exits 139 in the migration engine).
+# One decision here, inherited by every nested script at any depth, no call site
+# edited: a private dir whose only entry `bash` links to the chosen interpreter is put
+# first on PATH. Started by another bash from a real file, the script re-executes under
+# the chosen one. A nested tad.sh inherits TAD_BASH_PINNED and skips the block.
+# The process that made the dir (TAD_BASH_PIN_OWNER, kept across exec) removes it.
+tad_pin_cleanup() {
+    local _d="${TAD_BASH_PINNED:-}" _t="${TMPDIR:-/tmp}"
+    [ "$$" = "${TAD_BASH_PIN_OWNER:-}" ] || return 0
+    [ -n "$_d" ] && [ -d "$_d" ] || return 0
+    _t="${_t%/}"; [ -n "$_t" ] || _t="/tmp"
+    case "${_d##*/}" in tad-bash-pin.*) ;; *) return 0 ;; esac
+    [ "$(dirname "$_d")" = "$_t" ] || return 0
+    rm -rf -- "$_d" # RM-OK:tad-bash-pin-dir
+    return 0
+}
+if [ -z "${TAD_BASH_PINNED:-}" ]; then
+    TAD_BASH="/bin/bash"
+    [ -x "$TAD_BASH" ] || TAD_BASH="$BASH"
+    _pin_tmp="${TMPDIR:-/tmp}"; _pin_tmp="${_pin_tmp%/}"; [ -n "$_pin_tmp" ] || _pin_tmp="/tmp"
+    _pin_dir="$(mktemp -d "$_pin_tmp/tad-bash-pin.XXXXXX")" || {
+        echo "TAD_BASH: cannot create pin dir under ${TMPDIR:-/tmp}" >&2; exit 1; }
+    if ! ln -s "$TAD_BASH" "$_pin_dir/bash"; then
+        echo "TAD_BASH: cannot create pin dir under ${TMPDIR:-/tmp}" >&2
+        rmdir "$_pin_dir" 2>/dev/null || true # RM-OK:tad-bash-pin-mk-fail
+        exit 1
+    fi
+    PATH="$_pin_dir:$PATH"
+    TAD_BASH_PINNED="$_pin_dir"
+    TAD_BASH_PIN_OWNER="$$"
+    export PATH TAD_BASH TAD_BASH_PINNED TAD_BASH_PIN_OWNER
+    trap tad_pin_cleanup EXIT
+    case "$0" in
+        */*)
+            if [ "$BASH" != "$TAD_BASH" ] && [ -f "$0" ]; then
+                echo "TAD_BASH: re-exec $BASH -> $TAD_BASH" >&2
+                exec "$TAD_BASH" "$0" "$@"
+            fi ;;
+    esac
+elif [ "$$" = "${TAD_BASH_PIN_OWNER:-}" ]; then
+    # The re-executed owner: a trap does not survive exec, so install it again.
+    trap tad_pin_cleanup EXIT
+fi
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -160,6 +208,9 @@ cleanup_installer_temp() {
     # behind between mktemp and mv. Paths are recorded in globals by the writers;
     # only a regular, non-symlink file with the expected temp name is removed.
     claude_adopt_cleanup_work
+    case "${PROC_PRE:-}" in
+        */tad-procfp-pre.*) [ ! -f "$PROC_PRE" ] || rm -f -- "$PROC_PRE" ;; # RM-OK:process-fingerprint-interrupt
+    esac
     local _ct
     for _ct in "${CLAUDE_MD_TMP:-}" "${CLAUDE_PTR_TMP:-}" "${CLAUDE_AGENT_TMP:-}"; do
         [ -n "$_ct" ] || continue
@@ -805,27 +856,15 @@ prune_backups() {
     return 0
 }
 
-backup_existing() {
-    if [ ! -d ".tad" ]; then
-        return 0
-    fi
-    # Validate the destination BEFORE any project mutation (NFR1): a bad
-    # root refuses here and the run aborts with the project untouched.
-    resolve_backup_root || return 1
-    local _tgt
-    _tgt="$(pwd -P)" || { log_error "cannot resolve target root for backup"; return 1; }
-    repo_group_key "$_tgt" || return 1
-    if [ -n "${BACKUP_GROUP_LEGACY:-}" ]; then
-        log_info "Older backups of this project (from before 4.0.5) are in $BACKUP_GROUP_LEGACY; they are no longer pruned automatically — delete them by hand when no longer needed."
-    fi
-    local _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
-    # Unique destination: same-second reruns must never overwrite or nest
-    # into an existing backup (FR-5). The suffix is max(existing)+1 for
-    # this timestamp, NOT the first free slot: retention may have freed the
-    # base name, and reusing it would stamp the NEWEST backup with the
-    # OLDEST name — inverting the (timestamp, suffix) order prune sorts by
-    # (found by the grokbox retention run: 4 same-second runs left 3
-    # backups, the newest wearing the base name).
+# alloc_backup_dir <group_dir> — create and print a new backup dir name
+# <group>/<YYYYmmdd_HHMMSS>[.<n>] (FR-5). The suffix is max(existing)+1 for this
+# timestamp, NOT the first free slot: retention may have freed the base name, and
+# reusing it would stamp the NEWEST backup with the OLDEST name — inverting the
+# (timestamp, suffix) order prune sorts by (found by the grokbox retention run: 4
+# same-second runs left 3 backups, the newest wearing the base name). Used by
+# backup_existing and by the reduction after a successful run (D6).
+alloc_backup_dir() {
+    local _gdir="$1"
     local _base="$_gdir/$(date +%Y%m%d_%H%M%S)"
     local _bdir="$_base" _n _sib _sfx _max=-1
     [ -e "$_base" ] && _max=0
@@ -843,9 +882,31 @@ backup_existing() {
             _bdir="${_base}.$_n"
         done
     fi
+    mkdir -p "$_bdir" || return 1
+    printf '%s' "$_bdir"
+}
+
+backup_existing() {
+    if [ ! -d ".tad" ]; then
+        return 0
+    fi
+    # Validate the destination BEFORE any project mutation (NFR1): a bad
+    # root refuses here and the run aborts with the project untouched.
+    resolve_backup_root || return 1
+    local _tgt
+    _tgt="$(pwd -P)" || { log_error "cannot resolve target root for backup"; return 1; }
+    repo_group_key "$_tgt" || return 1
+    if [ -n "${BACKUP_GROUP_LEGACY:-}" ]; then
+        log_info "Older backups of this project (from before 4.0.5) are in $BACKUP_GROUP_LEGACY; they are no longer pruned automatically — delete them by hand when no longer needed."
+    fi
+    local _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
+    # Unique destination (FR-5): same-second reruns must never overwrite or nest
+    # into an existing backup; the one allocator is alloc_backup_dir.
+    local _bdir
+    _bdir="$(alloc_backup_dir "$_gdir")" || { log_error "cannot allocate a backup dir under: $_gdir"; return 1; }
     mkdir -p "$_bdir/.tad" || { log_error "cannot create backup dir: $_bdir"; return 1; }
 
-    log_info "Backing up existing .tad/ framework surface to $_bdir (framework only)"
+    log_info "Backing up existing .tad/ framework surface and every surface root to $_bdir (reduced to the files this run changes or removes once it succeeds)"
 
     # The copy set IS the installer's deny-list derivation (D-1): backup set
     # == installer write set BY CONSTRUCTION — no second list lives here.
@@ -886,6 +947,19 @@ backup_existing() {
 "
     done <<< "$(derive_framework_top_files ".")"
 
+    # D6 (1): every existing surface root outside .tad/ gets a pre-image here, before
+    # manifest.txt, so this one full backup holds the pre-image of every path
+    # changes.tsv can list. Links stay links (-R, destination absent). A copy failure
+    # aborts before any mutation, as the .tad copy above. manifest.txt entry lines stay
+    # the .tad derivation only: rollback reads them as <backup>/.tad/<entry>.
+    local _sr
+    for _sr in $TAD_SURFACE_ROOTS; do
+        if [ -e "$_sr" ] || [ -L "$_sr" ]; then
+            mkdir -p "$_bdir/$(dirname "$_sr")" || return 1
+            cp -R "$_sr" "$_bdir/$_sr" || return 1
+        fi
+    done
+
     # pre-top.txt (SUPPLEMENT-1 S3.1): the FULL top-level enumeration of
     # .tad at backup time — including entries no derivation can see
     # (dangling symlinks, FIFOs). It is the existence proof rollback's
@@ -913,7 +987,7 @@ backup_existing() {
     } > "$_bdir/manifest.txt" || return 1
 
     BACKUP_PATH="$_bdir"
-    log_success "Backup complete: $_bdir (framework only; data surfaces excluded)"
+    log_success "Backup complete: $_bdir (data surfaces excluded; surface roots included)"
     prune_backups "$_gdir" "$_bdir"
     # FR8: legacy in-root backups from older versions are history — one
     # notice line, zero reads/writes (D-5: nothing reads them automatically).
@@ -952,7 +1026,7 @@ surface_snapshot() {
         [ -n "$_f" ] || continue
         printf '%s\n' ".tad/$_f" >> "$_tmp/roots"
     done <<< "$(derive_framework_top_files ".")"
-    for _f in .agents/skills .claude/skills .claude/agents AGENTS.md CLAUDE.md .claude/settings.json .codex/hooks.json .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json; do
+    for _f in $TAD_SURFACE_ROOTS; do
         printf '%s\n' "$_f" >> "$_tmp/roots"
     done
     : > "$_tmp/links"; : > "$_tmp/small"; : > "$_tmp/bigl"; : > "$_tmp/allf"
@@ -989,24 +1063,15 @@ surface_snapshot() {
     return 0
 }
 
-# write_changes_tsv — after a successful run, diff the pre-run snapshot kept in
-# the backup dir (pre-surface.tsv) against a fresh one and write changes.tsv
-# next to it: header "kind<TAB>path", then added / changed / removed rows (each
-# kind sorted). Path sets are cut per column and sorted LC_ALL=C separately.
-write_changes_tsv() {
-    local _pre _out _tab _tmp
-    [ -n "${BACKUP_PATH_ABS:-}" ] || return 0
-    _pre="$BACKUP_PATH_ABS/pre-surface.tsv"
-    _out="$BACKUP_PATH_ABS/changes.tsv"
-    [ -f "$_pre" ] || return 0
+# sig_diff_rows <pre.tsv> <post.tsv> — print "added|changed|removed<TAB>path" rows for
+# two "<path><TAB><sig>" listings (each kind sorted). Path sets are cut per column
+# and sorted LC_ALL=C separately. Shared by the change list and the process-file check.
+sig_diff_rows() {
+    local _pre="$1" _post="$2" _tab _tmp
     _tab=$'\t'
-    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-changes.XXXXXX")" || return 1
-    if ! surface_snapshot > "$_tmp/post.tsv"; then
-        rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-1
-        return 1
-    fi
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-sigdiff.XXXXXX")" || return 1
     LC_ALL=C sort "$_pre" > "$_tmp/pre.s"
-    LC_ALL=C sort "$_tmp/post.tsv" > "$_tmp/post.s"
+    LC_ALL=C sort "$_post" > "$_tmp/post.s"
     cut -f1 "$_tmp/pre.s" | LC_ALL=C sort > "$_tmp/pre.p"
     cut -f1 "$_tmp/post.s" | LC_ALL=C sort > "$_tmp/post.p"
     LC_ALL=C comm -23 "$_tmp/pre.p" "$_tmp/post.p" > "$_tmp/removed.p"
@@ -1015,14 +1080,316 @@ write_changes_tsv() {
     # comm -3 indents column-2 lines with one TAB: strip it before cutting.
     LC_ALL=C comm -3 "$_tmp/pre.s" "$_tmp/post.s" | LC_ALL=C sed "s/^${_tab}//" | cut -f1 | LC_ALL=C sort -u > "$_tmp/diff.p"
     LC_ALL=C comm -12 "$_tmp/diff.p" "$_tmp/common.p" > "$_tmp/changed.p"
+    LC_ALL=C sed "s/^/added${_tab}/" "$_tmp/added.p"
+    LC_ALL=C sed "s/^/changed${_tab}/" "$_tmp/changed.p"
+    LC_ALL=C sed "s/^/removed${_tab}/" "$_tmp/removed.p"
+    rm -rf -- "$_tmp" # RM-OK:sig-diff-tmp
+    return 0
+}
+
+# write_changes_tsv — after a successful run, diff the pre-run snapshot kept in
+# the backup dir (pre-surface.tsv) against a fresh one and write changes.tsv
+# next to it: header "kind<TAB>path", then added / changed / removed rows (each
+# kind sorted). D6 (2): built in a temp file in the backup dir and moved into place,
+# so changes.tsv is present only when complete (header-only = a real zero-change run).
+write_changes_tsv() {
+    local _pre _out _tmp
+    [ -n "${BACKUP_PATH_ABS:-}" ] || return 0
+    _pre="$BACKUP_PATH_ABS/pre-surface.tsv"
+    _out="$BACKUP_PATH_ABS/changes.tsv"
+    [ -f "$_pre" ] || return 0
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-changes.XXXXXX")" || return 1
+    if ! surface_snapshot > "$_tmp/post.tsv"; then
+        rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-1
+        return 1
+    fi
     {
         printf 'kind\tpath\n'
-        LC_ALL=C sed "s/^/added${_tab}/" "$_tmp/added.p"
-        LC_ALL=C sed "s/^/changed${_tab}/" "$_tmp/changed.p"
-        LC_ALL=C sed "s/^/removed${_tab}/" "$_tmp/removed.p"
-    } > "$_out" || { rm -rf -- "$_tmp"; return 1; } # RM-OK:changes-tsv-tmp-2
+        sig_diff_rows "$_pre" "$_tmp/post.tsv"
+    } > "$_out.tmp" || { rm -rf -- "$_tmp"; return 1; } # RM-OK:changes-tsv-tmp-2
     rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-3
+    mv -f "$_out.tmp" "$_out" || return 1
     log_info "Change list: $_out"
+    return 0
+}
+
+# ============================================
+# Update flow (Phase 1): process-file check, changed-only backup, report
+# ============================================
+# process_fingerprint — D5. Print "<path><TAB><sig>" for every file and link under
+# .tad/<d>/ for each <d> of TAD_ZERO_TOUCH (the dirs migration-engine.sh already refuses
+# to write to), plus NEXT.md and PROJECT_CONTEXT.md, LC_ALL=C sorted. sig = F:<size>:<mtime>
+# (regular file, no content read: cost) or L:<link text>. There is no model of what TAD
+# writes: any path whose row differs, appears or vanishes is a change. Paths holding a
+# newline or TAB are excluded in the find predicate. Directories are not fingerprinted.
+process_fingerprint() {
+    local _nl _tab _tmp _r _d _p
+    _nl=$'\n'
+    _tab=$'\t'
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-procfp.XXXXXX")" || return 1
+    : > "$_tmp/roots"
+    while IFS= read -r _d; do
+        [ -n "$_d" ] || continue
+        printf '%s\n' ".tad/$_d" >> "$_tmp/roots"
+    done <<< "$TAD_ZERO_TOUCH"
+    printf '%s\n' "NEXT.md" "PROJECT_CONTEXT.md" >> "$_tmp/roots"
+    : > "$_tmp/links"; : > "$_tmp/rows"
+    local _gnu=0
+    if stat -c '%s' /dev/null >/dev/null 2>&1; then _gnu=1; fi
+    while IFS= read -r _r; do
+        [ -n "$_r" ] || continue
+        if [ ! -e "$_r" ] && [ ! -L "$_r" ]; then continue; fi
+        find "$_r" -type l ! -path "*${_nl}*" ! -path "*${_tab}*" >> "$_tmp/links" 2>/dev/null || true
+        if [ "$_gnu" = "1" ]; then
+            find "$_r" -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -c "%n${_tab}F:%s:%Y" {} + >> "$_tmp/rows" 2>/dev/null || true
+        else
+            find "$_r" -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -f "%N${_tab}F:%z:%m" {} + >> "$_tmp/rows" 2>/dev/null || true
+        fi
+    done < "$_tmp/roots"
+    while IFS= read -r _p; do
+        [ -n "$_p" ] || continue
+        printf '%s\tL:%s\n' "$_p" "$(readlink "$_p" 2>/dev/null | LC_ALL=C tr '\n\t' '??')" >> "$_tmp/rows"
+    done < "$_tmp/links"
+    LC_ALL=C sort "$_tmp/rows"
+    rm -rf -- "$_tmp" # RM-OK:process-fingerprint-tmp
+    return 0
+}
+
+# dir_bytes <dir> — total size in bytes of the regular files under <dir> (exact, no awk).
+dir_bytes() {
+    local _d="$1" _n _rest _s=0
+    while read -r _n _rest; do
+        case "$_n" in ''|*[!0-9]*) continue ;; esac
+        _s=$((_s + _n))
+    done <<< "$(find "$_d" -type f -exec wc -c {} + 2>/dev/null | { grep -v ' total$' || true; })"
+    printf '%s' "$_s"
+}
+
+# reduce_backup — D6 (3)-(4). After the run, build the changed-only copy of this run's full
+# backup as a NEW ordinary backup (same allocator, manifest.txt last) and only then retire
+# the full one through the unchanged assert_under_backup_root. Sets REDUCE_LAYOUT
+# (changed-only|full), REDUCE_REASON, REDUCE_FILES, REDUCE_BYTES, REDUCE_NOTBACKED. Never
+# fails the run: any problem keeps the full backup and says why. An unfinished new dir has no
+# manifest.txt, which is the existing residue prune_backups removes on the next backup.
+REDUCE_LAYOUT="full"
+REDUCE_REASON="-"
+REDUCE_FILES=0
+REDUCE_BYTES=0
+REDUCE_NOTBACKED=0
+reduce_backup() {
+    REDUCE_LAYOUT="full"; REDUCE_REASON="-"; REDUCE_FILES=0; REDUCE_BYTES=0; REDUCE_NOTBACKED=0
+    local _full="${BACKUP_PATH_ABS:-}" _chg _gdir _new _f _tab _kind _p _src _files=0 _nb=0 _from
+    if [ -z "$_full" ] || [ ! -d "$_full" ]; then REDUCE_REASON="no backup directory for this run"; return 0; fi
+    _tab=$'\t'
+    _chg="$_full/changes.tsv"
+    if [ ! -f "$_chg" ] || [ ! -r "$_chg" ]; then REDUCE_REASON="the change list (changes.tsv) is not available"; return 0; fi
+    if [ "$(head -n 1 "$_chg")" != "kind${_tab}path" ]; then REDUCE_REASON="the change list has an unexpected header"; return 0; fi
+    _gdir="$(dirname "$_full")"
+    _new="$(alloc_backup_dir "$_gdir")" || { REDUCE_REASON="could not allocate the reduced backup dir"; return 0; }
+    for _f in origin.txt pre-top.txt pre-tree.txt pre-surface.tsv changes.tsv; do
+        if [ -e "$_full/$_f" ]; then
+            cp "$_full/$_f" "$_new/$_f" || { REDUCE_REASON="could not copy $_f into the reduced backup; unfinished dir left for the next backup to prune: $_new"; return 0; }
+        fi
+    done
+    while IFS="$_tab" read -r _kind _p; do
+        case "$_kind" in changed|removed) ;; *) continue ;; esac
+        [ -n "$_p" ] || continue
+        _src="$_full/$_p"
+        if [ -e "$_src" ] || [ -L "$_src" ]; then
+            mkdir -p "$_new/$(dirname "$_p")" || { REDUCE_REASON="could not create a directory in the reduced backup; unfinished dir left for the next backup to prune: $_new"; return 0; }
+            cp -R -P "$_src" "$_new/$_p" || { REDUCE_REASON="could not copy a pre-image into the reduced backup; unfinished dir left for the next backup to prune: $_new"; return 0; }
+            _files=$((_files + 1))
+        else
+            printf '%s\t%s\n' "$_p" "no pre-image in the full backup" >> "$_new/not-backed-up.txt" || true
+            _nb=$((_nb + 1))
+        fi
+    done < "$_chg"
+    _from="$(sed -n 's/^version=//p' "$_full/manifest.txt" 2>/dev/null | tail -1 | tr -d ' \t')"
+    REDUCE_BYTES="$(dir_bytes "$_new")"
+    {
+        printf 'layout=changed-only\n'
+        printf 'files=%s\n' "$_files"
+        printf 'bytes=%s\n' "$REDUCE_BYTES"
+        printf 'version=%s\n' "$_from"
+    } > "$_new/manifest.txt" || { REDUCE_REASON="could not write the reduced backup manifest; unfinished dir left for the next backup to prune: $_new"; return 0; }
+    REDUCE_LAYOUT="changed-only"; REDUCE_FILES="$_files"; REDUCE_NOTBACKED="$_nb"
+    # Retire the full backup only now that the reduced one is complete (manifest.txt exists).
+    if [ "$_full" != "$_new" ] && assert_under_backup_root "$_full"; then
+        if rm -rf "$_full"; then # RM-OK:tad-backup-reduced-retire
+            log_info "Backup reduced to the files this update changed or removed: $_new"
+        else
+            log_warn "could not retire the full backup $_full; both backups are complete, retention prunes the older later"
+        fi
+    else
+        log_warn "full backup $_full not retired (path check refused); both backups are complete"
+    fi
+    BACKUP_PATH="$_new"
+    BACKUP_PATH_ABS="$_new"
+    return 0
+}
+
+# Report state (filled by finalize_update, read by the two printers).
+PROC_PRE=""
+PROC_STATE="not-compared"        # unchanged | changed | not-compared | unknown
+PROC_ROWS=""                     # "<kind><TAB><path>" lines
+PROC_TOTAL=0
+PROC_NCHG=0
+CHANGES_N="-"
+REPORT_FILE=""
+AGENTS_MD_STATE="unchanged"      # unchanged | released-replaced | project-content-kept | unknown-kept | created
+AGENTS_MD_SAVED="-"
+SKILL_ENTRY_LINES=""
+
+# finalize_update — after write_changes_tsv: the process-file comparison (D5), the backup
+# reduction (D6), then the report (D11) printed and, when a backup exists, saved beside it.
+# Nothing here can fail the install: every step degrades to a warning.
+finalize_update() {
+    local _post _cl
+    if [ -n "$PROC_PRE" ] && [ -f "$PROC_PRE" ]; then
+        _post="$(mktemp "${TMPDIR:-/tmp}/tad-procfp-post.XXXXXX")" || _post=""
+        if [ -n "$_post" ] && process_fingerprint > "$_post" 2>/dev/null; then
+            PROC_ROWS="$(sig_diff_rows "$PROC_PRE" "$_post" 2>/dev/null || true)"
+            PROC_TOTAL="$(cat "$PROC_PRE" "$_post" | cut -f1 | LC_ALL=C sort -u | wc -l | tr -d ' ')"
+            if [ -n "$PROC_ROWS" ]; then
+                PROC_STATE="changed"
+                PROC_NCHG="$(printf '%s\n' "$PROC_ROWS" | wc -l | tr -d ' ')"
+            else
+                PROC_STATE="unchanged"; PROC_NCHG=0
+            fi
+        else
+            PROC_STATE="unknown"
+        fi
+        [ -z "$_post" ] || rm -f -- "$_post" # RM-OK:process-fingerprint-post-tmp
+        rm -f -- "$PROC_PRE" # RM-OK:process-fingerprint-pre-tmp
+        PROC_PRE=""
+    fi
+    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -f "${BACKUP_PATH_ABS}/changes.tsv" ]; then
+        _cl="$(tail -n +2 "$BACKUP_PATH_ABS/changes.tsv" | wc -l | tr -d ' ')"
+        CHANGES_N="$_cl"
+    fi
+    reduce_backup || log_warn "backup reduction skipped"
+    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ]; then
+        if [ "$REDUCE_LAYOUT" != "changed-only" ]; then
+            REDUCE_BYTES="$(dir_bytes "$BACKUP_PATH_ABS")"
+            REDUCE_FILES="$(find "$BACKUP_PATH_ABS" -type f 2>/dev/null | wc -l | tr -d ' ')"
+        fi
+        REPORT_FILE="$BACKUP_PATH_ABS/update-report.tsv"
+        write_report_file > "$REPORT_FILE.tmp" 2>/dev/null && mv -f "$REPORT_FILE.tmp" "$REPORT_FILE" || { log_warn "report file not written"; REPORT_FILE=""; }
+    fi
+    print_update_report
+    return 0
+}
+
+# report_claude_state — full | sticky | absent
+report_claude_state() {
+    if [ "${CLAUDE_PROJECTION:-0}" = "1" ]; then
+        if [ "${CLAUDE_STICKY:-0}" = "1" ]; then echo "sticky"; else echo "full"; fi
+    else
+        echo "absent"
+    fi
+}
+
+# write_report_file — update-report.tsv content: "key<TAB>value" per line, repeatable keys
+# repeat; no value is empty ("-" when none). Phase 2 reads it with cut -f2- per key.
+write_report_file() {
+    local _t _l _k _p
+    _t=$'\t'
+    printf 'report_version%s1\n' "$_t"
+    printf 'from%s%s\n' "$_t" "${CURRENT_VERSION:--}"
+    printf 'to%s%s\n' "$_t" "${TARGET_VERSION:--}"
+    printf 'platforms%s%s\n' "$_t" "${PLATFORM_LIST:--}"
+    printf 'claude_code%s%s\n' "$_t" "$(report_claude_state)"
+    printf 'skill_entries_unresolved%s%s\n' "$_t" "${SKILL_ENTRY_UNRESOLVED:-0}"
+    if [ -n "$SKILL_ENTRY_LINES" ]; then
+        while IFS= read -r _l; do
+            [ -n "$_l" ] || continue
+            printf 'unresolved_entry%s%s\n' "$_t" "$_l"
+        done <<< "$SKILL_ENTRY_LINES"
+    else
+        printf 'unresolved_entry%s-\n' "$_t"
+    fi
+    printf 'process_files_checked%s%s\n' "$_t" "${PROC_TOTAL:-0}"
+    case "$PROC_STATE" in
+        unchanged) printf 'process_files_unchanged%syes\n' "$_t" ;;
+        changed)   printf 'process_files_unchanged%sno\n' "$_t" ;;
+        *)         printf 'process_files_unchanged%sunknown\n' "$_t" ;;
+    esac
+    if [ -n "$PROC_ROWS" ]; then
+        while IFS="$_t" read -r _k _p; do
+            [ -n "$_k" ] || continue
+            printf 'process_file_changed%s%s %s\n' "$_t" "$_k" "$_p"
+        done <<< "$PROC_ROWS"
+    else
+        printf 'process_file_changed%s-\n' "$_t"
+    fi
+    printf 'agents_md%s%s\n' "$_t" "$AGENTS_MD_STATE"
+    printf 'agents_md_saved%s%s\n' "$_t" "${AGENTS_MD_SAVED:--}"
+    printf 'backup_path%s%s\n' "$_t" "${BACKUP_PATH_ABS:--}"
+    printf 'backup_layout%s%s\n' "$_t" "$REDUCE_LAYOUT"
+    printf 'backup_layout_reason%s%s\n' "$_t" "${REDUCE_REASON:--}"
+    printf 'backup_bytes%s%s\n' "$_t" "${REDUCE_BYTES:-0}"
+    printf 'backup_files%s%s\n' "$_t" "${REDUCE_FILES:-0}"
+    printf 'not_backed_up%s%s\n' "$_t" "${REDUCE_NOTBACKED:-0}"
+    printf 'changes%s%s\n' "$_t" "${CHANGES_N:--}"
+    return 0
+}
+
+# print_update_report — the report block (printed after every run that reaches the end).
+print_update_report() {
+    local _kb _t _k _p _size
+    _t=$'\t'
+    echo ""
+    echo "TAD update report"
+    echo "Version: ${CURRENT_VERSION:--} -> ${TARGET_VERSION:--}"
+    echo "Platforms refreshed: $(printf '%s' "$PLATFORM_LIST" | sed 's/,/, /g') (+ OpenCode/Cursor wiring)"
+    case "$(report_claude_state)" in
+        full) echo "Claude Code: full" ;;
+        sticky) echo "Claude Code: links only (sticky)" ;;
+        *) echo "Claude Code: not installed" ;;
+    esac
+    echo "Skill entries unresolved: ${SKILL_ENTRY_UNRESOLVED:-0}"
+    if [ -n "$SKILL_ENTRY_LINES" ]; then
+        printf '%s\n' "$SKILL_ENTRY_LINES" | sed '/^$/d;s/^/  /'
+    fi
+    case "$PROC_STATE" in
+        unchanged) echo "Process files: unchanged ($PROC_TOTAL checked: zero-touch dirs, NEXT.md, PROJECT_CONTEXT.md)" ;;
+        changed)
+            echo "Process files: CHANGED ($PROC_NCHG of $PROC_TOTAL)"
+            while IFS="$_t" read -r _k _p; do
+                [ -n "$_k" ] || continue
+                echo "  $_k $_p"
+            done <<< "$PROC_ROWS" ;;
+        unknown) echo "Process files: not verified (the before/after check could not run)" ;;
+        *) echo "Process files: not compared (no earlier install to compare against)" ;;
+    esac
+    if [ "$CHANGES_N" = "-" ]; then
+        echo "TAD areas: change list not available"
+    else
+        echo "TAD areas: $CHANGES_N paths added, changed or removed (changes.tsv; pre-images of changed/removed in the backup)"
+    fi
+    echo "  covered: .tad/ framework files, $TAD_SURFACE_ROOTS; other files under .claude/ .opencode/ .cursor/ are neither checked nor backed up by this update"
+    case "$AGENTS_MD_STATE" in
+        released-replaced) echo "AGENTS.md: released copy replaced" ;;
+        project-content-kept) echo "AGENTS.md: project content kept at $AGENTS_MD_SAVED" ;;
+        unknown-kept) echo "AGENTS.md: project content kept at $AGENTS_MD_SAVED (could not be checked against the TAD releases)" ;;
+        created) echo "AGENTS.md: created" ;;
+        *) echo "AGENTS.md: unchanged" ;;
+    esac
+    if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "${BACKUP_PATH_ABS}" ]; then
+        _kb=$(( (${REDUCE_BYTES:-0} + 1023) / 1024 ))
+        _size="${_kb} KB"
+        if [ "$REDUCE_LAYOUT" = "changed-only" ]; then
+            echo "Backup: $BACKUP_PATH_ABS ($_size, $REDUCE_FILES files: only what this update changed or removed)"
+        else
+            echo "Backup: $BACKUP_PATH_ABS ($_size, full copy kept: $REDUCE_REASON)"
+        fi
+        echo "Not backed up: ${REDUCE_NOTBACKED:-0}"
+        if [ -n "$REPORT_FILE" ]; then echo "Report file: $REPORT_FILE"; else echo "Report file: not written"; fi
+    else
+        echo "Backup: none (fresh install: nothing existed to back up)"
+        echo "Not backed up: 0"
+        echo "Report file: none (no backup directory)"
+    fi
     return 0
 }
 
@@ -1058,7 +1425,7 @@ validate_platform() {
         both|*claude*)
             log_error "Platform '$p' is not a valid target (the combined 'both' target and ambiguous claude* spellings were removed in TAD v3.0.0)."
             echo "  Recovery — re-run with an explicit single target (--platform claude-code, or --platform codex):" >&2
-            echo "    bash .tad/scripts/tad-update.sh --platform claude-code --yes" >&2
+            echo "    /bin/bash .tad/scripts/tad-update.sh --yes --platform claude-code" >&2
             echo "    npx tad-framework@latest --platform claude-code" >&2
             echo "    curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform claude-code --yes" >&2
             echo "    (Codex users: the same commands with --platform codex.)" >&2
@@ -1072,17 +1439,59 @@ validate_platform() {
     esac
 }
 
+# D3: --platform takes a list (comma, no spaces). Each element is validated exactly as a
+# single value always was (`both` and every other *claude* spelling are refused before
+# any mutation), duplicates are dropped, and the set is kept in canonical order
+# `codex, claude-code, opencode, cursor`. PLATFORM_LIST holds it; a single value
+# behaves as before. platform_has <name> is the one membership test every consumer uses.
+PLATFORM_LIST=""
+platform_has() {
+    case ",${PLATFORM_LIST}," in *",$1,"*) return 0 ;; esac
+    return 1
+}
+
+# platform_extra_deny_all / platform_root_files_all <yaml> — the per-platform parsers
+# called once per element of the set, results unioned (LC_ALL=C sort -u).
+platform_extra_deny_all() {
+    local _y="$1" _p
+    while IFS= read -r _p; do
+        [ -n "$_p" ] || continue
+        parse_platform_extra_deny "$_y" "$_p"
+    done <<< "$(printf '%s\n' "$PLATFORM_LIST" | tr ',' '\n')" | LC_ALL=C sort -u
+}
+platform_root_files_all() {
+    local _y="$1" _p
+    while IFS= read -r _p; do
+        [ -n "$_p" ] || continue
+        parse_platform_root_files "$_y" "$_p"
+    done <<< "$(printf '%s\n' "$PLATFORM_LIST" | tr ',' '\n')" | LC_ALL=C sort -u
+}
+
 resolve_platform() {
     if [ -n "$PLATFORM" ]; then
-        validate_platform "$PLATFORM"
+        local _el _c
+        case "$PLATFORM" in
+            ,*|*,|*,,*) validate_platform "" ;;
+        esac
+        while IFS= read -r _el; do
+            validate_platform "$_el"
+        done <<< "$(printf '%s\n' "$PLATFORM" | tr ',' '\n')"
+        PLATFORM_LIST=""
+        for _c in codex claude-code opencode cursor; do
+            case ",${PLATFORM}," in
+                *",$_c,"*) PLATFORM_LIST="${PLATFORM_LIST:+$PLATFORM_LIST,}$_c" ;;
+            esac
+        done
+        PLATFORM="$PLATFORM_LIST"
         log_info "Platform (explicit): $PLATFORM"
     else
         PLATFORM="codex"
+        PLATFORM_LIST="codex"
         log_info "No platform specified. Using default platform: codex"
     fi
     # The Claude projection gate: every Claude function returns at its first
     # line unless this is 1.
-    if [ "$PLATFORM" = "claude-code" ]; then
+    if platform_has claude-code; then
         CLAUDE_PROJECTION=1
     elif [ -n "$CLAUDE_ADOPT_ARG" ]; then
         # Accepted but inert: say so, because a "plan" that goes on to install would surprise.
@@ -1132,6 +1541,11 @@ TAD_TOP_DENY="sync-registry.yaml
 brain-index.md"
 # The ONE dir with a sub-path rule: sync ONLY its registry index, never the tree.
 TAD_REGISTRY_ONLY="capability-packs"
+# D6: the project paths outside .tad/ that an install can write (space-separated, one list).
+# surface_snapshot reads it to build the change list, backup_existing reads it to copy a
+# pre-image of every one before the run mutates anything. Keep it inside this block:
+# fixtures extract this block together with the backup functions.
+TAD_SURFACE_ROOTS=".agents/skills .claude/skills .claude/agents AGENTS.md CLAUDE.md .claude/settings.json .codex/hooks.json .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json"
 TAD_REGISTRY_FILE="pack-registry.yaml"
 
 # derive_framework_dirs <src> — emit one SYNC dir basename per line
@@ -1752,7 +2166,7 @@ copy_framework_files() {
     # Read extra_deny from platform-codes.yaml (file exists in $src at this point).
     local platform_deny=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
-        platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
+        platform_deny="$(platform_extra_deny_all "$src/.tad/platform-codes.yaml")"
     fi
 
     # v3.0.0: single target (codex). No cross-platform remnant warning —
@@ -1833,7 +2247,7 @@ copy_framework_files() {
     # 但已改为「内容不同则先备份」而非无声覆盖（见下方 FR-4b 注释）。
     local root_files=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
-        root_files="$(parse_platform_root_files "$src/.tad/platform-codes.yaml" "$PLATFORM")"
+        root_files="$(platform_root_files_all "$src/.tad/platform-codes.yaml")"
     fi
     if [ -n "$root_files" ]; then
         local rf
@@ -1849,13 +2263,30 @@ copy_framework_files() {
                 # 原实现用裸 cp 直接覆盖，用户版本无声丢失。改为：已存在且内容不同时先备份。
                 _rf_new=0
                 if [ ! -e "./$rf" ]; then _rf_new=1; fi
+                if [ "$rf" = "AGENTS.md" ]; then
+                    if [ "$_rf_new" = "1" ]; then AGENTS_MD_STATE="created"; else AGENTS_MD_STATE="unchanged"; fi
+                fi
                 if [ -f "./$rf" ] && ! cmp -s "$src/$rf" "./$rf"; then
-                    _rf_ts="$(date +%Y%m%d-%H%M%S)"
-                    _rf_backup="./${rf}.pre-tad.${_rf_ts}"
-                    _rf_n=1
-                    while [ -e "$_rf_backup" ]; do _rf_backup="./${rf}.pre-tad.${_rf_ts}.$_rf_n"; _rf_n=$((_rf_n + 1)); done
-                    cp "./$rf" "$_rf_backup" 2>/dev/null \
-                        && { log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"; note_created_top "${_rf_backup#./}"; }
+                    # D7: AGENTS.md that is a copy TAD ever released (provenance ledger kind
+                    # agents-md) is replaced without a .pre-tad copy (the run's backup holds
+                    # it); one that matches no release, or cannot be checked, is kept.
+                    local _rf_released=0
+                    if [ "$rf" = "AGENTS.md" ] && [ ! -L "./$rf" ] && projected_released "$src" "agents-md" "$rf" "-"; then
+                        _rf_released=1
+                        AGENTS_MD_STATE="released-replaced"
+                    fi
+                    if [ "$_rf_released" != "1" ]; then
+                        _rf_ts="$(date +%Y%m%d-%H%M%S)"
+                        _rf_backup="./${rf}.pre-tad.${_rf_ts}"
+                        _rf_n=1
+                        while [ -e "$_rf_backup" ]; do _rf_backup="./${rf}.pre-tad.${_rf_ts}.$_rf_n"; _rf_n=$((_rf_n + 1)); done
+                        cp "./$rf" "$_rf_backup" 2>/dev/null \
+                            && { log_info "  → Backed up existing $rf → $(basename "$_rf_backup")"; note_created_top "${_rf_backup#./}"; }
+                        if [ "$rf" = "AGENTS.md" ]; then
+                            AGENTS_MD_SAVED="${_rf_backup#./}"
+                            if [ -n "$CLAUDE_LEDGER" ]; then AGENTS_MD_STATE="project-content-kept"; else AGENTS_MD_STATE="unknown-kept"; fi
+                        fi
+                    fi
                 fi
                 cp "$src/$rf" ./ 2>/dev/null || true
                 # F-06: a root file this run created (no pre-existing bytes)
@@ -1902,7 +2333,7 @@ copy_framework_files() {
     fi
 
     # Codex hooks.json generation (v3.0.0: codex is the only target)
-    if [ "$PLATFORM" = "codex" ]; then
+    if platform_has codex; then
         mkdir -p .codex
         # F-06: a generated hooks.json with no pre-existing bytes is
         # rollback-removed (snapshot restore covers the pre-existing case).
@@ -2013,7 +2444,7 @@ verify_install_complete() {
     # Platform deny for skills verification scope
     local platform_deny=""
     if [ -f "$src/.tad/platform-codes.yaml" ]; then
-        platform_deny="$(parse_platform_extra_deny "$src/.tad/platform-codes.yaml" "$PLATFORM")"
+        platform_deny="$(platform_extra_deny_all "$src/.tad/platform-codes.yaml")"
     fi
 
     local missing=0 checked=0 dir
@@ -2618,11 +3049,22 @@ take_rollback_snapshot() {
     snap_one "GEMINI.md"
     snap_one ".codex/hooks.json"
     snap_one ".agents/skills"
+    # D6 (6): a released copy of a projected file is now replaced in place (D8), and a
+    # full Claude refresh rewrites .claude/settings.json and the agent definitions, so a
+    # failed run restores them too. .claude/skills is deliberately NOT snapped: the
+    # projection only creates links there (rollback_claude_projection undoes exactly
+    # those) and a wholesale restore would fight the adoption tombstones.
+    snap_one ".opencode/commands/tad-update.md"
+    snap_one ".opencode/plugins/tad-hooks.ts"
+    snap_one ".cursor/hooks.json"
+    if [ "$CLAUDE_PROJECTION" = "1" ] && [ "${CLAUDE_STICKY:-0}" != "1" ]; then
+        if [ -d ".claude/agents" ] && [ ! -L ".claude/agents" ]; then snap_one ".claude/agents"; fi
+        if [ -f ".claude/settings.json" ] && [ ! -L ".claude/settings.json" ]; then snap_one ".claude/settings.json"; fi
+    fi
     # Claude projection edits a user file in place (CLAUDE.md), so it needs a
     # snapshot. snap_one copies without -p, so the permission bits are recorded
-    # separately and put back by rollback_claude_projection. Nothing under
-    # .claude/ is snapshotted: the projection never modifies an existing entry
-    # there. A symlinked or non-regular CLAUDE.md is never touched, so not snapped.
+    # separately and put back by rollback_claude_projection. A symlinked or
+    # non-regular CLAUDE.md is never touched, so not snapped.
     if [ "$CLAUDE_PROJECTION" = "1" ] && [ "${CLAUDE_STICKY:-0}" != "1" ] && [ ! -L "CLAUDE.md" ] && [ -f "CLAUDE.md" ]; then
         CLAUDE_MD_SNAP_MODE=$(claude_file_mode "CLAUDE.md") || CLAUDE_MD_SNAP_MODE=""
         snap_one "CLAUDE.md"
@@ -3142,7 +3584,7 @@ if [ "$LIST_PACKS" = "1" ]; then list_packs; exit 0; fi
 # and cleared on the success path. Every exit (set -e, explicit, signal) that
 # happens while NEED_ROLLBACK=1 restores the project.
 NEED_ROLLBACK=0
-trap 'cleanup_installer_temp; cleanup_source_tree; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
+trap 'tad_pin_cleanup; cleanup_installer_temp; cleanup_source_tree; if [ "${NEED_ROLLBACK:-0}" = "1" ]; then rollback_on_failure; fi' EXIT
 
 # ============================================
 # v3.0.0: CLAUDE.md merge removed (Claude Code runtime path deleted).
@@ -3339,12 +3781,27 @@ download_unpinned_source() {
 # Never deletes or recursively synchronizes .opencode.
 OPCODE_CREATED_FILE=0
 
+# projected_released <src> <kind> <relpath> <key> — D7/D8. True when the file at <relpath>
+# in the project is, byte for byte, a copy TAD has ever released: its git blob id is a
+# ledger row <kind><TAB><id><TAB><key> (kind agents-md for AGENTS.md, kind projected for the
+# three projected files, key = their path). False when the file is not a regular file,
+# the ledger is unusable or no SHA-1 tool exists: callers then keep today's strict behaviour.
+projected_released() {
+    local _src="$1" _kind="$2" _rel="$3" _key="$4" _id
+    if [ -L "$_rel" ] || [ ! -f "$_rel" ]; then return 1; fi
+    claude_provenance_ready "$_src"
+    [ -n "$CLAUDE_LEDGER" ] || return 1
+    _id="$(claude_blob_id "$_rel")" || return 1
+    [ -n "$_id" ] || return 1
+    claude_adopt_in_ledger "$_kind" "$_id" "$_key"
+}
+
 opencode_preflight() {
     local src="$1"
     local src_f="$src/.opencode/commands/tad-update.md"
     local tgt_f=".opencode/commands/tad-update.md"
     [ -f "$src_f" ] || return 0
-    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f" && ! projected_released "$src" "projected" "$tgt_f" "$tgt_f"; then
         log_error "OpenCode conflict: .opencode/commands/tad-update.md already exists and differs from TAD's copy."
         echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
         echo "    mv .opencode/commands/tad-update.md .opencode/commands/tad-update.md.local"
@@ -3405,7 +3862,7 @@ opencode_hooks_preflight() {
     local src_f="$src/.opencode/plugins/tad-hooks.ts"
     local tgt_f=".opencode/plugins/tad-hooks.ts"
     [ -f "$src_f" ] || return 0
-    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f" && ! projected_released "$src" "projected" "$tgt_f" "$tgt_f"; then
         log_error "OpenCode conflict: .opencode/plugins/tad-hooks.ts already exists and differs from TAD's copy."
         echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
         echo "    mv .opencode/plugins/tad-hooks.ts .opencode/plugins/tad-hooks.ts.local"
@@ -3446,7 +3903,7 @@ cursor_hooks_preflight() {
     local src_f="$src/.cursor/hooks.json"
     local tgt_f=".cursor/hooks.json"
     [ -f "$src_f" ] || return 0
-    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f"; then
+    if [ -f "$tgt_f" ] && ! cmp -s "$src_f" "$tgt_f" && ! projected_released "$src" "projected" "$tgt_f" "$tgt_f"; then
         log_error "Cursor conflict: .cursor/hooks.json already exists and differs from TAD's copy."
         echo "  Recovery: rename or remove your file, then re-run the installer. Example:"
         echo "    mv .cursor/hooks.json .cursor/hooks.json.local"
@@ -4171,6 +4628,7 @@ SKILL_ENTRY_UNRESOLVED=0
 scan_skill_entries() {
     local _e _why _root
     SKILL_ENTRY_UNRESOLVED=0
+    SKILL_ENTRY_LINES=""
     for _root in .claude/skills .agents/skills; do
         if [ -L "$_root" ] || [ ! -d "$_root" ]; then continue; fi
         if [ "$_root" = ".claude/skills" ] && [ -L ".claude" ]; then continue; fi
@@ -4184,6 +4642,8 @@ scan_skill_entries() {
             fi
             if [ -n "$_why" ]; then
                 log_warn "SKILL-ENTRY-UNRESOLVED $(claude_adopt_clean "$_e") ($_why)"
+                SKILL_ENTRY_LINES="${SKILL_ENTRY_LINES}$(claude_adopt_clean "$_e") ($_why)
+"
                 SKILL_ENTRY_UNRESOLVED=$((SKILL_ENTRY_UNRESOLVED + 1))
             fi
         done
@@ -4754,7 +5214,7 @@ claude_adopt_classify_md() {
 claude_adopt_pred_set() {
     local _src="$1" _d _n _deny=""
     if [ -f "$_src/.tad/platform-codes.yaml" ]; then
-        _deny="$(parse_platform_extra_deny "$_src/.tad/platform-codes.yaml" "$PLATFORM")"
+        _deny="$(platform_extra_deny_all "$_src/.tad/platform-codes.yaml")"
     fi
     for _d in "$_src"/.agents/skills/*/; do
         _d="${_d%/}"; _n="${_d##*/}"
@@ -5597,7 +6057,7 @@ main() {
     TARGET_SKILL_DIR=".agents/skills"
 
     # Codex CLI version detection (non-blocking)
-    if [ "$PLATFORM" = "codex" ]; then
+    if platform_has codex; then
         if command -v codex >/dev/null 2>&1; then
             local codex_version
             codex_version=$(codex --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
@@ -5809,6 +6269,15 @@ main() {
     # project mutation — AFTER download, immutable-version validation, platform
     # resolution, OpenCode collision preflight, and human confirmation. A failed
     # backup aborts (set -e → EXIT trap → rollback) before any copy/migration.
+    # D5: fingerprint the process locations (zero-touch dirs, NEXT.md, PROJECT_CONTEXT.md)
+    # just before the backup; compared after the run. A fresh install has nothing to compare.
+    if [ -d ".tad" ]; then
+        PROC_PRE="$(mktemp "${TMPDIR:-/tmp}/tad-procfp-pre.XXXXXX")" || PROC_PRE=""
+        if [ -n "$PROC_PRE" ] && ! process_fingerprint > "$PROC_PRE" 2>/dev/null; then
+            rm -f -- "$PROC_PRE" # RM-OK:process-fingerprint-pre-fail
+            PROC_PRE=""
+        fi
+    fi
     backup_existing
     # Pre-run snapshot of the write surface, kept in the backup dir; the change
     # list (changes.tsv) is the diff against it after a successful run.
@@ -6169,6 +6638,8 @@ NEXTEOF
     echo ""
     echo -e "Learn more: ${BLUE}${REPO_URL}${NC}"
     echo ""
+    # The report is the last block of the run: version, platforms, process files, backup.
+    finalize_update
 }
 
 # Run main function

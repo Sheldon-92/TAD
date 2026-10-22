@@ -9,22 +9,26 @@ Update TAD in the current project. This skill delegates exclusively to the share
 updater helper `.tad/scripts/tad-update.sh` — it contains no version comparison,
 download, backup, migration, or copy logic of its own.
 
-## Workflow (two-step human confirmation boundary)
+## Workflow (two commands, one yes)
 
 1. Run the read-only check first:
 
    ```bash
-   bash .tad/scripts/tad-update.sh --check
+   /bin/bash .tad/scripts/tad-update.sh --check
    ```
 
-2. Present the result (current version, remote version, update availability,
-   backup pattern) to the user verbatim.
+2. Show the check screen to the user verbatim (versions, platforms, what changes, the
+   backup, and the "To apply:" line) and ask once whether to update.
 
-3. Only after the user explicitly confirms, run the approved noninteractive path:
+3. Only after the user explicitly says yes, run the "To apply" line the check printed,
+   exactly as printed (the platform list on it is what the user confirmed):
 
    ```bash
-   bash .tad/scripts/tad-update.sh --yes
+   /bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>
    ```
+
+4. Show the update report the run prints (version, platforms, process files, backup,
+   report file) to the user verbatim.
 
 ## Rules
 
@@ -33,5 +37,8 @@ download, backup, migration, or copy logic of its own.
   small". If the user declines, do nothing.
 - If the helper reports an error, decline, or "confirmation required", report it
   as-is; do not bypass the helper or reimplement its behavior.
+- If the check could not determine the platform (the "To apply" line asks you to
+  choose), ask the user which platforms to update and forward only their explicit
+  answer; never guess one.
 - If the helper exits with the non-TTY status, tell the user it requires an
   explicit `--yes` after they approve, or a terminal with a controlling TTY.

@@ -112,7 +112,7 @@ To check an install:
 cat .tad/version.txt     # 4.0.6
 ```
 
-Installed projects update with `$tad-update` (Codex) or `/tad-update` (OpenCode); it checks versions read-only, refuses downgrades, backs up first, and applies only after you confirm. It does not detect Claude Code projects: run `bash tad.sh --platform claude-code` there.
+Installed projects update with one sentence ("升级 TAD" to Cora, `/tad-update`, or `$tad-update`): the check is read-only and prints the exact line to run, `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`; after your one yes it updates every platform listed in one run, keeps a backup of only the files it changes or removes, and ends with a report (version, process files unchanged, backup path). `AGENTS.md` has a File Ownership section that says which files are TAD's and which are yours.
 
 ## Upgrading from 3.x
 

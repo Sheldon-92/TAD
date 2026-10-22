@@ -12,6 +12,11 @@
 #   md-head       SHA-1 of the head (up to and including the marker line) of CLAUDE.md blobs that have it
 #   workflow      .claude/workflows/<f>                              key = <f>
 #   cmd           .claude/commands/<f>                               key = <f>
+#   agents-md     root AGENTS.md blobs                               key = -
+#   projected     .opencode/commands/tad-update.md, .opencode/plugins/tad-hooks.ts,
+#                 .cursor/hooks.json                                 key = the path
+# (agents-md and projected let the installer tell a released copy, replaced with no .pre-tad
+# copy, from one that holds a project's own text; they are not gated by release-verify.sh.)
 # Output: .tad/provenance/claude-legacy.tsv (+ MANIFEST.sha1). Re-running on the
 # same history gives byte-identical files: the header carries no commit hash.
 # The head/stripped-hash commands below MUST stay identical to the ones in
@@ -72,7 +77,8 @@ git -C "$ROOT" rev-list HEAD $TAGS > "$TMP/commits"
 # every blob that ever sat at these paths. Quoted paths (control characters)
 # are skipped: they can never be proven by the installer either.
 git -C "$ROOT" -c core.quotepath=false diff-tree --stdin -r -m --root --no-renames --no-abbrev \
-    -- .claude .agents/skills .tad/templates/claude/settings.json CLAUDE.md < "$TMP/commits" \
+    -- .claude .agents/skills .tad/templates/claude/settings.json CLAUDE.md AGENTS.md \
+       .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json < "$TMP/commits" \
   | LC_ALL=C awk -F'\t' '
     /^:/ {
       split($1, m, " "); mode = m[2]; id = m[4]; p = $2
@@ -81,6 +87,8 @@ git -C "$ROOT" -c core.quotepath=false diff-tree --stdin -r -m --root --no-renam
       if (substr(p, 1, 1) == "\"") next
       if (p == ".claude/settings.json" || p == ".tad/templates/claude/settings.json") { print "settings\t" id "\t-"; next }
       if (p == "CLAUDE.md") { print "claudemd\t" id "\t-"; next }
+      if (p == "AGENTS.md") { print "agents-md\t" id "\t-"; next }
+      if (p == ".opencode/commands/tad-update.md" || p == ".opencode/plugins/tad-hooks.ts" || p == ".cursor/hooks.json") { print "projected\t" id "\t" p; next }
       root = ""
       if (substr(p, 1, 15) == ".claude/skills/") { root = "c"; base = substr(p, 16) }
       else if (substr(p, 1, 15) == ".agents/skills/") { root = "a"; base = substr(p, 16) }

@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -2059,6 +2059,442 @@ HEOF
   else fail "fx.e: suffix order survivors wrong: $(survivors "$G") $out"; fi
 }
 
+# ════════════ Update flow, Phase 1 (EPIC-20261022-tad-update-flow) ════════════
+# fx.p   --platform takes a list (one run, one backup, canonical order, bad elements refused)
+# fx.f   process locations unchanged; project files in TAD areas untouched; additions listed
+# fx.k   changed-only backup: one pre-image source, fail-closed sub-cases, guard pinned
+# fx.rb  rollback restores everything the run replaced (single and multi platform)
+# fx.rep every update-report.tsv key present once, no empty value
+# fx.agm AGENTS.md: released copy replaced, project content kept
+# fx.oc  projected files: any released copy replaced, an edited one refused
+# fx.own the AGENTS.md "File Ownership" section (mechanical, no install)
+
+# fx_old_project — a v4.0.5 install in $TARGET (codex, then claude-code, as a real project
+# would have it), from the unextracted tag archive. The old installer writes its own backups
+# into $SANDBOX/old-backups, so $SANDBOX/cc-backups only ever holds the run under test.
+FX_OLD=""
+fx_old_project() {
+  if ! git -C "$REPO" rev-parse -q --verify 'v4.0.5^{commit}' >/dev/null 2>&1; then
+    fail "$CURRENT_CASE: tag v4.0.5 missing (cannot build the old install)"; return 1
+  fi
+  FX_OLD="$SANDBOX/old"; mkdir -p "$FX_OLD"
+  ( cd "$REPO" && git archive v4.0.5 ) | tar -x -C "$FX_OLD" || { fail "$CURRENT_CASE: git archive v4.0.5 failed"; return 1; }
+  local rc=0
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$SANDBOX/old-backups" /bin/bash "$FX_OLD/tad.sh" --source "$FX_OLD" --platform codex --yes >"$SANDBOX/old1.log" 2>&1 ) || rc=$?
+  if [ "$rc" != "0" ]; then fail "$CURRENT_CASE: v4.0.5 codex install failed (rc=$rc)"; return 1; fi
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$SANDBOX/old-backups" /bin/bash "$FX_OLD/tad.sh" --source "$FX_OLD" --platform claude-code --yes --force >"$SANDBOX/old2.log" 2>&1 ) || rc=$?
+  if [ "$rc" != "0" ]; then fail "$CURRENT_CASE: v4.0.5 claude-code install failed (rc=$rc)"; return 1; fi
+  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" != "4.0.5" ]; then fail "$CURRENT_CASE: old install is not 4.0.5"; return 1; fi
+  return 0
+}
+# the staged source also carries the other two projected files (stage_pruned_source copies the command only)
+fx_stage_projected() {
+  mkdir -p "$SOURCE/.opencode/plugins" "$SOURCE/.cursor"
+  cp "$REPO/.opencode/plugins/tad-hooks.ts" "$SOURCE/.opencode/plugins/"
+  cp "$REPO/.cursor/hooks.json" "$SOURCE/.cursor/"
+}
+fx_gdir() { find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name claude-adopt 2>/dev/null | head -1; }
+fx_ndirs() { local g; g="$(fx_gdir)"; if [ -z "$g" ]; then printf '0'; return 0; fi; find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' '; }
+fx_newest() { local g; g="$(fx_gdir)"; [ -n "$g" ] || return 0; ls -d "$g"/*/ | LC_ALL=C sort | tail -1 | sed 's|/$||'; }
+fx_rv() { LC_ALL=C grep "^$2$(printf '\t')" "$1" | cut -f2- || true; }  # <report> <key>
+# fx_up <log> [flags] — the run under test: both platforms in one list
+fx_up() { local log="$1"; shift; run_install_cc "codex,claude-code" "$log" "$@"; }
+# fx_setup — new sandbox + staged source (+ projected files + ledger) + the v4.0.5 install
+fx_setup() {
+  new_sandbox; stage_pruned_source; stage_provenance; fx_stage_projected
+  fx_old_project
+}
+# fx_shim <name> <body> — a shim in $SHIMBIN; <body> runs before `exec /bin/<name> "$@"`
+fx_shim() {
+  { printf '#!/bin/sh\n'; printf '%s\n' "$2"; printf 'exec /bin/%s "$@"\n' "$1"; } > "$SHIMBIN/$1"
+  chmod +x "$SHIMBIN/$1"
+}
+# fx_extract_guard <outfile> — the backup-root guard, its prefix helper and prune_backups, for harness runs
+fx_extract_guard() {
+  local out="$1" fn
+  : > "$out"
+  for fn in _literal_has_prefix assert_under_backup_root prune_backups; do
+    extract_fn "$fn" "$out.$fn"
+    cat "$out.$fn" >> "$out"
+  done
+}
+
+case_fxp() {
+  CURRENT_CASE="fx.p"
+  local rc log out n el
+  fx_setup || return 0
+  rm -f "$TARGET/.codex/hooks.json" "$TARGET/.claude/skills/alex" "$TARGET/.claude/settings.json"
+  log="$SANDBOX/p1.log"
+  rc="$(run_install_cc "claude-code,codex,codex" "$log")"
+  if [ "$rc" = "0" ] && grep -qF 'Platform (explicit): codex,claude-code' "$log" && [ "$(fx_ndirs)" = "1" ]; then
+    pass "fx.p: claude-code,codex,codex is one run, canonical order codex,claude-code, one backup dir"
+  else
+    fail "fx.p: list run wrong (rc=$rc ndirs=$(fx_ndirs)): $(tail -3 "$log" | tr '\n' '|')"
+  fi
+  if [ -f "$TARGET/.codex/hooks.json" ] && [ -L "$TARGET/.claude/skills/alex" ] && [ -f "$TARGET/.claude/settings.json" ] \
+     && [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "$(source_version)" ]; then
+    pass "fx.p: one list run rewrote the codex hooks and the Claude projection"
+  else
+    fail "fx.p: projections missing after the list run"
+  fi
+  for el in "codex,both" "codex,claude" "codex," "codex, claude-code"; do
+    guarded_cleanup "$SANDBOX"; SANDBOX=""
+    fx_setup || return 0
+    snapshot_target "$SNAP/pre"
+    rc="$(run_install_cc "$el" "$SANDBOX/bad.log")"
+    n="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | head -3 || true)"
+    if [ "$rc" != "0" ] && [ -z "$n" ] && [ "$(fx_ndirs)" = "0" ] && grep -qE 'not a valid target|Unknown platform' "$SANDBOX/bad.log"; then
+      pass "fx.p: --platform '$el' refused before any mutation"
+    else
+      fail "fx.p: --platform '$el' not refused cleanly (rc=$rc drift=[$n])"
+    fi
+  done
+}
+
+case_fxf() {
+  CURRENT_CASE="fx.f"
+  local rc log B R f roots ok
+  fx_setup || return 0
+  mkdir -p "$TARGET/.tad/active/handoffs" "$TARGET/.tad/evidence/journal" "$TARGET/.tad/memory" "$TARGET/.claude/commands" "$TARGET/.opencode" "$TARGET/.agents/skills/mine" "$TARGET/.claude/skills/mine"
+  printf 'a\n' > "$TARGET/.tad/active/a.md"; printf 'h\n' > "$TARGET/.tad/active/handoffs/H.md"
+  printf 'j\n' > "$TARGET/.tad/evidence/journal/j.md"; printf 'k\n' > "$TARGET/.tad/project-knowledge/k.md"
+  printf 'm\n' > "$TARGET/.tad/memory/m.md"; printf 'MY NEXT\n' > "$TARGET/NEXT.md"; printf 'MY CONTEXT\n' > "$TARGET/PROJECT_CONTEXT.md"
+  printf '{}\n' > "$TARGET/.opencode/package.json"; printf 'cmd\n' > "$TARGET/.claude/commands/mine.md"
+  printf '{"p":1}\n' > "$TARGET/.claude/settings.local.json"; printf -- '---\nname: mine\n---\nmine\n' > "$TARGET/.agents/skills/mine/SKILL.md"
+  printf 'own\n' > "$TARGET/.claude/skills/mine/SKILL.md"
+  printf '# My rules\nkeep me\n' > "$TARGET/CLAUDE.md"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/f1.log"
+  rc="$(fx_up "$log")"
+  B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" != "0" ] || [ ! -f "$R" ]; then fail "fx.f: run failed or no report (rc=$rc): $(tail -3 "$log" | tr '\n' '|')"; return 0; fi
+  ok=1
+  for f in .tad/active/a.md .tad/active/handoffs/H.md .tad/evidence/journal/j.md .tad/project-knowledge/k.md .tad/memory/m.md NEXT.md PROJECT_CONTEXT.md; do
+    cmp -s "$SNAP/pre/$f" "$TARGET/$f" || { ok=0; fail "fx.f: $f changed"; }
+  done
+  if [ "$ok" = "1" ] && [ "$(fx_rv "$R" process_files_unchanged)" = "yes" ] && [ "$(fx_rv "$R" process_files_checked)" -ge 7 ] \
+     && grep -qE '^Process files: unchanged \([0-9]+ checked' "$log"; then
+    pass "fx.f: process locations unchanged"
+  else
+    fail "fx.f: process locations check wrong: unchanged=$(fx_rv "$R" process_files_unchanged) checked=$(fx_rv "$R" process_files_checked): $(grep -E '^Process files|^  (added|changed|removed)' "$log" | head -5 | tr '\n' '|')"
+  fi
+  ok=1
+  for f in .opencode/package.json .claude/commands/mine.md .claude/settings.local.json .agents/skills/mine/SKILL.md .claude/skills/mine/SKILL.md; do
+    cmp -s "$SNAP/pre/$f" "$TARGET/$f" || { ok=0; fail "fx.f: project file $f changed"; }
+    if tail -n +2 "$B/changes.tsv" | cut -f2 | grep -Fxq -e "$f"; then ok=0; fail "fx.f: project file $f listed in changes.tsv"; fi
+  done
+  if [ -d "$TARGET/.claude/skills/mine" ] && [ ! -L "$TARGET/.claude/skills/mine" ]; then :; else ok=0; fi
+  if [ "$ok" = "1" ]; then pass "fx.f: project files in TAD areas untouched"; fi
+  roots="$(sed -n 's/^TAD_SURFACE_ROOTS="\(.*\)"$/\1/p' "$TADSH")"
+  ok=1
+  grep -Fxq -e '<!-- TAD:AGENTS-REF:BEGIN (managed by tad.sh) -->' "$TARGET/CLAUDE.md" || { ok=0; fail "fx.f: CLAUDE.md block not appended"; }
+  grep -qF "$(printf 'changed\tCLAUDE.md')" "$B/changes.tsv" || { ok=0; fail "fx.f: CLAUDE.md not listed as changed"; }
+  cmp -s "$SNAP/pre/CLAUDE.md" "$B/CLAUDE.md" || { ok=0; fail "fx.f: CLAUDE.md pre-image missing or different"; }
+  [ "$(fx_rv "$R" process_files_unchanged)" = "yes" ] || ok=0
+  grep -qE '^TAD areas: [0-9]+ paths added, changed or removed' "$log" || { ok=0; fail "fx.f: TAD areas line missing"; }
+  grep -qF '.claude/ .opencode/ .cursor/ are neither checked nor backed up' "$log" || { ok=0; fail "fx.f: coverage sentence missing"; }
+  for f in $roots; do grep -F '  covered:' "$log" | grep -qF -e "$f" || { ok=0; fail "fx.f: covered line misses $f"; }; done
+  if [ "$ok" = "1" ]; then pass "fx.f: CLAUDE.md append listed and backed up"; fi
+  # (d) an after-only process file is an added path
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  rm -f "$TARGET/.tad/project-knowledge/README.md"
+  log="$SANDBOX/f2.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && [ -f "$TARGET/.tad/project-knowledge/README.md" ] && grep -qF 'Process files: CHANGED' "$log" \
+     && grep -Fxq -e '  added .tad/project-knowledge/README.md' "$log" \
+     && [ "$(fx_rv "$R" process_files_unchanged)" = "no" ] \
+     && fx_rv "$R" process_file_changed | grep -Fxq -e 'added .tad/project-knowledge/README.md'; then
+    pass "fx.f: an added process file is listed as added"
+  else
+    fail "fx.f: added process file not reported (rc=$rc): $(grep -E 'Process files|^  (added|changed|removed)' "$log" | tr '\n' '|')"
+  fi
+  # (e) negative control: the run itself edits NEXT.md
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  fx_shim cp "case \"\$*\" in *\"$SOURCE\"*.agents/skills*) if [ ! -f \"$SANDBOX/touched\" ]; then : > \"$SANDBOX/touched\"; echo SNEAK >> \"$TARGET/NEXT.md\"; fi ;; esac"
+  log="$SANDBOX/f3.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && grep -qF 'Process files: CHANGED' "$log" && grep -Fxq -e '  changed NEXT.md' "$log" \
+     && [ "$(fx_rv "$R" process_files_unchanged)" = "no" ]; then
+    pass "fx.f: negative control names NEXT.md"
+  else
+    fail "fx.f: negative control missed the NEXT.md edit (rc=$rc): $(grep -E 'Process files|^  (added|changed|removed)' "$log" | tr '\n' '|')"
+  fi
+}
+
+case_fxk() {
+  CURRENT_CASE="fx.k"
+  local rc log B R f p kind n bad g want got full residue
+  fx_setup || return 0
+  # a dangling TAD standard link: the run prunes it, so changes.tsv carries a removed row
+  ln -s ../../.agents/skills/zz-fx-gone "$TARGET/.claude/skills/zz-fx-gone"
+  printf '\nproject line\n' >> "$TARGET/AGENTS.md"
+  printf '\nlocal edit\n' >> "$TARGET/.tad/templates/review-contract.md"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/k1.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; g="$(fx_gdir)"
+  if [ "$rc" != "0" ] || [ ! -f "$B/manifest.txt" ]; then fail "fx.k: k1 run failed (rc=$rc): $(tail -3 "$log" | tr '\n' '|')"; return 0; fi
+  want="$(tail -n +2 "$B/changes.tsv" | grep -E "^(changed|removed)$(printf '\t')" | cut -f2 | LC_ALL=C sort)"
+  got="$( cd "$B" && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C grep -v -x -e origin.txt -e pre-top.txt -e pre-tree.txt -e pre-surface.tsv -e changes.tsv -e manifest.txt -e update-report.tsv | LC_ALL=C sort )"
+  bad=0
+  [ "$want" = "$got" ] || { bad=1; fail "fx.k: k1 file set differs from changed+removed rows"; }
+  while IFS="$(printf '\t')" read -r kind p; do
+    case "$kind" in changed|removed) ;; *) continue ;; esac
+    if [ -L "$SNAP/pre/$p" ]; then
+      if [ -L "$B/$p" ] && [ "$(readlink "$B/$p")" = "$(readlink "$SNAP/pre/$p")" ]; then :; else bad=1; fail "fx.k: k1 link pre-image wrong: $p"; fi
+    else
+      cmp -s "$SNAP/pre/$p" "$B/$p" || { bad=1; fail "fx.k: k1 pre-image differs: $p"; }
+    fi
+  done < "$B/changes.tsv"
+  grep -qF "$(printf 'removed\t.claude/skills/zz-fx-gone')" "$B/changes.tsv" || { bad=1; fail "fx.k: k1 removed link row missing"; }
+  grep -qF "$(printf 'changed\tAGENTS.md')" "$B/changes.tsv" || { bad=1; fail "fx.k: k1 AGENTS.md row missing"; }
+  [ "$(fx_ndirs)" = "1" ] || { bad=1; fail "fx.k: k1 group holds $(fx_ndirs) backups (the full one was not retired)"; }
+  if [ "$(head -1 "$B/manifest.txt")" = "layout=changed-only" ] && [ "$(tail -1 "$B/manifest.txt")" = "version=4.0.5" ]; then :; else bad=1; fail "fx.k: k1 manifest wrong: $(tr '\n' '|' < "$B/manifest.txt")"; fi
+  [ ! -e "$B/not-backed-up.txt" ] || { bad=1; fail "fx.k: k1 not-backed-up.txt present"; }
+  if find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vqE '^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'; then bad=1; fail "fx.k: k1 a non-pattern name under the group"; fi
+  grep -qE 'Backup: .* KB, [0-9]+ files: only what this update changed or removed' "$log" || { bad=1; fail "fx.k: k1 size line missing"; }
+  if [ "$bad" = "0" ]; then pass "fx.k: k1 changed-only backup == changed+removed rows, byte-equal pre-images, layout=changed-only, version trailer, pattern names"; fi
+  # (k2) changes.tsv never appears: the full backup stays, every pre-image intact
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  printf '\nproject line\n' >> "$TARGET/AGENTS.md"
+  snapshot_target "$SNAP/pre"
+  fx_shim mv 'case "$*" in *changes.tsv) exit 0 ;; esac'
+  log="$SANDBOX/k2.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  bad=0
+  if [ "$rc" = "0" ] && [ -f "$R" ] && [ "$(fx_rv "$R" backup_layout)" = "full" ]; then :; else bad=1; fail "fx.k: k2 expected rc 0 and backup_layout full (rc=$rc)"; fi
+  if [ ! -e "$B/changes.tsv" ] && [ -f "$B/manifest.txt" ] && [ "$(fx_ndirs)" = "1" ]; then :; else bad=1; fail "fx.k: k2 backup shape wrong"; fi
+  cmp -s "$SNAP/pre/AGENTS.md" "$B/AGENTS.md" || { bad=1; fail "fx.k: k2 AGENTS.md pre-image missing"; }
+  diff -r "$SNAP/pre/.agents/skills" "$B/.agents/skills" >/dev/null 2>&1 || { bad=1; fail "fx.k: k2 .agents/skills pre-image not complete"; }
+  diff -r "$SNAP/pre/.tad/templates" "$B/.tad/templates" >/dev/null 2>&1 || { bad=1; fail "fx.k: k2 .tad/templates pre-image not complete"; }
+  if [ "$bad" = "0" ]; then pass "fx.k: k2 no change list -> full backup kept, non-.tad pre-images intact"; fi
+  # (k3) the second copy into the new backup fails
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  printf '0\n' > "$SANDBOX/cpn"
+  fx_shim cp "case \"\$*\" in *\"$SANDBOX/cc-backups/\"*\"$SANDBOX/cc-backups/\"*) n=\$(cat \"$SANDBOX/cpn\"); n=\$((n+1)); echo \$n > \"$SANDBOX/cpn\"; if [ \"\$n\" = 2 ]; then exit 1; fi ;; esac"
+  log="$SANDBOX/k3.log"
+  rc="$(fx_up "$log")"; g="$(fx_gdir)"
+  bad=0
+  n="$(find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+  if [ "$rc" = "0" ] && [ "$n" = "2" ]; then :; else bad=1; fail "fx.k: k3 expected rc 0 and 2 dirs (rc=$rc n=$n)"; fi
+  full=""; residue=""
+  for f in "$g"/*/; do if [ -f "${f}manifest.txt" ]; then full="${f%/}"; else residue="${f%/}"; fi; done
+  if [ -n "$full" ] && [ -n "$residue" ]; then :; else bad=1; fail "fx.k: k3 full/residue not as expected"; fi
+  grep -qF 'full copy kept' "$log" && grep -qF "$residue" "$log" || { bad=1; fail "fx.k: k3 report does not name the full layout and the residue"; }
+  fx_extract_guard "$SANDBOX/guard.fn.sh"
+  cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+log_info() { :; }
+log_warn() { printf 'WARN: %s\n' "\$1"; }
+. "$SANDBOX/guard.fn.sh"
+prune_backups "$g" "$full"
+HEOF
+  harness_run "$SANDBOX/h.sh" >/dev/null 2>&1 || true
+  if [ -n "$residue" ] && [ ! -e "$residue" ] && [ -f "$full/manifest.txt" ]; then :; else bad=1; fail "fx.k: k3 prune did not remove the residue and keep the full backup"; fi
+  if [ "$bad" = "0" ]; then pass "fx.k: k3 build error -> full backup kept, residue pruned by the existing rule"; fi
+  # (k4) a zero-change rerun: index files only
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  rc="$(fx_up "$SANDBOX/k4a.log")"
+  rc="$(fx_up "$SANDBOX/k4b.log" --force)"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && [ -f "$R" ] && [ "$(wc -l < "$B/changes.tsv" | tr -d ' ')" = "1" ] && [ "$(fx_rv "$R" backup_files)" = "0" ] && [ "$(fx_rv "$R" backup_layout)" = "changed-only" ] \
+     && [ "$( cd "$B" && find . -type f | wc -l | tr -d ' ')" -le 7 ]; then
+    pass "fx.k: k4 header-only change list -> index files only, backup_files 0"
+  else
+    fail "fx.k: k4 zero-change rerun wrong (rc=$rc)"
+  fi
+  # (k5) the retire removal fails: two complete backups, the guard accepts both
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  fx_shim rm "for a in \"\$@\"; do case \"\$a\" in \"$SANDBOX/cc-backups/\"*/2*) exit 1 ;; esac; done"
+  log="$SANDBOX/k5.log"
+  rc="$(fx_up "$log")"; g="$(fx_gdir)"
+  bad=0
+  n="$(find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+  if [ "$rc" = "0" ] && [ "$n" = "2" ]; then :; else bad=1; fail "fx.k: k5 expected rc 0 and 2 dirs (rc=$rc n=$n)"; fi
+  fx_extract_guard "$SANDBOX/guard.fn.sh"
+  for f in "$g"/*/; do
+    [ -f "${f}manifest.txt" ] || { bad=1; fail "fx.k: k5 a backup lacks manifest.txt: $f"; }
+    cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+TAD_BACKUP_ROOT_ABS="$SANDBOX/cc-backups"
+. "$SANDBOX/guard.fn.sh"
+assert_under_backup_root "${f%/}"
+HEOF
+    harness_run "$SANDBOX/h.sh" >/dev/null 2>&1 || { bad=1; fail "fx.k: k5 guard refuses ${f%/}"; }
+  done
+  grep -qF 'could not retire the full backup' "$log" || { bad=1; fail "fx.k: k5 no warning line"; }
+  if [ "$bad" = "0" ]; then pass "fx.k: k5 retire failed -> two complete backups, run rc 0, warning printed"; fi
+  # (k6) negative control: a forged dir outside the backup root is refused and untouched
+  mkdir -p "$SANDBOX/forged/x/20261022_101010"; printf 'version=1\n' > "$SANDBOX/forged/x/20261022_101010/manifest.txt"
+  cat > "$SANDBOX/h.sh" <<HEOF
+set -euo pipefail
+TAD_BACKUP_ROOT_ABS="$SANDBOX/cc-backups"
+. "$SANDBOX/guard.fn.sh"
+assert_under_backup_root "$SANDBOX/forged/x/20261022_101010"
+HEOF
+  if ! harness_run "$SANDBOX/h.sh" >/dev/null 2>&1 && [ -f "$SANDBOX/forged/x/20261022_101010/manifest.txt" ]; then
+    pass "fx.k: k6 forged backup dir outside the root refused by the unchanged guard, untouched"
+  else
+    fail "fx.k: k6 forged dir was accepted or touched"
+  fi
+}
+
+case_fxrb() {
+  CURRENT_CASE="fx.rb"
+  local rc plat d
+  for plat in codex "codex,claude-code"; do
+    fx_setup || return 0
+    printf '# My rules\nkeep me\n' > "$TARGET/CLAUDE.md"
+    snapshot_target "$SNAP/pre"
+    # the released-older OpenCode command and plugin are replaced first (D8), then the Cursor copy fails
+    fx_shim cp "case \"\$*\" in *\"$SOURCE/.cursor/hooks.json\"*) exit 1 ;; esac"
+    rc="$(run_install_cc "$plat" "$SANDBOX/rb.log")"
+    d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | grep -v -e '.tad-backup' || true)"
+    if [ "$rc" != "0" ] && [ -z "$d" ] && grep -qF 'Rollback coverage' "$SANDBOX/rb.log"; then
+      pass "fx.rb: [$plat] fault after the OpenCode replacement -> whole tree identical after rollback"
+    else
+      fail "fx.rb: [$plat] drift after rollback (rc=$rc): $(printf '%s\n' "$d" | head -5)"
+    fi
+    guarded_cleanup "$SANDBOX"; SANDBOX=""
+  done
+  # multi-platform, fault after the CLAUDE.md block was appended (the settings.json copy fails)
+  fx_setup || return 0
+  rm -f "$TARGET/.claude/settings.json"
+  printf '# My rules\nkeep me\n' > "$TARGET/CLAUDE.md"
+  snapshot_target "$SNAP/pre"
+  fx_shim cp "case \"\$*\" in *\"$SOURCE/.tad/templates/claude/settings.json\"*) exit 1 ;; esac"
+  rc="$(fx_up "$SANDBOX/rb2.log")"
+  d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | grep -v -e '.tad-backup' || true)"
+  if [ "$rc" != "0" ] && [ -z "$d" ]; then
+    pass "fx.rb: [codex,claude-code] fault after the CLAUDE.md append -> whole tree identical after rollback"
+  else
+    fail "fx.rb: [codex,claude-code] settings fault drift (rc=$rc): $(printf '%s\n' "$d" | head -5)"
+  fi
+}
+
+case_fxrep() {
+  CURRENT_CASE="fx.rep"
+  local rc log B R k n bad empty
+  fx_setup || return 0
+  ln -s nowhere "$TARGET/.agents/skills/x"
+  log="$SANDBOX/rep.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" != "0" ] || [ ! -f "$R" ]; then fail "fx.rep: run failed or no report (rc=$rc)"; return 0; fi
+  bad=0
+  for k in report_version from to platforms claude_code skill_entries_unresolved process_files_checked process_files_unchanged agents_md agents_md_saved backup_path backup_layout backup_layout_reason backup_bytes backup_files not_backed_up changes; do
+    n="$(LC_ALL=C grep -c "^$k$(printf '\t')" "$R" || true)"
+    [ "$n" = "1" ] || { bad=1; fail "fx.rep: key $k present $n times"; }
+  done
+  for k in unresolved_entry process_file_changed; do
+    n="$(LC_ALL=C grep -c "^$k$(printf '\t')" "$R" || true)"
+    [ "$n" -ge 1 ] || { bad=1; fail "fx.rep: repeatable key $k absent"; }
+  done
+  empty="$(LC_ALL=C grep -c "$(printf '\t')\$" "$R" || true)"
+  [ "$empty" = "0" ] || { bad=1; fail "fx.rep: $empty empty values"; }
+  if [ "$(fx_rv "$R" skill_entries_unresolved)" = "1" ] && fx_rv "$R" unresolved_entry | grep -qF '.agents/skills/x (broken link)'; then :; else bad=1; fail "fx.rep: the broken link is not reported"; fi
+  grep -qF 'Skill entries unresolved: 1' "$log" && grep -qF '.agents/skills/x (broken link)' "$log" || { bad=1; fail "fx.rep: the printed report misses the broken link"; }
+  if [ "$(fx_rv "$R" report_version)" = "1" ] && [ "$(fx_rv "$R" platforms)" = "codex,claude-code" ] && [ "$(fx_rv "$R" claude_code)" = "full" ]; then :; else bad=1; fail "fx.rep: report_version/platforms/claude_code wrong"; fi
+  for k in "TAD update report" "Version: 4.0.5 ->" "Platforms refreshed: codex, claude-code" "Claude Code: full" "Process files:" "TAD areas:" "AGENTS.md:" "Backup:" "Not backed up:" "Report file: $R"; do
+    grep -qF -e "$k" "$log" || { bad=1; fail "fx.rep: printed report lacks '$k'"; }
+  done
+  if [ "$bad" = "0" ]; then pass "fx.rep: every report key present once, no empty value, the broken entry listed, printed block complete"; fi
+}
+
+case_fxagm() {
+  CURRENT_CASE="fx.agm"
+  local rc log B R kept
+  if ! git -C "$REPO" rev-parse -q --verify 'v4.0.3^{commit}' >/dev/null 2>&1; then fail "fx.agm: tag v4.0.3 missing"; return 0; fi
+  # (a) a released copy (the v4.0.3 blob) is replaced, no .pre-tad
+  fx_setup || return 0
+  git -C "$REPO" show v4.0.3:AGENTS.md > "$TARGET/AGENTS.md"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/a.log"; rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && ! ls "$TARGET"/AGENTS.md.pre-tad.* >/dev/null 2>&1 && [ "$(fx_rv "$R" agents_md)" = "released-replaced" ] \
+     && cmp -s "$SNAP/pre/AGENTS.md" "$B/AGENTS.md" && cmp -s "$SOURCE/AGENTS.md" "$TARGET/AGENTS.md"; then
+    pass "fx.agm: (a) a released AGENTS.md is replaced with no .pre-tad copy; the backup holds the pre-run bytes"
+  else
+    fail "fx.agm: (a) wrong (rc=$rc state=$(fx_rv "$R" agents_md)): $(ls "$TARGET" | grep pre-tad | tr '\n' ' ')"
+  fi
+  # (b) released copy + one project line is kept as .pre-tad and named
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  { git -C "$REPO" show v4.0.3:AGENTS.md; printf 'MY PROJECT RULE\n'; } > "$TARGET/AGENTS.md"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/b.log"; rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  kept="$(ls "$TARGET"/AGENTS.md.pre-tad.* 2>/dev/null | head -1 || true)"
+  if [ "$rc" = "0" ] && [ -n "$kept" ] && cmp -s "$SNAP/pre/AGENTS.md" "$kept" && [ "$(fx_rv "$R" agents_md)" = "project-content-kept" ] \
+     && [ "$(fx_rv "$R" agents_md_saved)" = "$(basename "$kept")" ] && grep -qF "project content kept at $(basename "$kept")" "$log"; then
+    pass "fx.agm: (b) project content kept as AGENTS.md.pre-tad.<time> and named on the report"
+  else
+    fail "fx.agm: (b) wrong (rc=$rc state=$(fx_rv "$R" agents_md))"
+  fi
+  # (c) no ledger in the source: kept, state unknown-kept
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  rm -f "$SOURCE/.tad/provenance/claude-legacy.tsv" "$SOURCE/.tad/provenance/MANIFEST.sha1"
+  git -C "$REPO" show v4.0.3:AGENTS.md > "$TARGET/AGENTS.md"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/c.log"; rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  kept="$(ls "$TARGET"/AGENTS.md.pre-tad.* 2>/dev/null | head -1 || true)"
+  if [ "$rc" = "0" ] && [ -n "$kept" ] && cmp -s "$SNAP/pre/AGENTS.md" "$kept" && [ "$(fx_rv "$R" agents_md)" = "unknown-kept" ]; then
+    pass "fx.agm: (c) ledger unavailable -> today's .pre-tad copy, state unknown-kept"
+  else
+    fail "fx.agm: (c) wrong (rc=$rc state=$(fx_rv "$R" agents_md))"
+  fi
+}
+
+case_fxoc() {
+  CURRENT_CASE="fx.oc"
+  local rc d f
+  for f in .opencode/commands/tad-update.md .cursor/hooks.json; do
+    # released (v4.0.5) bytes: replaced, rc 0
+    fx_setup || return 0
+    git -C "$REPO" show "v4.0.5:$f" > "$TARGET/$f"
+    rc="$(fx_up "$SANDBOX/oc1.log")"
+    if [ "$rc" = "0" ] && cmp -s "$SOURCE/$f" "$TARGET/$f"; then
+      pass "fx.oc: $f at the v4.0.5 bytes is replaced, run rc 0"
+    else
+      fail "fx.oc: $f released copy not replaced (rc=$rc)"
+    fi
+    guarded_cleanup "$SANDBOX"; SANDBOX=""
+    # one project-edited byte: refused before any mutation
+    fx_setup || return 0
+    { git -C "$REPO" show "v4.0.5:$f"; printf 'x'; } > "$TARGET/$f"
+    snapshot_target "$SNAP/pre"
+    rc="$(fx_up "$SANDBOX/oc2.log")"
+    d="$(diff -r "$SNAP/pre" "$TARGET" 2>&1 | head -3 || true)"
+    if [ "$rc" != "0" ] && [ -z "$d" ] && grep -qF 'Recovery:' "$SANDBOX/oc2.log" && [ "$(fx_ndirs)" = "0" ]; then
+      pass "fx.oc: $f with one edited byte is refused, tree unchanged, recovery text printed"
+    else
+      fail "fx.oc: $f edited copy not refused cleanly (rc=$rc drift=[$d])"
+    fi
+    guarded_cleanup "$SANDBOX"; SANDBOX=""
+  done
+}
+
+case_fxown() {
+  CURRENT_CASE="fx.own"
+  local miss n zt
+  zt="$(sed -n '/^TAD_ZERO_TOUCH="/,/"$/p' "$TADSH" | tr -d '"' | sed 's/^TAD_ZERO_TOUCH=//' | LC_ALL=C sort)"
+  miss="$(comm -23 <(printf '%s\n' "$zt") <(grep -E '^- \*\*Project-owned' "$REPO/AGENTS.md" | grep -oE '\.tad/[a-z-]+/' | sed 's|^\.tad/||;s|/$||' | LC_ALL=C sort))"
+  n="$(grep -cE '^- \*\*(TAD-owned|Project-owned|AGENTS\.md is TAD-only)' "$REPO/AGENTS.md" || true)"
+  if [ -z "$miss" ] && [ "$n" = "3" ]; then
+    pass "fx.own: the File Ownership section names every zero-touch dir and has its three lines"
+  else
+    fail "fx.own: section incomplete (missing dirs: $(printf '%s' "$miss" | tr '\n' ' '); lines: $n)"
+  fi
+  if grep -qF '## File Ownership (TAD vs project)' "$REPO/AGENTS.md" && grep -E '^- \*\*Project-owned' "$REPO/AGENTS.md" | grep -qF 'NEXT.md' \
+     && grep -E '^- \*\*Project-owned' "$REPO/AGENTS.md" | grep -qF 'PROJECT_CONTEXT.md' && grep -E '^- \*\*Project-owned' "$REPO/AGENTS.md" | grep -qF 'CLAUDE.md'; then
+    pass "fx.own: the Project-owned line names NEXT.md, PROJECT_CONTEXT.md and CLAUDE.md"
+  else
+    fail "fx.own: the Project-owned line misses NEXT.md, PROJECT_CONTEXT.md or CLAUDE.md"
+  fi
+}
+
 # ── runner ───────────────────────────────────────────────────────────
 run_case() {
   case "$1" in
@@ -2097,6 +2533,14 @@ run_case() {
     fx.c) case_fxc ;;
     fx.d) case_fxd ;;
     fx.e) case_fxe ;;
+    fx.p) case_fxp ;;
+    fx.f) case_fxf ;;
+    fx.k) case_fxk ;;
+    fx.rb) case_fxrb ;;
+    fx.rep) case_fxrep ;;
+    fx.agm) case_fxagm ;;
+    fx.oc) case_fxoc ;;
+    fx.own) case_fxown ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
   if [ -n "$SANDBOX" ] && [ -d "$SANDBOX" ]; then guarded_cleanup "$SANDBOX" || true; fi
@@ -2117,6 +2561,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.22; run_case ac2.23; run_case ac2.24
   run_case ac2.25; run_case ac2.26; run_case ac2.27; run_case ac2.28
   run_case fx.a; run_case fx.b1; run_case fx.b3; run_case fx.c; run_case fx.d; run_case fx.e
+  run_case fx.p; run_case fx.f; run_case fx.k; run_case fx.rb; run_case fx.rep; run_case fx.agm; run_case fx.oc; run_case fx.own
   run_case r1
 else
   run_case "$CASE"

@@ -127,6 +127,16 @@ scope/recovery evidence rather than a blanket prompt.
 
 ---
 
+## File Ownership (TAD vs project)
+
+An update replaces TAD's files and leaves the project's alone. Nothing here is code: it is the list a human or a role can check before an update.
+
+- **TAD-owned (replaced by every update; do not edit):** the framework files under `.tad/` (every file and dir the installer copies: hooks, scripts, templates, skills, config, version, the pack registry index, `brain-index.md`); `.agents/skills/<name>` for every skill TAD ships (a skill marked `ownership: project-owned`, an `.agents/skills/<name>/local/` tree and forked or customized pack files are yours: the installer keeps them); `AGENTS.md` itself; `.codex/hooks.json`, `.opencode/commands/tad-update.md`, `.opencode/plugins/tad-hooks.ts`, `.cursor/hooks.json`; for Claude Code the `.claude/skills/<name>` links TAD made, the `.claude/agents/<file>` definitions TAD projected (one you changed is kept), `.claude/settings.json` only when the update created it, and the TAD block inside `CLAUDE.md`.
+- **Project-owned (never changed by an update; the installer only creates them when missing):** every other dir under `.tad/` that holds your work: `.tad/active/`, `.tad/archive/`, `.tad/decisions/`, `.tad/dependencies/`, `.tad/evidence/`, `.tad/github-registry/`, `.tad/memory/`, `.tad/pair-testing/`, `.tad/project-knowledge/`, `.tad/research-notebooks/`, `.tad/skill-library/`, `.tad/skillify-candidates/`; `NEXT.md`, `PROJECT_CONTEXT.md`; `CLAUDE.md` outside the TAD block (an update may append the TAD block to it and never changes your text); an existing `.claude/settings.json`; every other file in `.claude/`, `.opencode/`, `.cursor/`, `.codex/`; skills of your own under `.agents/skills/`.
+- **AGENTS.md is TAD-only:** project rules go to `.tad/project-knowledge/` (read at every role activation) or to `CLAUDE.md` outside the TAD block; never into `AGENTS.md`, which every update replaces. A copy of `AGENTS.md` that holds text TAD never released is kept as `AGENTS.md.pre-tad.<time>` before it is replaced.
+
+---
+
 ## Default Behavior (no role specified)
 
 If no role is requested, act as a general TAD assistant:

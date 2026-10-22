@@ -92,9 +92,9 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 - **Codex**：`$tad-update`（skill）
 - **OpenCode**：`/tad-update`（**updater-only**：仅提供更新入口，不包含 Alex/Blake/Gate 角色、hooks 或 gate 能力）
 
-`tad-update.sh` 的 `--platform` 只接受 `codex` 与 `claude-code`，不接受 `opencode` 或 `cursor`。
+`tad-update.sh` 的 `--platform` 接受逗号列表（`codex`、`claude-code`、`opencode`、`cursor`，不带空格）；`--check` 打印的 `To apply:` 那一行就是要执行的命令（如 `/bin/bash .tad/scripts/tad-update.sh --yes --platform codex,claude-code`），一次运行更新列表里的每个平台。探测只负责显示：只有显式写在 `--platform` 里的平台才会被应用。一律用 `/bin/bash` 调用（Homebrew bash 5.3 可能崩溃退出 139）。
 
-流程：先运行 `--check` 查看当前/远程版本与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 apply。helper 会在每次项目变更前自动备份，且仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
+流程：先运行 `/bin/bash .tad/scripts/tad-update.sh --check` 查看当前/远程版本、平台与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 `To apply:` 那一行。备份只保留这次更新改动或删除的文件的原貌（旧版是整个框架目录的完整拷贝）；运行结束会打印并保存更新报告 `update-report.tsv`（版本、平台、流程文件有没有变、备份位置）。`AGENTS.md` 的「File Ownership」一节说明哪些文件归 TAD、哪些归项目。helper 仅在你确认后调用官方安装器。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
 
 ### 从旧版 Claude Code 安装升级
 
@@ -131,7 +131,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
   （**TAD 不会代删**）。
 3. **脚本里传 `--platform both` 的用户**：该参数自 v3 起不再
    提供（`--platform claude-code` 自 v3.3.0 起已恢复，见上），安装器会**在改动任何文件前**停下并打印说明。请改传 `--platform codex`（或 `claude-code`），或直接重跑：
-   - 本地 updater：`bash .tad/scripts/tad-update.sh --platform codex --yes`
+   - 本地 updater：`/bin/bash .tad/scripts/tad-update.sh --yes --platform codex`
    - npm：`npx tad-framework@latest --platform codex`
    - curl：`curl -fsSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform codex --yes`
 
