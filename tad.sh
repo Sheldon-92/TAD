@@ -2153,9 +2153,9 @@ copy_framework_files() {
     if [ -f ".tad/scripts/tad-update.sh" ] && [ -f "$src/.tad/scripts/tad-update.sh" ] && [ ! -L ".tad/scripts/tad-update.sh" ]; then
         local _hv_tmp=".tad/scripts/.tad-update.sh.new.$$"
         if cp "$src/.tad/scripts/tad-update.sh" "$_hv_tmp" 2>/dev/null; then
-            mv -f "$_hv_tmp" ".tad/scripts/tad-update.sh" 2>/dev/null || rm -f "$_hv_tmp"
+            mv -f "$_hv_tmp" ".tad/scripts/tad-update.sh" 2>/dev/null || rm -f "$_hv_tmp" # RM-OK:update-helper-swap-fail
         else
-            rm -f "$_hv_tmp"
+            rm -f "$_hv_tmp" # RM-OK:update-helper-copy-fail
         fi
     fi
 
