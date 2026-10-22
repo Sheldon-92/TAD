@@ -72,6 +72,11 @@ if [ "${TAD_TEST_FULL:-}" = "1" ]; then
   TMP_ROOT="$(mktemp -d)" || exit 2
   export TAD_BACKUP_ROOT="$TMP_ROOT/backups"
   run_test installer-data-safety-fixture /bin/bash .tad/tests/installer-data-safety-fixture.sh --case all
+  # `--case all` above stops at fx.c (it exits silently there, also before this phase), so the
+  # update-flow cases that come after it run by name.
+  for c in fx.p fx.f fx.k fx.rb fx.rep fx.agm fx.oc fx.own; do
+    run_test "installer-data-safety-fixture:$c" /bin/bash .tad/tests/installer-data-safety-fixture.sh --case "$c"
+  done
   for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop; do
     run_test "tad-update-fixture:$c" /bin/bash .tad/tests/tad-update-fixture.sh --case "$c"
   done
