@@ -1289,6 +1289,11 @@ report_claude_state() {
     fi
 }
 
+# report_covered_text — the one coverage statement (printed `covered:` line and the `covered` report key)
+report_covered_text() {
+    printf '%s' ".tad/ framework files, $TAD_SURFACE_ROOTS; other files under .claude/ .opencode/ .cursor/ are neither checked nor backed up by this update"
+}
+
 # write_report_file — update-report.tsv content: "key<TAB>value" per line, repeatable keys
 # repeat; no value is empty ("-" when none). Phase 2 reads it with cut -f2- per key.
 write_report_file() {
@@ -1322,6 +1327,7 @@ write_report_file() {
     else
         printf 'process_file_changed%s-\n' "$_t"
     fi
+    printf 'covered%s%s\n' "$_t" "$(report_covered_text)"
     printf 'agents_md%s%s\n' "$_t" "$AGENTS_MD_STATE"
     printf 'agents_md_saved%s%s\n' "$_t" "${AGENTS_MD_SAVED:--}"
     printf 'backup_path%s%s\n' "$_t" "${BACKUP_PATH_ABS:--}"
@@ -1367,7 +1373,7 @@ print_update_report() {
     else
         echo "TAD areas: $CHANGES_N paths added, changed or removed (changes.tsv; pre-images of changed/removed in the backup)"
     fi
-    echo "  covered: .tad/ framework files, $TAD_SURFACE_ROOTS; other files under .claude/ .opencode/ .cursor/ are neither checked nor backed up by this update"
+    echo "  covered: $(report_covered_text)"
     case "$AGENTS_MD_STATE" in
         released-replaced) echo "AGENTS.md: released copy replaced" ;;
         project-content-kept) echo "AGENTS.md: project content kept at $AGENTS_MD_SAVED" ;;
@@ -2140,6 +2146,18 @@ copy_framework_files() {
         [ -n "$tf" ] || continue
         cp "$src/.tad/$tf" .tad/ 2>/dev/null || true
     done <<< "$(derive_framework_top_files "$src")"
+
+    # The update helper may be the very script that started this run. Replace it by rename
+    # (temp file in the same directory + mv), never by an in-place write: a running old copy
+    # keeps reading its old inode and finishes with its own exit status and message.
+    if [ -f ".tad/scripts/tad-update.sh" ] && [ -f "$src/.tad/scripts/tad-update.sh" ] && [ ! -L ".tad/scripts/tad-update.sh" ]; then
+        local _hv_tmp=".tad/scripts/.tad-update.sh.new.$$"
+        if cp "$src/.tad/scripts/tad-update.sh" "$_hv_tmp" 2>/dev/null; then
+            mv -f "$_hv_tmp" ".tad/scripts/tad-update.sh" 2>/dev/null || rm -f "$_hv_tmp"
+        else
+            rm -f "$_hv_tmp"
+        fi
+    fi
 
     # Framework subdirectories — DERIVED (deny-list), not hardcoded.
     # A new framework dir (e.g. codex, capability-packs, cross-model) is

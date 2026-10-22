@@ -2396,7 +2396,7 @@ case_fxrep() {
   rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
   if [ "$rc" != "0" ] || [ ! -f "$R" ]; then fail "fx.rep: run failed or no report (rc=$rc)"; return 0; fi
   bad=0
-  for k in report_version from to platforms claude_code skill_entries_unresolved process_files_checked process_files_unchanged agents_md agents_md_saved backup_path backup_layout backup_layout_reason backup_bytes backup_files not_backed_up changes; do
+  for k in report_version from to platforms claude_code skill_entries_unresolved process_files_checked process_files_unchanged agents_md agents_md_saved backup_path backup_layout backup_layout_reason backup_bytes backup_files not_backed_up changes covered; do
     n="$(LC_ALL=C grep -c "^$k$(printf '\t')" "$R" || true)"
     [ "$n" = "1" ] || { bad=1; fail "fx.rep: key $k present $n times"; }
   done
@@ -2407,6 +2407,7 @@ case_fxrep() {
   empty="$(LC_ALL=C grep -c "$(printf '\t')\$" "$R" || true)"
   [ "$empty" = "0" ] || { bad=1; fail "fx.rep: $empty empty values"; }
   if [ "$(fx_rv "$R" skill_entries_unresolved)" = "1" ] && fx_rv "$R" unresolved_entry | grep -qF '.agents/skills/x (broken link)'; then :; else bad=1; fail "fx.rep: the broken link is not reported"; fi
+  if [ "$(grep -F '  covered: ' "$log" | head -1 | sed 's/^  covered: //')" = "$(fx_rv "$R" covered)" ] && [ -n "$(fx_rv "$R" covered)" ]; then :; else bad=1; fail "fx.rep: the covered key differs from the printed covered: line"; fi
   grep -E '^Report file: .*/update-report.tsv$' "$log" >/dev/null || { bad=1; fail "fx.rep: Report file line wrong"; }
   grep -qF 'Skill entries unresolved: 1' "$log" && grep -qF '.agents/skills/x (broken link)' "$log" || { bad=1; fail "fx.rep: the printed report misses the broken link"; }
   if [ "$(fx_rv "$R" report_version)" = "1" ] && [ "$(fx_rv "$R" platforms)" = "codex,claude-code" ] && [ "$(fx_rv "$R" claude_code)" = "full" ]; then :; else bad=1; fail "fx.rep: report_version/platforms/claude_code wrong"; fi

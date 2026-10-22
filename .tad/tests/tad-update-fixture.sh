@@ -1555,12 +1555,12 @@ case_first_hop() {
     local p="$SANDBOX/fh" out rc=0
     mp_project "$p" multi || return 0
     out="$(run_cand "$p" --yes 2>&1)" || rc=$?
-    # The v4.0.5 helper is overwritten in place by this very update while bash is still reading it, so its
-    # own exit status after the install is not reliable (rc is recorded, not asserted; see the Phase 1
-    # completion report, Escalations). What counts: the project is updated and the report was printed.
-    if printf '%s\n' "$out" | grep -qF 'TAD update report' && printf '%s\n' "$out" | grep -qF 'Claude Code: links only (sticky)' \
+    # The installer replaces the running helper by temp file + rename, so the old helper keeps reading its
+    # old inode: it must exit 0 and print its own normal message (no "command not found" garble).
+    if [ "$rc" -eq 0 ] && ! printf '%s\n' "$out" | grep -qE 'command not found|syntax error' \
+       && printf '%s\n' "$out" | grep -qF 'TAD update report' && printf '%s\n' "$out" | grep -qF 'Claude Code: links only (sticky)' \
        && [ "$(cat "$p/.tad/version.txt")" = "$FIXTURE_VERSION" ]; then
-        ok "first-hop: the v4.0.5 helper updated the project (helper rc=$rc); the report says Claude Code: links only (sticky)"
+        ok "first-hop: the v4.0.5 helper updated the project and exited 0 (helper rc=$rc); the report says Claude Code: links only (sticky)"
     else
         bad "first-hop: rc=$rc: $(printf '%s\n' "$out" | tail -4 | tr '\n' '|')"
     fi
