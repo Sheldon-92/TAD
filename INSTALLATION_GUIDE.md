@@ -94,7 +94,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 `tad-update.sh` 的 `--platform` 接受逗号列表（`codex`、`claude-code`、`opencode`、`cursor`，不带空格）；`--check` 打印的 `To apply:` 那一行就是要执行的命令（如 `/bin/bash .tad/scripts/tad-update.sh --yes --platform codex,claude-code`），一次运行更新列表里的每个平台。探测只负责显示：只有显式写在 `--platform` 里的平台才会被应用。一律用 `/bin/bash` 调用（Homebrew bash 5.3 可能崩溃退出 139）。
 
-流程：先运行 `/bin/bash .tad/scripts/tad-update.sh --check` 查看当前/远程版本、平台与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 `To apply:` 那一行。备份只保留这次更新改动或删除的文件的原貌（旧版是整个框架目录的完整拷贝）；运行结束会打印并保存更新报告 `update-report.tsv`（版本、平台、流程文件有没有变、备份位置）。更新报告同时给出 `covered` 一项，写明覆盖范围（TAD 框架文件与列出的入口；`.claude/`、`.opencode/`、`.cursor/` 下的其他文件既不检查也不备份）。`AGENTS.md` 的「File Ownership」一节说明哪些文件归 TAD、哪些归项目。helper 仅在你确认后调用官方安装器。在 Claude Code / Codex 里对 Cora 说「升级 TAD」走的是同一套两步流程（先 `--check`，确认后再执行）。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
+流程：先运行 `/bin/bash .tad/scripts/tad-update.sh --check` 查看当前/远程版本、平台与备份位置（只读、不改任何文件）；确认要更新后再显式确认并执行 `To apply:` 那一行。备份只保留这次更新改动或删除的文件的原貌（旧版是整个框架目录的完整拷贝）；运行结束会打印并保存更新报告 `update-report.tsv`（版本、平台、项目文件有没有变、你在 TAD 文件里的改动、备份位置、暂存区）。更新前后会检查除 `.git/` 与 `node_modules/` 之外的每个现有文件：TAD 自己的区域会列出并备份改动过的文件，其他被改动的文件会点名。更新报告同时给出 `covered` 一项写明这个范围。旧备份移到暂存区（`~/.tad-backups/<项目>/holding/`），只有你说「是」才会删除：下次更新的检查界面会列出「Will clear」，一句「是」即在更新成功后清掉；也可以说「清掉」随时清；说「看备份」可以看到项目改过的 TAD 文件（差异写到本地文件，不在对话里显示）。`AGENTS.md` 的「File Ownership」一节说明哪些文件归 TAD、哪些归项目。helper 仅在你确认后调用官方安装器。在 Claude Code / Codex 里对 Cora 说「升级 TAD」走的是同一套两步流程（先 `--check`，确认后再执行）。不支持静默自动更新——`--yes` 只能在你明确批准后使用。
 
 ### 从旧版 Claude Code 安装升级
 

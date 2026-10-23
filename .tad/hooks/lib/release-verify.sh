@@ -86,7 +86,8 @@
 #
 #   installer-destructive-guard <repo_root>
 #       Machine-checked destructive-operation guard (AC2.5): every `rm -rf` /
-#       `rm -f` / `find -delete` / `rmdir` call site in <repo_root>/tad.sh carries
+#       `rm -f` / `find -delete` / `rmdir` call site in <repo_root>/tad.sh and in
+#       <repo_root>/.tad/scripts/tad-backups.sh (when present; ids unique per file) carries
 #       a SAME-LINE `# RM-OK:<id>` marker (one per site, each id used exactly
 #       once; per-site id→reason table lives in the evidence appendix).
 #       `cp`/`mv`-onto-user-destination vectors are covered BEHAVIORALLY by the
@@ -111,6 +112,18 @@
 #       row. Reads the git index, not the working tree; a non-git repo_root exits 2. Fix: run
 #       .tad/scripts/gen-claude-provenance.sh. Exit 0 = pass; exit 1 = ledger stale or
 #       damaged (each failed check NAMED); exit 2 = usage / no SHA-1 tool / not a git repo.
+#
+#   framework-provenance <repo_root>
+#       Release-file ledger gate (backup lifecycle): (1) .tad/provenance/framework-released.sha1
+#       equals the git blob id of framework-released.tsv; (2) the header `rows=` equals the data
+#       row count; (3) every git-index entry the generator would record (regular file, unquoted
+#       path, under .tad/ minus the zero-touch and transient dirs and the two top-deny files, or
+#       under .agents/skills/ .claude/ .codex/ .opencode/ .cursor/, or AGENTS.md / CLAUDE.md) has
+#       its blob id as a row (each miss named); (4) the blob id of the HEAD tad.sh HOOKS_EOF
+#       heredoc is a row; (5) .tad/provenance is committed. Reads the git index. Fix: run
+#       .tad/scripts/gen-framework-provenance.sh after committing, then commit the ledger.
+#       Exit 0 = pass; exit 1 = stale or damaged (each failed check NAMED); exit 2 = usage / no
+#       SHA-1 tool / not a git repo.
 #
 #   archive-links <repo_root> [<ref>]   |   archive-links --tarball <file>
 #       Release-archive link gate. Ref form (default HEAD) builds the archive with `git archive`
@@ -157,6 +170,7 @@ usage() {
   echo "  release-verify.sh migration <repo_root> [<expected_version>]" >&2
   echo "  release-verify.sh installer-destructive-guard <repo_root>" >&2
   echo "  release-verify.sh provenance <repo_root>" >&2
+  echo "  release-verify.sh framework-provenance <repo_root>" >&2
   echo "  release-verify.sh state-surface [<repo_root>]" >&2
   echo "  release-verify.sh path-refs [<repo_root>]" >&2
   echo "  release-verify.sh archive-links <repo_root> [<ref>]" >&2
@@ -785,11 +799,13 @@ VERSION_SWEEP_EOF
     if [ $# -ne 2 ]; then usage; exit 2; fi
     GREPO="$2"
     GFILE="$GREPO/tad.sh"
+    GFILE2="$GREPO/.tad/scripts/tad-backups.sh"
     if [ ! -f "$GFILE" ]; then echo "ERROR: tad.sh not found under: $GREPO" >&2; exit 2; fi
 
     echo "========================================="
     echo "INSTALLER-DESTRUCTIVE-GUARD (per-site RM-OK markers)"
     echo "  FILE: $GFILE"
+    if [ -f "$GFILE2" ]; then echo "  FILE: $GFILE2"; else echo "  (tad-backups.sh not present under $GREPO/.tad/scripts: only tad.sh scanned)"; fi
     echo "========================================="
 
     # Baked-in comment/prose exclusions — REVIEWED FIXED-STRING literals (each
@@ -802,58 +818,64 @@ VERSION_SWEEP_EOF
     GEXCL2="Empty-dir rmdirs keep"
     GEXCL3="rmdir removes ONLY empty dirs"
 
-    gcandidates="$(grep -nE -e 'rm -rf|rm -fr|rm -f|rmdir|-delete' "$GFILE")" || true
-    if [ -z "$gcandidates" ]; then
-      echo "  (no destructive-verb lines found)"
-      echo "VERDICT: installer-destructive-guard PASS (exit 0)"
-      exit 0
-    fi
-
-    gids_file="$(mktemp /tmp/tad-guard-ids.XXXXXX)" || exit 2
     gfails=0
     gmarked=0
     gexcluded=0
-    while IFS= read -r gline; do
-      [ -n "$gline" ] || continue
-      gno="${gline%%:*}"
-      gcontent="${gline#*:}"
-      if printf '%s' "$gcontent" | grep -qF -e '# RM-OK:'; then
-        # One marker per site: extract EVERY id on the line (multi-site lines
-        # carry N markers); each id must be non-empty [A-Za-z0-9_-].
-        gids_on_line="$(printf '%s' "$gcontent" | grep -o -e 'RM-OK:[A-Za-z0-9][A-Za-z0-9_-]*' | sed -e 's/^RM-OK://')" || true
-        if [ -z "$gids_on_line" ]; then
-          echo "  ❌ UNMARKED (malformed marker): tad.sh:$gno" >&2
-          gfails=$((gfails + 1))
-          continue
-        fi
-        while IFS= read -r gid; do
-          [ -n "$gid" ] || continue
-          printf '%s\n' "$gid" >> "$gids_file"
-          gmarked=$((gmarked + 1))
-        done <<< "$gids_on_line"
-      else
-        # Comment-only lines (#-first) matching a baked literal are excluded.
-        if printf '%s' "$gcontent" | grep -qE -e '^[[:space:]]*#' \
-           && { printf '%s' "$gcontent" | grep -qF -e "$GEXCL1" \
-                || printf '%s' "$gcontent" | grep -qF -e "$GEXCL2" \
-                || printf '%s' "$gcontent" | grep -qF -e "$GEXCL3"; }; then
-          gexcluded=$((gexcluded + 1))
+    gany=0
+    # Each file is scanned on its own: ids are unique per file (the same id in two files is two sites).
+    for gscan in "$GFILE" "$GFILE2"; do
+      [ -f "$gscan" ] || continue
+      gbase="$(basename "$gscan")"
+      gcandidates="$(grep -nE -e 'rm -rf|rm -fr|rm -f|rmdir|-delete' "$gscan")" || true
+      [ -n "$gcandidates" ] || continue
+      gany=1
+      gids_file="$(mktemp /tmp/tad-guard-ids.XXXXXX)" || exit 2
+      while IFS= read -r gline; do
+        [ -n "$gline" ] || continue
+        gno="${gline%%:*}"
+        gcontent="${gline#*:}"
+        if printf '%s' "$gcontent" | grep -qF -e '# RM-OK:'; then
+          # One marker per site: extract EVERY id on the line (multi-site lines
+          # carry N markers); each id must be non-empty [A-Za-z0-9_-].
+          gids_on_line="$(printf '%s' "$gcontent" | grep -o -e 'RM-OK:[A-Za-z0-9][A-Za-z0-9_-]*' | sed -e 's/^RM-OK://')" || true
+          if [ -z "$gids_on_line" ]; then
+            echo "  ❌ UNMARKED (malformed marker): $gbase:$gno" >&2
+            gfails=$((gfails + 1))
+            continue
+          fi
+          while IFS= read -r gid; do
+            [ -n "$gid" ] || continue
+            printf '%s\n' "$gid" >> "$gids_file"
+            gmarked=$((gmarked + 1))
+          done <<< "$gids_on_line"
         else
-          echo "  ❌ UNMARKED: tad.sh:$gno: $(printf '%s' "$gcontent" | head -c 120)" >&2
-          gfails=$((gfails + 1))
+          # Comment-only lines (#-first) matching a baked literal are excluded.
+          if printf '%s' "$gcontent" | grep -qE -e '^[[:space:]]*#' \
+             && { printf '%s' "$gcontent" | grep -qF -e "$GEXCL1" \
+                  || printf '%s' "$gcontent" | grep -qF -e "$GEXCL2" \
+                  || printf '%s' "$gcontent" | grep -qF -e "$GEXCL3"; }; then
+            gexcluded=$((gexcluded + 1))
+          else
+            echo "  ❌ UNMARKED: $gbase:$gno: $(printf '%s' "$gcontent" | head -c 120)" >&2
+            gfails=$((gfails + 1))
+          fi
         fi
+      done <<< "$gcandidates"
+      # Uniqueness: each id used exactly once within the file.
+      gdupes="$(LC_ALL=C sort "$gids_file" | LC_ALL=C uniq -d)" || true
+      rm -f "$gids_file"
+      if [ -n "$gdupes" ]; then
+        while IFS= read -r gd; do
+          [ -n "$gd" ] || continue
+          echo "  ❌ DUPLICATE id: $gd ($gbase)" >&2
+        done <<< "$gdupes"
+        gfails=$((gfails + 1))
       fi
-    done <<< "$gcandidates"
-
-    # Uniqueness: each id used exactly once.
-    gdupes="$(LC_ALL=C sort "$gids_file" | LC_ALL=C uniq -d)" || true
-    rm -f "$gids_file"
-    if [ -n "$gdupes" ]; then
-      while IFS= read -r gd; do
-        [ -n "$gd" ] || continue
-        echo "  ❌ DUPLICATE id: $gd" >&2
-      done <<< "$gdupes"
-      gfails=$((gfails + 1))
+    done
+    if [ "$gany" -eq 0 ]; then
+      echo "  (no destructive-verb lines found)"
+      echo "VERDICT: installer-destructive-guard PASS (exit 0)"
+      exit 0
     fi
 
     echo "-----------------------------------------"
@@ -971,6 +993,115 @@ VERSION_SWEEP_EOF
       exit 0
     else
       echo "VERDICT: provenance FAIL — $pvfails check(s) failed (exit 1)"
+      exit 1
+    fi
+    ;;
+
+  # ───────────────────────── framework-provenance ─────────────────────────
+  framework-provenance)
+    if [ $# -ne 2 ]; then usage; exit 2; fi
+    FP_REPO="$2"
+    FP_DIR="$FP_REPO/.tad/provenance"
+    FP_LEDGER="$FP_DIR/framework-released.tsv"
+    FP_MANIFEST="$FP_DIR/framework-released.sha1"
+    echo "========================================="
+    echo "FRAMEWORK-PROVENANCE (release-file ledger)"
+    echo "  DIR: $FP_DIR"
+    echo "========================================="
+    FP_TOOL=""
+    if command -v shasum >/dev/null 2>&1 && [ "$(printf abc | shasum -a 1 2>/dev/null | cut -d' ' -f1)" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then FP_TOOL=shasum
+    elif command -v sha1sum >/dev/null 2>&1 && [ "$(printf abc | sha1sum 2>/dev/null | cut -d' ' -f1)" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then FP_TOOL=sha1sum
+    elif command -v openssl >/dev/null 2>&1 && [ "$(printf abc | openssl sha1 2>/dev/null | awk '{print $NF}')" = "a9993e364706816aba3e25717850c26c9cd0d89d" ]; then FP_TOOL=openssl
+    fi
+    if [ -z "$FP_TOOL" ]; then echo "ERROR: no working SHA-1 tool (shasum, sha1sum, openssl)" >&2; exit 2; fi
+    fp_blob_id() {
+      local f="$1" o
+      case "$FP_TOOL" in
+        shasum) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | shasum -a 1)"; printf '%s' "${o%% *}" ;;
+        sha1sum) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | sha1sum)"; printf '%s' "${o%% *}" ;;
+        openssl) o="$({ printf 'blob %s\0' "$(( $(LC_ALL=C wc -c < "$f") ))"; cat -- "$f"; } | openssl sha1)"; printf '%s' "${o##* }" ;;
+      esac
+    }
+    fpfails=0
+    fp_fail() { echo "  ❌ $*" >&2; fpfails=$((fpfails + 1)); }
+    if ! FP_INDEX="$(git -C "$FP_REPO" -c core.quotepath=false ls-files -s -- .tad .agents/skills .claude .codex .opencode .cursor AGENTS.md CLAUDE.md 2>/dev/null)"; then
+      echo "ERROR: framework-provenance needs a git repository (git ls-files failed in $FP_REPO)" >&2
+      exit 2
+    fi
+    if [ ! -f "$FP_LEDGER" ] || [ ! -f "$FP_MANIFEST" ]; then
+      fp_fail "ledger or framework-released.sha1 missing under $FP_DIR (run .tad/scripts/gen-framework-provenance.sh)"
+    else
+      fp_have="$(fp_blob_id "$FP_LEDGER")"
+      fp_want="$(tr -d ' \t\r\n' < "$FP_MANIFEST")"
+      if [ "$fp_have" = "$fp_want" ] && [ -n "$fp_have" ]; then echo "  ✓ framework-released.sha1 matches the ledger ($fp_have)"
+      else fp_fail "framework-released.sha1 ($fp_want) != ledger blob id ($fp_have)"; fi
+      fp_hdr_rows="$(sed -n '1s/^# schema=1 rows=\([0-9][0-9]*\)$/\1/p' "$FP_LEDGER")"
+      fp_rows="$(grep -vc '^#' "$FP_LEDGER" || true)"
+      if [ -n "$fp_hdr_rows" ] && [ "$fp_hdr_rows" = "$(printf '%s' "$fp_rows" | tr -d ' ')" ]; then echo "  ✓ header rows= matches the data row count ($fp_hdr_rows)"
+      else fp_fail "header rows= '$fp_hdr_rows' != data rows '$fp_rows' (or the header is not '# schema=1 rows=<n>')"; fi
+      # (3) every selected index entry is a row. Deny dirs come from the one authoritative source.
+      fp_deny="$(mktemp "${TMPDIR:-/tmp}/tad-fp-deny.XXXXXX")" || exit 2
+      { bash "$DERIVE" --zero-touch "$FP_REPO"; bash "$DERIVE" --transient "$FP_REPO"; } > "$fp_deny" 2>/dev/null || true
+      fp_missing="$(printf '%s\n' "$FP_INDEX" | LC_ALL=C awk -F'\t' -v ledger="$FP_LEDGER" -v denyfile="$fp_deny" '
+        function keep(p,   rest, s, first) {
+          if (substr(p, 1, 1) == "\"") return 0
+          if (p in exact) return 1
+          if (substr(p, 1, 15) == ".agents/skills/") return 1
+          if (substr(p, 1, 8) == ".claude/" || substr(p, 1, 7) == ".codex/" || substr(p, 1, 10) == ".opencode/" || substr(p, 1, 8) == ".cursor/") return 1
+          if (substr(p, 1, 5) == ".tad/") {
+            rest = substr(p, 6)
+            if (rest in topdeny) return 0
+            s = index(rest, "/")
+            if (s == 0) return 1
+            first = substr(rest, 1, s - 1)
+            if (first in deny) return 0
+            return 1
+          }
+          return 0
+        }
+        BEGIN {
+          exact["AGENTS.md"] = 1; exact["CLAUDE.md"] = 1
+          topdeny["sync-registry.yaml"] = 1; topdeny["brain-index.md"] = 1
+          while ((getline line < denyfile) > 0) deny[line] = 1
+          close(denyfile)
+          while ((getline line < ledger) > 0) { if (line !~ /^#/) { split(line, f, "\t"); have[f[1]] = 1 } }
+          close(ledger)
+        }
+        NF >= 2 {
+          split($1, m, " "); mode = m[1]; id = m[2]; p = $2
+          if (mode != "100644" && mode != "100755") next
+          if (!keep(p)) next
+          if (!(id in have)) print p "\t" id
+        }')"
+      rm -f "$fp_deny"
+      if [ -n "$fp_missing" ]; then
+        fp_n="$(printf '%s\n' "$fp_missing" | wc -l | tr -d ' ')"
+        printf '%s\n' "$fp_missing" | head -n 20 | while IFS="$(printf '\t')" read -r fp_p fp_b; do
+          echo "  not in ledger: $fp_p ($fp_b)" >&2
+        done
+        [ "$fp_n" -gt 20 ] && echo "  ... and $((fp_n - 20)) more not in ledger" >&2
+        fp_fail "$fp_n index entr(ies) not in the ledger; regenerate it with .tad/scripts/gen-framework-provenance.sh after committing"
+      else echo "  ✓ every selected index file is in the ledger"; fi
+      # (4) the HEAD installer heredoc is a row
+      fp_hk="$(mktemp "${TMPDIR:-/tmp}/tad-fp-hk.XXXXXX")" || exit 2
+      git -C "$FP_REPO" show "HEAD:tad.sh" 2>/dev/null | sed -n "/<< *'HOOKS_EOF'/,/^ *HOOKS_EOF\$/p" | sed '1d;$d' > "$fp_hk" || true
+      if [ -s "$fp_hk" ]; then
+        fp_hid="$(fp_blob_id "$fp_hk")"
+        if grep -q "^${fp_hid}	" "$FP_LEDGER"; then echo "  ✓ the HEAD hooks.json heredoc is a row ($fp_hid)"
+        else fp_fail "the HEAD tad.sh hooks.json heredoc ($fp_hid) is not a row; regenerate the ledger"; fi
+      else fp_fail "no HOOKS_EOF heredoc found in HEAD:tad.sh"; fi
+      rm -f "$fp_hk"
+      # (5) committed
+      if [ -n "$(git -C "$FP_REPO" status --porcelain -- .tad/provenance/framework-released.tsv .tad/provenance/framework-released.sha1 2>/dev/null)" ]; then
+        fp_fail ".tad/provenance/framework-released.* has uncommitted changes; commit the ledger so it ships with the release"
+      else echo "  ✓ the ledger is committed"; fi
+    fi
+    echo "-----------------------------------------"
+    if [ "$fpfails" -eq 0 ]; then
+      echo "VERDICT: framework-provenance PASS (exit 0)"
+      exit 0
+    else
+      echo "VERDICT: framework-provenance FAIL — $fpfails check(s) failed (exit 1)"
       exit 1
     fi
     ;;

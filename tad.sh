@@ -786,6 +786,7 @@ prune_backups() {
     local _gdir="$1" _new="$2"
     [ -d "$_gdir" ] || return 0
     local _path _name _ts _sfx _line _v _complete=""
+    local _pp _gp="" _vname _hd _hid _hit _hn _hok _hproj
     for _path in "$_gdir"/*; do
         [ -d "$_path" ] || continue
         _name="$(basename "$_path")"
@@ -852,10 +853,51 @@ prune_backups() {
             log_warn "prune: refusing out-of-group path: $_victim"
             continue
         fi
-        if rm -rf "$_victim"; then # RM-OK:tad-backup-retention
-            log_info "Pruned old backup (retention: latest 2 + last pre-version-change backup per repo): $_victim"
+        # Phase 3 (D7 c): a retention victim is HELD, never deleted. The holding area sits in this group
+        # as holding/h<time>[.n]/payload/<victim>; only a listed yes clears it (tad-backups.sh). Every
+        # step follows the anchor rule (handoff 4.7): the base is resolved once here, each dir is made
+        # one level under a dir whose physical path equals the expected string before anything goes in
+        # or comes out of it. This block uses no function of this file (fixtures extract prune_backups).
+        if [ -z "$_gp" ]; then
+            _pp="$(cd "$(dirname "$_gdir")" 2>/dev/null && pwd -P)" || _pp=""
+            _gp="$_pp/$(basename "$_gdir")"
+            if [ -z "$_pp" ] || [ "$_gp" != "$(cd "$_gdir" 2>/dev/null && pwd -P)" ]; then _gp="!"; fi
+        fi
+        _vname="$(basename "$_victim")"
+        if [ "$_gp" = "!" ]; then
+            log_warn "prune: backup group path does not resolve to itself; old backup left in place: $_victim"
+            continue
+        fi
+        _hd="$_gp/holding"
+        if [ ! -e "$_hd" ] && [ ! -L "$_hd" ]; then
+            if mkdir "$_hd" 2>/dev/null; then
+                chmod 700 "$_hd" 2>/dev/null || true
+                if [ "$(cd "$_hd" 2>/dev/null && pwd -P)" = "$_hd" ] && [ ! -e "$_hd/.tad-holding" ] && [ ! -L "$_hd/.tad-holding" ]; then
+                    printf '%s\n' "$(pwd -P)" > "$_hd/.tad-holding" || true
+                fi
+            fi
+        fi
+        if [ ! -d "$_hd" ] || [ "$(cd "$_hd" 2>/dev/null && pwd -P)" != "$_hd" ]; then
+            log_warn "prune: holding area is not a real directory; old backup left in place: $_victim"
+            continue
+        fi
+        _hid="h$(date +%Y%m%d-%H%M%S)"; _hit="$_hid"; _hn=0; _hok=0
+        while [ "$_hn" -le 99 ]; do
+            if mkdir "$_hd/$_hit" 2>/dev/null; then _hok=1; break; fi
+            _hn=$((_hn + 1)); _hit="$_hid.$_hn"
+        done
+        if [ "$_hok" != "1" ] || [ "$(cd "$_hd/$_hit" 2>/dev/null && pwd -P)" != "$_hd/$_hit" ]; then
+            log_warn "prune: could not create a holding item; old backup left in place: $_victim"
+            continue
+        fi
+        chmod 700 "$_hd/$_hit" 2>/dev/null || true
+        _hproj="$(pwd -P)"
+        printf 'kind\tbackup\norigin\t%s\nproject\t%s\nheld\t%s\n' "$_victim" "$_hproj" "$(date +%Y-%m-%d)" > "$_hd/$_hit/item.tsv" || true
+        if mkdir "$_hd/$_hit/payload" 2>/dev/null && [ "$(cd "$_hd/$_hit/payload" 2>/dev/null && pwd -P)" = "$_hd/$_hit/payload" ] \
+           && mv "$_gp/$_vname" "$_hd/$_hit/payload/$_vname"; then
+            log_info "Held old backup in $_hd/$_hit (retention: latest 2 + last pre-version-change backup per repo; deleted only with your yes): $_victim"
         else
-            log_warn "prune: could not remove old backup (left in place): $_victim"
+            log_warn "prune: could not hold old backup (left in place): $_victim"
         fi
     done <<< "$_sorted"
     return 0
@@ -902,7 +944,11 @@ backup_existing() {
     _tgt="$(pwd -P)" || { log_error "cannot resolve target root for backup"; return 1; }
     repo_group_key "$_tgt" || return 1
     if [ -n "${BACKUP_GROUP_LEGACY:-}" ]; then
-        log_info "Older backups of this project (from before 4.0.5) are in $BACKUP_GROUP_LEGACY; they are no longer pruned automatically — delete them by hand when no longer needed."
+        log_info "Older backups of this project (from before 4.0.5) are in $BACKUP_GROUP_LEGACY; this update moves its complete backups into the holding area of this project's backups (deleted only with your yes); its claude-adopt/ archive stays where it is."
+    fi
+    # D16 (c): backups and the holding area hold CLAUDE.md and settings bytes; say so once when the root sits in a git work tree.
+    if command -v git >/dev/null 2>&1 && git -C "$TAD_BACKUP_ROOT_ABS" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        log_warn "the backup root $TAD_BACKUP_ROOT_ABS is inside a git work tree: backups and the holding area there hold CLAUDE.md and settings file bytes; keep them out of any commit"
     fi
     local _gdir="$TAD_BACKUP_ROOT_ABS/$BACKUP_GROUP"
     # Unique destination (FR-5): same-second reruns must never overwrite or nest
@@ -960,8 +1006,8 @@ backup_existing() {
     local _sr
     for _sr in $TAD_SURFACE_ROOTS; do
         if [ -e "$_sr" ] || [ -L "$_sr" ]; then
-            mkdir -p "$_bdir/$(dirname "$_sr")" || return 1
-            cp -R "$_sr" "$_bdir/$_sr" || return 1
+            mkdir -p "$_bdir/$(dirname "$_sr")" || { log_error "backup: cannot copy $_sr: nothing was changed; fix its permissions and run the update again"; return 1; }
+            cp -R "$_sr" "$_bdir/$_sr" || { log_error "backup: cannot copy $_sr: nothing was changed; fix its permissions and run the update again"; return 1; }
         fi
     done
 
@@ -1005,6 +1051,28 @@ backup_existing() {
     return 0
 }
 
+# surface_roots — the TAD areas: one root path per line (the .tad framework dirs, the .tad top files, then every
+# TAD_SURFACE_ROOTS entry). surface_snapshot walks exactly these, and the update report reads the same list to tell
+# TAD's areas from the project's own files; there is no second list.
+surface_roots() {
+    local _d _f
+    while IFS= read -r _d; do
+        [ -n "$_d" ] || continue
+        if [ "$_d" = "$TAD_REGISTRY_ONLY" ]; then
+            printf '%s\n' ".tad/$_d/$TAD_REGISTRY_FILE"
+        else
+            printf '%s\n' ".tad/$_d"
+        fi
+    done <<< "$(derive_framework_dirs ".")"
+    while IFS= read -r _f; do
+        [ -n "$_f" ] || continue
+        printf '%s\n' ".tad/$_f"
+    done <<< "$(derive_framework_top_files ".")"
+    for _f in $TAD_SURFACE_ROOTS; do
+        printf '%s\n' "$_f"
+    done
+}
+
 # surface_snapshot — print "<path><TAB><sig>" for every file or link of the
 # installer's write surface (the framework dirs/files the backup derivation
 # names, plus the platform projection roots), LC_ALL=C sorted. Used twice per
@@ -1018,22 +1086,7 @@ surface_snapshot() {
     _nl=$'\n'
     _tab=$'\t'
     _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-surface.XXXXXX")" || return 1
-    : > "$_tmp/roots"
-    while IFS= read -r _d; do
-        [ -n "$_d" ] || continue
-        if [ "$_d" = "$TAD_REGISTRY_ONLY" ]; then
-            printf '%s\n' ".tad/$_d/$TAD_REGISTRY_FILE" >> "$_tmp/roots"
-        else
-            printf '%s\n' ".tad/$_d" >> "$_tmp/roots"
-        fi
-    done <<< "$(derive_framework_dirs ".")"
-    while IFS= read -r _f; do
-        [ -n "$_f" ] || continue
-        printf '%s\n' ".tad/$_f" >> "$_tmp/roots"
-    done <<< "$(derive_framework_top_files ".")"
-    for _f in $TAD_SURFACE_ROOTS; do
-        printf '%s\n' "$_f" >> "$_tmp/roots"
-    done
+    surface_roots > "$_tmp/roots"
     : > "$_tmp/links"; : > "$_tmp/small"; : > "$_tmp/bigl"; : > "$_tmp/allf"
     while IFS= read -r _r; do
         [ -n "$_r" ] || continue
@@ -1120,43 +1173,46 @@ write_changes_tsv() {
 # ============================================
 # Update flow (Phase 1): process-file check, changed-only backup, report
 # ============================================
-# process_fingerprint — D5. Print "<path><TAB><sig>" for every file and link under
-# .tad/<d>/ for each <d> of TAD_ZERO_TOUCH (the dirs migration-engine.sh already refuses
-# to write to), plus NEXT.md and PROJECT_CONTEXT.md, LC_ALL=C sorted. sig = F:<size>:<mtime>
-# (regular file, no content read: cost) or L:<link text>. There is no model of what TAD
-# writes: any path whose row differs, appears or vanishes is a change. Paths holding a
-# newline or TAB are excluded in the find predicate. Directories are not fingerprinted.
-process_fingerprint() {
-    local _nl _tab _tmp _r _d _p
+# project_fingerprint — Phase 3 D12. Print "<path><TAB><sig>" for every file and link under the project root
+# (the current directory), pruning every dir named .git or node_modules at any depth, LC_ALL=C sorted, paths
+# relative with no leading "./". sig = F:<size>:<mtime> (regular file, no content read: cost) or L:<link text>.
+# There is no model of what TAD writes: any path whose row differs, appears or vanishes is a change. Paths
+# holding a newline or TAB are excluded in the find predicate and counted in PROJ_UNLISTED (the larger of the
+# calls). Directories are not fingerprinted.
+PROJ_UNLISTED=0
+project_fingerprint() {
+    local _nl _tab _tmp _p _u _gnu=0
     _nl=$'\n'
     _tab=$'\t'
-    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-procfp.XXXXXX")" || return 1
-    : > "$_tmp/roots"
-    while IFS= read -r _d; do
-        [ -n "$_d" ] || continue
-        printf '%s\n' ".tad/$_d" >> "$_tmp/roots"
-    done <<< "$TAD_ZERO_TOUCH"
-    printf '%s\n' "NEXT.md" "PROJECT_CONTEXT.md" >> "$_tmp/roots"
+    _tmp="$(mktemp -d "${TMPDIR:-/tmp}/tad-projfp.XXXXXX")" || return 1
     : > "$_tmp/links"; : > "$_tmp/rows"
-    local _gnu=0
     if stat -c '%s' /dev/null >/dev/null 2>&1; then _gnu=1; fi
-    while IFS= read -r _r; do
-        [ -n "$_r" ] || continue
-        if [ ! -e "$_r" ] && [ ! -L "$_r" ]; then continue; fi
-        find "$_r" -type l ! -path "*${_nl}*" ! -path "*${_tab}*" >> "$_tmp/links" 2>/dev/null || true
-        if [ "$_gnu" = "1" ]; then
-            find "$_r" -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -c "%n${_tab}F:%s:%Y" {} + >> "$_tmp/rows" 2>/dev/null || true
-        else
-            find "$_r" -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -f "%N${_tab}F:%z:%m" {} + >> "$_tmp/rows" 2>/dev/null || true
-        fi
-    done < "$_tmp/roots"
+    find . \( -name .git -o -name node_modules \) -prune -o -type l ! -path "*${_nl}*" ! -path "*${_tab}*" -print >> "$_tmp/links" 2>/dev/null || true
+    if [ "$_gnu" = "1" ]; then
+        find . \( -name .git -o -name node_modules \) -prune -o -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -c "%n${_tab}F:%s:%Y" {} + >> "$_tmp/rows" 2>/dev/null || true
+    else
+        find . \( -name .git -o -name node_modules \) -prune -o -type f ! -path "*${_nl}*" ! -path "*${_tab}*" -exec stat -f "%N${_tab}F:%z:%m" {} + >> "$_tmp/rows" 2>/dev/null || true
+    fi
     while IFS= read -r _p; do
         [ -n "$_p" ] || continue
         printf '%s\tL:%s\n' "$_p" "$(readlink "$_p" 2>/dev/null | LC_ALL=C tr '\n\t' '??')" >> "$_tmp/rows"
     done < "$_tmp/links"
-    LC_ALL=C sort "$_tmp/rows"
-    rm -rf -- "$_tmp" # RM-OK:process-fingerprint-tmp
+    _u="$(find . \( -name .git -o -name node_modules \) -prune -o \( -type f -o -type l \) \( -path "*${_nl}*" -o -path "*${_tab}*" \) -print0 2>/dev/null | LC_ALL=C tr -cd '\000' | wc -c | tr -d ' ')"
+    case "$_u" in ''|*[!0-9]*) _u=0 ;; esac
+    if [ "$_u" -gt "$PROJ_UNLISTED" ]; then PROJ_UNLISTED="$_u"; fi
+    LC_ALL=C sed 's|^\./||' "$_tmp/rows" | LC_ALL=C sort
+    rm -rf -- "$_tmp" # RM-OK:project-fingerprint-tmp
     return 0
+}
+
+# rows_by_roots <field> <1|0> — stdin tab rows; keep the rows whose <field> path lies under one of the roots in
+# FILTER_ROOTS (1) or under none of them (0). Prefix test with index() only: awk string equality is wrong for CJK.
+rows_by_roots() {
+    FILTER_ROOTS="${FILTER_ROOTS:-}" LC_ALL=C awk -F'\t' -v col="$1" -v want="$2" '
+        BEGIN { n = split(ENVIRON["FILTER_ROOTS"], R, "\n") }
+        { p = $col; hit = 0
+          for (i = 1; i <= n; i++) { if (R[i] == "") continue; if (index(p "/", R[i] "/") == 1) { hit = 1; break } }
+          if (hit == want) print }'
 }
 
 # dir_bytes <dir> — total size in bytes of the regular files under <dir> (exact, no awk).
@@ -1240,7 +1296,16 @@ PROC_TOTAL=0
 PROC_NCHG=0
 CHANGES_N="-"
 REPORT_FILE=""
-AGENTS_MD_STATE="unchanged"      # unchanged | released-replaced | project-content-kept | unknown-kept | created
+AGENTS_MD_STATE="unchanged"      # unchanged | released-replaced | project-content-kept | unknown-kept | created | skipped-symlink
+# ---- Phase 3: whole-project guarantee and backup lifecycle (read by the two printers)
+PROJ_STATE="not-compared"        # unchanged | changed | not-compared | unknown  (existing files outside TAD's areas)
+PROJ_CHECKED=0                   # existing files checked (rows before the run)
+PROJ_OUT_CHANGED=""              # "<kind><TAB><path>" changed or removed outside TAD's areas
+PROJ_OUT_ADDED=""                # paths added outside TAD's areas
+TAD_EDITS=""                     # paths of TAD-area pre-images the project had edited (class edited or differs)
+FRAMEWORK_LEDGER_DIR=""          # mktemp dir holding the release's ledger copy until the lifecycle step has run
+HOLD_PATH="-"; HOLD_ITEMS="-"; HOLD_BYTES="-"; HOLD_MOVED="-"; HOLD_REVIEW="-"; HOLD_GIT="-"
+WHATCHANGED_MORE=0
 AGENTS_MD_SAVED="-"
 SKILL_ENTRY_LINES=""
 
@@ -1257,7 +1322,7 @@ AFTER_NS=""                      # "<harness><TAB><new-session kinds><TAB><not-m
 # stamps its own section, so there is no [Unreleased] case. Nothing is written to disk.
 capture_release_notes() {
     local _cl="${TAD_SRC:-}/CHANGELOG.md" _line _in=0 _v _n=0 _lead _hre _bre _semver
-    WHATCHANGED_LINES=""
+    WHATCHANGED_LINES=""; WHATCHANGED_MORE=0
     _semver='^[0-9]+\.[0-9]+\.[0-9]+$'
     [[ "${CURRENT_VERSION:-}" =~ $_semver ]] || return 0
     [[ "${TARGET_VERSION:-}" =~ $_semver ]] || return 0
@@ -1275,11 +1340,14 @@ capture_release_notes() {
         fi
         [ "$_in" = "1" ] || continue
         if [[ "$_line" =~ $_bre ]]; then
-            _lead="$(printf '%s' "${BASH_REMATCH[1]}" | tr '\t' ' ')"
-            WHATCHANGED_LINES="${WHATCHANGED_LINES:+$WHATCHANGED_LINES
-}$_lead"
+            _lead="$(printf '%s' "${BASH_REMATCH[1]}" | tr '\t' ' ' | tr -d '\000-\037\177')"
             _n=$((_n + 1))
-            [ "$_n" -lt 10 ] || break
+            if [ "$_n" -le 10 ]; then
+                WHATCHANGED_LINES="${WHATCHANGED_LINES:+$WHATCHANGED_LINES
+}$_lead"
+            else
+                WHATCHANGED_MORE=$((WHATCHANGED_MORE + 1))
+            fi
         fi
     done < "$_cl"
     return 0
@@ -1294,7 +1362,7 @@ after_kind_name() {
         agents_md) printf 'AGENTS.md' ;;
         claude_md) printf 'CLAUDE.md' ;;
         hook_wiring) printf 'hook wiring' ;;
-        unmeasured_surface) printf 'other harness files' ;;
+        unmeasured_surface) printf 'files under .claude/ .codex/ .cursor/ .opencode/ other than the ones above' ;;
         *) printf '%s' "$1" ;;
     esac
 }
@@ -1427,6 +1495,7 @@ print_after_update_block() {
     if [ -n "$WHATCHANGED_LINES" ]; then
         echo "  What changed:"
         printf '%s\n' "$WHATCHANGED_LINES" | sed 's/^/    /'
+        if [ "${WHATCHANGED_MORE:-0}" -gt 0 ]; then echo "    ... and $WHATCHANGED_MORE more (CHANGELOG.md)"; fi
     else
         echo "  What changed: no release notes for ${TARGET_VERSION:--}"
     fi
@@ -1456,27 +1525,100 @@ write_after_update_keys() {
     else
         printf 'what_changed%s-\n' "$_t"
     fi
+    printf 'what_changed_more%s%s\n' "$_t" "${WHATCHANGED_MORE:-0}"
     return 0
 }
 
-# finalize_update — after write_changes_tsv: the process-file comparison (D5), the backup
-# reduction (D6), then the report (D11) printed and, when a backup exists, saved beside it.
+# capture_framework_ledger — copy the release's ledger (and its .sha1) out of the release tree BEFORE
+# cleanup_source_tree removes it; the lifecycle step in finalize_update classifies with this copy. Nothing
+# is written inside the project. A release tree without a ledger leaves FRAMEWORK_LEDGER_DIR empty
+# (every class then reads unknown; nothing becomes clearable).
+capture_framework_ledger() {
+    local _s="${TAD_SRC:-}/.tad/provenance" _d
+    FRAMEWORK_LEDGER_DIR=""
+    [ -f "$_s/framework-released.tsv" ] && [ -f "$_s/framework-released.sha1" ] || return 0
+    _d="$(mktemp -d "${TMPDIR:-/tmp}/tad-ledger.XXXXXX")" || return 0
+    if cp "$_s/framework-released.tsv" "$_s/framework-released.sha1" "$_d/" 2>/dev/null; then
+        FRAMEWORK_LEDGER_DIR="$_d"
+    else
+        rm -rf -- "$_d" # RM-OK:framework-ledger-capture-fail
+    fi
+    return 0
+}
+
+# run_backup_lifecycle — D8. After the backup reduction: the project's own tad-backups.sh (installed by this
+# release) ensures the holding area, stores the run backup's classes, applies the caps by holding the excess and
+# classifies every held item with the captured ledger. It prints key<TAB>value lines read with cut -f2-.
+# Never fails the run. Fresh install or no backup: skipped, keys stay "-".
+run_backup_lifecycle() {
+    local _out _k _v _t _gdir _led
+    _t=$'\t'
+    HOLD_PATH="-"; HOLD_ITEMS="-"; HOLD_BYTES="-"; HOLD_MOVED="-"; HOLD_REVIEW="-"; HOLD_GIT="-"
+    TAD_EDITS=""
+    if [ -z "${BACKUP_PATH_ABS:-}" ] || [ ! -d "$BACKUP_PATH_ABS" ]; then return 0; fi
+    if [ ! -f ".tad/scripts/tad-backups.sh" ]; then log_warn "backup lifecycle skipped: .tad/scripts/tad-backups.sh is not installed"; return 0; fi
+    _gdir="$(dirname "$BACKUP_PATH_ABS")"
+    _led=""
+    [ -z "$FRAMEWORK_LEDGER_DIR" ] || _led="$FRAMEWORK_LEDGER_DIR/framework-released.tsv"
+    if [ -n "${BACKUP_GROUP_LEGACY:-}" ]; then
+        _out="$("$TAD_BASH" .tad/scripts/tad-backups.sh lifecycle --project "$(pwd -P)" --group-dir "$_gdir" --run-backup "$BACKUP_PATH_ABS" --ledger "$_led" --legacy-group "$BACKUP_GROUP_LEGACY")" || { log_warn "backup lifecycle step reported a problem (the update itself is done)"; _out="${_out:-}"; }
+    else
+        _out="$("$TAD_BASH" .tad/scripts/tad-backups.sh lifecycle --project "$(pwd -P)" --group-dir "$_gdir" --run-backup "$BACKUP_PATH_ABS" --ledger "$_led")" || { log_warn "backup lifecycle step reported a problem (the update itself is done)"; _out="${_out:-}"; }
+    fi
+    while IFS="$_t" read -r _k _v; do
+        case "$_k" in
+            holding_path) HOLD_PATH="${_v:--}" ;;
+            holding_items) HOLD_ITEMS="${_v:--}" ;;
+            holding_bytes) HOLD_BYTES="${_v:--}" ;;
+            holding_moved) HOLD_MOVED="${_v:--}" ;;
+            holding_review) HOLD_REVIEW="${_v:--}" ;;
+            holding_git_tracked) HOLD_GIT="${_v:--}" ;;
+        esac
+    done <<< "$_out"
+    if [ -f "$BACKUP_PATH_ABS/classes.tsv" ]; then
+        local _c _l _p
+        while IFS="$_t" read -r _c _l _p; do
+            case "$_c" in edited|differs) [ -z "$_p" ] || TAD_EDITS="${TAD_EDITS:+$TAD_EDITS
+}$_p" ;; esac
+        done < "$BACKUP_PATH_ABS/classes.tsv"
+    fi
+    return 0
+}
+
+# finalize_update — after write_changes_tsv: the whole-project comparison (D12; the Process line is the
+# subset under the Phase 1 domain), the backup reduction (D6), the backup lifecycle (D8), then the report
+# (D11) printed and, when a backup exists, saved beside it.
 # Nothing here can fail the install: every step degrades to a warning.
 finalize_update() {
-    local _post _cl
+    local _post _cl _d _k _p _roots
     if [ -n "$PROC_PRE" ] && [ -f "$PROC_PRE" ]; then
         _post="$(mktemp "${TMPDIR:-/tmp}/tad-procfp-post.XXXXXX")" || _post=""
-        if [ -n "$_post" ] && process_fingerprint > "$_post" 2>/dev/null; then
-            PROC_ROWS="$(sig_diff_rows "$PROC_PRE" "$_post" 2>/dev/null || true)"
-            PROC_TOTAL="$(cat "$PROC_PRE" "$_post" | cut -f1 | LC_ALL=C sort -u | wc -l | tr -d ' ')"
+        if [ -n "$_post" ] && project_fingerprint > "$_post" 2>/dev/null; then
+            local _rows
+            _rows="$(sig_diff_rows "$PROC_PRE" "$_post" 2>/dev/null || true)"
+            PROJ_CHECKED="$(wc -l < "$PROC_PRE" | tr -d ' ')"
+            # Process line: the rows and paths under the Phase 1 domain (zero-touch dirs, NEXT.md, PROJECT_CONTEXT.md)
+            _roots=""
+            while IFS= read -r _d; do [ -n "$_d" ] || continue; _roots="${_roots:+$_roots
+}.tad/$_d"; done <<< "$TAD_ZERO_TOUCH"
+            _roots="${_roots:+$_roots
+}NEXT.md
+PROJECT_CONTEXT.md"
+            PROC_ROWS="$(printf '%s\n' "$_rows" | FILTER_ROOTS="$_roots" rows_by_roots 2 1 | sed '/^$/d')"
+            PROC_TOTAL="$(cat "$PROC_PRE" "$_post" | cut -f1 | LC_ALL=C sort -u | FILTER_ROOTS="$_roots" rows_by_roots 1 1 | wc -l | tr -d ' ')"
             if [ -n "$PROC_ROWS" ]; then
                 PROC_STATE="changed"
                 PROC_NCHG="$(printf '%s\n' "$PROC_ROWS" | wc -l | tr -d ' ')"
             else
                 PROC_STATE="unchanged"; PROC_NCHG=0
             fi
+            # Whole project: rows outside TAD's areas (the roots surface_snapshot walks) are the project's own files.
+            _roots="$(surface_roots)"
+            PROJ_OUT_CHANGED="$(printf '%s\n' "$_rows" | FILTER_ROOTS="$_roots" rows_by_roots 2 0 | { grep -E '^(changed|removed)'"$(printf '\t')" || true; })"
+            PROJ_OUT_ADDED="$(printf '%s\n' "$_rows" | FILTER_ROOTS="$_roots" rows_by_roots 2 0 | { grep -E '^added'"$(printf '\t')" || true; } | cut -f2)"
+            if [ -n "$PROJ_OUT_CHANGED" ]; then PROJ_STATE="changed"; else PROJ_STATE="unchanged"; fi
         else
-            PROC_STATE="unknown"
+            PROC_STATE="unknown"; PROJ_STATE="unknown"
         fi
         [ -z "$_post" ] || rm -f -- "$_post" # RM-OK:process-fingerprint-post-tmp
         rm -f -- "$PROC_PRE" # RM-OK:process-fingerprint-pre-tmp
@@ -1487,6 +1629,11 @@ finalize_update() {
         CHANGES_N="$_cl"
     fi
     reduce_backup || log_warn "backup reduction skipped"
+    run_backup_lifecycle || log_warn "backup lifecycle skipped"
+    if [ -n "$FRAMEWORK_LEDGER_DIR" ]; then
+        rm -rf -- "$FRAMEWORK_LEDGER_DIR" # RM-OK:framework-ledger-tmp
+        FRAMEWORK_LEDGER_DIR=""
+    fi
     compute_after_update || AFTER_STATE="unknown-changes"
     if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ]; then
         if [ "$REDUCE_LAYOUT" != "changed-only" ]; then
@@ -1511,7 +1658,7 @@ report_claude_state() {
 
 # report_covered_text — the one coverage statement (printed `covered:` line and the `covered` report key)
 report_covered_text() {
-    printf '%s' ".tad/ framework files, $TAD_SURFACE_ROOTS; other files under .claude/ .opencode/ .cursor/ are neither checked nor backed up by this update"
+    printf '%s' "every existing file except .git/ and node_modules/ is checked before and after; TAD's areas (.tad/ framework files, $TAD_SURFACE_ROOTS) are listed in changes.tsv and their changed files backed up"
 }
 
 # write_report_file — update-report.tsv content: "key<TAB>value" per line, repeatable keys
@@ -1548,6 +1695,43 @@ write_report_file() {
         printf 'process_file_changed%s-\n' "$_t"
     fi
     printf 'covered%s%s\n' "$_t" "$(report_covered_text)"
+    printf 'project_files_checked%s%s\n' "$_t" "${PROJ_CHECKED:-0}"
+    case "$PROJ_STATE" in
+        unchanged) printf 'project_files_unchanged%syes\n' "$_t" ;;
+        changed)   printf 'project_files_unchanged%sno\n' "$_t" ;;
+        *)         printf 'project_files_unchanged%sunknown\n' "$_t" ;;
+    esac
+    printf 'project_files_unlisted%s%s\n' "$_t" "${PROJ_UNLISTED:-0}"
+    if [ -n "$PROJ_OUT_CHANGED" ]; then
+        while IFS="$_t" read -r _k _p; do
+            [ -n "$_k" ] || continue
+            printf 'project_file_changed%s%s %s\n' "$_t" "$_k" "$_p"
+        done <<< "$PROJ_OUT_CHANGED"
+    else
+        printf 'project_file_changed%s-\n' "$_t"
+    fi
+    if [ -n "$PROJ_OUT_ADDED" ]; then
+        while IFS= read -r _p; do
+            [ -n "$_p" ] || continue
+            printf 'project_file_added%s%s\n' "$_t" "$_p"
+        done <<< "$PROJ_OUT_ADDED"
+    else
+        printf 'project_file_added%s-\n' "$_t"
+    fi
+    if [ -n "$TAD_EDITS" ]; then
+        while IFS= read -r _p; do
+            [ -n "$_p" ] || continue
+            printf 'tad_file_edit%s%s\n' "$_t" "$_p"
+        done <<< "$TAD_EDITS"
+    else
+        printf 'tad_file_edit%s-\n' "$_t"
+    fi
+    printf 'holding_path%s%s\n' "$_t" "${HOLD_PATH:--}"
+    printf 'holding_items%s%s\n' "$_t" "${HOLD_ITEMS:--}"
+    printf 'holding_bytes%s%s\n' "$_t" "${HOLD_BYTES:--}"
+    printf 'holding_moved%s%s\n' "$_t" "${HOLD_MOVED:--}"
+    printf 'holding_review%s%s\n' "$_t" "${HOLD_REVIEW:--}"
+    printf 'holding_git_tracked%s%s\n' "$_t" "${HOLD_GIT:--}"
     printf 'agents_md%s%s\n' "$_t" "$AGENTS_MD_STATE"
     printf 'agents_md_saved%s%s\n' "$_t" "${AGENTS_MD_SAVED:--}"
     printf 'backup_path%s%s\n' "$_t" "${BACKUP_PATH_ABS:--}"
@@ -1561,6 +1745,60 @@ write_report_file() {
     return 0
 }
 
+# print_capped <lines> <prefix> — at most 10 lines on screen, the rest named by count (all of them are in update-report.tsv)
+print_capped() {
+    local _l _n=0 _all
+    _all="$(printf '%s\n' "$1" | sed '/^$/d' | wc -l | tr -d ' ')"
+    while IFS= read -r _l; do
+        [ -n "$_l" ] || continue
+        _n=$((_n + 1))
+        if [ "$_n" -le 10 ]; then echo "$2$_l"; fi
+    done <<< "$1"
+    if [ "$_all" -gt 10 ]; then echo "$2... and $((_all - 10)) more (update-report.tsv)"; fi
+}
+
+# print_project_guarantee — D12/D13: the whole-project lines of the report
+print_project_guarantee() {
+    local _n
+    case "$PROJ_STATE" in
+        unchanged) echo "Project files: unchanged (${PROJ_CHECKED:-0} existing files checked: every file except .git/ and node_modules/)" ;;
+        changed)
+            _n="$(printf '%s\n' "$PROJ_OUT_CHANGED" | sed '/^$/d' | wc -l | tr -d ' ')"
+            echo "Project files: CHANGED - $_n existing files outside TAD's areas changed or removed (no backup copy):"
+            print_capped "$(printf '%s\n' "$PROJ_OUT_CHANGED" | tr '\t' ' ')" "  " ;;
+        unknown) echo "Project files: not verified (the before/after check could not run)" ;;
+        *) echo "Project files: not compared (no earlier install to compare against)" ;;
+    esac
+    if [ "${PROJ_UNLISTED:-0}" -gt 0 ]; then echo "  not checked: ${PROJ_UNLISTED} paths holding a newline or a tab"; fi
+    if [ "$PROJ_STATE" = "unchanged" ] || [ "$PROJ_STATE" = "changed" ]; then
+        if [ -n "$PROJ_OUT_ADDED" ]; then
+            _n="$(printf '%s\n' "$PROJ_OUT_ADDED" | sed '/^$/d' | wc -l | tr -d ' ')"
+            echo "Added outside TAD's areas: $_n"
+            print_capped "$PROJ_OUT_ADDED" "  "
+        fi
+        if [ -n "$TAD_EDITS" ]; then
+            _n="$(printf '%s\n' "$TAD_EDITS" | sed '/^$/d' | wc -l | tr -d ' ')"
+            echo "Your edits in TAD files: $_n replaced by the release copy, each kept in the backup (say \"看备份\"):"
+            print_capped "$TAD_EDITS" "  "
+        else
+            echo "Your edits in TAD files: none"
+        fi
+    fi
+}
+
+# print_holding_lines — D13: the holding area line (nothing for a fresh install)
+print_holding_lines() {
+    [ "$HOLD_ITEMS" != "-" ] || return 0
+    if [ "$HOLD_ITEMS" = "0" ]; then
+        echo "Holding area: empty"
+        return 0
+    fi
+    echo "Holding area: $HOLD_PATH ($HOLD_ITEMS items, $(( (${HOLD_BYTES:-0} + 1023) / 1024 )) KB; $HOLD_MOVED moved in by this update; $HOLD_REVIEW held for review; deleted only with your yes)"
+    if [ "${HOLD_GIT:-0}" != "-" ] && [ "${HOLD_GIT:-0}" -gt 0 ] 2>/dev/null; then
+        echo "  tracked by git: $HOLD_GIT of the moved paths; git status shows them deleted; they stay in history"
+    fi
+}
+
 # print_update_report — the report block (printed after every run that reaches the end).
 print_update_report() {
     local _kb _t _k _p _size
@@ -1571,7 +1809,7 @@ print_update_report() {
     echo "Platforms refreshed: $(printf '%s' "$PLATFORM_LIST" | sed 's/,/, /g') (+ OpenCode/Cursor wiring)"
     case "$(report_claude_state)" in
         full) echo "Claude Code: full" ;;
-        sticky) echo "Claude Code: links only (sticky)" ;;
+        sticky) echo "Claude Code: skill links refreshed (a full refresh: confirm claude-code on the next update's check)" ;;
         *) echo "Claude Code: not installed" ;;
     esac
     echo "Skill entries unresolved: ${SKILL_ENTRY_UNRESOLVED:-0}"
@@ -1595,11 +1833,13 @@ print_update_report() {
         echo "TAD areas: $CHANGES_N paths added, changed or removed (changes.tsv; pre-images of changed/removed in the backup)"
     fi
     echo "  covered: $(report_covered_text)"
+    print_project_guarantee
     case "$AGENTS_MD_STATE" in
         released-replaced) echo "AGENTS.md: released copy replaced" ;;
         project-content-kept) echo "AGENTS.md: project content kept at $AGENTS_MD_SAVED" ;;
         unknown-kept) echo "AGENTS.md: project content kept at $AGENTS_MD_SAVED (could not be checked against the TAD releases)" ;;
         created) echo "AGENTS.md: created" ;;
+        skipped-symlink) echo "AGENTS.md: is a symlink; left untouched (the release copy was not written)" ;;
         *) echo "AGENTS.md: unchanged" ;;
     esac
     if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "${BACKUP_PATH_ABS}" ]; then
@@ -1611,6 +1851,7 @@ print_update_report() {
             echo "Backup: $BACKUP_PATH_ABS ($_size, full copy kept: $REDUCE_REASON)"
         fi
         echo "Not backed up: ${REDUCE_NOTBACKED:-0}"
+        print_holding_lines
         if [ -f "$BACKUP_PATH_ABS/changes.tsv" ]; then echo "Change list: $BACKUP_PATH_ABS/changes.tsv"; fi
         if [ -n "$REPORT_FILE" ]; then echo "Report file: $REPORT_FILE"; else echo "Report file: not written"; fi
     else
@@ -1774,7 +2015,7 @@ TAD_REGISTRY_ONLY="capability-packs"
 # surface_snapshot reads it to build the change list, backup_existing reads it to copy a
 # pre-image of every one before the run mutates anything. Keep it inside this block:
 # fixtures extract this block together with the backup functions.
-TAD_SURFACE_ROOTS=".agents/skills .claude/skills .claude/agents AGENTS.md CLAUDE.md .claude/settings.json .codex/hooks.json .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json"
+TAD_SURFACE_ROOTS=".agents/skills .claude/skills .claude/agents .claude/commands .claude/workflows AGENTS.md CLAUDE.md .claude/settings.json .codex/hooks.json .opencode/commands/tad-update.md .opencode/plugins/tad-hooks.ts .cursor/hooks.json .tad/brain-index.md"
 TAD_REGISTRY_FILE="pack-registry.yaml"
 
 # derive_framework_dirs <src> — emit one SYNC dir basename per line
@@ -2498,6 +2739,12 @@ copy_framework_files() {
         local _rf_new=0
         while IFS= read -r rf; do
             [ -n "$rf" ] || continue
+            if [ "$rf" = "AGENTS.md" ] && [ -L "./$rf" ] && [ -f "$src/$rf" ]; then
+                # D16 (a): a symlinked AGENTS.md is the project's own link: never written through, left as it is.
+                AGENTS_MD_STATE="skipped-symlink"
+                log_warn "AGENTS.md: is a symlink; left untouched (the release copy was not written)"
+                continue
+            fi
             if [ -f "$src/$rf" ]; then
                 # FR-4b (EPIC-20260816 Phase 2 / 审计 F-01 衍生): 这些是【用户可能已有】的
                 # 根文件（如 AGENTS.md —— 跨厂商 agents.md 标准，Codex/Cursor/Aider/Zed 都读）。
@@ -6514,7 +6761,7 @@ main() {
     # just before the backup; compared after the run. A fresh install has nothing to compare.
     if [ -d ".tad" ]; then
         PROC_PRE="$(mktemp "${TMPDIR:-/tmp}/tad-procfp-pre.XXXXXX")" || PROC_PRE=""
-        if [ -n "$PROC_PRE" ] && ! process_fingerprint > "$PROC_PRE" 2>/dev/null; then
+        if [ -n "$PROC_PRE" ] && ! project_fingerprint > "$PROC_PRE" 2>/dev/null; then
             rm -f -- "$PROC_PRE" # RM-OK:process-fingerprint-pre-fail
             PROC_PRE=""
         fi
@@ -6842,6 +7089,7 @@ NEXTEOF
     claude_adopt_commit
     write_changes_tsv || log_warn "change list not written"
     capture_release_notes || WHATCHANGED_LINES=""
+    capture_framework_ledger || FRAMEWORK_LEDGER_DIR=""
     CLAUDE_LEGACY_NOTE="$(claude_legacy_detected_note "$TAD_SRC")"
 
     # Cleanup

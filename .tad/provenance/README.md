@@ -29,3 +29,11 @@ Regenerate after any commit that adds a new blob under `.claude/`, `.agents/skil
 Order when the hook template changes: edit it, commit it (alone, with `git commit --only -- .tad/templates/claude/settings.json`), then regenerate; the generator reads git history, never the working tree.
 `MANIFEST.sha1` only guards against accidental damage (truncation, sync conflicts,
 hand edits). It does not stop someone who can edit the installer source.
+
+## Release-file ledger (backup lifecycle)
+- `framework-released.tsv`  one row per git blob id of every file TAD ever released or generated, `<id><TAB><label>` (the first `v*` tag that carried it, `main@<commit>` for an unreleased blob, `gen:<tag>:codex-hooks` for the installer's hooks.json heredoc), header `# schema=1 rows=<n>`, `LC_ALL=C sort`.
+- `framework-released.sha1`  one line: the git blob id of that ledger.
+Selection: every path in every commit reachable from HEAD or a `v*` tag under `.tad/` (minus the zero-touch and transient dirs and `sync-registry.yaml`, `brain-index.md`), `.agents/skills/`, `.claude/`, `.codex/`, `.opencode/`, `.cursor/`, `AGENTS.md`, `CLAUDE.md`.
+**Byte identity, path-agnostic:** a project file whose bytes equal any released file counts as released whatever its path; the cost is that a file identical to a released one carries no unique content to save, and the path association is lost. There is no whitespace rule: a CRLF or trailing-space edit makes a different blob.
+Regenerate with `bash .tad/scripts/gen-framework-provenance.sh` after committing, then commit the two files; gate `bash .tad/hooks/lib/release-verify.sh framework-provenance .`. Order at release: bump and stamp the version (config.yaml, version.txt, CHANGELOG) and commit, regenerate both ledgers, commit them, re-run the gates.
+The installer copies the ledger out of the release tree into a temp dir before the tree is removed and hands it to `tad-backups.sh lifecycle`; classes are stored beside the backups, so listing and clearing later need neither the ledger nor the network.

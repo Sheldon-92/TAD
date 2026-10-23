@@ -220,8 +220,12 @@ publish_protocol:
           bash .tad/hooks/lib/release-verify.sh installer-destructive-guard "$PWD"
           bash .tad/hooks/lib/release-verify.sh freshness "$PWD"
           bash .tad/hooks/lib/release-verify.sh provenance "$PWD"
+          bash .tad/hooks/lib/release-verify.sh framework-provenance "$PWD"
         Order constraints:
-        1. After the version-bump commit exists, run `.tad/scripts/gen-claude-provenance.sh`,
+        1. After the version-bump commit exists, also run `.tad/scripts/gen-framework-provenance.sh`
+           and commit .tad/provenance/framework-released.tsv and .sha1 (the release-file ledger;
+           its gate is `framework-provenance`; the stamped config.yaml must be a ledger row), then
+           run `.tad/scripts/gen-claude-provenance.sh`,
            commit its output (stage .tad/provenance/claude-legacy.tsv and
            .tad/provenance/MANIFEST.sha1 by explicit path), then re-run version-sweep and
            provenance. The provenance gate

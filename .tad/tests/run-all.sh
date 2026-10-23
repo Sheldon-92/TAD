@@ -68,6 +68,15 @@ else
   excluded update-reminder-fixture "file does not exist"
 fi
 
+# Backup lifecycle (Phase 3): the fast cases are offline and build everything in a sandbox with a scratch HOME and backup root.
+if [ -f .tad/tests/backup-lifecycle-fixture.sh ]; then
+  for c in guard classify hold salvage clear foreign; do
+    run_test "backup-lifecycle-fixture:$c" /bin/bash .tad/tests/backup-lifecycle-fixture.sh --case "$c"
+  done
+else
+  excluded backup-lifecycle-fixture "file does not exist"
+fi
+
 # Left out because they do not pass today. These are triaged, not fixed, by the batch that added this file.
 excluded gate-exercise "stale test: its temporary repo has no hop manifest, so the migration gate now stops at 'missing hop manifest' before it reaches the unmanifested-delete check the test expects"
 excluded yolo-recovery.test "stale test: case phase2-scope-proof diffs the fixed range 96bbfada..HEAD, which grows with every commit and now contains paths outside the Phase-2 scope; the other cases pass"
@@ -80,11 +89,15 @@ if [ "${TAD_TEST_FULL:-}" = "1" ]; then
   run_test installer-data-safety-fixture /bin/bash .tad/tests/installer-data-safety-fixture.sh --case all
   # `--case all` above stops at fx.c (it exits silently there, also before this phase), so the
   # update-flow cases that come after it run by name.
-  for c in fx.p fx.f fx.k fx.rb fx.rep fx.agm fx.oc fx.own; do
+  for c in fx.p fx.f fx.k fx.rb fx.rep fx.agm fx.oc fx.own fx.g; do
     run_test "installer-data-safety-fixture:$c" /bin/bash .tad/tests/installer-data-safety-fixture.sh --case "$c"
   done
-  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop post-update; do
+  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop post-update check-clear; do
     run_test "tad-update-fixture:$c" /bin/bash .tad/tests/tad-update-fixture.sh --case "$c"
+  done
+  # Backup lifecycle, slow cases: the ledger generator in a clone, the real installer on the 阿里 shape
+  for c in ledger caps; do
+    run_test "backup-lifecycle-fixture:$c" /bin/bash .tad/tests/backup-lifecycle-fixture.sh --case "$c"
   done
   excluded tad-update-fixture:remote-release "needs network"
 else

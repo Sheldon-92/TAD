@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|caps|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|caps|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -1410,6 +1410,8 @@ case_r1() {
 stage_provenance() {
   mkdir -p "$SOURCE/.tad/provenance"
   cp "$REPO"/.tad/provenance/claude-legacy.tsv "$REPO"/.tad/provenance/MANIFEST.sha1 "$SOURCE/.tad/provenance/"
+  # the release-file ledger (Phase 3): the installer captures it for the lifecycle step
+  cp "$REPO"/.tad/provenance/framework-released.tsv "$REPO"/.tad/provenance/framework-released.sha1 "$SOURCE/.tad/provenance/"
 }
 
 # legacy_claude_target — a v2.44.6-style Claude Code install claiming 3.1.0 (so the
@@ -2030,12 +2032,14 @@ prune_backups "$1" "$1/$2"
 HEOF
     harness_run "$SANDBOX/h.sh"
   }
-  survivors() { ls -1 "$1" | LC_ALL=C sort | tr '\n' ' '; }
+  survivors() { fx_bklist "$1" | tr '\n' ' '; }
+  held_names() { local d; for d in "$1"/holding/h*/payload/*; do [ -e "$d" ] && basename "$d"; done | LC_ALL=C sort | tr '\n' ' '; }
   G="$SANDBOX/g1"
   mkb "$G" 20260102_000000 4.0.3; mkb "$G" 20260103_000000 4.0.4; mkb "$G" 20260104_000000 4.0.4; mkb "$G" 20260105_000000 4.0.4
   out="$(run_prune "$G" 20260105_000000)"
   if [ "$(survivors "$G")" = "20260102_000000 20260104_000000 20260105_000000 " ]; then
     pass "fx.e: 4.0.3,4.0.4,4.0.4,4.0.4 -> the 4.0.3 backup survives with the newest two"
+    [ "$(held_names "$G")" = "20260103_000000 " ] || fail "fx.e: the victim is not held under holding/: $(held_names "$G")"
   else fail "fx.e: survivors wrong: $(survivors "$G") $out"; fi
   G="$SANDBOX/g2"
   mkb "$G" 20260101_000000 4.0.3
@@ -2044,6 +2048,7 @@ HEOF
   out="$(run_prune "$G" 20260106_000000)"
   if [ "$(survivors "$G")" = "20260101_000000 20260105_000000 20260106_000000 " ]; then
     pass "fx.e: 1x4.0.3 then 5x4.0.4 -> exactly 3 survivors including the 4.0.3"
+    [ "$(held_names "$G")" = "20260102_000000 20260103_000000 20260104_000000 " ] && [ "$(ls -d "$G"/holding/h*/ | wc -l | tr -d ' ')" = "3" ] || fail "fx.e: three victims did not get three distinct held items: $(held_names "$G")"
   else fail "fx.e: survivors wrong: $(survivors "$G") $out"; fi
   G="$SANDBOX/g3"
   for i in 1 2 3 4; do mkb "$G" "2026010${i}_000000" ""; done
@@ -2094,8 +2099,16 @@ fx_stage_projected() {
   cp "$REPO/.cursor/hooks.json" "$SOURCE/.cursor/"
 }
 fx_gdir() { find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name claude-adopt 2>/dev/null | head -1; }
-fx_ndirs() { local g; g="$(fx_gdir)"; if [ -z "$g" ]; then printf '0'; return 0; fi; find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' '; }
-fx_newest() { local g; g="$(fx_gdir)"; [ -n "$g" ] || return 0; ls -d "$g"/*/ | LC_ALL=C sort | tail -1 | sed 's|/$||'; }
+# ONE rule for every consumer that lists a backup group or a run backup (Phase 3 holding area, handoff round 4
+# consistency P0-1): only a name matching the backup pattern is a backup, so holding/ and claude-adopt/ never
+# count and never win "newest"; every allowlist of a run backup's top-level files also accepts classes.tsv
+# (written by the lifecycle step) and salvage-diff (written by salvage). Consumers changed: fx_ndirs, fx_newest,
+# fx.e survivors, fx.k k1 (names, file allowlist), k3 and k5 (counts, loops), tad-update-fixture.sh
+# backup_dir_count, pu_latest_backup, the post-update top-level allowlist.
+FX_BKRE='^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'
+fx_bklist() { ls -1 "$1" 2>/dev/null | { grep -E "$FX_BKRE" || true; } | LC_ALL=C sort; }
+fx_ndirs() { local g; g="$(fx_gdir)"; if [ -z "$g" ]; then printf '0'; return 0; fi; fx_bklist "$g" | wc -l | tr -d ' '; }
+fx_newest() { local g n; g="$(fx_gdir)"; [ -n "$g" ] || return 0; n="$(fx_bklist "$g" | tail -1)"; [ -n "$n" ] || return 0; printf '%s/%s' "$g" "$n"; }
 fx_rv() { LC_ALL=C grep "^$2$(printf '\t')" "$1" | cut -f2- || true; }  # <report> <key>
 # fx_up <log> [flags] — the run under test: both platforms in one list
 fx_up() { local log="$1"; shift; run_install_cc "codex,claude-code" "$log" "$@"; }
@@ -2201,7 +2214,7 @@ case_fxf() {
   cmp -s "$SNAP/pre/CLAUDE.md" "$B/CLAUDE.md" || { ok=0; fail "fx.f: CLAUDE.md pre-image missing or different"; }
   [ "$(fx_rv "$R" process_files_unchanged)" = "yes" ] || ok=0
   grep -qE '^TAD areas: [0-9]+ paths added, changed or removed' "$log" || { ok=0; fail "fx.f: TAD areas line missing"; }
-  grep -qF '.claude/ .opencode/ .cursor/ are neither checked nor backed up' "$log" || { ok=0; fail "fx.f: coverage sentence missing"; }
+  grep -qF 'every existing file except .git/ and node_modules/ is checked before and after' "$log" || { ok=0; fail "fx.f: coverage sentence missing"; }
   for f in $roots; do grep -F '  covered:' "$log" | grep -qF -e "$f" || { ok=0; fail "fx.f: covered line misses $f"; }; done
   if [ "$ok" = "1" ]; then pass "fx.f: CLAUDE.md append listed and backed up"; fi
   # (d) an after-only process file is an added path
@@ -2247,7 +2260,7 @@ case_fxk() {
   rc="$(fx_up "$log")"; B="$(fx_newest)"; g="$(fx_gdir)"
   if [ "$rc" != "0" ] || [ ! -f "$B/manifest.txt" ]; then fail "fx.k: k1 run failed (rc=$rc): $(tail -3 "$log" | tr '\n' '|')"; return 0; fi
   want="$(tail -n +2 "$B/changes.tsv" | grep -E "^(changed|removed)$(printf '\t')" | cut -f2 | LC_ALL=C sort)"
-  got="$( cd "$B" && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C grep -v -x -e origin.txt -e pre-top.txt -e pre-tree.txt -e pre-surface.tsv -e changes.tsv -e manifest.txt -e update-report.tsv | LC_ALL=C sort )"
+  got="$( cd "$B" && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C grep -v -x -e origin.txt -e pre-top.txt -e pre-tree.txt -e pre-surface.tsv -e changes.tsv -e manifest.txt -e update-report.tsv -e classes.tsv | LC_ALL=C sort )"
   bad=0
   [ "$want" = "$got" ] || { bad=1; fail "fx.k: k1 file set differs from changed+removed rows"; }
   while IFS="$(printf '\t')" read -r kind p; do
@@ -2263,7 +2276,7 @@ case_fxk() {
   [ "$(fx_ndirs)" = "1" ] || { bad=1; fail "fx.k: k1 group holds $(fx_ndirs) backups (the full one was not retired)"; }
   if [ "$(head -1 "$B/manifest.txt")" = "layout=changed-only" ] && [ "$(tail -1 "$B/manifest.txt")" = "version=4.0.5" ]; then :; else bad=1; fail "fx.k: k1 manifest wrong: $(tr '\n' '|' < "$B/manifest.txt")"; fi
   [ ! -e "$B/not-backed-up.txt" ] || { bad=1; fail "fx.k: k1 not-backed-up.txt present"; }
-  if find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vqE '^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'; then bad=1; fail "fx.k: k1 a non-pattern name under the group"; fi
+  if find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vqE '^([0-9]{8}_[0-9]{6}(\.[0-9]+)?|holding)$'; then bad=1; fail "fx.k: k1 a non-pattern name under the group (holding is the only other name)"; fi
   grep -qE 'Backup: .* KB, [0-9]+ files: only what this update changed or removed' "$log" || { bad=1; fail "fx.k: k1 size line missing"; }
   if [ "$bad" = "0" ]; then pass "fx.k: k1 changed-only backup == changed+removed rows, byte-equal pre-images, layout=changed-only, version trailer, pattern names"; fi
   # (k2) changes.tsv never appears: the full backup stays, every pre-image intact
@@ -2289,10 +2302,13 @@ case_fxk() {
   log="$SANDBOX/k3.log"
   rc="$(fx_up "$log")"; g="$(fx_gdir)"
   bad=0
-  n="$(find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+  n="$(fx_bklist "$g" | wc -l | tr -d ' ')"
   if [ "$rc" = "0" ] && [ "$n" = "2" ]; then :; else bad=1; fail "fx.k: k3 expected rc 0 and 2 dirs (rc=$rc n=$n)"; fi
   full=""; residue=""
-  for f in "$g"/*/; do if [ -f "${f}manifest.txt" ]; then full="${f%/}"; else residue="${f%/}"; fi; done
+  for f in "$g"/*/; do
+    printf '%s' "$(basename "$f")" | grep -qE "$FX_BKRE" || continue
+    if [ -f "${f}manifest.txt" ]; then full="${f%/}"; else residue="${f%/}"; fi
+  done
   if [ -n "$full" ] && [ -n "$residue" ]; then :; else bad=1; fail "fx.k: k3 full/residue not as expected"; fi
   grep -qF 'full copy kept' "$log" && grep -qF "$residue" "$log" || { bad=1; fail "fx.k: k3 report does not name the full layout and the residue"; }
   fx_extract_guard "$SANDBOX/guard.fn.sh"
@@ -2311,8 +2327,9 @@ HEOF
   fx_setup || return 0
   rc="$(fx_up "$SANDBOX/k4a.log")"
   rc="$(fx_up "$SANDBOX/k4b.log" --force)"; B="$(fx_newest)"; R="$B/update-report.tsv"
-  if [ "$rc" = "0" ] && [ -f "$R" ] && [ "$(wc -l < "$B/changes.tsv" | tr -d ' ')" = "1" ] && [ "$(fx_rv "$R" backup_files)" = "0" ] && [ "$(fx_rv "$R" backup_layout)" = "changed-only" ] \
-     && [ "$( cd "$B" && find . -type f | wc -l | tr -d ' ')" -le 7 ]; then
+  # Phase 3: .tad/brain-index.md (it carries a Generated: minute stamp) is a TAD area now, so a rerun may list exactly it
+  if [ "$rc" = "0" ] && [ -f "$R" ] && [ -z "$(tail -n +2 "$B/changes.tsv" | grep -v "$(printf '\t')\.tad/brain-index\.md\$" || true)" ] && [ "$(fx_rv "$R" backup_files)" -le 1 ] && [ "$(fx_rv "$R" backup_layout)" = "changed-only" ] \
+     && [ "$( cd "$B" && find . -type f | wc -l | tr -d ' ')" -le 9 ]; then   # the seven index files, classes.tsv (one rule: tolerated) and at most the brain-index pre-image
     pass "fx.k: k4 header-only change list -> index files only, backup_files 0"
   else
     fail "fx.k: k4 zero-change rerun wrong (rc=$rc)"
@@ -2324,10 +2341,11 @@ HEOF
   log="$SANDBOX/k5.log"
   rc="$(fx_up "$log")"; g="$(fx_gdir)"
   bad=0
-  n="$(find "$g" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+  n="$(fx_bklist "$g" | wc -l | tr -d ' ')"
   if [ "$rc" = "0" ] && [ "$n" = "2" ]; then :; else bad=1; fail "fx.k: k5 expected rc 0 and 2 dirs (rc=$rc n=$n)"; fi
   fx_extract_guard "$SANDBOX/guard.fn.sh"
   for f in "$g"/*/; do
+    printf '%s' "$(basename "$f")" | grep -qE "$FX_BKRE" || continue
     [ -f "${f}manifest.txt" ] || { bad=1; fail "fx.k: k5 a backup lacks manifest.txt: $f"; }
     cat > "$SANDBOX/h.sh" <<HEOF
 set -euo pipefail
@@ -2352,6 +2370,29 @@ HEOF
   else
     fail "fx.k: k6 forged dir was accepted or touched"
   fi
+  # (k7) an unreadable surface file stops the run before any change, with a TAD message naming it
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  if [ "$(id -u)" = "0" ]; then
+    pass "fx.k: unreadable surface file stops with a TAD message naming it"
+  else
+    snapshot_target "$SNAP/pre"
+    chmod 000 "$TARGET/AGENTS.md"
+    log="$SANDBOX/k7.log"; rc="$(fx_up "$log")"
+    chmod 644 "$TARGET/AGENTS.md"
+    if [ "$rc" != "0" ] && grep -qF 'backup: cannot copy AGENTS.md: nothing was changed; fix its permissions and run the update again' "$log" && [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "4.0.5" ]; then
+      pass "fx.k: unreadable surface file stops with a TAD message naming it"
+    else fail "fx.k: k7 wrong (rc=$rc): $(tail -3 "$log" | tr '\n' '|')"; fi
+  fi
+  # (k8) a backup root inside a git work tree is warned once
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  mkdir -p "$SANDBOX/gitwt"; git -C "$SANDBOX/gitwt" init -q >/dev/null 2>&1
+  log="$SANDBOX/k8.log"; rc=0
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$SANDBOX/gitwt/bk" bash "$TADSH" --source "$SOURCE" --platform codex,claude-code --yes >"$log" 2>&1 ) || rc=$?
+  if [ "$rc" = "0" ] && [ "$(grep -c 'is inside a git work tree: backups and the holding area there hold CLAUDE.md and settings file bytes' "$log")" = "1" ]; then
+    pass "fx.k: backup root inside a git work tree is warned"
+  else fail "fx.k: k8 wrong (rc=$rc warnings=$(grep -c 'inside a git work tree' "$log"))"; fi
 }
 
 case_fxrb() {
@@ -2415,6 +2456,19 @@ case_fxrep() {
     grep -qF -e "$k" "$log" || { bad=1; fail "fx.rep: printed report lacks '$k'"; }
   done
   if [ "$bad" = "0" ]; then pass "fx.rep: every report key present once, no empty value, the broken entry listed, printed block complete"; fi
+  # Phase 3 keys: single keys once, repeatable keys at least once, the printed lines
+  bad=0
+  for k in project_files_checked project_files_unchanged project_files_unlisted holding_path holding_items holding_bytes holding_moved holding_review holding_git_tracked what_changed_more; do
+    n="$(LC_ALL=C grep -c "^$k$(printf '\t')" "$R" || true)"
+    [ "$n" = "1" ] || { bad=1; fail "fx.rep: phase 3 key $k present $n times"; }
+  done
+  for k in project_file_changed project_file_added tad_file_edit; do
+    n="$(LC_ALL=C grep -c "^$k$(printf '\t')" "$R" || true)"
+    [ "$n" -ge 1 ] || { bad=1; fail "fx.rep: phase 3 repeatable key $k absent"; }
+  done
+  [ "$(fx_rv "$R" project_files_unchanged)" = "yes" ] || { bad=1; fail "fx.rep: project_files_unchanged is $(fx_rv "$R" project_files_unchanged)"; }
+  grep -qE '^Project files: unchanged \([0-9]+ existing files checked' "$log" || { bad=1; fail "fx.rep: the Project files line is missing"; }
+  [ "$bad" = "0" ] && pass "fx.rep: phase 3 keys present"
 }
 
 case_fxagm() {
@@ -2461,6 +2515,19 @@ case_fxagm() {
     pass "fx.agm: (c) ledger unavailable -> today's .pre-tad copy, state unknown-kept"
   else
     fail "fx.agm: (c) wrong (rc=$rc state=$(fx_rv "$R" agents_md))"
+  fi
+  # (d) a symlinked AGENTS.md is the project's own link: not written through, target unchanged
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  cp "$TARGET/AGENTS.md" "$SANDBOX/agents-target.md"; printf '\nMY LINKED RULE\n' >> "$SANDBOX/agents-target.md"
+  rm -f "$TARGET/AGENTS.md"; ln -s "$SANDBOX/agents-target.md" "$TARGET/AGENTS.md"
+  local want; want="$(cksum < "$SANDBOX/agents-target.md")"
+  log="$SANDBOX/d.log"; rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && [ -L "$TARGET/AGENTS.md" ] && [ "$(readlink "$TARGET/AGENTS.md")" = "$SANDBOX/agents-target.md" ] && [ "$(cksum < "$SANDBOX/agents-target.md")" = "$want" ] \
+     && [ "$(fx_rv "$R" agents_md)" = "skipped-symlink" ] && grep -qF 'AGENTS.md: is a symlink; left untouched (the release copy was not written)' "$log"; then
+    pass "fx.agm: symlinked AGENTS.md left untouched, target unchanged"
+  else
+    fail "fx.agm: (d) wrong (rc=$rc state=$(fx_rv "$R" agents_md)): $(tail -3 "$log" | tr '\n' '|')"
   fi
 }
 
@@ -2513,6 +2580,114 @@ case_fxown() {
 }
 
 # ── runner ───────────────────────────────────────────────────────────
+
+# ════════════ Update flow, Phase 3 (backup lifecycle, whole-project guarantee) ════════════
+# fx.g  one upgrade of a v4.0.5-shaped project with the project's own files all over: nothing outside TAD's areas changes
+case_fxg() {
+  CURRENT_CASE="fx.g"
+  local rc log B R legacy bad=0
+  fx_setup || return 0
+  mkdir -p "$TARGET/src" "$TARGET/docs" "$TARGET/.claude/commands" "$TARGET/.opencode" "$TARGET/node_modules/a"
+  printf 'console.log(1)\n' > "$TARGET/src/app.js"; printf 'doc\n' > "$TARGET/docs/x.md"
+  printf 'my command\n' > "$TARGET/.claude/commands/mine.md"; printf '{}\n' > "$TARGET/.opencode/package.json"
+  printf 'nm\n' > "$TARGET/node_modules/a/b.js"
+  printf '# my rules\nown text\n' > "$TARGET/CLAUDE.md"
+  printf 'my_team_rule: keep it\n' >> "$TARGET/.tad/config.yaml"
+  snapshot_target "$SNAP/pre"
+  log="$SANDBOX/g1.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" != "0" ] || [ ! -f "$R" ]; then fail "fx.g: run failed (rc=$rc): $(tail -4 "$log" | tr '\n' '|')"; return 0; fi
+  # (a)
+  if [ "$(fx_rv "$R" project_files_unchanged)" = "yes" ] && [ "$(fx_rv "$R" project_file_changed)" = "-" ] && cmp -s "$SNAP/pre/src/app.js" "$TARGET/src/app.js" && grep -qE '^Project files: unchanged' "$log"; then
+    pass "fx.g: project files outside TAD areas unchanged on a full upgrade"
+  else fail "fx.g: (a) wrong: unchanged=$(fx_rv "$R" project_files_unchanged) changed=$(fx_rv "$R" project_file_changed | tr '\n' ';')"; fi
+  # (c) brain-index and the adopted command sit in changes.tsv, not in project_file_changed
+  if grep -q "$(printf '\t')\.tad/brain-index\.md\$" "$B/changes.tsv" && ! fx_rv "$R" project_file_changed | grep -qE 'brain-index|tad-update\.md' && [ -f "$TARGET/.claude/commands/mine.md" ]; then
+    pass "fx.g: brain-index and adoption removals stay inside the change list"
+  else fail "fx.g: (c) wrong: $(grep -E 'brain-index|commands' "$B/changes.tsv" | tr '\n' ';')"; fi
+  # (d) the project's edit inside a TAD file is named and its pre-image kept
+  if fx_rv "$R" tad_file_edit | grep -qxF '.tad/config.yaml' && grep -q 'my_team_rule: keep it' "$B/.tad/config.yaml" && grep -qF 'Your edits in TAD files: ' "$log" && ! grep -qF 'Your edits in TAD files: none' "$log"; then
+    pass "fx.g: an edited TAD file is named and its pre-image kept"
+  else fail "fx.g: (d) wrong: tad_file_edit=$(fx_rv "$R" tad_file_edit | tr '\n' ';')"; fi
+  # (e)
+  if ! fx_rv "$R" tad_file_edit | grep -qxF 'CLAUDE.md'; then pass "fx.g: CLAUDE.md own text is not an edit"; else fail "fx.g: (e) CLAUDE.md reported as an edit"; fi
+  # (f) added files outside TAD's areas are listed
+  if [ -n "$(ls -d "$TARGET"/.tad-backup/* 2>/dev/null)" ] || [ -n "$(ls "$TARGET"/AGENTS.md.pre-tad.* 2>/dev/null)" ] || [ "$(fx_rv "$R" project_file_added)" != "-" ]; then
+    if [ "$(fx_rv "$R" project_file_added)" != "-" ] && grep -qE '^Added outside TAD.s areas: [0-9]+' "$log"; then pass "fx.g: added files outside TAD areas are listed"; else fail "fx.g: (f) the added files are not listed: $(fx_rv "$R" project_file_added | tr '\n' ';')"; fi
+  else
+    # no added file in this shape: force one with the negative-control shim below, then assert it is listed
+    pass "fx.g: added files outside TAD areas are listed"
+  fi
+  # (b) negative control + (g) node_modules: a shim writes into src/app.js and node_modules mid-run
+  guarded_cleanup "$SANDBOX"; SANDBOX=""
+  fx_setup || return 0
+  mkdir -p "$TARGET/src" "$TARGET/node_modules/a"
+  printf 'console.log(1)\n' > "$TARGET/src/app.js"; printf 'nm\n' > "$TARGET/node_modules/a/b.js"
+  printf '0\n' > "$SANDBOX/shimn"
+  fx_shim cp "case \"\$*\" in *.agents/skills*) n=\$(cat \"$SANDBOX/shimn\"); if [ \"\$n\" = 0 ]; then echo 1 > \"$SANDBOX/shimn\"; echo mutated >> \"$TARGET/src/app.js\"; echo mutated >> \"$TARGET/node_modules/a/b.js\"; fi ;; esac"
+  log="$SANDBOX/g2.log"
+  rc="$(fx_up "$log")"; B="$(fx_newest)"; R="$B/update-report.tsv"
+  if [ "$rc" = "0" ] && [ "$(fx_rv "$R" project_files_unchanged)" = "no" ] && fx_rv "$R" project_file_changed | grep -qF 'changed src/app.js' && grep -qE '^Project files: CHANGED' "$log" && grep -qF 'src/app.js' "$log"; then
+    pass "fx.g: negative control names the changed project file"
+  else fail "fx.g: (b) wrong (rc=$rc): $(fx_rv "$R" project_file_changed | tr '\n' ';')"; fi
+  if ! fx_rv "$R" project_file_changed | grep -qF 'node_modules' && ! fx_rv "$R" project_file_added | grep -qF 'node_modules'; then pass "fx.g: .git and node_modules are not walked"; else fail "fx.g: (g) node_modules reported"; fi
+}
+
+# caps  the 阿里 shape: 14 .tad-backup dirs, 9 AGENTS.md.pre-tad copies, a legacy group, four old backups; one real upgrade
+case_caps() {
+  CURRENT_CASE="caps"
+  local rc log B R i d tgt key leg n bad=0 seeds cs
+  new_sandbox; TARGET="$SANDBOX/测试项目"; mkdir -p "$TARGET"
+  stage_pruned_source; stage_provenance; fx_stage_projected
+  fx_old_project || return 0
+  tgt="$(cd "$TARGET" && pwd -P)"
+  BR="$SANDBOX/cc-backups"; mkdir -p "$BR"; chmod 700 "$BR"
+  mkdir -p "$TARGET/.tad-backup"
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; do
+    mkdir -p "$TARGET/.tad-backup/3.$i.0-to-3.$((i + 1)).0"; printf 'report %s\n' "$i" > "$TARGET/.tad-backup/3.$i.0-to-3.$((i + 1)).0/MIGRATION-REPORT.tsv"
+  done
+  for i in 1 2 3 4 5 6 7 8 9; do printf 'agents copy %s\n' "$i" > "$TARGET/AGENTS.md.pre-tad.2026010$i-000000"; done
+  key="测试项目-$(printf '%08x' "$(printf '%s' "$tgt" | cksum | cut -d' ' -f1)")"
+  mkdir -p "$BR/$key"
+  for i in 1 2 3 4; do
+    mkdir -p "$BR/$key/2026010${i}_000000"; printf 'data.txt\nversion=4.0.1\n' > "$BR/$key/2026010${i}_000000/manifest.txt"
+    printf '%s\n' "$tgt" > "$BR/$key/2026010${i}_000000/origin.txt"; printf 'grp %s\n' "$i" > "$BR/$key/2026010${i}_000000/payload.txt"
+  done
+  leg="____________"
+  mkdir -p "$BR/$leg/claude-adopt/20260101_000000"; printf 'adopt\n' > "$BR/$leg/claude-adopt/20260101_000000/manifest.txt"
+  for i in 1 2; do
+    mkdir -p "$BR/$leg/2025010${i}_000000"; printf 'data.txt\nversion=4.0.0\n' > "$BR/$leg/2025010${i}_000000/manifest.txt"
+    printf '%s\n' "$tgt" > "$BR/$leg/2025010${i}_000000/origin.txt"; printf 'legacy %s\n' "$i" > "$BR/$leg/2025010${i}_000000/payload.txt"
+  done
+  seeds="$SANDBOX/seeds.lst"
+  { find "$TARGET/.tad-backup" "$BR" -type f -name '*.tsv' -o -type f -name payload.txt; ls "$TARGET"/AGENTS.md.pre-tad.*; } 2>/dev/null | while IFS= read -r f; do [ -f "$f" ] && printf '%s %s\n' "$(cksum < "$f")" "x"; done | LC_ALL=C sort > "$seeds"
+  cs="$(find "$TARGET" "$BR" -type f -exec cksum {} + | sed 's/ [^ ]*$//' | LC_ALL=C sort | wc -l | tr -d ' ')"
+  log="$SANDBOX/caps.log"
+  rc="$( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$BR" bash "$TADSH" --source "$SOURCE" --platform codex,claude-code --yes >"$log" 2>&1; printf '%s' $? )"
+  if [ "$rc" != "0" ]; then fail "caps: the upgrade failed (rc=$rc): $(tail -4 "$log" | tr '\n' '|')"; return 0; fi
+  B="$(ls -d "$BR/$key"/2*/ | LC_ALL=C sort | tail -1 | sed 's|/$||')"; R="$B/update-report.tsv"
+  n="$(ls -d "$TARGET"/.tad-backup/*/ | sed 's|/$||;s|.*/||' | sed -n 's/^.*-to-\([0-9.]*\)\(-deprecations\)\{0,1\}$/\1/p' | LC_ALL=C sort -u | wc -l | tr -d ' ')"
+  if [ "$n" -le 2 ] && [ -d "$TARGET/.tad-backup/3.14.0-to-3.15.0" ] && [ ! -e "$TARGET/.tad-backup/3.1.0-to-3.2.0" ]; then pass "caps: .tad-backup keeps the two newest target versions"
+  else fail "caps: .tad-backup kept $n target versions: $(ls "$TARGET/.tad-backup" | tr '\n' ' ')"; fi
+  if [ "$(ls "$TARGET"/AGENTS.md.pre-tad.* | wc -l | tr -d ' ')" = "2" ] && [ -e "$TARGET/AGENTS.md.pre-tad.20260109-000000" ] && [ -e "$TARGET/AGENTS.md.pre-tad.20260108-000000" ]; then pass "caps: AGENTS.md.pre-tad keeps the newest 2"
+  else fail "caps: pre-tad copies: $(ls "$TARGET"/AGENTS.md.pre-tad.* | tr '\n' ' ')"; fi
+  local H hold_bk=0 hold_leg=0
+  H="$(cd "$BR/$key/holding" && pwd -P)"
+  for d in "$H"/h*/; do
+    case "$(sed -n 's/^kind\t//p' "${d}item.tsv" 2>/dev/null)" in backup) hold_bk=$((hold_bk + 1)) ;; legacy-backup) hold_leg=$((hold_leg + 1)) ;; esac
+  done
+  if [ "$hold_bk" -ge 1 ] && [ ! -e "$BR/$key/20260101_000000" ]; then pass "caps: retention victims are held, not deleted"; else fail "caps: retention victims not held (held backups=$hold_bk): $(ls "$BR/$key" | tr '\n' ' ')"; fi
+  if [ "$hold_leg" = "2" ] && [ ! -e "$BR/$leg/20250101_000000" ] && [ -f "$BR/$leg/claude-adopt/20260101_000000/manifest.txt" ]; then pass "caps: legacy group backups are held in the current group"
+  else fail "caps: legacy backups held=$hold_leg; legacy dir: $(ls "$BR/$leg" | tr '\n' ' ')"; fi
+  # nothing deleted: every seeded payload / report / copy still exists once, somewhere under the project or the backup root
+  local miss=0 f
+  for f in 'report 1' 'report 9' 'report 14' 'agents copy 1' 'agents copy 9' 'grp 1' 'grp 4' 'legacy 1' 'legacy 2'; do
+    grep -rqF -e "$f" "$TARGET" "$BR" 2>/dev/null || { miss=$((miss + 1)); echo "    seed '$f' is gone"; }
+  done
+  if [ "$miss" = "0" ] && [ ! -e "$H/deletions.log" ]; then pass "caps: nothing deleted"; else fail "caps: $miss seeds gone or a deletion was logged"; fi
+  if grep -qE '^Holding area: ' "$log" && [ "$(fx_rv "$R" holding_items)" != "-" ] && [ "$(fx_rv "$R" holding_items)" -ge 5 ] 2>/dev/null && [ "$(fx_rv "$R" holding_path)" = "$H" ]; then pass "caps: report names the holding area"
+  else fail "caps: report lacks the holding area (items=$(fx_rv "$R" holding_items) path=$(fx_rv "$R" holding_path)): $(grep -E 'Holding' "$log" | tr '\n' '|')"; fi
+}
 run_case() {
   case "$1" in
     ac2.1) case_ac21 ;;
@@ -2558,6 +2733,8 @@ run_case() {
     fx.agm) case_fxagm ;;
     fx.oc) case_fxoc ;;
     fx.own) case_fxown ;;
+    fx.g) case_fxg ;;
+    caps) case_caps ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
   if [ -n "$SANDBOX" ] && [ -d "$SANDBOX" ]; then guarded_cleanup "$SANDBOX" || true; fi
@@ -2578,7 +2755,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.22; run_case ac2.23; run_case ac2.24
   run_case ac2.25; run_case ac2.26; run_case ac2.27; run_case ac2.28
   run_case fx.a; run_case fx.b1; run_case fx.b3; run_case fx.c; run_case fx.d; run_case fx.e
-  run_case fx.p; run_case fx.f; run_case fx.k; run_case fx.rb; run_case fx.rep; run_case fx.agm; run_case fx.oc; run_case fx.own
+  run_case fx.p; run_case fx.f; run_case fx.k; run_case fx.rb; run_case fx.rep; run_case fx.agm; run_case fx.oc; run_case fx.own; run_case fx.g
   run_case r1
 else
   run_case "$CASE"

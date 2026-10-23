@@ -112,7 +112,7 @@ To check an install:
 cat .tad/version.txt     # 4.0.6
 ```
 
-Installed projects update with one sentence ("升级 TAD" to Cora, `/tad-update`, or `$tad-update`): the check is read-only and prints the exact line to run, `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`; after your one yes it updates every platform listed in one run, keeps a backup of only the files it changes or removes, and ends with a report (version, process files unchanged, backup path). `AGENTS.md` has a File Ownership section that says which files are TAD's and which are yours.
+Installed projects update with one sentence ("升级 TAD" to Cora, `/tad-update`, or `$tad-update`): the check is read-only and prints the exact line to run, `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`; after your one yes it updates every platform listed in one run, keeps a backup of only the files it changes or removes, and ends with a report (version, project files unchanged or the paths that changed, your edits in TAD files, backup path, holding area). Older backups move to a holding area and are deleted only with your yes ("清掉" clears them; the next update's check also offers it). `AGENTS.md` has a File Ownership section that says which files are TAD's and which are yours.
 
 ## Upgrading from 3.x
 

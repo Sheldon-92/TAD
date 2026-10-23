@@ -17,6 +17,7 @@
 #   --case multi-platform         one confirmed run updates every installed platform
 #   --case first-hop              the v4.0.5 helper with the candidate installer
 #   --case post-update            the After this update block, report keys, final-path-only log, no ANSI when piped
+#   --case check-clear            the check screen lists Will clear; one yes clears it after a successful install (Phase 3)
 #   --emit-mock-curl <dir>        write the mock curl stub into <dir> (for the real-path runs) and exit
 #
 # Deterministic by construction: NO real network. A temporary mock curl in PATH
@@ -1437,7 +1438,8 @@ run_cand() {
         MOCK_INSTALLER="${MOCK_INSTALLER-$MP_CAND_INSTALLER}" /bin/bash .tad/scripts/tad-update.sh "$@" )
 }
 mp_candidate_helper() { cp "$REPO_ROOT/.tad/scripts/tad-update.sh" "$1/.tad/scripts/tad-update.sh"; }
-backup_dir_count() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l | tr -d ' '; }
+# One rule (Phase 3): only a name matching the backup pattern is a backup; holding/ never counts.
+backup_dir_count() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d -name '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]*' 2>/dev/null | wc -l | tr -d ' '; }
 
 case_bash_pin() {
     echo "== bash-pin: every bash level is /bin/bash, decided once at installer entry =="
@@ -1559,9 +1561,9 @@ case_first_hop() {
     # The installer replaces the running helper by temp file + rename, so the old helper keeps reading its
     # old inode: it must exit 0 and print its own normal message (no "command not found" garble).
     if [ "$rc" -eq 0 ] && ! printf '%s\n' "$out" | grep -qE 'command not found|syntax error' \
-       && printf '%s\n' "$out" | grep -qF 'TAD update report' && printf '%s\n' "$out" | grep -qF 'Claude Code: links only (sticky)' \
+       && printf '%s\n' "$out" | grep -qF 'TAD update report' && printf '%s\n' "$out" | grep -qF "Claude Code: skill links refreshed (a full refresh: confirm claude-code on the next update's check)" \
        && [ "$(cat "$p/.tad/version.txt")" = "$FIXTURE_VERSION" ]; then
-        ok "first-hop: the v4.0.5 helper updated the project and exited 0 (helper rc=$rc); the report says Claude Code: links only (sticky)"
+        ok "first-hop: the v4.0.5 helper updated the project and exited 0 (helper rc=$rc); the report says Claude Code: skill links refreshed (a full refresh: confirm claude-code on the next update's check)"
     else
         bad "first-hop: rc=$rc: $(printf '%s\n' "$out" | tail -4 | tr '\n' '|')"
     fi
@@ -1572,7 +1574,7 @@ case_first_hop() {
 # no ANSI when piped (D13). One upgrade with known edits, a reference-only rerun, a rerun without the table.
 # ══════════════════════════════════════════════════════════════════
 pu_report_value() { LC_ALL=C grep "^$2$(printf '\t')" "$1" | cut -f2- || true; }  # <report> <key>
-pu_latest_backup() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | LC_ALL=C sort | tail -1; }
+pu_latest_backup() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d -name '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]*' 2>/dev/null | LC_ALL=C sort | tail -1; }
 pu_mutate_source() {
     # pu_mutate_source <src dir> — the known edits on a copy of this tree, stamped as the fixture version
     local s="$1"
@@ -1585,7 +1587,10 @@ pu_mutate_source() {
     printf '\n' >> "$s/.cursor/hooks.json"
     {
         printf '# Changelog\n\n## [99.0.0] - 2099-01-01\n\n- **Future lead.** must not show.\n\n'
-        printf '## [%s] - 2026-01-01\n\n### Changed\n\n- **Alpha lead one.** Detail that is not printed.\n- **Beta lead two.** More detail.\n\n' "$FIXTURE_VERSION"
+        printf '## [%s] - 2026-01-01\n\n### Changed\n\n- **Alpha lead one.** Detail that is not printed.\n- **Beta lead two.** More detail.\n' "$FIXTURE_VERSION"
+        printf -- '- **Gamma\033[31m lead three.** Carries a control character.\n'
+        local _i; for _i in 4 5 6 7 8 9 10 11 12 13; do printf -- '- **Lead number %s.** Detail.\n' "$_i"; done
+        printf '\n\n' 
         printf '## [%s] - 2025-01-01\n\n- **Old lead.** must not show.\n' "$OLD_VERSION"
     } > "$s/CHANGELOG.md"
 }
@@ -1659,7 +1664,7 @@ case_post_update() {
     # backup contents: Phase 1's files plus pre-images; nothing else at the top level
     badn=0
     for f in $(find "$b" -maxdepth 1 -type f -exec basename {} \;); do
-        case "$f" in origin.txt|pre-top.txt|pre-tree.txt|pre-surface.tsv|changes.tsv|manifest.txt|update-report.tsv|not-backed-up.txt|AGENTS.md|CLAUDE.md) ;; *) badn=$((badn + 1)); echo "    unexpected file in the backup: $f" ;; esac
+        case "$f" in origin.txt|pre-top.txt|pre-tree.txt|pre-surface.tsv|changes.tsv|manifest.txt|update-report.tsv|not-backed-up.txt|classes.tsv|AGENTS.md|CLAUDE.md) ;; *) badn=$((badn + 1)); echo "    unexpected file in the backup: $f" ;; esac
     done
     if [ "$badn" = "0" ] && [ ! -e "$b/changelog.md" ]; then ok "post-update: the backup gained no file beyond Phase 1's set"; else bad "post-update: backup holds $badn unexpected file(s)"; fi
     # report keys
@@ -1682,6 +1687,18 @@ case_post_update() {
         ok "post-update: what_changed keys carry the leads"
     else
         bad "post-update: what_changed keys wrong: $(pu_report_value "$r" what_changed | tr '\n' '|')"
+    fi
+    # Phase 3 wording (D16 d)
+    r="$b/update-report.tsv"
+    if grep -qxF '    ... and 3 more (CHANGELOG.md)' "$out" && [ "$(pu_report_value "$r" what_changed_more)" = "3" ] && [ "$(pu_report_value "$r" what_changed | wc -l | tr -d ' ')" = "10" ]; then
+        ok "post-update: what changed says and N more"
+    else
+        bad "post-update: what changed cut wrong: $(sed -n '/What changed/,$p' "$out" | tail -4 | tr '\n' '|') more=$(pu_report_value "$r" what_changed_more)"
+    fi
+    if pu_report_value "$r" what_changed | grep -qF 'Gamma[31m lead three.' && [ "$(pu_report_value "$r" what_changed | LC_ALL=C grep -c "$ESC" || true)" = "0" ] && grep -qxF '    Gamma[31m lead three.' "$out"; then
+        ok "post-update: control characters stripped"
+    else
+        bad "post-update: control characters not stripped from the lead lines"
     fi
     # second run: only a reference file changes (same version, no release notes)
     local s3="$SANDBOX/pusrc3" out3="$SANDBOX/pu3.log"
@@ -1713,6 +1730,89 @@ case_post_update() {
     else
         bad "post-update: missing-table run wrong (rc=$rc): $(tail -8 "$out4" | tr '\n' '|')"
     fi
+    # fourth run: a new projected agent definition under .claude/agents: a path the live-reload table does not measure
+    local s5="$SANDBOX/pusrc5" out5="$SANDBOX/pu5.log" out6="$SANDBOX/pu6.log"
+    mkdir -p "$s5"; tar -xzf "$SRC_TARBALL" -C "$s5"; pu_mutate_source "$s5/TAD-main"
+    mkdir -p "$s5/TAD-main/.tad/agents/claude"; printf -- '---\nname: zz-fx-agent\ndescription: fixture agent\n---\n' > "$s5/TAD-main/.tad/agents/claude/zz-fx-agent.md"
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    rc=0
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$s5/TAD-main" --platform codex,claude-code --yes ) >"$out5" 2>&1 || rc=$?
+    if [ "$rc" -eq 0 ] && grep -E '^  New session needed \(Codex\): .*not measured: .*files under \.claude/ \.codex/ \.cursor/ \.opencode/ other than the ones above' "$out5" >/dev/null; then
+        ok "post-update: not-measured names the file kinds"
+    else
+        bad "post-update: not-measured wording wrong (rc=$rc): $(grep 'New session needed' "$out5" | tr '\n' '|')"
+    fi
+    # fifth run: codex only on a project that has the Claude projection (sticky): the line says how to get a full refresh
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    rc=0
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$s5/TAD-main" --platform codex --yes ) >"$out6" 2>&1 || rc=$?
+    if [ "$rc" -eq 0 ] && grep -qxF "Claude Code: skill links refreshed (a full refresh: confirm claude-code on the next update's check)" "$out6"; then
+        ok "post-update: sticky line says how to get a full refresh"
+    else
+        bad "post-update: sticky line wrong (rc=$rc): $(grep '^Claude Code' "$out6" | tr '\n' '|')"
+    fi
+}
+
+# ══════════════════════════════════════════════════════════════════
+# Phase 3: the check screen lists what a yes clears; one yes clears it after the update succeeded
+# ══════════════════════════════════════════════════════════════════
+cc_seed() { # <project> <group dir> <run backup> — held items through the project's own lifecycle step
+    local p="$1" g="$2" b="$3" d
+    mkdir -p "$p/.tad-backup"
+    for d in "${@:4}"; do mkdir -p "$p/.tad-backup/$d"; printf 'report %s\n' "$d" > "$p/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
+    ( cd "$p" && /bin/bash .tad/scripts/tad-backups.sh lifecycle --project "$(pwd -P)" --group-dir "$g" --run-backup "$b" --ledger "$REPO_ROOT/.tad/provenance/framework-released.tsv" ) >/dev/null 2>&1
+}
+case_check_clear() {
+    echo "== check-clear: Will clear on the check screen; cleared only after a successful install =="
+    setup_sandbox
+    local p="$SANDBOX/cc" src="$SANDBOX/ccsrc" out rc=0 G B tok chk log
+    mp_prepare || return 0
+    mp_project "$p" multi || return 0
+    mkdir -p "$src"; tar -xzf "$SRC_TARBALL" -C "$src"; pu_mutate_source "$src/TAD-main"
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$src/TAD-main" --platform codex,claude-code --yes ) >"$SANDBOX/cc1.log" 2>&1 || rc=$?
+    if [ "$rc" != "0" ]; then bad "check-clear: the first upgrade failed (rc=$rc): $(tail -3 "$SANDBOX/cc1.log" | tr '\n' '|')"; return 0; fi
+    B="$(sed -n 's/^Backup: \([^ ]*\) (.*/\1/p' "$SANDBOX/cc1.log" | tail -1)"; G="$(dirname "$B")"
+    if [ ! -d "$B" ] || [ ! -f "$p/.tad/scripts/tad-backups.sh" ]; then bad "check-clear: no backup or no tad-backups.sh after the first upgrade (B=$B)"; return 0; fi
+    # one clearable item (reports only) and one held for review (a file with no released counterpart)
+    mkdir -p "$p/.tad-backup/0.1.0-to-0.1.0"; printf 'mine\n' > "$p/.tad-backup/0.1.0-to-0.1.0/notes"
+    cc_seed "$p" "$G" "$B" 0.1.0-to-0.1.1 0.2.0-to-0.2.1 0.3.0-to-0.3.1
+    # the mock serves the same edited tree the first upgrade installed (a bare tree would conflict on .cursor/hooks.json)
+    tar -czf "$SANDBOX/ccmut.tgz" -C "$src" TAD-main; SRC_TARBALL="$SANDBOX/ccmut.tgz"
+    export MOCK_INSTALLER="$TAD_SH" MOCK_TAG_TARBALL="$SRC_TARBALL"
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    chk="$(run_cand "$p" --check 2>&1)" || true
+    tok="$(printf '%s\n' "$chk" | sed -n 's/^To apply: .*--clear-held \([0-9][0-9]*\)$/\1/p')"
+    if printf '%s\n' "$chk" | grep -qE '^Will clear: [1-9][0-9]* held backups \([0-9]+ KB\)' && printf '%s\n' "$chk" | grep -qE 'Held for review: [1-9]' && [ -n "$tok" ] \
+       && [ "$(printf '%s\n' "$chk" | grep -n '^Will clear' | cut -d: -f1)" -lt "$(printf '%s\n' "$chk" | grep -n '^Update available' | cut -d: -f1)" ]; then
+        ok "check-clear: check screen lists Will clear and the flag"
+    else
+        bad "check-clear: check screen wrong: $(printf '%s\n' "$chk" | tail -8 | tr '\n' '|')"
+    fi
+    # apply with the printed flag; three .pre-tad copies make this run hold one of its own
+    local n; for n in 1 2 3; do printf 'copy %s\n' "$n" > "$p/AGENTS.md.pre-tad.2026010$n-000000"; done
+    log="$SANDBOX/cc-apply.log"; rc=0
+    run_cand "$p" --yes --platform codex,claude-code --clear-held "$tok" >"$log" 2>&1 || rc=$?
+    local H="$G/holding" d gone=1 kept=0 mine=0
+    for d in "$H"/h*/; do [ -e "${d}payload/0.1.0-to-0.1.1" ] && gone=0; [ -e "${d}payload/0.1.0-to-0.1.0" ] && kept=1; [ -e "${d}payload/AGENTS.md.pre-tad.20260101-000000" ] && mine=1; done
+    if [ "$rc" = "0" ] && [ "$gone" = "1" ] && grep -F '0.1.0-to-0.1.1' "$H/deletions.log" | grep -qF "upgrade"; then
+        ok "check-clear: cleared only after the installer succeeded"
+    else bad "check-clear: the clearable item was not cleared with a yes (rc=$rc gone=$gone): $(tail -4 "$log" | tr '\n' '|')"; fi
+    if [ "$kept" = "1" ]; then ok "check-clear: review items are not cleared"; else bad "check-clear: the review item was cleared"; fi
+    if [ "$mine" = "1" ]; then ok "check-clear: items held by this run are not cleared"; else bad "check-clear: the item this run held is gone"; fi
+    # a failing installer clears nothing
+    B="$(ls -d "$G"/2*/ | LC_ALL=C sort | tail -1 | sed 's|/$||')"
+    cc_seed "$p" "$G" "$B" 0.1.0-to-0.1.2
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    chk="$(run_cand "$p" --check 2>&1)" || true
+    tok="$(printf '%s\n' "$chk" | sed -n 's/^To apply: .*--clear-held \([0-9][0-9]*\)$/\1/p')"
+    printf '#!/bin/bash\n# TAD Framework (failing installer)\nexit 1\n' > "$SANDBOX/fail-tad.sh"
+    rc=0
+    MOCK_INSTALLER="$SANDBOX/fail-tad.sh" run_cand "$p" --yes --platform codex,claude-code --clear-held "$tok" >"$SANDBOX/cc-fail.log" 2>&1 || rc=$?
+    gone=1; for d in "$H"/h*/; do [ -e "${d}payload/0.1.0-to-0.1.2" ] && gone=0; done
+    if [ "$rc" != "0" ] && [ "$gone" = "0" ] && ! grep -F '0.1.0-to-0.1.2' "$H/deletions.log" >/dev/null 2>&1; then
+        ok "check-clear: failed install clears nothing"
+    else bad "check-clear: a failed install cleared something (rc=$rc gone=$gone)"; fi
+    unset MOCK_INSTALLER MOCK_TAG_TARBALL
 }
 
 # ══════════════════════════════════════════════════════════════════
@@ -1740,6 +1840,7 @@ case "$CASE" in
     multi-platform) case_multi_platform ;;
     first-hop) case_first_hop ;;
     post-update) case_post_update ;;
+    check-clear) case_check_clear ;;
     *) echo "tad-update-fixture: unknown --case '$CASE'" >&2; exit 2 ;;
 esac
 
