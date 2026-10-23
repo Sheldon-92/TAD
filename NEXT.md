@@ -13,6 +13,13 @@
 
 ## 🔴 优先队列
 
+### ✅ DONE 2026-10-23. EPIC-20261022 tad-update-flow — accepted and archived, not yet released
+- Epic: `.tad/archive/epics/EPIC-20261022-tad-update-flow.md`. One-sentence TAD update (/tad-update or "升级 TAD"), all platforms in one run, changed-only backup, honest process-file report; then live use + daily reminder; then backup lifecycle.
+- [x] Phase 1 update flow — 32caf0c3..e21d3aca; Gate 4 PASS (real Claude Code session "升级 TAD": one yes, changed-only backup 946 KB, process files unchanged)
+- [x] Phase 2 live use and update reminder — 64efc9df, 87d44f79; Gate 4 PASS (real Claude Code session: after-update block honest; reminder only)
+- [x] Phase 3 backup lifecycle + full "files unchanged" guarantee — b6aa1706..c27a4625; Gate 4 PASS (real session: 升级 TAD → 看备份 → 收回 → 清掉; 14+9 backups → 3+2; project files unchanged 1181)
+
+
 ### ✅ DONE 2026-10-21. EPIC-20261021 cora-loop-fixes — accepted and archived, released in v4.0.6
 - Epic: `.tad/archive/epics/EPIC-20261021-cora-loop-fixes.md`. Fixes from real use in 买卖 / 阿里 / TAD: design loop (look first, decisions not code, no rule-on-rule fixes, convergence stop), clarification check, disk-based dispatch count, no pushing work onto the human, Gate 4 real-run record and resume.
 - [x] Phase 1 design loop — 1aa6db58, fbd8d749; Gate 4 CONDITIONAL (阿里 replay: patch chain stopped at round 2 instead of a re-plan at dispatch 12)
