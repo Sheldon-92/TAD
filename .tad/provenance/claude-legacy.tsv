@@ -1,4 +1,4 @@
-# schema=1 rows=2047
+# schema=1 rows=2052
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -42,6 +42,7 @@ agents-md	b71b6ba70b551abe577f851248fba586e1d84ba6	-
 agents-md	bf02e97d42efff61eb66fd264677e8f1a4d35550	-
 agents-md	c5cbb83e8bc14f4a3eb5583696bc9af1f1722eef	-
 agents-md	c89094c2e2c47816edd400acf84941853d898ada	-
+agents-md	d65b198acf96474eaf0ba966453e9f5647698c78	-
 agents-md	d887cfd0277ec220cb4f4ec5c6b7ce3039cf4014	-
 agents-md	db727cb372143d9379a75a90ce2dd2713ddee2ad	-
 agents-md	e8f532e087ad81709535a1de60c9d6318f834ed4	-
@@ -363,6 +364,7 @@ md-whole	f8fb0532673056a5a9101ac4af7761c22897b201	-
 projected	0ee05bf4896fc91db72dbb1d7f1e7186f1493618	.cursor/hooks.json
 projected	3a95dc7e6f4d4fe5383692a57bdb64d6494ae5a1	.opencode/commands/tad-update.md
 projected	6848f23ce4179142dff986418424d93aeda6c20e	.opencode/commands/tad-update.md
+projected	747d607842fab1ad0cc6396ed08355d2b7f7f87e	.opencode/commands/tad-update.md
 projected	9e25b6dfdc1436af1bbe62861c8762e98b3abc7b	.opencode/plugins/tad-hooks.ts
 projected	bcf633f1a1d3fb821743669d3a765cb3de11b4ee	.opencode/commands/tad-update.md
 settings	05c288412369da50d8c7a417bf960fc3dbffbca8	-
@@ -412,6 +414,7 @@ skill	025796d41738e15f5dce5077a33ed1ddf1961bb5	gate/SKILL.md
 skill	0287286af125b05ed6528fd524bc798aa4e71fc5	hw-firmware/references/build-upload.md
 skill	028867284eae3188a518301bc94318c28f4b8470	rag-retrieval/references/vector-database-rules.md
 skill	02c21a84d66e104166fd60b9fe7754e88ab1017e	mobile-ui-design/SKILL.md
+skill	02e6bfa41c6f5ce650038a73a1d9aa63343384b6	alex/references/publish-protocol.md
 skill	0391d81c2b8c3748906991619c142d122092ead5	data-engineering/SKILL.md
 skill	03d3808d7d47fdcc12732918d34c8b3ad2fd58e5	ai-agent-architecture/references/permissions-safety.md
 skill	044c409d97ec7480b60b4639043229b8ca4a90c4	alex/SKILL.md
@@ -420,6 +423,7 @@ skill	0485a41d1348e27036729b2526e5742cd371d4b4	web-frontend/references/component
 skill	048c3465240b98bb8b18679e12284e78dd11b0ff	tad-help/SKILL.md
 skill	053b7d07676a3eb6d23a31b2a6b43cdfd8b1808c	web-testing/scripts/cwv-budget-check.sh
 skill	05d4adbbe52f101bf89ea3c840bed36c1e5a610e	_archived/error-handling.md
+skill	062cc8137b81c0a4d79e06cb8cbe1c99991f2eec	tad-update/SKILL.md
 skill	06dd8793673e20b4457054b6886bc4dd18217256	release-runbook/SKILL.md
 skill	06f0d48483fa80e4fb2e0950c1478d0c87326b87	synthetic-data/references/deduplication-rules.md
 skill	06fde29f31da9e061a962cca602f33325ac61167	blake/SKILL.md
@@ -1231,6 +1235,7 @@ skill	840725420436bca430b849dda32a89f00c169cab	web-testing/scripts/mutation-gate
 skill	8437915e6da5167c2a03745e1baed320ff85d05c	release-runbook/SKILL.md
 skill	843cacd466bf10ad8d79365034b48ed5c25dd9e0	alex/SKILL.md
 skill	84c263491eb4f8c4abaf49ac2b13ce8dade9bbf1	alex/references/conductor-dispatch-mode.md
+skill	84eabaf1f39d261f6fb5c07fe163ee2785f81f03	cora/references/tad-update.md
 skill	850868fd409c854c7540a03b2426ff1cb891a0d9	cora/references/conductor-protocol.md
 skill	85470fc6f06905afbcd30b1303d0a750890bc603	alex/references/idea-path-protocol.md
 skill	856dd308af44d50df1c7550098314289e0472008	blake/SKILL.md
