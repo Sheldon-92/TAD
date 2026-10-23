@@ -67,5 +67,20 @@ fi
 # Build summary
 SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active${CLAUDE_MD_WARN}"
 
+# Update reminder (EPIC-20261022-tad-update-flow Phase 2): at most one extra line per day per project,
+# only when a newer TAD exists and the envelope names a session. Reminder only: it starts nothing.
+if [ -f "${SCRIPT_DIR}/lib/update-reminder.sh" ]; then
+  # shellcheck source=lib/update-reminder.sh
+  source "${SCRIPT_DIR}/lib/update-reminder.sh" 2>/dev/null || true
+  REMINDER_LINE=""
+  if command -v update_reminder_line >/dev/null 2>&1; then
+    REMINDER_LINE="$(update_reminder_line 2>/dev/null || true)"
+  fi
+  if [ -n "$REMINDER_LINE" ]; then
+    SUMMARY="${SUMMARY}
+${REMINDER_LINE}"
+  fi
+fi
+
 output_response "SessionStart" "$SUMMARY"
 exit 0

@@ -1,4 +1,4 @@
-# schema=1 rows=2043
+# schema=1 rows=2047
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -6,6 +6,7 @@ agents-md	224e922fd3a558aaca4508bf97ba6f41f38a5bd1	-
 agents-md	28217dd7b08403b9cc6675c38c244434e690c444	-
 agents-md	2ed515504a0991a646f38d182ee2d709ba02770d	-
 agents-md	3259371bce9c4d1b443387fa3d2cbab207801091	-
+agents-md	3eb5c848aec8a8463b0dbb9d497dda08ce185d1d	-
 agents-md	4046b9d841568b431d1e00871625b2cdb22506eb	-
 agents-md	41df32ebe47dfdec86c8121a88a2d68185fedc6b	-
 agents-md	42df88f2e328b1cc20ce00263cc8b0244fd28e34	-
@@ -363,6 +364,7 @@ projected	0ee05bf4896fc91db72dbb1d7f1e7186f1493618	.cursor/hooks.json
 projected	3a95dc7e6f4d4fe5383692a57bdb64d6494ae5a1	.opencode/commands/tad-update.md
 projected	6848f23ce4179142dff986418424d93aeda6c20e	.opencode/commands/tad-update.md
 projected	9e25b6dfdc1436af1bbe62861c8762e98b3abc7b	.opencode/plugins/tad-hooks.ts
+projected	bcf633f1a1d3fb821743669d3a765cb3de11b4ee	.opencode/commands/tad-update.md
 settings	05c288412369da50d8c7a417bf960fc3dbffbca8	-
 settings	06d7e77bb1d86944de95dd1628ef7f2744077a17	-
 settings	0df211b718418fd3bea75d6aa2bf6179b76daecf	-
@@ -723,6 +725,7 @@ skill	3608adc4e36a35fd843aefe91df6a492cfd08a53	blake/SKILL.md
 skill	361a940d953864db66a4900903ed3a88a0d2cae3	alex/references/sync-protocol.md
 skill	36320c043f58d97d19279a7461c97d5a1e3ef6f7	agent-orchestration/SKILL.md
 skill	365f1382194cdfc26660fa6e1bd7ea346c054d4b	agent-skill-evolution/references/edit-safety.md
+skill	3660b88f6abed8dce284ba6de74bae31cc4f80ff	tad-update/SKILL.md
 skill	369e6b1fa9b831e52871050d538ac7b549222489	agent-orchestration/references/orchestration-patterns.md
 skill	36dd19ce242b0bf33b7b6800c9ad7783593442b1	alex/references/research-review-protocol.md
 skill	36e9dd4f61827ccea5a24a2add5764ded353714d	ai-agent-architecture/references/cost-token-economics.md
@@ -957,6 +960,7 @@ skill	56abf2963fbd055b25c54f927ea3f13bd9670261	alex/references/handoff-creation-
 skill	5771ba835a5dc2f07187cdcebe0f27b35ceb1ed5	tad-handoff/SKILL.md
 skill	58b0be79a4e2a107d868b4e03f24bedfc21eebd1	reading-companion/tools/bridge-server.py
 skill	58ece129671a55672181dcf3bec8ee96feb10752	product-thinking/references/pressure-test-rubric.md
+skill	58fb17ccfdd48772265eaf2b0d3eb50024256d10	cora/references/tad-update.md
 skill	594d5d0824ffb5889b770cf1f7a46fda6c4a091f	alex/SKILL.md
 skill	597b37c95fb09be0dcd65037ba503e2bd64c6d3e	alex/references/publish-protocol.md
 skill	5989d04e3e362a50b54d18c5103f1e66bb099828	ai-prompt-engineering/references/claude.md

@@ -54,13 +54,18 @@ elif [ "$$" = "${TAD_BASH_PIN_OWNER:-}" ]; then
     trap tad_pin_cleanup EXIT
 fi
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Colors — empty when stdout is not a terminal or NO_COLOR is set, so a piped or
+# captured log (the update report a conversation reads) carries no ANSI bytes.
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    NC='\033[0m'
+else
+    RED=''; GREEN=''; YELLOW=''; BLUE=''; CYAN=''; NC=''
+fi
 
 # Version — fallback only. The AUTHORITATIVE value is derived from the source
 # repo's .tad/version.txt at download time (see derive_target_version). This
@@ -906,7 +911,7 @@ backup_existing() {
     _bdir="$(alloc_backup_dir "$_gdir")" || { log_error "cannot allocate a backup dir under: $_gdir"; return 1; }
     mkdir -p "$_bdir/.tad" || { log_error "cannot create backup dir: $_bdir"; return 1; }
 
-    log_info "Backing up existing .tad/ framework surface and every surface root to $_bdir (reduced to the files this run changes or removes once it succeeds)"
+    log_info "Backing up existing .tad/ framework surface and every surface root (reduced to the files this run changes or removes once it succeeds; the final backup path is printed in the report)"
 
     # The copy set IS the installer's deny-list derivation (D-1): backup set
     # == installer write set BY CONSTRUCTION — no second list lives here.
@@ -987,7 +992,7 @@ backup_existing() {
     } > "$_bdir/manifest.txt" || return 1
 
     BACKUP_PATH="$_bdir"
-    log_success "Backup complete: $_bdir (data surfaces excluded; surface roots included)"
+    log_success "Backup complete (data surfaces excluded; surface roots included)"
     prune_backups "$_gdir" "$_bdir"
     # FR8: legacy in-root backups from older versions are history — one
     # notice line, zero reads/writes (D-5: nothing reads them automatically).
@@ -1109,7 +1114,6 @@ write_changes_tsv() {
     } > "$_out.tmp" || { rm -rf -- "$_tmp"; return 1; } # RM-OK:changes-tsv-tmp-2
     rm -rf -- "$_tmp" # RM-OK:changes-tsv-tmp-3
     mv -f "$_out.tmp" "$_out" || return 1
-    log_info "Change list: $_out"
     return 0
 }
 
@@ -1240,6 +1244,221 @@ AGENTS_MD_STATE="unchanged"      # unchanged | released-replaced | project-conte
 AGENTS_MD_SAVED="-"
 SKILL_ENTRY_LINES=""
 
+# ---- After-update block (Phase 2): what the conversation re-reads, what changed, what needs a new session.
+WHATCHANGED_LINES=""             # newline-separated bold leads of the release's CHANGELOG bullets (max 10)
+AFTER_STATE="fresh"              # fresh | ok | unknown-changes | unknown-table
+AFTER_REREAD=""                  # every changed/added SKILL.md and root instruction file (newline list)
+AFTER_NOW=""                     # the bounded set printed on the "Re-read now" line (comma list)
+AFTER_OTHER_N=0                  # changed/added SKILL.md files not on the "Re-read now" line
+AFTER_NS=""                      # "<harness><TAB><new-session kinds><TAB><not-measured kinds>" per harness
+
+# capture_release_notes — read the release tree's CHANGELOG.md into WHATCHANGED_LINES BEFORE
+# cleanup_source_tree removes the tree. Sections with version > from and <= to; a release
+# stamps its own section, so there is no [Unreleased] case. Nothing is written to disk.
+capture_release_notes() {
+    local _cl="${TAD_SRC:-}/CHANGELOG.md" _line _in=0 _v _n=0 _lead _hre _bre _semver
+    WHATCHANGED_LINES=""
+    _semver='^[0-9]+\.[0-9]+\.[0-9]+$'
+    [[ "${CURRENT_VERSION:-}" =~ $_semver ]] || return 0
+    [[ "${TARGET_VERSION:-}" =~ $_semver ]] || return 0
+    [ -f "$_cl" ] && [ -r "$_cl" ] || return 0
+    _hre='^##[[:space:]]+\[([0-9]+\.[0-9]+\.[0-9]+)\]'
+    _bre='^-[[:space:]]+\*\*([^*]+)\*\*'
+    while IFS= read -r _line || [ -n "$_line" ]; do
+        if [[ "$_line" =~ ^##[[:space:]] ]]; then
+            _in=0
+            if [[ "$_line" =~ $_hre ]]; then
+                _v="${BASH_REMATCH[1]}"
+                if [ "$(_tad_ver_cmp "$_v" "$CURRENT_VERSION")" = "1" ] && [ "$(_tad_ver_cmp "$_v" "$TARGET_VERSION")" != "1" ]; then _in=1; fi
+            fi
+            continue
+        fi
+        [ "$_in" = "1" ] || continue
+        if [[ "$_line" =~ $_bre ]]; then
+            _lead="$(printf '%s' "${BASH_REMATCH[1]}" | tr '\t' ' ')"
+            WHATCHANGED_LINES="${WHATCHANGED_LINES:+$WHATCHANGED_LINES
+}$_lead"
+            _n=$((_n + 1))
+            [ "$_n" -lt 10 ] || break
+        fi
+    done < "$_cl"
+    return 0
+}
+
+# after_kind_name <kind> — the words the block prints for a kind
+after_kind_name() {
+    case "$1" in
+        skill_body) printf 'changed skills' ;;
+        skill_new) printf 'new skills' ;;
+        reference) printf 'changed skill references' ;;
+        agents_md) printf 'AGENTS.md' ;;
+        claude_md) printf 'CLAUDE.md' ;;
+        hook_wiring) printf 'hook wiring' ;;
+        unmeasured_surface) printf 'other harness files' ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
+# after_effect <table> <harness> <kind> — live | new-session | not-measured (a missing row is not-measured)
+after_effect() {
+    LR_H="$2" LR_K="$3" awk -F'\t' 'BEGIN { h = ENVIRON["LR_H"]; k = ENVIRON["LR_K"] } NR > 1 && $1 == h && $2 == k { print $3; f = 1; exit } END { if (!f) print "not-measured" }' "$1"
+}
+
+# compute_after_update — D2 kinds from changes.tsv x D1 table; fills the AFTER_* state. Cannot fail the install.
+compute_after_update() {
+    local _t=$'\t' _tbl=".tad/runtime-compat/live-reload.tsv" _cf _k _p _r _x _kind _present=" " _h _ef _ns _nm _hs _skillsn=0 _sk
+    AFTER_STATE="ok"; AFTER_REREAD=""; AFTER_NOW=""; AFTER_OTHER_N=0; AFTER_NS=""
+    if [ "${CURRENT_VERSION:-none}" = "none" ]; then AFTER_STATE="fresh"; return 0; fi
+    _cf="${BACKUP_PATH_ABS:-}/changes.tsv"
+    if [ "$CHANGES_N" = "-" ] || [ ! -f "$_cf" ]; then AFTER_STATE="unknown-changes"; return 0; fi
+    while IFS="$_t" read -r _k _p; do
+        case "$_k" in added|changed) ;; *) continue ;; esac
+        [ -n "$_p" ] || continue
+        _kind=""
+        case "$_p" in
+            .agents/skills/*)
+                _r="${_p#.agents/skills/}"
+                if [ "${_r%/SKILL.md}" != "$_r" ] && [ "${_r%/SKILL.md}" = "${_r%%/*}" ]; then
+                    if [ "$_k" = "changed" ]; then _kind="skill_body"; else _kind="skill_new"; fi
+                    AFTER_REREAD="${AFTER_REREAD:+$AFTER_REREAD
+}$_p"
+                    _skillsn=$((_skillsn + 1))
+                    case "$_p" in
+                        .agents/skills/tad-update/SKILL.md|.agents/skills/cora/SKILL.md) AFTER_NOW="${AFTER_NOW:+$AFTER_NOW, }$_p" ;;
+                    esac
+                else
+                    _kind="reference"
+                fi ;;
+            AGENTS.md|CLAUDE.md)
+                if [ "$_p" = "AGENTS.md" ]; then _kind="agents_md"; else _kind="claude_md"; fi
+                AFTER_REREAD="${AFTER_REREAD:+$AFTER_REREAD
+}$_p"
+                AFTER_NOW="$_p${AFTER_NOW:+, $AFTER_NOW}" ;;
+            .claude/settings.json|.codex/hooks.json|.cursor/hooks.json|.opencode/plugins/tad-hooks.ts) _kind="hook_wiring" ;;
+            .claude/skills/*) _kind="" ;;
+            .claude/*|.codex/*|.cursor/*|.opencode/*) _kind="unmeasured_surface" ;;
+        esac
+        [ -z "$_kind" ] || case "$_present" in *" $_kind "*) ;; *) _present="$_present$_kind " ;; esac
+    done < "$_cf"
+    # skills counted for "Other changed skills": every changed/added SKILL.md minus the ones named on the Re-read line
+    _sk=0
+    while IFS= read -r _x; do
+        [ -n "$_x" ] || continue
+        case "$_x" in .agents/skills/tad-update/SKILL.md|.agents/skills/cora/SKILL.md) ;; .agents/skills/*) _sk=$((_sk + 1)) ;; esac
+    done <<< "$AFTER_REREAD"
+    AFTER_OTHER_N="$_sk"
+    if [ ! -f "$_tbl" ] || [ ! -r "$_tbl" ] || [ "$(head -n 1 "$_tbl")" != "harness${_t}kind${_t}effect${_t}measured${_t}evidence" ]; then
+        AFTER_STATE="unknown-table"; return 0
+    fi
+    _hs=""
+    [ "$(report_claude_state)" = "absent" ] || _hs="claude-code"
+    case ",${PLATFORM_LIST:-}," in *,codex,*) _hs="${_hs:+$_hs }codex" ;; esac
+    _hs="${_hs:+$_hs }cursor opencode"
+    for _h in $_hs; do
+        _ns=""; _nm=""
+        for _kind in skill_body skill_new reference agents_md claude_md hook_wiring unmeasured_surface; do
+            case "$_present" in *" $_kind "*) ;; *) continue ;; esac
+            if [ "$_kind" = "unmeasured_surface" ]; then _ef="not-measured"; else _ef="$(after_effect "$_tbl" "$_h" "$_kind")"; fi
+            case "$_ef" in
+                live) ;;
+                new-session) _ns="${_ns:+$_ns,}$_kind" ;;
+                *) _nm="${_nm:+$_nm,}$_kind" ;;
+            esac
+        done
+        AFTER_NS="${AFTER_NS:+$AFTER_NS
+}$_h$_t${_ns:--}$_t${_nm:--}"
+    done
+    return 0
+}
+
+after_harness_label() {
+    case "$1" in
+        claude-code) printf 'Claude Code' ;;
+        codex) printf 'Codex' ;;
+        cursor) printf 'Cursor' ;;
+        opencode) printf 'OpenCode' ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
+# after_kinds_words <comma list of kinds> — readable list
+after_kinds_words() {
+    local _l="$1" _out="" _k _rest
+    while [ -n "$_l" ]; do
+        _k="${_l%%,*}"
+        if [ "$_k" = "$_l" ]; then _l=""; else _l="${_l#*,}"; fi
+        _out="${_out:+$_out, }$(after_kind_name "$_k")"
+    done
+    printf '%s' "$_out"
+}
+
+# print_after_update_block — the block the conversation acts on (the installed skill text may be the old one).
+print_after_update_block() {
+    local _t=$'\t' _h _ns _nm _line _txt
+    [ "$AFTER_STATE" != "fresh" ] || return 0
+    echo ""
+    echo "After this update (same conversation):"
+    case "$AFTER_STATE" in
+        unknown-changes)
+            echo "  Re-read now: unknown (change list not available): re-read AGENTS.md, CLAUDE.md and the tad-update and cora SKILL.md files"
+            echo "  New session needed: unknown (change list not available): start a new session to be sure" ;;
+        *)
+            if [ -n "$AFTER_NOW" ]; then
+                echo "  Re-read now: $AFTER_NOW"
+            else
+                echo "  Re-read now: nothing (no instruction file or update skill changed)"
+            fi
+            if [ "${AFTER_OTHER_N:-0}" -gt 0 ]; then
+                echo "  Other changed skills: $AFTER_OTHER_N — read a skill's SKILL.md with the file-read tool before using it again here (full list in the report file)"
+            fi
+            if [ "$AFTER_STATE" = "unknown-table" ]; then
+                echo "  New session needed: unknown (live-reload table missing)"
+            else
+                while IFS="$_t" read -r _h _ns _nm; do
+                    [ -n "$_h" ] || continue
+                    _txt=""
+                    if [ "$_ns" != "-" ]; then _txt="$(after_kinds_words "$_ns")"; fi
+                    if [ "$_nm" != "-" ]; then _txt="${_txt:+$_txt; }not measured: $(after_kinds_words "$_nm"), start a new session to be sure"; fi
+                    [ -n "$_txt" ] || _txt="no"
+                    echo "  New session needed ($(after_harness_label "$_h")): $_txt"
+                done <<< "$AFTER_NS"
+            fi ;;
+    esac
+    if [ -n "$WHATCHANGED_LINES" ]; then
+        echo "  What changed:"
+        printf '%s\n' "$WHATCHANGED_LINES" | sed 's/^/    /'
+    else
+        echo "  What changed: no release notes for ${TARGET_VERSION:--}"
+    fi
+    return 0
+}
+
+# write_after_update_keys — additive update-report.tsv keys (D4): reread*, new_session*, new_session_not_measured*, what_changed*
+write_after_update_keys() {
+    local _t=$'\t' _l _h _ns _nm
+    if [ -n "$AFTER_REREAD" ]; then
+        while IFS= read -r _l; do [ -n "$_l" ] || continue; printf 'reread%s%s\n' "$_t" "$_l"; done <<< "$AFTER_REREAD"
+    else
+        printf 'reread%s-\n' "$_t"
+    fi
+    case "$AFTER_STATE" in
+        ok)
+            while IFS="$_t" read -r _h _ns _nm; do
+                [ -n "$_h" ] || continue
+                printf 'new_session%s%s %s\n' "$_t" "$_h" "$_ns"
+                printf 'new_session_not_measured%s%s %s\n' "$_t" "$_h" "$_nm"
+            done <<< "$AFTER_NS" ;;
+        fresh) printf 'new_session%s-\nnew_session_not_measured%s-\n' "$_t" "$_t" ;;
+        *) printf 'new_session%sunknown\nnew_session_not_measured%sunknown\n' "$_t" "$_t" ;;
+    esac
+    if [ -n "$WHATCHANGED_LINES" ]; then
+        while IFS= read -r _l; do [ -n "$_l" ] || continue; printf 'what_changed%s%s\n' "$_t" "$_l"; done <<< "$WHATCHANGED_LINES"
+    else
+        printf 'what_changed%s-\n' "$_t"
+    fi
+    return 0
+}
+
 # finalize_update — after write_changes_tsv: the process-file comparison (D5), the backup
 # reduction (D6), then the report (D11) printed and, when a backup exists, saved beside it.
 # Nothing here can fail the install: every step degrades to a warning.
@@ -1268,6 +1487,7 @@ finalize_update() {
         CHANGES_N="$_cl"
     fi
     reduce_backup || log_warn "backup reduction skipped"
+    compute_after_update || AFTER_STATE="unknown-changes"
     if [ -n "${BACKUP_PATH_ABS:-}" ] && [ -d "$BACKUP_PATH_ABS" ]; then
         if [ "$REDUCE_LAYOUT" != "changed-only" ]; then
             REDUCE_BYTES="$(dir_bytes "$BACKUP_PATH_ABS")"
@@ -1337,6 +1557,7 @@ write_report_file() {
     printf 'backup_files%s%s\n' "$_t" "${REDUCE_FILES:-0}"
     printf 'not_backed_up%s%s\n' "$_t" "${REDUCE_NOTBACKED:-0}"
     printf 'changes%s%s\n' "$_t" "${CHANGES_N:--}"
+    write_after_update_keys
     return 0
 }
 
@@ -1390,12 +1611,14 @@ print_update_report() {
             echo "Backup: $BACKUP_PATH_ABS ($_size, full copy kept: $REDUCE_REASON)"
         fi
         echo "Not backed up: ${REDUCE_NOTBACKED:-0}"
+        if [ -f "$BACKUP_PATH_ABS/changes.tsv" ]; then echo "Change list: $BACKUP_PATH_ABS/changes.tsv"; fi
         if [ -n "$REPORT_FILE" ]; then echo "Report file: $REPORT_FILE"; else echo "Report file: not written"; fi
     else
         echo "Backup: none (fresh install: nothing existed to back up)"
         echo "Not backed up: 0"
         echo "Report file: none (no backup directory)"
     fi
+    print_after_update_block
     return 0
 }
 
@@ -6618,6 +6841,7 @@ NEXTEOF
     # the install is verified and rollback is disarmed. It cannot fail the install.
     claude_adopt_commit
     write_changes_tsv || log_warn "change list not written"
+    capture_release_notes || WHATCHANGED_LINES=""
     CLAUDE_LEGACY_NOTE="$(claude_legacy_detected_note "$TAD_SRC")"
 
     # Cleanup

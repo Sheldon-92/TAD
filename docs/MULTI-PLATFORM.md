@@ -236,6 +236,29 @@ Gemini does not receive TAD SKILL files, hooks, or config. It receives handoff c
 
 ---
 
+## Update reminder and live reload
+
+What a running session sees after `升级 TAD`, and which harness gets the update reminder. Measured 2026-10-22, one headless session per harness on one machine (claude 2.1.295, cursor-agent 2026.10.22-27dcf5f, opencode 1.18.32); Codex was not installed, so every Codex row is `not-measured`. The data the installer reads is `.tad/runtime-compat/live-reload.tsv`; the human record is `.tad/evidence/yolo/tad-update-flow/phase2-live-reload.md`.
+
+| Change | Claude Code | Cursor | OpenCode | Codex |
+|---|---|---|---|---|
+| changed `SKILL.md` of a skill already used | new session | live (reads the file) | new session | not measured |
+| new skill directory | live, first call may lag | new session | new session | not measured |
+| changed reference file | live | live | live | not measured |
+| changed `AGENTS.md` | new session | new session | new session | not measured |
+| changed hook wiring | live | new session | new session | not measured |
+
+| Harness | Update reminder reaches the model |
+|---|---|
+| Claude Code | yes, through `additionalContext` (session id sent) |
+| Cursor | yes, through the sessionStart shim (session id sent); one run, no control |
+| OpenCode | no: the hook runs for side effects only (R-OC-1) and names no session, so nothing is fetched or stamped |
+| Codex | not under default trust (hooks did not run); not measured with a completed trust review |
+
+Update reminder limits: one network call per 24 h per user (a failed or slow check uses the slot), one line per 24 h per project, off with `.tad/active/update-reminder.off`, never starts an update. A bumped but untagged `main` prompts an update the helper refuses.
+
+---
+
 ## Current Limitations
 
 | Limitation | Impact | Resolution |

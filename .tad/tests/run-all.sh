@@ -62,6 +62,12 @@ else
   excluded hook-envelope-fixture "file does not exist"
 fi
 
+if [ -f .tad/tests/update-reminder-fixture.sh ]; then
+  run_test update-reminder-fixture /bin/bash .tad/tests/update-reminder-fixture.sh --case all
+else
+  excluded update-reminder-fixture "file does not exist"
+fi
+
 # Left out because they do not pass today. These are triaged, not fixed, by the batch that added this file.
 excluded gate-exercise "stale test: its temporary repo has no hop manifest, so the migration gate now stops at 'missing hop manifest' before it reaches the unmanifested-delete check the test expects"
 excluded yolo-recovery.test "stale test: case phase2-scope-proof diffs the fixed range 96bbfada..HEAD, which grows with every commit and now contains paths outside the Phase-2 scope; the other cases pass"
@@ -77,7 +83,7 @@ if [ "${TAD_TEST_FULL:-}" = "1" ]; then
   for c in fx.p fx.f fx.k fx.rb fx.rep fx.agm fx.oc fx.own; do
     run_test "installer-data-safety-fixture:$c" /bin/bash .tad/tests/installer-data-safety-fixture.sh --case "$c"
   done
-  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop; do
+  for c in backup states consent download-safety opencode-preservation full-upgrade release-gates archive-shape bash-pin multi-platform first-hop post-update; do
     run_test "tad-update-fixture:$c" /bin/bash .tad/tests/tad-update-fixture.sh --case "$c"
   done
   excluded tad-update-fixture:remote-release "needs network"

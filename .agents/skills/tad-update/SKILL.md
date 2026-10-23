@@ -27,11 +27,14 @@ download, backup, migration, or copy logic of its own.
    /bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>
    ```
 
-4. Show the update report the run prints (version, platforms, process files, backup,
-   report file) to the user verbatim.
+4. Show the block from the `TAD update report` line to the end of the output (version,
+   platforms, process files, backup, report file, After this update), not the whole log.
+
+5. **After the update**: act on the report's `After this update` block — re-read the files it names with your file-read tool, then tell the human in at most three lines what changed and whether a new session is needed (the block's line for this harness).
 
 ## Rules
 
+- Relay the report and stop: an installer hint is not a question to ask.
 - Never run `--yes` without an explicit human confirmation in the conversation.
 - Never infer consent from a check result, from silence, or from "the update is
   small". If the user declines, do nothing.

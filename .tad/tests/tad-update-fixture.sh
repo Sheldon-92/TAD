@@ -16,6 +16,7 @@
 #   --case bash-pin               every bash level is /bin/bash: installer entry pin, re-exec, no leftover dir
 #   --case multi-platform         one confirmed run updates every installed platform
 #   --case first-hop              the v4.0.5 helper with the candidate installer
+#   --case post-update            the After this update block, report keys, final-path-only log, no ANSI when piped
 #   --emit-mock-curl <dir>        write the mock curl stub into <dir> (for the real-path runs) and exit
 #
 # Deterministic by construction: NO real network. A temporary mock curl in PATH
@@ -1567,6 +1568,154 @@ case_first_hop() {
 }
 
 # ══════════════════════════════════════════════════════════════════
+# Update flow, Phase 2: the "After this update" block (D1-D4), final-path-only backup output (D12),
+# no ANSI when piped (D13). One upgrade with known edits, a reference-only rerun, a rerun without the table.
+# ══════════════════════════════════════════════════════════════════
+pu_report_value() { LC_ALL=C grep "^$2$(printf '\t')" "$1" | cut -f2- || true; }  # <report> <key>
+pu_latest_backup() { find "$TAD_BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | LC_ALL=C sort | tail -1; }
+pu_mutate_source() {
+    # pu_mutate_source <src dir> — the known edits on a copy of this tree, stamped as the fixture version
+    local s="$1"
+    printf '%s\n' "$FIXTURE_VERSION" > "$s/.tad/version.txt"
+    printf '\nfixture edit: changed skill body\n' >> "$s/.agents/skills/tad-update/SKILL.md"
+    mkdir -p "$s/.agents/skills/zz-fx-new"
+    printf -- '---\nname: zz-fx-new\ndescription: fixture skill\n---\n\n# zz-fx-new\n' > "$s/.agents/skills/zz-fx-new/SKILL.md"
+    printf '\nfixture edit: changed reference\n' >> "$s/.agents/skills/cora/references/tad-update.md"
+    printf '\n<!-- fixture edit: AGENTS.md -->\n' >> "$s/AGENTS.md"
+    printf '\n' >> "$s/.cursor/hooks.json"
+    {
+        printf '# Changelog\n\n## [99.0.0] - 2099-01-01\n\n- **Future lead.** must not show.\n\n'
+        printf '## [%s] - 2026-01-01\n\n### Changed\n\n- **Alpha lead one.** Detail that is not printed.\n- **Beta lead two.** More detail.\n\n' "$FIXTURE_VERSION"
+        printf '## [%s] - 2025-01-01\n\n- **Old lead.** must not show.\n' "$OLD_VERSION"
+    } > "$s/CHANGELOG.md"
+}
+case_post_update() {
+    echo "== post-update: After this update block, report keys, final paths only, no ANSI =="
+    setup_sandbox
+    mp_prepare || return 0
+    local p="$SANDBOX/pu" out="$SANDBOX/pu1.log" rc=0 s2="$SANDBOX/pusrc2" line b ESC n f badn
+    mp_project "$p" multi || return 0
+    mkdir -p "$s2"; tar -xzf "$SRC_TARBALL" -C "$s2" || { bad "post-update: could not extract the fixture source"; return 0; }
+    pu_mutate_source "$s2/TAD-main"
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$s2/TAD-main" --platform codex,claude-code --yes ) >"$out" 2>&1 || rc=$?
+    if [ "$rc" -ne 0 ] || ! grep -qxF 'TAD update report' "$out"; then
+        bad "post-update: the upgrade failed (rc=$rc): $(tail -3 "$out" | tr '\n' '|')"; return 0
+    fi
+    grep -qxF 'After this update (same conversation):' "$out" && ok "post-update: the block is printed" || bad "post-update: block header missing"
+    line="$(grep '^  Re-read now: ' "$out" || true)"
+    if printf '%s' "$line" | grep -qF 'AGENTS.md' && printf '%s' "$line" | grep -qF '.agents/skills/tad-update/SKILL.md'; then
+        ok "post-update: Re-read now names AGENTS.md and the tad-update skill"
+    else
+        bad "post-update: Re-read now wrong: [$line]"
+    fi
+    if grep -qE '^  Other changed skills: [0-9]+ ' "$out"; then ok "post-update: Other changed skills count printed"; else bad "post-update: no Other changed skills line"; fi
+    line="$(grep '^  New session needed (Claude Code): ' "$out" || true)"
+    if printf '%s' "$line" | grep -qF 'AGENTS.md' && printf '%s' "$line" | grep -qF 'changed skills' && ! printf '%s' "$line" | grep -qF 'hook wiring'; then
+        ok "post-update: Claude Code needs a new session for AGENTS.md and changed skills, not for hook wiring"
+    else
+        bad "post-update: Claude Code line wrong: [$line]"
+    fi
+    line="$(grep '^  New session needed (Cursor): ' "$out" || true)"
+    if printf '%s' "$line" | grep -qF 'hook wiring' && printf '%s' "$line" | grep -qF 'new skills' && printf '%s' "$line" | grep -qF 'AGENTS.md' && ! printf '%s' "$line" | grep -qF 'changed skills'; then
+        ok "post-update: Cursor line (hook wiring, new skills, AGENTS.md; changed skills are live)"
+    else
+        bad "post-update: Cursor line wrong: [$line]"
+    fi
+    line="$(grep '^  New session needed (OpenCode): ' "$out" || true)"
+    if printf '%s' "$line" | grep -qF 'changed skills' && printf '%s' "$line" | grep -qF 'new skills' && printf '%s' "$line" | grep -qF 'hook wiring'; then
+        ok "post-update: OpenCode line"
+    else
+        bad "post-update: OpenCode line wrong: [$line]"
+    fi
+    line="$(grep '^  New session needed (Codex): ' "$out" || true)"
+    if printf '%s' "$line" | grep -qF 'not measured:' && printf '%s' "$line" | grep -qF 'start a new session to be sure'; then
+        ok "post-update: Codex line says not measured"
+    else
+        bad "post-update: Codex line wrong: [$line]"
+    fi
+    if grep -qxF '    Alpha lead one.' "$out" && grep -qxF '    Beta lead two.' "$out" && ! grep -qF 'Old lead' "$out" && ! grep -qF 'Future lead' "$out"; then
+        ok "post-update: What changed lists the release's bold leads only (versions > from and <= to)"
+    else
+        bad "post-update: What changed wrong: $(sed -n '/What changed/,$p' "$out" | head -6 | tr '\n' '|')"
+    fi
+    # D12 / D13: no ESC byte; every printed path under the backup root (outside a removal sentence) exists
+    ESC="$(printf '\033')"
+    n="$(LC_ALL=C grep -c "$ESC" "$out" || true)"
+    if [ "$n" = "0" ]; then ok "post-update: zero ESC bytes in the piped log"; else bad "post-update: $n line(s) carry ESC"; fi
+    badn=0; n=0
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        n=$((n + 1))
+        [ -e "$f" ] || { badn=$((badn + 1)); echo "    printed but missing: $f"; }
+    done < <(grep -vE 'Pruned|Restored from backup' "$out" | sed -n "s|.*\\($(cd "$TAD_BACKUP_ROOT" && pwd -P)/[^ )]*\\).*|\\1|p")
+    if [ "$badn" = "0" ] && [ "$n" -ge 3 ]; then ok "post-update: all $n printed backup paths exist after the run"; else bad "post-update: $badn missing of $n printed backup paths"; fi
+    b="$(pu_latest_backup)"
+    b="$(cd "$b" && pwd -P)"
+    if [ -n "$b" ] && grep -qxF "Change list: $b/changes.tsv" "$out" && [ -f "$b/changes.tsv" ]; then
+        ok "post-update: the final Change list path is printed and exists"
+    else
+        bad "post-update: Change list line missing or wrong (backup=$b): $(grep -E '^(Backup|Change list|Report file)' "$out" | tr '\n' '|')"
+    fi
+    # backup contents: Phase 1's files plus pre-images; nothing else at the top level
+    badn=0
+    for f in $(find "$b" -maxdepth 1 -type f -exec basename {} \;); do
+        case "$f" in origin.txt|pre-top.txt|pre-tree.txt|pre-surface.tsv|changes.tsv|manifest.txt|update-report.tsv|not-backed-up.txt|AGENTS.md|CLAUDE.md) ;; *) badn=$((badn + 1)); echo "    unexpected file in the backup: $f" ;; esac
+    done
+    if [ "$badn" = "0" ] && [ ! -e "$b/changelog.md" ]; then ok "post-update: the backup gained no file beyond Phase 1's set"; else bad "post-update: backup holds $badn unexpected file(s)"; fi
+    # report keys
+    local r="$b/update-report.tsv"
+    if [ "$(pu_report_value "$r" report_version)" = "1" ] && pu_report_value "$r" reread | grep -qxF 'AGENTS.md' \
+       && pu_report_value "$r" reread | grep -qxF '.agents/skills/zz-fx-new/SKILL.md' \
+       && pu_report_value "$r" reread | grep -qxF '.agents/skills/tad-update/SKILL.md'; then
+        ok "post-update: reread keys list the changed and added SKILL.md files and AGENTS.md"
+    else
+        bad "post-update: reread keys wrong: $(pu_report_value "$r" reread | tr '\n' '|')"
+    fi
+    n="$(pu_report_value "$r" new_session | wc -l | tr -d ' ')"
+    if [ "$n" = "4" ] && pu_report_value "$r" new_session | grep -q '^claude-code ' && pu_report_value "$r" new_session | grep -q '^cursor .*hook_wiring' \
+       && pu_report_value "$r" new_session | grep -q '^opencode '  && pu_report_value "$r" new_session_not_measured | grep -q '^codex '; then
+        ok "post-update: new_session keys for the four harnesses"
+    else
+        bad "post-update: new_session keys wrong: $(pu_report_value "$r" new_session | tr '\n' '|')"
+    fi
+    if pu_report_value "$r" what_changed | grep -qxF 'Alpha lead one.' && pu_report_value "$r" what_changed | grep -qxF 'Beta lead two.'; then
+        ok "post-update: what_changed keys carry the leads"
+    else
+        bad "post-update: what_changed keys wrong: $(pu_report_value "$r" what_changed | tr '\n' '|')"
+    fi
+    # second run: only a reference file changes (same version, no release notes)
+    local s3="$SANDBOX/pusrc3" out3="$SANDBOX/pu3.log"
+    mkdir -p "$s3"; tar -xzf "$SRC_TARBALL" -C "$s3"; pu_mutate_source "$s3/TAD-main"
+    printf '\nfixture edit: changed reference, run 2\n' >> "$s3/TAD-main/.agents/skills/cora/references/tad-update.md"
+    rc=0
+    # the project now equals src2 (its version file is put back to the old version so the run is an upgrade);
+    # src3 differs from src2 only in that reference file
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$s3/TAD-main" --platform codex,claude-code --yes ) >"$out3" 2>&1 || rc=$?
+    if [ "$rc" -eq 0 ] && grep -qxF '  New session needed (Claude Code): no' "$out3" && grep -qxF '  New session needed (Cursor): no' "$out3" \
+       && grep -qxF '  New session needed (OpenCode): no' "$out3" && grep -E '^  New session needed \(Codex\): not measured: changed skill references, start a new session to be sure$' "$out3" >/dev/null \
+       && grep -qxF '    Alpha lead one.' "$out3"; then
+        ok "post-update: a reference-only rerun prints no for Claude Code, Cursor and OpenCode, not measured for Codex"
+    else
+        bad "post-update: reference-only rerun wrong (rc=$rc): $(tail -8 "$out3" | tr '\n' '|')"
+    fi
+    # third run: the live-reload table is gone from the project and from the source
+    local s4="$SANDBOX/pusrc4" out4="$SANDBOX/pu4.log"
+    mkdir -p "$s4"; tar -xzf "$SRC_TARBALL" -C "$s4"; pu_mutate_source "$s4/TAD-main"
+    rm -f "$s4/TAD-main/.tad/runtime-compat/live-reload.tsv" "$p/.tad/runtime-compat/live-reload.tsv"
+    printf '# Changelog\n' > "$s4/TAD-main/CHANGELOG.md"
+    printf '%s\n' "$OLD_VERSION" > "$p/.tad/version.txt"
+    rc=0
+    ( cd "$p" && HOME="$SANDBOX/home" bash "$TAD_SH" --source "$s4/TAD-main" --platform codex,claude-code --yes ) >"$out4" 2>&1 || rc=$?
+    if [ "$rc" -eq 0 ] && grep -qxF '  New session needed: unknown (live-reload table missing)' "$out4" && ! grep -q 'New session needed ([A-Za-z ]*): no' "$out4" \
+       && grep -qxF "  What changed: no release notes for $FIXTURE_VERSION" "$out4"; then
+        ok "post-update: a missing table prints unknown, never no"
+    else
+        bad "post-update: missing-table run wrong (rc=$rc): $(tail -8 "$out4" | tr '\n' '|')"
+    fi
+}
+
+# ══════════════════════════════════════════════════════════════════
 # Dispatch
 # ══════════════════════════════════════════════════════════════════
 if [ -n "$EMIT_DIR" ]; then
@@ -1590,6 +1739,7 @@ case "$CASE" in
     bash-pin) case_bash_pin ;;
     multi-platform) case_multi_platform ;;
     first-hop) case_first_hop ;;
+    post-update) case_post_update ;;
     *) echo "tad-update-fixture: unknown --case '$CASE'" >&2; exit 2 ;;
 esac
 

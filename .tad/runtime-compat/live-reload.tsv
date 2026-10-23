@@ -1,0 +1,25 @@
+harness	kind	effect	measured	evidence
+claude-code	skill_body	new-session	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+claude-code	skill_new	live	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+claude-code	reference	live	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+claude-code	agents_md	new-session	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+claude-code	claude_md	new-session	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+claude-code	hook_wiring	live	2026-10-22 claude-code 2.1.295	.tad/evidence/yolo/tad-update-flow/phase2-look/claude-code-2.1.295.jsonl
+cursor	skill_body	live	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+cursor	skill_new	new-session	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+cursor	reference	live	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+cursor	agents_md	new-session	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+cursor	claude_md	new-session	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+cursor	hook_wiring	new-session	2026-10-22 cursor-agent 2026.10.22-27dcf5f	.tad/evidence/yolo/tad-update-flow/phase2-look/cursor-agent-2026.10.22.jsonl
+opencode	skill_body	new-session	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+opencode	skill_new	new-session	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+opencode	reference	live	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+opencode	agents_md	new-session	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+opencode	claude_md	not-measured	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+opencode	hook_wiring	new-session	2026-10-22 opencode 1.18.32	.tad/evidence/yolo/tad-update-flow/phase2-look/opencode-1.18.32.jsonl
+codex	skill_body	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt
+codex	skill_new	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt
+codex	reference	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt
+codex	agents_md	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt
+codex	claude_md	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt
+codex	hook_wiring	not-measured	not-run: codex CLI not installed on the measuring machine	.tad/evidence/yolo/tad-update-flow/phase2-look/codex-not-run.txt

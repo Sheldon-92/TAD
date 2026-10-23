@@ -18,9 +18,12 @@ Updating TAD is an operation, not work to triage: the human says one sentence ("
    /bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>
    ```
 
-4. Show the update report the run prints verbatim: new version, platforms refreshed, skill entries, process files unchanged or the paths that changed, the backup and its size, the report file.
+4. Show the block from the `TAD update report` line to the end of the output, not the whole log: new version, platforms refreshed, skill entries, process files unchanged or the paths that changed, the backup and its size, the report file, After this update.
+
+5. **After the update**: act on the report's `After this update` block — re-read the files it names with your file-read tool, then tell the human in at most three lines what changed and whether a new session is needed (the block's line for this harness).
 
 ## Rules
+- Relay the report and stop: an installer hint is not a question to ask.
 - Never run the second command without his yes in the conversation; silence or "it is small" is not a yes.
 - If the check says the platform is not determined, ask which platforms to update and forward only his answer.
 - An error or a refusal is reported as printed; she does not work around the helper or reimplement it.
