@@ -1908,7 +1908,7 @@ y/f.md"
   rc="$(run_install_cc claude-code "$FX_LOG")"
   if [ "$rc" != "0" ]; then fail "fx.b3: upgrade failed (rc=$rc): $(tail -5 "$FX_LOG" | tr '\n' '|')"; return 0; fi
   FX_GROUP="$(find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name claude-adopt | head -1)"
-  ct="$(ls -d "$FX_GROUP"/*/ | LC_ALL=C sort | tail -1)changes.tsv"
+  ct="$FX_GROUP/$(fx_bklist "$FX_GROUP" | tail -1)/changes.tsv"
   if [ -f "$ct" ] && [ "$(head -1 "$ct")" = "$(printf 'kind\tpath')" ] \
      && grep -qF "$(printf 'changed\t.tad/templates/review-contract.md')" "$ct" \
      && grep -qF "$(printf 'added\t.tad/templates/fx-new.md')" "$ct" \
@@ -1931,8 +1931,9 @@ y/f.md"
     fail "fx.b3: newline path leaked into changes.tsv"
   fi
   rc="$(run_install_cc claude-code "$SANDBOX/rerun.log" --force)"
-  ct="$(ls -d "$FX_GROUP"/*/ | LC_ALL=C sort | tail -1)changes.tsv"
-  if [ "$rc" = "0" ] && [ -f "$ct" ] && [ "$(wc -l < "$ct" | tr -d ' ')" = "1" ]; then
+  ct="$FX_GROUP/$(fx_bklist "$FX_GROUP" | tail -1)/changes.tsv"
+  # Phase 3: .tad/brain-index.md (a Generated: minute stamp) is a TAD area, so a rerun may list exactly that row (fx.g (c), fx.k k4)
+  if [ "$rc" = "0" ] && [ -f "$ct" ] && [ "$(head -1 "$ct")" = "$(printf 'kind\tpath')" ] && [ -z "$(tail -n +2 "$ct" | grep -v "$(printf '\t')\.tad/brain-index\.md\$" || true)" ]; then
     pass "fx.b3: no-op --force rerun: changes.tsv is the header only"
   else
     fail "fx.b3: no-op rerun change list not header-only (rc=$rc): $(cat "$ct" 2>/dev/null | head -5 | tr '\n' '|')"
@@ -2104,7 +2105,8 @@ fx_gdir() { find "$SANDBOX/cc-backups" -mindepth 1 -maxdepth 1 -type d ! -name c
 # count and never win "newest"; every allowlist of a run backup's top-level files also accepts classes.tsv
 # (written by the lifecycle step) and salvage-diff (written by salvage). Consumers changed: fx_ndirs, fx_newest,
 # fx.e survivors, fx.k k1 (names, file allowlist), k3 and k5 (counts, loops), tad-update-fixture.sh
-# backup_dir_count, pu_latest_backup, the post-update top-level allowlist.
+# backup_dir_count, pu_latest_backup, the post-update top-level allowlist; rework 1: fx.b3 (two newest-backup picks), the
+# fx.rb-style picks at the report check, and k1 now ignores salvage-diff/* (the rule above, applied to the recursive set).
 FX_BKRE='^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'
 fx_bklist() { ls -1 "$1" 2>/dev/null | { grep -E "$FX_BKRE" || true; } | LC_ALL=C sort; }
 fx_ndirs() { local g; g="$(fx_gdir)"; if [ -z "$g" ]; then printf '0'; return 0; fi; fx_bklist "$g" | wc -l | tr -d ' '; }
@@ -2260,7 +2262,7 @@ case_fxk() {
   rc="$(fx_up "$log")"; B="$(fx_newest)"; g="$(fx_gdir)"
   if [ "$rc" != "0" ] || [ ! -f "$B/manifest.txt" ]; then fail "fx.k: k1 run failed (rc=$rc): $(tail -3 "$log" | tr '\n' '|')"; return 0; fi
   want="$(tail -n +2 "$B/changes.tsv" | grep -E "^(changed|removed)$(printf '\t')" | cut -f2 | LC_ALL=C sort)"
-  got="$( cd "$B" && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C grep -v -x -e origin.txt -e pre-top.txt -e pre-tree.txt -e pre-surface.tsv -e changes.tsv -e manifest.txt -e update-report.tsv -e classes.tsv | LC_ALL=C sort )"
+  got="$( cd "$B" && find . \( -type f -o -type l \) | sed 's|^\./||' | LC_ALL=C grep -v -x -e origin.txt -e pre-top.txt -e pre-tree.txt -e pre-surface.tsv -e changes.tsv -e manifest.txt -e update-report.tsv -e classes.tsv | LC_ALL=C grep -v -e '^salvage-diff/' | LC_ALL=C sort )"
   bad=0
   [ "$want" = "$got" ] || { bad=1; fail "fx.k: k1 file set differs from changed+removed rows"; }
   while IFS="$(printf '\t')" read -r kind p; do
@@ -2665,7 +2667,7 @@ case_caps() {
   log="$SANDBOX/caps.log"
   rc="$( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TAD_BACKUP_ROOT="$BR" bash "$TADSH" --source "$SOURCE" --platform codex,claude-code --yes >"$log" 2>&1; printf '%s' $? )"
   if [ "$rc" != "0" ]; then fail "caps: the upgrade failed (rc=$rc): $(tail -4 "$log" | tr '\n' '|')"; return 0; fi
-  B="$(ls -d "$BR/$key"/2*/ | LC_ALL=C sort | tail -1 | sed 's|/$||')"; R="$B/update-report.tsv"
+  B="$BR/$key/$(fx_bklist "$BR/$key" | tail -1)"; R="$B/update-report.tsv"
   n="$(ls -d "$TARGET"/.tad-backup/*/ | sed 's|/$||;s|.*/||' | sed -n 's/^.*-to-\([0-9.]*\)\(-deprecations\)\{0,1\}$/\1/p' | LC_ALL=C sort -u | wc -l | tr -d ' ')"
   if [ "$n" -le 2 ] && [ -d "$TARGET/.tad-backup/3.14.0-to-3.15.0" ] && [ ! -e "$TARGET/.tad-backup/3.1.0-to-3.2.0" ]; then pass "caps: .tad-backup keeps the two newest target versions"
   else fail "caps: .tad-backup kept $n target versions: $(ls "$TARGET/.tad-backup" | tr '\n' ' ')"; fi

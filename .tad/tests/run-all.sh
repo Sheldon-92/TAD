@@ -70,7 +70,7 @@ fi
 
 # Backup lifecycle (Phase 3): the fast cases are offline and build everything in a sandbox with a scratch HOME and backup root.
 if [ -f .tad/tests/backup-lifecycle-fixture.sh ]; then
-  for c in guard classify hold salvage clear foreign; do
+  for c in guard classify hold salvage clear reprove foreign; do
     run_test "backup-lifecycle-fixture:$c" /bin/bash .tad/tests/backup-lifecycle-fixture.sh --case "$c"
   done
 else

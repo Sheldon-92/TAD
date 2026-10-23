@@ -1,7 +1,7 @@
 #!/bin/bash
 # backup-lifecycle-fixture.sh — acceptance cases for the backup lifecycle (update flow Phase 3).
 #
-# Usage: /bin/bash .tad/tests/backup-lifecycle-fixture.sh --case ledger|classify|salvage|hold|clear|check-clear|caps|foreign|guard|all
+# Usage: /bin/bash .tad/tests/backup-lifecycle-fixture.sh --case ledger|classify|salvage|hold|clear|reprove|check-clear|caps|foreign|guard|all
 #
 # Every case runs in a mktemp sandbox with a scratch HOME and TAD_BACKUP_ROOT, `cd <dir> || exit 1`, and never touches a real
 # project, ~/.tad-backups or ~/.cache/tad. `caps` and `check-clear` drive the real installer / helper through the existing
@@ -71,7 +71,7 @@ scenario_edited() {
   mkdir -p "$P/.tad-backup"
   for v in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do
     mkdir -p "$P/.tad-backup/$v"
-    printf 'report %s\n' "$v" > "$P/.tad-backup/$v/MIGRATION-REPORT.tsv"
+    printf 'action\tstatus\tpath\tdetail\nreport %s\n' "$v" > "$P/.tad-backup/$v/MIGRATION-REPORT.tsv"
   done
   mkdir -p "$P/.tad-backup/4.0.0-to-4.0.1/.tad"
   { cat "$P/.tad/config.yaml"; printf '%s\n' "$EDIT_LINE"; } > "$P/.tad-backup/4.0.0-to-4.0.1/.tad/config.yaml"
@@ -170,7 +170,7 @@ case_classify() {
     pass "classify: one edited line of a released file is edited"
   else fail "classify: edited file wrong (want edited $lab): $out"; fi
   # (e) a TAD report
-  printf 'x\n' > .tad-backup/x/MIGRATION-REPORT.tsv
+  printf 'action\tstatus\tpath\tdetail\nx\n' > .tad-backup/x/MIGRATION-REPORT.tsv
   out="$(/bin/bash "$TB" classify --ledger "$LEDGER" --project "$P" .tad-backup/x/MIGRATION-REPORT.tsv)"
   [ "$(printf '%s' "$out" | cut -f1)" = "tad-report" ] && pass "classify: MIGRATION-REPORT.tsv is tad-report" || fail "classify: report wrong: $out"
   # (f) a CLAUDE.md pre-image that is a prefix of the live file
@@ -283,7 +283,7 @@ case_salvage() {
   # (g) a symlinked diff dir
   sb_new; mkp d; edited_cfg_live
   mkdir -p "$P/.tad-backup"
-  for k in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$k"; printf 'r\n' > "$P/.tad-backup/$k/MIGRATION-REPORT.tsv"; done
+  for k in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$k"; printf 'action\tstatus\tpath\tdetail\nr\n' > "$P/.tad-backup/$k/MIGRATION-REPORT.tsv"; done
   mkdir -p "$P/.tad-backup/4.0.0-to-4.0.1/.tad"; { cat "$P/.tad/config.yaml"; printf '%s\n' "$EDIT_LINE"; } > "$P/.tad-backup/4.0.0-to-4.0.1/.tad/config.yaml"
   lifecycle >/dev/null
   it="$(item_with 4.0.0-to-4.0.1)"; mkdir -p "$SB/outside/sd"
@@ -300,14 +300,14 @@ case_hold() {
   local n_before n_after held a b names bad=0 d name
   # the two newest target versions stay, the older ones sit byte-identical in holding
   if [ -d "$P/.tad-backup/4.0.2-to-4.0.3" ] && [ -d "$P/.tad-backup/4.0.3-to-4.0.4" ] && [ ! -e "$P/.tad-backup/4.0.0-to-4.0.1" ] && [ ! -e "$P/.tad-backup/4.0.1-to-4.0.2" ] \
-     && [ "$(cat "$(item_with 4.0.1-to-4.0.2)/payload/4.0.1-to-4.0.2/MIGRATION-REPORT.tsv")" = "report 4.0.1-to-4.0.2" ] \
+     && [ "$(tail -n 1 "$(item_with 4.0.1-to-4.0.2)/payload/4.0.1-to-4.0.2/MIGRATION-REPORT.tsv")" = "report 4.0.1-to-4.0.2" ] \
      && cmp -s "$(item_with 4.0.0-to-4.0.1)/payload/4.0.0-to-4.0.1/.tad/config.yaml" "$RB/.tad/config.yaml"; then
     pass "hold: items leave the project and sit byte-identical in holding"
   else fail "hold: the older dirs are not held as expected: $(ls "$P/.tad-backup" | tr '\n' ' ')"; fi
   # nothing deleted: a second project with the same shape, file counts before and after
   sb_done; sb_new; mkp a; edited_cfg_live
   mkdir -p "$P/.tad-backup"
-  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$d"; printf 'r %s\n' "$d" > "$P/.tad-backup/$d/MIGRATION-REPORT.tsv"; printf 'r2\n' > "$P/.tad-backup/$d/removed.txt"; done
+  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$d"; printf 'action\tstatus\tpath\tdetail\nr %s\n' "$d" > "$P/.tad-backup/$d/MIGRATION-REPORT.tsv"; printf 'r2\n' > "$P/.tad-backup/$d/removed.txt"; done
   n_before="$(( $(find "$P" -type f | wc -l) + $(find "$G" -type f | wc -l) ))"
   lifecycle >/dev/null
   held="$(find "$G/holding" -path '*/payload/*' -type f | wc -l | tr -d ' ')"
@@ -331,7 +331,7 @@ case_hold() {
   # (d) a symlinked .tad-backup is refused
   sb_new; mkp a; edited_cfg_live
   mkdir -p "$SB/outside/tb"
-  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$SB/outside/tb/$d"; printf 'r\n' > "$SB/outside/tb/$d/MIGRATION-REPORT.tsv"; done
+  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$SB/outside/tb/$d"; printf 'action\tstatus\tpath\tdetail\nr\n' > "$SB/outside/tb/$d/MIGRATION-REPORT.tsv"; done
   ln -s "$SB/outside/tb" "$P/.tad-backup"
   a="$(digest "$SB/outside")"
   lifecycle >/dev/null
@@ -379,7 +379,7 @@ case_clear() {
   # stale token
   scenario_edited a
   out="$(tb list 2>&1)"; tok="$(printf '%s\n' "$out" | sed -n 's/^To clear: .*--token \([0-9]*\) --yes$/\1/p')"
-  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.0"; printf 'r\n' > "$P/.tad-backup/4.0.0-to-4.0.0/MIGRATION-REPORT.tsv"; lifecycle >/dev/null
+  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.0"; printf 'action\tstatus\tpath\tdetail\nr\n' > "$P/.tad-backup/4.0.0-to-4.0.0/MIGRATION-REPORT.tsv"; lifecycle >/dev/null
   before="$(digest "$G/holding")"
   tb clear --all --token "$tok" --yes >/dev/null 2>&1; rc=$?
   after="$(digest "$G/holding")"
@@ -389,9 +389,9 @@ case_clear() {
   scenario_edited a
   local a1="$G/holding/h20260101-000001" a2="$G/holding/h20260101-000002"
   mkdir -p "$a1/payload/x" "$a2/payload/x"
-  printf 'kind\ttad-backup\norigin\t/x\nproject\t%s\nheld\t2026-01-01\n' "$P" > "$a1/item.tsv"; printf 'r\n' > "$a1/payload/x/MIGRATION-REPORT.tsv"
+  printf 'kind\ttad-backup\norigin\t/x\nproject\t%s\nheld\t2026-01-01\n' "$P" > "$a1/item.tsv"; printf 'action\tstatus\tpath\tdetail\nr\n' > "$a1/payload/x/MIGRATION-REPORT.tsv"
   printf 'kind\ttad-backup\norigin\t/y\nproject\t%s\nheld\t2026-01-01\nbytes\t4\nfiles\t2\nclassified\tx\n' "$P" > "$a2/item.tsv"
-  printf 'r\n' > "$a2/payload/x/MIGRATION-REPORT.tsv"; printf 'r\n' > "$a2/payload/x/removed.txt"
+  printf 'action\tstatus\tpath\tdetail\nr\n' > "$a2/payload/x/MIGRATION-REPORT.tsv"; printf 'r\n' > "$a2/payload/x/removed.txt"
   printf 'tad-report\t-\tx/MIGRATION-REPORT.tsv\n' > "$a2/classes.tsv"
   out="$(tb list 2>&1)"; tok="$(printf '%s\n' "$out" | sed -n 's/^To clear: .*--token \([0-9]*\) --yes$/\1/p')"
   tb clear --all --token "$tok" --yes >/dev/null 2>&1
@@ -425,6 +425,139 @@ case_clear() {
   tb ${dline#*tad-backups.sh } >/dev/null 2>&1
   if [ "$kept" = "1" ] && [ -n "$dline" ] && [ ! -e "$rv" ] && grep -F "$id" "$G/holding/deletions.log" | grep -qF 'discard'; then pass "clear: review items stay unless discarded one by one"
   else fail "clear: review item handling wrong (kept=$kept dline=$dline)"; fi
+  sb_done
+}
+
+# ================================================================ reprove (clear re-proves from the payload; report shape; unreadable; names)
+# digest as the script computes it: cksum rows of the regular files, the word links, the link paths
+payload_digest() { { ( cd "$1" && find . -type f -exec cksum {} + | LC_ALL=C sort ); printf 'links\n'; } | cksum | cut -d' ' -f1; }
+HDR=$'action\tstatus\tpath\tdetail'
+tok_of_list() { printf '%s\n' "$1" | sed -n 's/^To clear: .*--token \([0-9]*\) --yes$/\1/p'; }
+case_reprove() {
+  local out tok it1 it2 itc rc before after f ids n why
+  # (a) the payload changed after the list: a yes with the listed token deletes nothing
+  sb_new; scenario_edited a
+  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.0"; printf '%s\nr\n' "$HDR" > "$P/.tad-backup/4.0.0-to-4.0.0/MIGRATION-REPORT.tsv"; lifecycle >/dev/null
+  it1="$(item_with 4.0.1-to-4.0.2)"; it2="$(item_with 4.0.0-to-4.0.0)"
+  out="$(tb list 2>&1)"; tok="$(tok_of_list "$out")"
+  printf 'REPLACED WITH PRECIOUS\n' > "$it1/payload/4.0.1-to-4.0.2/MIGRATION-REPORT.tsv"
+  printf 'new user file\n' > "$it2/payload/4.0.0-to-4.0.0/notes.txt"
+  tb clear --all --token "$tok" --yes >"$SB/c.out" 2>&1; rc=$?
+  if [ -n "$tok" ] && [ "$rc" != "0" ] && [ -f "$it1/payload/4.0.1-to-4.0.2/MIGRATION-REPORT.tsv" ] && [ -f "$it2/payload/4.0.0-to-4.0.0/notes.txt" ] && [ ! -e "$G/holding/deletions.log" ]; then
+    pass "reprove: a payload changed after the list is kept, not cleared (token)"
+  else fail "reprove: a changed payload was cleared or the token accepted (rc=$rc): $(tr '\n' '|' < "$SB/c.out")"; fi
+  out="$(tb list 2>&1)"
+  if printf '%s\n' "$out" | grep -F "${it1##*/}" | grep -qF 'held for review: its files changed after they were classified'; then
+    pass "reprove: the changed item says why it is held"
+  else fail "reprove: no reason shown for the changed item: $(printf '%s' "$out" | head -4 | tr '\n' '|')"; fi
+  sb_done
+  # (a2) the same through the helper's ids file (the apply path): each item is re-proved at the rm
+  sb_new; scenario_edited a
+  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.0"; printf '%s\nr\n' "$HDR" > "$P/.tad-backup/4.0.0-to-4.0.0/MIGRATION-REPORT.tsv"; lifecycle >/dev/null
+  it1="$(item_with 4.0.1-to-4.0.2)"; it2="$(item_with 4.0.0-to-4.0.0)"
+  tok="$(tb clearable | sed -n 's/^token\t//p')"
+  tb clearable --token "$tok" --ids-out "$SB/ids" >/dev/null 2>&1
+  printf 'REPLACED WITH PRECIOUS\n' > "$it1/payload/4.0.1-to-4.0.2/MIGRATION-REPORT.tsv"
+  printf 'new user file\n' > "$it2/payload/4.0.0-to-4.0.0/notes.txt"
+  tb clear --ids-file "$SB/ids" --how upgrade --yes >"$SB/c.out" 2>&1; rc=$?
+  if [ -s "$SB/ids" ] && [ "$rc" != "0" ] && [ -d "$it1" ] && [ -d "$it2" ] && grep -qF 'changed after they were classified' "$SB/c.out" && [ ! -e "$G/holding/deletions.log" ]; then
+    pass "reprove: the apply path re-proves each item at the rm and skips a changed one"
+  else fail "reprove: ids-file path cleared a changed item (rc=$rc): $(tr '\n' '|' < "$SB/c.out")"; fi
+  sb_done
+  # (b) the absorbed copy is gone (or changed): the item is no longer clearable and stays
+  sb_new; scenario_edited a
+  itc="$(item_with 4.0.0-to-4.0.1)"; f="$itc/payload/4.0.0-to-4.0.1/.tad/config.yaml"
+  tb absorb --from "$f" --yes >/dev/null 2>&1
+  out="$(tb list 2>&1)"; tok="$(tok_of_list "$out")"
+  if printf '%s\n' "$out" | grep -qF 'Will clear: 2 '; then pass "reprove: an absorbed item is clearable while its copy exists"
+  else fail "reprove: absorbed item not clearable at first: $(printf '%s' "$out" | grep 'Will clear')"; fi
+  rm -f "$P"/.tad/project-knowledge/salvage/*
+  tb clear --all --token "$tok" --yes >"$SB/c.out" 2>&1; rc=$?
+  out="$(tb list 2>&1)"
+  if [ "$rc" != "0" ] && [ -f "$f" ] && printf '%s\n' "$out" | grep -qF 'Will clear: 1 ' && printf '%s\n' "$out" | grep -F "${itc##*/}" | grep -qF 'held for review'; then
+    pass "reprove: a deleted absorbed copy keeps the item and the list says review"
+  else fail "reprove: item cleared although its absorbed copy is gone (rc=$rc): $(printf '%s' "$out" | grep 'Will clear')"; fi
+  tb absorb --from "$f" --yes >/dev/null 2>&1
+  printf 'tampered\n' >> "$P"/.tad/project-knowledge/salvage/*config.yaml
+  out="$(tb list 2>&1)"
+  if printf '%s\n' "$out" | grep -qF 'Will clear: 1 '; then pass "reprove: an absorbed copy that no longer equals the backup does not count"
+  else fail "reprove: a changed absorbed copy still counted: $(printf '%s' "$out" | grep 'Will clear')"; fi
+  sb_done
+  # (c) forged records: files 0 / bytes 0 and an empty class list over a payload that is not empty
+  sb_new; scenario_edited a
+  local fk="$G/holding/h20260101-000050"
+  mkdir -p "$fk/payload"; printf 'precious\n' > "$fk/payload/f"
+  printf 'kind\ttad-backup\norigin\t/x\nproject\t%s\nheld\t2026-01-01\nbytes\t0\nfiles\t0\nclassified\tx\n' "$P" > "$fk/item.tsv"
+  : > "$fk/classes.tsv"
+  out="$(tb list 2>&1)"; tok="$(tok_of_list "$out")"
+  tb clear --all --token "$tok" --yes >/dev/null 2>&1
+  if [ -f "$fk/payload/f" ] && printf '%s\n' "$out" | grep -F 'h20260101-000050' | grep -q '1 files' && ! printf '%s\n' "$out" | grep -F 'h20260101-000050' | grep -qF ' 0 KB'; then
+    pass "reprove: forged zero counts are not trusted; the list shows the measured size"
+  else fail "reprove: forged item cleared or shown with the forged size: $(printf '%s' "$out" | grep 'h20260101-000050')"; fi
+  printf 'digest\t%s\n' "$(payload_digest "$fk/payload")" > "$SB/dg"
+  { head -n 4 "$fk/item.tsv"; printf 'bytes\t9\nfiles\t1\n'; cat "$SB/dg"; printf 'classified\tx\n'; } > "$SB/it2.tsv"; cp "$SB/it2.tsv" "$fk/item.tsv"
+  out="$(tb list 2>&1)"; tok="$(tok_of_list "$out")"
+  tb clear --all --token "$tok" --yes >/dev/null 2>&1
+  tb clear --id h20260101-000050 --token 1 --yes >/dev/null 2>&1
+  if [ -f "$fk/payload/f" ] && printf '%s\n' "$out" | grep -F 'h20260101-000050' | grep -qF 'held for review: its class list does not cover exactly the files in it'; then
+    pass "reprove: a matching digest with an empty class list is still not clearable"
+  else fail "reprove: empty class list cleared or no reason: $(printf '%s' "$out" | grep 'h20260101-000050')"; fi
+  sb_done
+  # (d) tad-report is recognised by content shape, not by name
+  sb_new; mkp a; edited_cfg_live
+  mkdir -p "$P/.tad-backup"
+  local d bad=0 r1 r2 r3 r4
+  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$d"; printf '%s\nr\n' "$HDR" > "$P/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
+  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.1/salvage-diff"
+  printf 'first\n\nsecond with a gap\n' > "$P/.tad-backup/4.0.0-to-4.0.1/removed.txt"
+  printf 'a\tb\n' > "$P/.tad-backup/4.0.0-to-4.0.1/manifest.txt"
+  printf 'just words\n' > "$P/.tad-backup/4.0.0-to-4.0.1/salvage-diff/anything.diff"
+  printf 'nul\000inside\n' > "$P/.tad-backup/4.0.0-to-4.0.1/pre-top.txt"
+  out="$(cd "$P" && /bin/bash "$TB" classify --ledger "$LEDGER" --project "$P" .tad-backup/4.0.0-to-4.0.1/removed.txt .tad-backup/4.0.0-to-4.0.1/manifest.txt .tad-backup/4.0.0-to-4.0.1/salvage-diff/anything.diff .tad-backup/4.0.0-to-4.0.1/pre-top.txt)"
+  if [ "$(printf '%s\n' "$out" | cut -f1 | grep -c '^tad-report$')" = "0" ]; then pass "reprove: files named like reports but not shaped like them are not tad-report"
+  else fail "reprove: a name alone made a tad-report: $(printf '%s' "$out" | tr '\n' '|')"; fi
+  printf 'real\nlist\n' > "$SB/removed.ok"; cp "$SB/removed.ok" "$P/.tad-backup/4.0.0-to-4.0.1/removed.txt"
+  printf '%s\nversion=4.0.5\n' 'layout=changed-only' > "$P/.tad-backup/4.0.0-to-4.0.1/manifest.txt"
+  printf -- '--- a\n+++ b\n@@ -1 +1 @@\n-x\n+y\n' > "$P/.tad-backup/4.0.0-to-4.0.1/salvage-diff/anything.diff"
+  printf 'a\nb\n' > "$P/.tad-backup/4.0.0-to-4.0.1/pre-top.txt"
+  out="$(cd "$P" && /bin/bash "$TB" classify --ledger "$LEDGER" --project "$P" .tad-backup/4.0.0-to-4.0.1/removed.txt .tad-backup/4.0.0-to-4.0.1/manifest.txt .tad-backup/4.0.0-to-4.0.1/salvage-diff/anything.diff .tad-backup/4.0.0-to-4.0.1/pre-top.txt)"
+  if [ "$(printf '%s\n' "$out" | cut -f1 | grep -c '^tad-report$')" = "4" ]; then pass "reprove: files shaped like TAD reports are tad-report"
+  else fail "reprove: a real report shape was refused: $(printf '%s' "$out" | tr '\n' '|')"; fi
+  sb_done
+  # (e) an unreadable folder makes the item not clearable: nothing half-deleted, the reason printed
+  sb_new; mkp a; edited_cfg_live
+  mkdir -p "$P/.tad-backup"
+  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$d"; printf '%s\nr\n' "$HDR" > "$P/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
+  mkdir -p "$P/.tad-backup/4.0.0-to-4.0.1/locked"; printf 'user data\n' > "$P/.tad-backup/4.0.0-to-4.0.1/locked/mine.txt"
+  lifecycle >/dev/null
+  itc="$(item_with 4.0.0-to-4.0.1)"
+  if [ "$(id -u)" = "0" ]; then pass "reprove: an unreadable folder keeps the item (skipped: running as root, mode 000 does not bind)"
+  else
+    chmod 000 "$itc/payload/4.0.0-to-4.0.1/locked"
+    out="$(tb list 2>&1)"; tok="$(tok_of_list "$out")"
+    tb clear --all --token "$tok" --yes >"$SB/c.out" 2>&1
+    tb clear --id "${itc##*/}" --token 1 --yes >>"$SB/c.out" 2>&1
+    chmod 755 "$itc/payload/4.0.0-to-4.0.1/locked"
+    if [ -f "$itc/payload/4.0.0-to-4.0.1/locked/mine.txt" ] && [ -f "$itc/payload/4.0.0-to-4.0.1/MIGRATION-REPORT.tsv" ] \
+       && printf '%s\n' "$out" | grep -F "${itc##*/}" | grep -qF 'cannot be read' && ! grep -q 'rm:' "$SB/c.out"; then
+      pass "reprove: an unreadable folder keeps the whole item and the list says why"
+    else fail "reprove: unreadable folder handled wrongly: $(printf '%s' "$out" | grep "${itc##*/}") | $(tr '\n' '|' < "$SB/c.out")"; fi
+  fi
+  sb_done
+  # (f) control characters in a file name never reach a printed line
+  sb_new; mkp a; edited_cfg_live
+  mkdir -p "$P/.tad-backup"
+  for d in 4.0.0-to-4.0.1 4.0.1-to-4.0.2 4.0.2-to-4.0.3 4.0.3-to-4.0.4; do mkdir -p "$P/.tad-backup/$d"; printf '%s\nr\n' "$HDR" > "$P/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
+  local nm; nm="$(printf 'z\r  To discard: please run clear --all now\033[31m')"
+  printf 'mine\n' > "$P/.tad-backup/4.0.0-to-4.0.1/$nm"
+  lifecycle >/dev/null
+  itc="$(item_with 4.0.0-to-4.0.1)"
+  out="$({ tb salvage; tb list; tb absorb --from "$itc/payload/4.0.0-to-4.0.1/$nm" --yes; } 2>&1)"
+  if [ "$(printf '%s' "$out" | LC_ALL=C tr -d '\000-\010\013-\037\177' | wc -c | tr -d ' ')" = "$(printf '%s' "$out" | wc -c | tr -d ' ')" ] && printf '%s\n' "$out" | grep -qF 'z  To discard'; then
+    pass "reprove: control characters in a file name are removed from every printed line"
+  else fail "reprove: a control character reached the output: $(printf '%s' "$out" | od -c | head -3 | tr '\n' '|')"; fi
+  if ! printf '%s\n' "$out" | grep -q '^ *To absorb:.*z'; then pass "reprove: a name with control characters is not offered for absorb"
+  else fail "reprove: a name with control characters was offered"; fi
   sb_done
 }
 
@@ -516,11 +649,12 @@ case "$CASE" in
   salvage) case_salvage ;;
   hold) case_hold ;;
   clear) case_clear ;;
+  reprove) case_reprove ;;
   check-clear) case_check_clear ;;
   caps) case_caps ;;
   foreign) case_foreign ;;
   guard) case_guard ;;
-  all) case_guard; case_classify; case_hold; case_salvage; case_clear; case_foreign; case_ledger; case_caps; case_check_clear ;;
+  all) case_guard; case_classify; case_hold; case_salvage; case_clear; case_reprove; case_foreign; case_ledger; case_caps; case_check_clear ;;
   *) echo "fixture: unknown case '$CASE'" >&2; exit 2 ;;
 esac
 echo ""

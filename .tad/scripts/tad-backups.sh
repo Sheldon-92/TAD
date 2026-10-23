@@ -23,7 +23,16 @@ NL=$'\n'
 IDRE='^h[0-9]{8}-[0-9]{6}(\.[0-9]+)?$'
 BKRE='^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'
 
-warn() { printf 'tad-backups: %s\n' "$*" >&2; }
+# clean <text> — a name or path made printable: control characters (CR, ESC and every other C0 byte, DEL) are removed and
+# the length is capped, so a file name can never rewrite a terminal line or pose as an instruction in a relayed line
+clean() {
+  local v
+  v="$(printf '%s' "$*" | LC_ALL=C tr -d '\000-\037\177')"
+  printf '%s' "${v:0:400}"
+}
+# has_ctl <text> — rc 0 when the text holds a control character
+has_ctl() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\000-\037\177')" != "$1" ]; }
+warn() { printf 'tad-backups: %s\n' "$(clean "$*")" >&2; }
 die() { warn "$*"; exit 2; }
 
 # ---------------------------------------------------------------- small helpers
@@ -196,6 +205,56 @@ is_index_name() {
   esac
   return 1
 }
+# report_shape_ok <file> <name at the top of the backup dir: an index name or salvage-diff/<f>> — rc 0 only when the
+# CONTENT has the shape TAD writes for that report (a regular, non-link, small text file with no NUL byte whose lines
+# fit the name). A name alone proves nothing: a user file called removed.txt or manifest.txt is not a TAD report.
+report_shape_ok() {
+  local f="$1" name="$2" sz first
+  [ -f "$f" ] && [ ! -L "$f" ] || return 1
+  sz="$(size_of "$f")"; is_num "$sz" || return 1
+  [ "$sz" -le 16777216 ] || return 1
+  [ "$(LC_ALL=C tr -d '\000' < "$f" | wc -c | tr -d ' ')" = "$sz" ] || return 1
+  case "$name" in
+    salvage-diff/*)
+      [ "$sz" -eq 0 ] && return 0
+      [ "$(head -n 1 "$f" | cut -c1-4)" = "--- " ] && [ "$(sed -n 2p "$f" | cut -c1-4)" = "+++ " ]
+      return ;;
+  esac
+  first="$(head -n 1 "$f")"
+  case "$name" in
+    manifest.txt) case "$(tail -n 1 "$f")" in version=*) return 0 ;; esac; return 1 ;;
+    origin.txt) [ "$(wc -l < "$f" | tr -d ' ')" -le 1 ] && case "$first" in /*) return 0 ;; esac; return 1 ;;
+    update-report.tsv) case "$first" in "report_version$TAB"*) return 0 ;; esac; return 1 ;;
+    changes.tsv) [ "$first" = "kind${TAB}path" ] ;;
+    MIGRATION-REPORT.tsv) [ "$first" = "action${TAB}status${TAB}path${TAB}detail" ] ;;
+    classes.tsv) LC_ALL=C awk -F'\t' 'NF != 3 || $1 !~ /^(released|tad-report|regenerated|in-project|edited|differs|unknown)$/ { exit 1 }' "$f" ;;
+    pre-surface.tsv) LC_ALL=C awk -F'\t' 'NF < 2 { exit 1 }' "$f" ;;
+    not-backed-up.txt) LC_ALL=C awk -F'\t' 'NF != 2 { exit 1 }' "$f" ;;
+    pre-top.txt|pre-tree.txt|removed.txt) LC_ALL=C awk -F'\t' 'NF > 1 || length($0) == 0 { exit 1 }' "$f" ;;
+    *) return 1 ;;
+  esac
+}
+# is_regenerated_rel <project-relative path> — rc 0 for a file TAD regenerates on every run
+is_regenerated_rel() {
+  local sb
+  case "$1" in
+    .tad/brain-index.md) return 0 ;;
+    .agents/skills/*/.tad-pack-meta.yaml)
+      sb="${1#.agents/skills/}"
+      case "${sb%/.tad-pack-meta.yaml}" in */*) return 1 ;; *) return 0 ;; esac ;;
+  esac
+  return 1
+}
+# in_project_ok <backup file> <project-relative path> — rc 0 when the project's current file at that path is a regular
+# file that is byte-equal to the backup file or begins with its bytes
+in_project_ok() {
+  local file="$1" rel="$2" pf sb sp
+  pf="$PROJECT_PHYS/$rel"
+  [ -f "$pf" ] && [ ! -L "$pf" ] && [ -f "$file" ] && [ ! -L "$file" ] || return 1
+  sb="$(size_of "$file")"; sp="$(size_of "$pf")"
+  is_num "$sb" && is_num "$sp" && [ "$sp" -ge "$sb" ] || return 1
+  head -c "$sb" "$pf" 2>/dev/null | cmp -s - "$file"
+}
 # classify_one <backup file> <project-relative path> <path relative to the backup dir top, or empty>
 # prints "<class><TAB><label>"
 classify_one() {
@@ -211,22 +270,14 @@ classify_one() {
   fi
   if [ -n "$top" ]; then
     case "$top" in
-      */*) case "$top" in salvage-diff/*) printf 'tad-report\t-\n'; return 0 ;; esac ;;
-      *) if is_index_name "$top"; then printf 'tad-report\t-\n'; return 0; fi ;;
+      */*) case "$top" in salvage-diff/*) if report_shape_ok "$file" "$top"; then printf 'tad-report\t-\n'; return 0; fi ;; esac ;;
+      *) if is_index_name "$top" && report_shape_ok "$file" "$top"; then printf 'tad-report\t-\n'; return 0; fi ;;
     esac
   fi
-  case "$rel" in
-    .tad/brain-index.md) printf 'regenerated\t-\n'; return 0 ;;
-    .agents/skills/*/.tad-pack-meta.yaml)
-      sb="${rel#.agents/skills/}"
-      case "${sb%/.tad-pack-meta.yaml}" in */*) ;; *) printf 'regenerated\t-\n'; return 0 ;; esac ;;
-  esac
+  if is_regenerated_rel "$rel"; then printf 'regenerated\t-\n'; return 0; fi
   pf="$PROJECT_PHYS/$rel"
   if [ -f "$pf" ] && [ ! -L "$pf" ]; then
-    sb="$(size_of "$file")"; sp="$(size_of "$pf")"
-    if is_num "$sb" && is_num "$sp" && [ "$sp" -ge "$sb" ]; then
-      if head -c "$sb" "$pf" 2>/dev/null | cmp -s - "$file"; then printf 'in-project\t-\n'; return 0; fi
-    fi
+    if in_project_ok "$file" "$rel"; then printf 'in-project\t-\n'; return 0; fi
     if [ "$LEDGER_OK" = "1" ] && [ -s "$pf" ]; then
       id="$(blob_id "$pf" 2>/dev/null)" || id=""
       if [ -n "$id" ] && lab="$(ledger_label "$id")"; then printf 'edited\t%s\n' "$lab"; return 0; fi
@@ -269,42 +320,93 @@ write_rows() {
 }
 
 # ---------------------------------------------------------------- holding items
-# item_line <id> <mode: set|any> — "<id> <bytes> <cksum of classes.tsv>" when the item is a member of the mode's set
-ABS_LIST=""
-load_absorbed() {
-  ABS_LIST=""
-  local a b c
-  if [ -f "$HOLD/absorbed.tsv" ] && [ ! -L "$HOLD/absorbed.tsv" ]; then
-    while IFS="$TAB" read -r a b c; do
-      [ -n "$b" ] && ABS_LIST="$ABS_LIST$NL$b"
-    done < "$HOLD/absorbed.tsv"
+# payload_probe <payload dir> — measures the payload ITSELF: P_FILES (regular files and links), P_BYTES (sum of the sizes of
+# the regular files) and P_DIGEST (cksum over the sorted "<content cksum> <size> <relative path>" rows and the paths of the
+# links, so content and paths both count). rc 1, with nothing proven, when any folder or file cannot be read or any entry
+# is neither a regular file, a link nor a folder. Nothing stored in an item record is used.
+P_FILES=0; P_BYTES=0; P_DIGEST=""
+payload_probe() {
+  local base="$1" t rc=0 n
+  P_FILES=0; P_BYTES=0; P_DIGEST=""
+  anchor_quiet "$base" || return 1
+  t="$(mktemp -d "${TMPDIR:-/tmp}/tad-bk-probe.XXXXXX")" || return 1
+  ( cd "$base" 2>/dev/null && find . -type f -exec cksum {} + ) > "$t/f" 2>/dev/null || rc=1
+  ( cd "$base" 2>/dev/null && find . -type l -print ) > "$t/l" 2>/dev/null || rc=1
+  ( cd "$base" 2>/dev/null && find . ! -type d ! -type f ! -type l -print ) > "$t/o" 2>/dev/null || rc=1
+  ( cd "$base" 2>/dev/null && find . \( -type f -o -type l \) -print0 ) > "$t/z" 2>/dev/null || rc=1
+  [ -s "$t/o" ] && rc=1
+  if [ "$rc" = "0" ]; then
+    n="$(LC_ALL=C tr -cd '\000' < "$t/z" | wc -c | tr -d ' ')"
+    P_FILES="${n:-0}"
+    P_BYTES="$(LC_ALL=C awk '$1 ~ /^[0-9]+$/ && $2 ~ /^[0-9]+$/ { s += $2 } END { printf "%d", s }' "$t/f")"
+    P_DIGEST="$({ LC_ALL=C sort "$t/f"; printf 'links\n'; LC_ALL=C sort "$t/l"; } | cksum | cut -d' ' -f1)"
   fi
-  ABS_LIST="$ABS_LIST$NL"
+  rm -rf -- "$t" # RM-OK:backups-probe-dir
+  [ "$rc" = "0" ] && is_num "$P_FILES" && is_num "$P_BYTES" && [ -n "$P_DIGEST" ]
 }
-item_line() {
-  local id="$1" mode="$2" it last files bytes proj cl lab p allowed=0 total sc
+# absorbed_ok <source path inside a payload> — rc 0 only when absorbed.tsv names this source AND its destination still
+# exists as a regular file directly in the project's salvage dir AND holds exactly the source bytes after line 1
+absorbed_ok() {
+  local src="$1" a b c salv="$PROJECT_PHYS/.tad/project-knowledge/salvage"
+  [ -f "$HOLD/absorbed.tsv" ] && [ ! -L "$HOLD/absorbed.tsv" ] || return 1
+  [ -f "$src" ] && [ ! -L "$src" ] || return 1
+  anchor_quiet "$salv" || return 1
+  while IFS="$TAB" read -r a b c; do
+    [ "$b" = "$src" ] || continue
+    case "$c" in "$salv"/*) ;; *) continue ;; esac
+    case "${c#"$salv"/}" in */*) continue ;; esac
+    [ -f "$c" ] && [ ! -L "$c" ] || continue
+    if tail -n +2 "$c" | cmp -s - "$src"; then return 0; fi
+  done < "$HOLD/absorbed.tsv"
+  return 1
+}
+# item_eval <id> <mode: set|any> — re-proves one held item from its payload, trusting no stored count or size.
+# Sets IT_WHY on refusal. On success IT_LINE = "<id> <files> <bytes> <digest>" (the token line); IT_FILES and IT_BYTES are
+# the measured values (set whenever the payload could be measured, also on a later refusal).
+# mode any: classified, this project, readable, content equal to what was classified. mode set adds: every file of the
+# payload has exactly one class row, and every row still holds today (released: bytes as classified; tad-report: content
+# shape; regenerated: path; in-project: the project's file still begins with it; edited: its absorbed copy still exists and
+# equals it).
+IT_LINE=""; IT_WHY=""; IT_FILES=""; IT_BYTES=""
+item_eval() {
+  local id="$1" mode="$2" it kind proj rec cl lab p rows=0 allowed=0 pl
+  IT_LINE=""; IT_WHY=""; IT_FILES=""; IT_BYTES=""
   it="$HOLD/$id"
-  printf '%s' "$id" | grep -Eq "$IDRE" || return 1
-  anchor_quiet "$it" || return 1
-  [ -f "$it/item.tsv" ] && [ ! -L "$it/item.tsv" ] || return 1
-  last="$(tail -n 1 "$it/item.tsv" | cut -f1)"
-  [ "$last" = "classified" ] || return 1
-  proj="$(kv_get "$it/item.tsv" project)" || return 1
-  [ "$proj" = "$PROJECT_PHYS" ] || return 1
-  files="$(kv_get "$it/item.tsv" files)" || return 1
-  bytes="$(kv_get "$it/item.tsv" bytes)" || return 1
-  is_num "$files" && is_num "$bytes" || return 1
-  [ -f "$it/classes.tsv" ] && [ ! -L "$it/classes.tsv" ] || return 1
-  sc="$(file_cksum "$it/classes.tsv")"
-  if [ "$mode" = "any" ]; then printf '%s %s %s' "$id" "$bytes" "$sc"; return 0; fi
+  printf '%s' "$id" | grep -Eq "$IDRE" || { IT_WHY="not an item id"; return 1; }
+  anchor_quiet "$it" || { IT_WHY="not a real directory"; return 1; }
+  [ -f "$it/item.tsv" ] && [ ! -L "$it/item.tsv" ] || { IT_WHY="no item record"; return 1; }
+  [ "$(tail -n 1 "$it/item.tsv" | cut -f1)" = "classified" ] || { IT_WHY="not classified yet"; return 1; }
+  proj="$(kv_get "$it/item.tsv" project)" || { IT_WHY="no project in its record"; return 1; }
+  [ "$proj" = "$PROJECT_PHYS" ] || { IT_WHY="belongs to another project"; return 1; }
+  [ -d "$it/payload" ] && anchor_quiet "$it/payload" || { IT_WHY="its payload is not a real folder"; return 1; }
+  payload_probe "$it/payload" || { IT_WHY="a folder or file in it cannot be read, or it holds an unusual entry; it is not cleared, open it yourself"; return 1; }
+  IT_FILES="$P_FILES"; IT_BYTES="$P_BYTES"
+  rec="$(kv_get "$it/item.tsv" digest)" || { IT_WHY="no content record from the classification"; return 1; }
+  [ "$rec" = "$P_DIGEST" ] || { IT_WHY="its files changed after they were classified"; return 1; }
+  IT_LINE="$id $P_FILES $P_BYTES $P_DIGEST"
+  [ "$mode" = "any" ] && return 0
+  kind="$(kv_get "$it/item.tsv" kind)" || { IT_LINE=""; IT_WHY="no kind in its record"; return 1; }
+  [ -f "$it/classes.tsv" ] && [ ! -L "$it/classes.tsv" ] || { IT_LINE=""; IT_WHY="no class list"; return 1; }
+  if [ -n "$(cut -f3- "$it/classes.tsv" | LC_ALL=C sort | LC_ALL=C uniq -d | head -n 1)" ]; then IT_LINE=""; IT_WHY="its class list names a file twice"; return 1; fi
   while IFS="$TAB" read -r cl lab p; do
+    rows=$((rows + 1))
+    case "/$p/" in
+      //*|*/../*|*/./*|*//*) IT_LINE=""; IT_WHY="its class list holds an unsafe path"; return 1 ;;
+    esac
+    pl="$it/payload/$p"
+    if [ ! -L "$pl" ] && [ ! -f "$pl" ]; then IT_LINE=""; IT_WHY="its class list names a file that is not there"; return 1; fi
+    logical_paths "$kind" "$p"
     case "$cl" in
-      released|tad-report|regenerated|in-project) allowed=$((allowed + 1)) ;;
-      edited) case "$ABS_LIST" in *"$NL$it/payload/$p$NL"*) allowed=$((allowed + 1)) ;; esac ;;
+      released) allowed=$((allowed + 1)) ;;
+      tad-report) if [ -n "$LP_TOP" ] && report_shape_ok "$pl" "$LP_TOP"; then allowed=$((allowed + 1)); fi ;;
+      regenerated) if is_regenerated_rel "$LP_REL"; then allowed=$((allowed + 1)); fi ;;
+      in-project) if [ ! -L "$pl" ] && in_project_ok "$pl" "$LP_REL"; then allowed=$((allowed + 1)); fi ;;
+      edited) if absorbed_ok "$pl"; then allowed=$((allowed + 1)); fi ;;
     esac
   done < "$it/classes.tsv"
-  [ "$allowed" = "$files" ] || return 1
-  printf '%s %s %s' "$id" "$bytes" "$sc"
+  if [ "$rows" != "$P_FILES" ]; then IT_LINE=""; IT_WHY="its class list does not cover exactly the files in it"; return 1; fi
+  if [ "$allowed" != "$rows" ]; then IT_LINE=""; IT_WHY="it holds files that are not proven to be TAD's own, a report, still in your project, or absorbed"; return 1; fi
+  return 0
 }
 item_ids() { # sorted item ids that match the id pattern (no anchoring: callers anchor per item)
   local d name
@@ -316,21 +418,26 @@ item_ids() { # sorted item ids that match the id pattern (no anchoring: callers 
   done | LC_ALL=C sort
 }
 CLEAR_LINES=""; CLEAR_N=0; CLEAR_BYTES=0; REVIEW_IDS=""; REVIEW_N=0; TOKEN=""
+ITEM_INFO=""; ITEM_TOTAL=0; ITEM_TOTAL_BYTES=0
+# clearable_set — every item re-proved from its payload (item_eval set). ITEM_INFO = one line per item
+# "<id><TAB><files><TAB><bytes><TAB><why>" with files and bytes MEASURED ("?" when unreadable), why empty when clearable.
 clearable_set() {
-  local id ln b
-  CLEAR_LINES=""; CLEAR_N=0; CLEAR_BYTES=0; REVIEW_IDS=""; REVIEW_N=0
-  load_absorbed
+  local id
+  CLEAR_LINES=""; CLEAR_N=0; CLEAR_BYTES=0; REVIEW_IDS=""; REVIEW_N=0; ITEM_INFO=""; ITEM_TOTAL=0; ITEM_TOTAL_BYTES=0
   while IFS= read -r id; do
     [ -n "$id" ] || continue
-    if ln="$(item_line "$id" set)"; then
-      CLEAR_LINES="${CLEAR_LINES:+$CLEAR_LINES$NL}$ln"
+    ITEM_TOTAL=$((ITEM_TOTAL + 1))
+    if item_eval "$id" set; then
+      CLEAR_LINES="${CLEAR_LINES:+$CLEAR_LINES$NL}$IT_LINE"
       CLEAR_N=$((CLEAR_N + 1))
-      b="$(printf '%s' "$ln" | cut -d' ' -f2)"
-      CLEAR_BYTES=$((CLEAR_BYTES + b))
+      CLEAR_BYTES=$((CLEAR_BYTES + IT_BYTES))
+      ITEM_INFO="${ITEM_INFO:+$ITEM_INFO$NL}$id$TAB$IT_FILES$TAB$IT_BYTES$TAB"
     else
       REVIEW_IDS="${REVIEW_IDS:+$REVIEW_IDS$NL}$id"
       REVIEW_N=$((REVIEW_N + 1))
+      ITEM_INFO="${ITEM_INFO:+$ITEM_INFO$NL}$id$TAB${IT_FILES:-?}$TAB${IT_BYTES:-?}$TAB$IT_WHY"
     fi
+    is_num "${IT_BYTES:-}" && ITEM_TOTAL_BYTES=$((ITEM_TOTAL_BYTES + IT_BYTES))
   done <<< "$(item_ids)"
   TOKEN="$(token_of "$CLEAR_LINES")"
 }
@@ -463,6 +570,8 @@ classify_item() {
   bytes="$(bytes_of_dir "$it/payload")"
   append_line "$it/item.tsv" "bytes$TAB$bytes" || { rmtmp "$tmp"; return 1; }
   append_line "$it/item.tsv" "files$TAB$files" || { rmtmp "$tmp"; return 1; }
+  # the content record the clear step compares against; an unreadable payload gets none and so never becomes clearable
+  if payload_probe "$it/payload"; then append_line "$it/item.tsv" "digest$TAB$P_DIGEST" || { rmtmp "$tmp"; return 1; }; fi
   mv -f "$tmp" "$it/classes.tsv" || { rmtmp "$tmp"; return 1; }
   append_line "$it/item.tsv" "classified${TAB}$LEDGER_ID" || return 1
   CLASSIFIED_N=$((CLASSIFIED_N + 1))
@@ -520,7 +629,7 @@ cmd_classify() {
 }
 
 cmd_lifecycle() {
-  local gp rbp rb moved review items bytes id rows cnt=0 b ln
+  local gp rbp rb moved review items bytes id rows cnt=0 b
   [ -n "$A_GROUPDIR" ] && [ -n "$A_RUNBK" ] || die "lifecycle needs --group-dir and --run-backup"
   resolve_project "$A_PROJECT"
   resolve_root || { warn "backup root cannot be resolved; lifecycle skipped"; return 0; }
@@ -548,12 +657,8 @@ cmd_lifecycle() {
     classify_item "$id" || true
   done <<< "$(item_ids)"
   clearable_set
-  items="$(item_ids | grep -c . || true)"
-  bytes=0
-  while IFS= read -r id; do
-    [ -n "$id" ] || continue
-    if ln="$(item_line "$id" any)"; then b="$(printf '%s' "$ln" | cut -d' ' -f2)"; bytes=$((bytes + b)); fi
-  done <<< "$(item_ids)"
+  items="$ITEM_TOTAL"
+  bytes="$ITEM_TOTAL_BYTES"
   moved="$CLASSIFIED_N"
   [ "$HELD_N" -le "$moved" ] || moved="$HELD_N"
   printf 'holding_path%s%s\n' "$TAB" "$HOLD"
@@ -591,28 +696,33 @@ foreign_summary() {
       if [ "$others" -le 5 ]; then names="${names:+$names, }$name"; fi
     fi
   done
-  printf 'Not touched: %s backup groups whose project no longer exists (%s); %s other entries not written by TAD (%s); %s groups with no known owner\n' "$orphans" "$(human_kb "$osize")" "$others" "${names:--}" "$unknown"
+  printf 'Not touched: %s backup groups whose project no longer exists (%s); %s other entries not written by TAD (%s); %s groups with no known owner\n' "$orphans" "$(human_kb "$osize")" "$others" "$(clean "${names:--}")" "$unknown"
 }
 
 cmd_list() {
-  local id it kind org bytes files rev ln total=0 n=0
+  local id it kind org files bytes why rev ln line total=0 n=0 f
   resolve_project "$A_PROJECT"
   find_group || return 1
   clearable_set
-  echo "Held backups for $PROJECT_PHYS (holding area: $HOLD)"
+  echo "Held backups for $(clean "$PROJECT_PHYS") (holding area: $(clean "$HOLD"))"
   while IFS= read -r id; do
     [ -n "$id" ] || continue
     it="$HOLD/$id"
     anchor_quiet "$it" || { echo "  $id  (refused: not a real directory)"; continue; }
     kind="$(kv_get "$it/item.tsv" kind || echo '?')"
     org="$(kv_get "$it/item.tsv" origin || echo '?')"
-    bytes="$(kv_get "$it/item.tsv" bytes || echo 0)"
-    files="$(kv_get "$it/item.tsv" files || echo '?')"
+    # sizes and counts come from the payload measured now, never from the item record
+    line="$(printf '%s\n' "$ITEM_INFO" | grep -F -e "$id$TAB" | head -n 1)"
+    IFS="$TAB" read -r f files bytes why <<< "$line"
     rev=""
-    case "$NL$REVIEW_IDS$NL" in *"$NL$id$NL"*) rev="  [held for review]" ;; esac
+    if [ -n "$why" ]; then rev="  [held for review: $(clean "$why")]"; fi
     if [ -f "$it/classes.tsv" ]; then ln="$(class_summary "$it/classes.tsv")"; else ln="not classified"; fi
-    echo "  $id  $kind  $org  $(human_kb "${bytes:-0}")  ${files} files  ${ln:--}$rev"
-    is_num "$bytes" && total=$((total + bytes))
+    if is_num "$bytes"; then
+      echo "  $id  $(clean "$kind")  $(clean "$org")  $(human_kb "$bytes")  ${files} files  ${ln:--}$rev"
+      total=$((total + bytes))
+    else
+      echo "  $id  $(clean "$kind")  $(clean "$org")  size not measured (unreadable)  ${ln:--}$rev"
+    fi
     n=$((n + 1))
   done <<< "$(item_ids)"
   echo "Total: $n held items ($(human_kb "$total"))"
@@ -621,7 +731,7 @@ cmd_list() {
   if [ "$CLEAR_N" -gt 0 ]; then
     echo "To clear: /bin/bash .tad/scripts/tad-backups.sh clear --all --token $TOKEN --yes"
   else
-    echo "Nothing is cleared by a yes: no held item is proven to be TAD's own files, its reports, or copies already absorbed."
+    echo "Nothing is cleared by a yes: no held item is proven to be TAD's own files, its reports, files still in your project, or copies already absorbed."
   fi
   if [ "$REVIEW_N" -gt 0 ]; then echo "Review items are never cleared by --all: say \"看备份\" to see them."; fi
   return 0
@@ -647,22 +757,22 @@ cmd_clearable() {
   return 0
 }
 
-# clear_item <id> <expected line> <how> <mode: set|any>
+# clear_item <id> <expected line> <how> <mode: set|any> — re-proves the item from its payload right now (item_eval) and
+# removes it only when the result equals the line that was listed; the size and count shown and logged are the measured ones
 CLEARED_N=0; SKIPPED_N=0
 clear_item() {
-  local id="$1" want="$2" how="$3" mode="$4" it cur origin bytes files
+  local id="$1" want="$2" how="$3" mode="$4" it origin bytes files
   it="$HOLD/$id"
   printf '%s' "$id" | grep -Eq "$IDRE" || { warn "skipped $id: not an item id"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; }
   anchor "$it" || { SKIPPED_N=$((SKIPPED_N + 1)); return 0; }
-  cur="$(item_line "$id" "$mode")" || { warn "skipped $id: no longer in the set that was listed"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; }
-  if [ "$cur" != "$want" ]; then warn "skipped $id: changed since it was listed"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; fi
+  if ! item_eval "$id" "$mode"; then warn "skipped $id: $IT_WHY"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; fi
+  if [ "$IT_LINE" != "$want" ]; then warn "skipped $id: its files changed since it was listed"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; fi
   origin="$(kv_get "$it/item.tsv" origin || echo '?')"
-  bytes="$(kv_get "$it/item.tsv" bytes || echo 0)"
-  files="$(kv_get "$it/item.tsv" files || echo 0)"
+  bytes="$IT_BYTES"; files="$IT_FILES"
   if rm -rf -- "$it"; then # RM-OK:backups-clear-item
     CLEARED_N=$((CLEARED_N + 1))
-    append_line "$HOLD/deletions.log" "$(date +%Y-%m-%dT%H:%M:%S)$TAB$id$TAB$origin$TAB$bytes$TAB$files$TAB$how" || warn "deletions.log not written for $id"
-    echo "Cleared $id ($origin, $(human_kb "$bytes"))"
+    append_line "$HOLD/deletions.log" "$(date +%Y-%m-%dT%H:%M:%S)$TAB$id$TAB$(clean "$origin")$TAB$bytes$TAB$files$TAB$how" || warn "deletions.log not written for $id"
+    echo "Cleared $id ($(clean "$origin"), $(human_kb "$bytes"))"
   else
     warn "could not remove $it"
     SKIPPED_N=$((SKIPPED_N + 1))
@@ -695,9 +805,9 @@ cmd_clear() {
     done < "$A_IDSFILE"
   elif [ -n "$A_ID" ]; then
     [ -n "$A_TOKEN" ] || die "clear --id needs --token (the To discard line of salvage)"
-    load_absorbed
-    ln="$(item_line "$A_ID" any)" || { echo "Held item $A_ID is not available for discard (unclassified or not this project's)"; return 1; }
-    if [ "$(token_of "$ln")" != "$A_TOKEN" ]; then echo "Held item $A_ID changed since it was listed: nothing cleared"; return 3; fi
+    if ! item_eval "$A_ID" any; then echo "Held item $(clean "$A_ID") is not available for discard: $IT_WHY"; return 1; fi
+    ln="$IT_LINE"
+    if [ "$(token_of "$ln")" != "$A_TOKEN" ]; then echo "Held item $(clean "$A_ID") changed since it was listed: nothing cleared"; return 3; fi
     if [ "$A_YES" != "1" ]; then echo "No --yes: nothing deleted"; return 0; fi
     clear_item "$A_ID" "$ln" "${A_HOW:-discard}" any
   else
@@ -726,18 +836,24 @@ write_diff() {
 }
 flat_name() { printf '%s' "$1" | sed 's|/|__|g'; }
 # salvage_container <label> <container dir> <classes.tsv> <kind> <payload base> <is item 0|1> <item id>
+# Every name printed has its control characters removed (cl). A name that held any is listed cleaned, with a note, and
+# gets no diff file, no To absorb line and no path to open: the command to run would not match the name on disk.
 salvage_container() {
   local label="$1" cdir="$2" cls="$3" kind="$4" pbase="$5" isitem="$6" id="$7"
-  local cl lab p abs rel flat pf out a r dpath sz shown=0 ln
+  local cl_ lab p abs rel flat pf out a r dpath sz shown=0 ln
   [ -f "$cls" ] && [ ! -L "$cls" ] || return 0
-  while IFS="$TAB" read -r cl lab p; do
-    case "$cl" in edited|differs|unknown) ;; *) continue ;; esac
+  while IFS="$TAB" read -r cl_ lab p; do
+    case "$cl_" in edited|differs|unknown) ;; *) continue ;; esac
     abs="$pbase/$p"
-    case "$ABS_LIST" in *"$NL$abs$NL"*) continue ;; esac
+    if absorbed_ok "$abs"; then continue; fi
     if [ "$shown" = "0" ]; then echo "$label"; shown=1; fi
     logical_paths "$kind" "$p"; rel="$LP_REL"; flat="$(flat_name "$rel")"
+    if has_ctl "$p" || has_ctl "$abs"; then
+      echo "  $(clean "$rel") ($cl_): the name holds control characters, so it is neither shown in full nor offered; open the folder yourself: $(clean "$cdir")"
+      continue
+    fi
     pf="$PROJECT_PHYS/$rel"
-    if [ "$cl" = "edited" ] && [ -f "$pf" ] && [ ! -L "$pf" ] && [ -f "$abs" ] && [ ! -L "$abs" ]; then
+    if [ "$cl_" = "edited" ] && [ -f "$pf" ] && [ ! -L "$pf" ] && [ -f "$abs" ] && [ ! -L "$abs" ]; then
       if out="$(write_diff "$cdir" "$flat" "$pf" "$abs")"; then
         a="${out%% *}"; r="${out#* }"; r="${r%% *}"; dpath="${out#* * }"
         echo "  $rel (edited $lab): +$a -$r lines; diff: $dpath (open it yourself)"
@@ -748,12 +864,11 @@ salvage_container() {
       fi
     else
       sz="$(size_of "$abs")"
-      echo "  $rel (${sz:-?} B, $cl): no released TAD file to compare with at this path — not shown, not absorbable; open it yourself: $abs"
+      echo "  $rel (${sz:-?} B, $cl_): no released TAD file to compare with at this path — not shown, not absorbable; open it yourself: $abs"
     fi
   done < "$cls"
   if [ "$shown" = "1" ] && [ "$isitem" = "1" ]; then
-    ln="$(item_line "$id" any 2>/dev/null)" || ln=""
-    if [ -n "$ln" ]; then echo "  To discard: /bin/bash .tad/scripts/tad-backups.sh clear --id $id --token $(token_of "$ln") --yes"; fi
+    if item_eval "$id" any; then echo "  To discard: /bin/bash .tad/scripts/tad-backups.sh clear --id $id --token $(token_of "$IT_LINE") --yes"; fi
   fi
   return 0
 }
@@ -761,14 +876,13 @@ cmd_salvage() {
   local id it kind org d name any=0
   resolve_project "$A_PROJECT"
   find_group || return 1
-  load_absorbed
   echo "Files the project edited or added inside TAD files (no file content is shown; diffs are written to local files):"
   while IFS= read -r id; do
     [ -n "$id" ] || continue
     it="$HOLD/$id"
     anchor_quiet "$it" || continue
     kind="$(kv_get "$it/item.tsv" kind || echo '')"
-    org="$(kv_get "$it/item.tsv" origin || echo '?')"
+    org="$(clean "$(kv_get "$it/item.tsv" origin || echo '?')")"
     [ "$(tail -n 1 "$it/item.tsv" 2>/dev/null | cut -f1)" = "classified" ] || { echo "Held $id ($org): not classified yet; it stays held until the next update classifies it"; continue; }
     salvage_container "Held $id ($org)" "$it" "$it/classes.tsv" "$kind" "$it/payload" 1 "$id"
   done <<< "$(item_ids)"
@@ -790,7 +904,7 @@ cmd_absorb() {
   resolve_project "$A_PROJECT"
   find_group || return 1
   case "$A_FROM" in /*) ;; *) die "--from must be an absolute path" ;; esac
-  abs="$(phys_entry "$A_FROM")" || { echo "Refused: $A_FROM cannot be resolved"; return 1; }
+  abs="$(phys_entry "$A_FROM")" || { echo "Refused: $(clean "$A_FROM") cannot be resolved"; return 1; }
   # reached only through this group's holding anchor or this group's backups
   case "$abs" in
     "$HOLD"/*)
@@ -808,22 +922,23 @@ cmd_absorb() {
       cont="$GROUP_DIR/$id"; anchor "$cont" || return 1
       kind="run"; cls="$cont/classes.tsv"
       ;;
-    *) echo "Refused: $abs is not inside this project's holding area or backups"; return 1 ;;
+    *) echo "Refused: $(clean "$abs") is not inside this project's holding area or backups"; return 1 ;;
   esac
   [ "$pic" != "$rest" ] || { echo "Refused: not a file path"; return 1; }
+  if has_ctl "$pic"; then echo "Refused: the file name holds control characters"; return 1; fi
   [ -f "$cls" ] && [ ! -L "$cls" ] || { echo "Refused: no stored classes for this backup"; return 1; }
   while IFS="$TAB" read -r cl lab p; do
     if [ "$p" = "$pic" ] && [ "$cl" = "edited" ]; then found=1; break; fi
   done < "$cls"
   [ "$found" = "1" ] || { echo "Refused: only a file stored as edited (a TAD file the project changed) can be absorbed"; return 1; }
-  [ -f "$abs" ] && [ ! -L "$abs" ] || { echo "Refused: $abs is not a regular file"; return 1; }
+  [ -f "$abs" ] && [ ! -L "$abs" ] || { echo "Refused: $(clean "$abs") is not a regular file"; return 1; }
   # the file's parent must be the real directory under the anchored container (no symlinked subdirectory)
   case "$cont" in
     "$HOLD"/*) pexp="$cont/payload" ;;
     *) pexp="$cont" ;;
   esac
   case "$pic" in */*) pexp="$pexp/$(dirname "$pic")" ;; esac
-  anchor "$pexp" || { echo "Refused: $abs is reached through a symlinked directory"; return 1; }
+  anchor "$pexp" || { echo "Refused: $(clean "$abs") is reached through a symlinked directory"; return 1; }
   if [ "$A_YES" != "1" ]; then echo "No --yes: nothing written"; return 0; fi
   logical_paths "$kind" "$pic"; rel="$LP_REL"; flat="$(flat_name "$rel")"
   anchor "$PROJECT_PHYS/.tad" || { echo "Refused: the project's .tad is not a real directory"; return 1; }
@@ -841,7 +956,7 @@ cmd_absorb() {
   done
   rmtmp "$tmp"
   append_line "$HOLD/absorbed.tsv" "$(date +%Y-%m-%d)$TAB$abs$TAB$dest" || warn "absorbed.tsv not written"
-  echo "Absorbed into ${dest#"$PROJECT_PHYS"/}"
+  echo "Absorbed into $(clean "${dest#"$PROJECT_PHYS"/}")"
   return 0
 }
 
