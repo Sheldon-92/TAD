@@ -5,6 +5,8 @@
 # Usage: bash .tad/tests/update-reminder-fixture.sh --case <name>|all
 #   --case versions        newer remote -> one line with both versions; equal/older/malformed -> none; numeric compare
 #   --case silent-bounded  a failing and a 10 s mock: rc 0, no line, wall time <= baseline + 3 s
+#   --case hard-bounded    a mock curl that ignores SIGTERM still ends the hook within the bound
+#   --case cache-path      a relative TAD_CACHE_DIR / XDG_CACHE_HOME writes nothing into the project
 #   --case once-a-day      one network call and one line per 24 h; stamps outside the project
 #   --case off-switch      the off file means no call and no line, and it survives an upgrade
 #   --case delivery        the line reaches the Claude-shaped and the Cursor-shaped output; a call naming no session does nothing
@@ -31,6 +33,7 @@ write_mock_curl() {
 #!/bin/bash
 D="$(cd "$(dirname "$0")" && pwd)"
 printf '%s\n' "$*" >> "${MOCK_COUNT_FILE:-$D/count}"
+if [ -n "${MOCK_IGNORE_TERM:-}" ]; then trap '' TERM; fi
 if [ -n "${MOCK_SLEEP:-}" ]; then sleep "$MOCK_SLEEP"; fi
 if [ -n "${MOCK_FAIL:-}" ]; then exit 22; fi
 cat "${MOCK_REMOTE_FILE:-$D/remote-version}"
@@ -50,7 +53,7 @@ CASE=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --case) CASE="${2:-}"; shift 2 ;;
-        --help|-h) sed -n '2,15p' "$0"; exit 0 ;;
+        --help|-h) sed -n '2,17p' "$0"; exit 0 ;;
         *) echo "update-reminder-fixture: unknown option '$1'" >&2; exit 2 ;;
     esac
 done
@@ -306,15 +309,71 @@ case_reminder_only() {
     if [ "$hits" = "0" ]; then ok "no non-comment line names tad-update.sh or tad.sh"; else bad "$hits non-comment line(s) name the updater or installer"; fi
 }
 
+case_hard_bounded() {
+    echo "== hard-bounded: a fetch that ignores SIGTERM does not hold the hook =="
+    local p c cnt out ctx t0 t1 w rc
+    p="$(new_project 4.0.6)"; c="$(new_cache)"; cnt="$SANDBOX/cnt.h1"
+    t0="$(now_ms)"; out="$( cd "$p" && printf '%s' "$ENV_SESSION" | PATH="$MOCK:$PATH" TAD_CACHE_DIR="$c" MOCK_COUNT_FILE="$cnt" MOCK_SLEEP=20 MOCK_IGNORE_TERM=1 bash "$HOOK" 2>/dev/null )"; rc=$?; t1="$(now_ms)"; w=$((t1 - t0))
+    ctx="$(ctx_of "$out")"
+    echo "  wall time, 20 s mock that traps TERM: ${w} ms"
+    if [ "$rc" = "0" ] && [ -n "$ctx" ] && [ "$(lines_with "$ctx")" = "0" ] && [ "$w" -le 3000 ]; then
+        ok "TERM-ignoring mock: rc 0, no line, wall ${w} ms (<= 3000)"
+    else
+        bad "TERM-ignoring mock: rc=$rc ctx=[$ctx] wall=${w} ms"
+    fi
+    if [ -z "$(ls "$c" | grep '^fetch\.' || true)" ]; then ok "no fetch temp file left in the cache dir"; else bad "fetch temp files left: $(ls "$c" | tr '\n' ' ')"; fi
+    # the slow (10 s, normal TERM) case keeps its margin
+    p="$(new_project 4.0.6)"; c="$(new_cache)"; cnt="$SANDBOX/cnt.h2"
+    t0="$(now_ms)"; ( cd "$p" && printf '%s' "$ENV_SESSION" | PATH="$MOCK:$PATH" TAD_CACHE_DIR="$c" MOCK_COUNT_FILE="$cnt" MOCK_SLEEP=10 bash "$HOOK" >/dev/null 2>&1 ); t1="$(now_ms)"; w=$((t1 - t0))
+    echo "  wall time, 10 s mock: ${w} ms"
+    if [ "$w" -le 3000 ]; then ok "10 s mock ends within 3000 ms (${w} ms)"; else bad "10 s mock took ${w} ms (> 3000)"; fi
+}
+
+case_cache_path() {
+    echo "== cache-path: only an absolute cache location is used =="
+    local p cnt out ctx
+    p="$(new_project 4.0.6)"; cnt="$SANDBOX/cnt.c1"
+    printf '%s\n' 4.0.7 > "$MOCK/remote-version"
+    out="$( cd "$p" && printf '%s' "$ENV_SESSION" | PATH="$MOCK:$PATH" TAD_CACHE_DIR="rel/cache" MOCK_COUNT_FILE="$cnt" bash "$HOOK" 2>/dev/null )"; ctx="$(ctx_of "$out")"
+    if [ ! -e "$p/rel" ] && [ -z "$(cd "$p" && git status --porcelain)" ]; then
+        ok "relative TAD_CACHE_DIR: nothing written into the project"
+    else
+        bad "relative TAD_CACHE_DIR wrote into the project: $(cd "$p" && git status --porcelain | tr '\n' '|')"
+    fi
+    if [ -d "$HOME/.cache/tad/reminded" ] && [ "$(lines_with "$ctx")" = "1" ]; then
+        ok "relative TAD_CACHE_DIR: fell back to the default location and still reminded"
+    else
+        bad "relative TAD_CACHE_DIR fallback: ctx=[$ctx]"
+    fi
+    rm -rf "$HOME/.cache"
+    p="$(new_project 4.0.6)"; cnt="$SANDBOX/cnt.c2"
+    out="$( cd "$p" && printf '%s' "$ENV_SESSION" | env -u TAD_CACHE_DIR PATH="$MOCK:$PATH" XDG_CACHE_HOME="xdg-rel" MOCK_COUNT_FILE="$cnt" bash "$HOOK" 2>/dev/null )"
+    if [ ! -e "$p/xdg-rel" ] && [ -z "$(cd "$p" && git status --porcelain)" ] && [ -d "$HOME/.cache/tad" ]; then
+        ok "relative XDG_CACHE_HOME: nothing written into the project, default used"
+    else
+        bad "relative XDG_CACHE_HOME: $(cd "$p" && git status --porcelain | tr '\n' '|')"
+    fi
+    # temp files come from mktemp: after a fetch only the two stamps (and no pid-named file) remain
+    local c; c="$(new_cache)"; p="$(new_project 4.0.6)"
+    run_hook "$p" "$c" "$SANDBOX/cnt.c3" 4.0.7 "$ENV_SESSION" >/dev/null
+    if [ -z "$(ls "$c" | grep -E '^(fetch|check)\.' || true)" ] && [ -f "$c/update-check.tsv" ]; then
+        ok "no temp file left after a fetch; update-check.tsv in place"
+    else
+        bad "cache after fetch: $(ls "$c" | tr '\n' ' ')"
+    fi
+}
+
 case "$CASE" in
     versions) case_versions ;;
     silent-bounded) case_silent_bounded ;;
+    hard-bounded) case_hard_bounded ;;
+    cache-path) case_cache_path ;;
     once-a-day) case_once_a_day ;;
     off-switch) case_off_switch ;;
     delivery) case_delivery ;;
     no-tad) case_no_tad ;;
     reminder-only) case_reminder_only ;;
-    all) case_versions; case_silent_bounded; case_once_a_day; case_off_switch; case_delivery; case_no_tad; case_reminder_only ;;
+    all) case_versions; case_silent_bounded; case_hard_bounded; case_cache_path; case_once_a_day; case_off_switch; case_delivery; case_no_tad; case_reminder_only ;;
     *) echo "update-reminder-fixture: unknown --case '$CASE'" >&2; exit 2 ;;
 esac
 

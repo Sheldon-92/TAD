@@ -14,8 +14,9 @@
 #     also counts); the remote value comes from update-check.tsv, fresh or cached
 #   - one line per 24 h per project (reminded/<cksum of the physical project path>, written only
 #     together with the line)
-#   - the fetch is a background curl with fds on files, waited for in 0.1 s steps up to about 2.3 s,
-#     then killed (macOS has no timeout command)
+#   - the fetch is a background curl with fds on files, waited for in 0.1 s steps up to 1.6 s,
+#     then TERM, up to 0.3 s grace, KILL (macOS has no timeout command); temp files come from mktemp
+#     in the cache dir; the cache location is used only when absolute (else the default chain)
 
 UPDATE_REMINDER_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
 UPDATE_REMINDER_DAY=86400
@@ -57,7 +58,8 @@ _ur_tsv_value() {
 
 # _ur_write_check <file> <checked_at> <remote or empty> — rewrite update-check.tsv atomically
 _ur_write_check() {
-  local _f="$1" _tmp="$1.$$"
+  local _f="$1" _tmp
+  _tmp="$(mktemp "$(dirname "$1")/check.XXXXXX" 2>/dev/null)" || return 1
   {
     printf 'checked_at\t%s\n' "$2"
     if [ -n "$3" ]; then printf 'remote\t%s\n' "$3"; fi
@@ -66,22 +68,29 @@ _ur_write_check() {
   return 0
 }
 
-# _ur_fetch_remote <cache dir> — print the remote version text (empty on any failure), at most ~2.5 s
+# _ur_fetch_remote <cache dir> — print the remote version text (empty on any failure).
+# Hard bound: wait up to 1.6 s, then TERM, up to 0.3 s of grace, then KILL; never an unbounded wait.
 _ur_fetch_remote() {
   local _cdir="$1" _out _err _pid _i=0 _body
-  _out="$_cdir/fetch.$$.out"
-  _err="$_cdir/fetch.$$.err"
   command -v curl >/dev/null 2>&1 || return 0
+  _out="$(mktemp "$_cdir/fetch.XXXXXX" 2>/dev/null)" || return 0
+  _err="$(mktemp "$_cdir/fetch.XXXXXX" 2>/dev/null)" || { rm -f "$_out" 2>/dev/null; return 0; }
   curl -fsS --connect-timeout 2 --max-time 2 "$UPDATE_REMINDER_URL" >"$_out" 2>"$_err" </dev/null &
   _pid=$!
-  while [ "$_i" -lt 22 ]; do
+  while [ "$_i" -lt 16 ]; do
     kill -0 "$_pid" 2>/dev/null || break
     sleep 0.1
     _i=$((_i + 1))
   done
   if kill -0 "$_pid" 2>/dev/null; then
     kill "$_pid" 2>/dev/null
-    { wait "$_pid"; } 2>/dev/null
+    _i=0
+    while [ "$_i" -lt 3 ] && kill -0 "$_pid" 2>/dev/null; do
+      sleep 0.1
+      _i=$((_i + 1))
+    done
+    if kill -0 "$_pid" 2>/dev/null; then kill -9 "$_pid" 2>/dev/null; fi
+    kill -0 "$_pid" 2>/dev/null || { wait "$_pid"; } 2>/dev/null
     rm -f "$_out" "$_err" 2>/dev/null
     return 0
   fi
@@ -100,15 +109,16 @@ update_reminder_line() {
   if [ -e ".tad/active/update-reminder.off" ] || [ -L ".tad/active/update-reminder.off" ]; then return 0; fi
   _local="$(head -n 1 .tad/version.txt 2>/dev/null | tr -d '[:space:]')"
   _ur_semver "$_local" || return 0
-  if [ -n "${TAD_CACHE_DIR:-}" ]; then
-    _cdir="$TAD_CACHE_DIR"
-  elif [ -n "${XDG_CACHE_HOME:-}" ]; then
-    _cdir="$XDG_CACHE_HOME/tad"
-  elif [ -n "${HOME:-}" ]; then
-    _cdir="$HOME/.cache/tad"
-  else
-    return 0
+  # Only an absolute cache location is accepted; a relative one would land inside the project.
+  _cdir=""
+  case "${TAD_CACHE_DIR:-}" in /*) _cdir="$TAD_CACHE_DIR" ;; esac
+  if [ -z "$_cdir" ]; then
+    case "${XDG_CACHE_HOME:-}" in /*) _cdir="$XDG_CACHE_HOME/tad" ;; esac
   fi
+  if [ -z "$_cdir" ]; then
+    case "${HOME:-}" in /*) _cdir="$HOME/.cache/tad" ;; esac
+  fi
+  [ -n "$_cdir" ] || return 0
   mkdir -p "$_cdir/reminded" 2>/dev/null || return 0
   [ -d "$_cdir" ] && [ -w "$_cdir" ] && [ -w "$_cdir/reminded" ] || return 0
   _chk="$_cdir/update-check.tsv"
