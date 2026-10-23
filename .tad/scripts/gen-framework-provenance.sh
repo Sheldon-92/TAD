@@ -5,7 +5,7 @@
 # released or generated, with the first release that carried it:
 #   <blob id><TAB><label>      one row per id, LC_ALL=C sorted, header "# schema=1 rows=<n>"
 # Selection: every path in every commit reachable from HEAD or a v* tag, under .tad/ (minus the
-# dirs derive-sync-set.sh --zero-touch and --transient print, and minus .tad/sync-registry.yaml and
+# dirs derive-sync-set.sh --zero-touch and --transient print, and minus the sync registry file and
 # .tad/brain-index.md) and under .agents/skills/, .claude/, .codex/, .opencode/, .cursor/, plus
 # AGENTS.md and CLAUDE.md. Regular files only (mode 100644/100755), unquoted paths.
 # Label: the first v* tag, in version order, whose tree holds the blob in the selection; else

@@ -9,7 +9,7 @@
 #   clearable [--project <dir>] [--token <t> --ids-out <f>]  machine keys for the check screen
 #   clear     [--project <dir>] (--all --token <t> | --ids-file <f> --how <h> | --id <id> --token <t>) [--yes]
 #   salvage   [--project <dir>]                            files the project edited inside TAD files (diff to a local file)
-#   absorb    [--project <dir>] --from <abs path> [--yes]  copy one `edited` backup file into .tad/project-knowledge/salvage/
+#   absorb    [--project <dir>] --from <abs path> [--yes]  copy one `edited` backup file into the salvage dir under project-knowledge
 #
 # Classes (first match wins): released | tad-report | regenerated | in-project | edited | differs | unknown.
 # Safety structure (handoff Phase 3 section 4.7): every path is reached only when its physical path (pwd -P) EQUALS
