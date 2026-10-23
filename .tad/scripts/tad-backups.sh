@@ -23,15 +23,23 @@ NL=$'\n'
 IDRE='^h[0-9]{8}-[0-9]{6}(\.[0-9]+)?$'
 BKRE='^[0-9]{8}_[0-9]{6}(\.[0-9]+)?$'
 
-# clean <text> — a name or path made printable: control characters (CR, ESC and every other C0 byte, DEL) are removed and
-# the length is capped, so a file name can never rewrite a terminal line or pose as an instruction in a relayed line
+# strip_odd <text> — C0 controls, DEL, C1 controls (U+0080-U+009F, UTF-8 C2 80..9F) and bidi overrides/isolates
+# (U+202A-U+202E, U+2066-U+2069) removed byte-wise under the C locale, so no other UTF-8 character is touched
+B_C2=$'\302'; B_E2=$'\342'; B_80=$'\200'; B_81=$'\201'; B_9F=$'\237'; B_AA=$'\252'; B_AE=$'\256'; B_A6=$'\246'; B_A9=$'\251'
+strip_odd() {
+  printf '%s' "$*" | LC_ALL=C tr -d '\000-\037\177' \
+    | LC_ALL=C sed -e "s/${B_C2}[${B_80}-${B_9F}]//g" -e "s/${B_E2}${B_80}[${B_AA}-${B_AE}]//g" -e "s/${B_E2}${B_81}[${B_A6}-${B_A9}]//g"
+}
+# clean <text> — a name or path made printable: control characters (CR, ESC and every other C0 byte, DEL, C1, bidi) are
+# removed and the length is capped, so a file name can never rewrite a terminal line, reorder its display or pose as an
+# instruction in a relayed line
 clean() {
   local v
-  v="$(printf '%s' "$*" | LC_ALL=C tr -d '\000-\037\177')"
+  v="$(strip_odd "$*")"
   printf '%s' "${v:0:400}"
 }
-# has_ctl <text> — rc 0 when the text holds a control character
-has_ctl() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\000-\037\177')" != "$1" ]; }
+# has_ctl <text> — rc 0 when the text holds any character clean would remove
+has_ctl() { [ "$(strip_odd "$1")" != "$1" ]; }
 warn() { printf 'tad-backups: %s\n' "$(clean "$*")" >&2; }
 die() { warn "$*"; exit 2; }
 
@@ -205,32 +213,77 @@ is_index_name() {
   esac
   return 1
 }
+# shape_text_ok <file> <size> — rc 0 when the only control bytes are the line break and tab and a non-empty file ends with one
+shape_text_ok() {
+  [ "$(LC_ALL=C tr -d '\000-\010\013-\037\177' < "$1" | wc -c | tr -d ' ')" = "$2" ] || return 1
+  [ "$2" -eq 0 ] || [ "$(tail -c 1 "$1" | od -An -c | tr -d ' ')" = '\n' ]
+}
+# deprecated_listed <file of lines> — rc 0 when EVERY line is a path the project's own .tad/deprecation.yaml lists
+deprecated_listed() {
+  local dep="$PROJECT_PHYS/.tad/deprecation.yaml"
+  [ -f "$dep" ] && [ ! -L "$dep" ] || return 1
+  LC_ALL=C awk 'NR == FNR { l = $0; sub(/^[ \t]+-[ \t]+/, "", l); gsub(/"/, "", l); sub(/[ \t]+$/, "", l); ok[l ""] = 1; next }
+                { if (!(($0 "") in ok)) exit 1 }' "$dep" "$1"
+}
 # report_shape_ok <file> <name at the top of the backup dir: an index name or salvage-diff/<f>> — rc 0 only when the
-# CONTENT has the shape TAD writes for that report (a regular, non-link, small text file with no NUL byte whose lines
-# fit the name). A name alone proves nothing: a user file called removed.txt or manifest.txt is not a TAD report.
+# CONTENT has EXACTLY the shape the installer writes for that report (a regular, non-link, small text file; no NUL; no
+# control byte but the line break; line by line the fields, values and order tad.sh produces; for the backup's own index
+# files also the sibling files they must sit beside). A name alone proves nothing: a user file called removed.txt or
+# manifest.txt is not a TAD report.
 report_shape_ok() {
-  local f="$1" name="$2" sz first
+  local f="$1" name="$2" sz first dir
   [ -f "$f" ] && [ ! -L "$f" ] || return 1
   sz="$(size_of "$f")"; is_num "$sz" || return 1
   [ "$sz" -le 16777216 ] || return 1
   [ "$(LC_ALL=C tr -d '\000' < "$f" | wc -c | tr -d ' ')" = "$sz" ] || return 1
+  dir="$(dirname "$f")"
   case "$name" in
     salvage-diff/*)
       [ "$sz" -eq 0 ] && return 0
-      [ "$(head -n 1 "$f" | cut -c1-4)" = "--- " ] && [ "$(sed -n 2p "$f" | cut -c1-4)" = "+++ " ]
+      [ "$(head -n 1 "$f" | cut -c1-4)" = "--- " ] && [ "$(sed -n 2p "$f" | cut -c1-4)" = "+++ " ] || return 1
+      LC_ALL=C awk 'BEGIN { ok = 1 } !($0 ~ /^(--- |\+\+\+ |@@ |[ +\\-])/ || $0 == "") { ok = 0 } END { exit !ok }' "$f"
       return ;;
   esac
+  shape_text_ok "$f" "$sz" || return 1
   first="$(head -n 1 "$f")"
   case "$name" in
-    manifest.txt) case "$(tail -n 1 "$f")" in version=*) return 0 ;; esac; return 1 ;;
-    origin.txt) [ "$(wc -l < "$f" | tr -d ' ')" -le 1 ] && case "$first" in /*) return 0 ;; esac; return 1 ;;
-    update-report.tsv) case "$first" in "report_version$TAB"*) return 0 ;; esac; return 1 ;;
-    changes.tsv) [ "$first" = "kind${TAB}path" ] ;;
-    MIGRATION-REPORT.tsv) [ "$first" = "action${TAB}status${TAB}path${TAB}detail" ] ;;
+    manifest.txt)
+      [ "$sz" -gt 0 ] || return 1
+      # a reduced backup: layout, files, bytes, version; a full one: sorted unique entry paths, then version
+      if [ "$(LC_ALL=C awk 'NR == 1 && /^layout=changed-only$/ { a = 1 } NR == 2 && /^files=[0-9]+$/ { b = 1 } NR == 3 && /^bytes=[0-9]+$/ { c = 1 } NR == 4 && /^version=[^ \t]*$/ { d = 1 } END { print (a && b && c && d && NR == 4) ? "r" : "n" }' "$f")" = "r" ]; then return 0; fi
+      LC_ALL=C awk '{ l[NR] = $0 "" } END {
+        if (NR < 1 || l[NR] !~ /^version=[^ \t]*$/) exit 1
+        for (i = 1; i < NR; i++) {
+          if (l[i] == "" || l[i] ~ /\t/ || l[i] ~ /^\// || l[i] ~ /^version=/ || l[i] ~ /(^|\/)\.\.?(\/|$)/) exit 1
+          if (i > 1 && l[i] <= l[i - 1]) exit 1
+        } }' "$f" ;;
+    origin.txt)
+      [ "$(wc -l < "$f" | tr -d ' ')" = "1" ] || return 1
+      case "$first" in /*) ;; *) return 1 ;; esac
+      [ -f "$dir/manifest.txt" ] && report_shape_ok "$dir/manifest.txt" manifest.txt ;;
+    pre-top.txt)
+      LC_ALL=C awk '{ l = $0 ""; if (l == "" || l ~ /\t/ || l ~ /\// || l == "." || l == "..") exit 1; if (NR > 1 && l <= prev) exit 1; prev = l }' "$f" || return 1
+      [ -f "$dir/manifest.txt" ] && report_shape_ok "$dir/manifest.txt" manifest.txt ;;
+    pre-tree.txt)
+      LC_ALL=C awk '{ l = $0 ""; if (l == "" || l ~ /\t/ || l ~ /^\// || l ~ /(^|\/)\.\.?(\/|$)/) exit 1; if (NR > 1 && l <= prev) exit 1; prev = l }' "$f" || return 1
+      [ -f "$dir/pre-top.txt" ] && report_shape_ok "$dir/pre-top.txt" pre-top.txt || return 1
+      LC_ALL=C awk 'NR == FNR { t[$0 ""] = 1; next } { split($0, a, "/"); if (!((a[1] "") in t)) exit 1 }' "$dir/pre-top.txt" "$f" ;;
+    removed.txt)
+      [ "$sz" -gt 0 ] || return 1
+      LC_ALL=C awk '{ l = $0 ""; if (l == "" || l ~ /\t/ || l ~ /^\// || l ~ /(^|\/)\.\.?(\/|$)/) exit 1 }' "$f" || return 1
+      deprecated_listed "$f" ;;
+    update-report.tsv)
+      [ "$first" = "report_version${TAB}1" ] || return 1
+      LC_ALL=C awk -F'\t' '$1 !~ /^[a-z][a-z0-9_]*$/ || NF < 2 { exit 1 }' "$f" ;;
+    changes.tsv)
+      [ "$first" = "kind${TAB}path" ] || return 1
+      LC_ALL=C awk -F'\t' 'NR > 1 && (NF != 2 || $1 !~ /^(added|changed|removed)$/ || $2 == "") { exit 1 }' "$f" ;;
+    MIGRATION-REPORT.tsv)
+      [ "$first" = "action${TAB}status${TAB}path${TAB}detail" ] || return 1
+      LC_ALL=C awk -F'\t' 'NF != 4 { exit 1 }' "$f" ;;
     classes.tsv) LC_ALL=C awk -F'\t' 'NF != 3 || $1 !~ /^(released|tad-report|regenerated|in-project|edited|differs|unknown)$/ { exit 1 }' "$f" ;;
-    pre-surface.tsv) LC_ALL=C awk -F'\t' 'NF < 2 { exit 1 }' "$f" ;;
-    not-backed-up.txt) LC_ALL=C awk -F'\t' 'NF != 2 { exit 1 }' "$f" ;;
-    pre-top.txt|pre-tree.txt|removed.txt) LC_ALL=C awk -F'\t' 'NF > 1 || length($0) == 0 { exit 1 }' "$f" ;;
+    pre-surface.tsv) LC_ALL=C awk -F'\t' 'NF != 2 || $1 == "" || $2 !~ /^(L:.*|F:[0-9]+:[0-9]+|S:[0-9]+|U:unreadable)$/ { exit 1 }' "$f" ;;
+    not-backed-up.txt) LC_ALL=C awk -F'\t' 'NF != 2 || $1 == "" || $2 != "no pre-image in the full backup" { exit 1 }' "$f" ;;
     *) return 1 ;;
   esac
 }
@@ -324,10 +377,10 @@ write_rows() {
 # the regular files) and P_DIGEST (cksum over the sorted "<content cksum> <size> <relative path>" rows and the paths of the
 # links, so content and paths both count). rc 1, with nothing proven, when any folder or file cannot be read or any entry
 # is neither a regular file, a link nor a folder. Nothing stored in an item record is used.
-P_FILES=0; P_BYTES=0; P_DIGEST=""
+P_FILES=0; P_BYTES=0; P_DIGEST=""; P_WHY=""
 payload_probe() {
   local base="$1" t rc=0 n
-  P_FILES=0; P_BYTES=0; P_DIGEST=""
+  P_FILES=0; P_BYTES=0; P_DIGEST=""; P_WHY="a folder or file in it cannot be read, or it holds an unusual entry; it is not cleared, open it yourself"
   anchor_quiet "$base" || return 1
   t="$(mktemp -d "${TMPDIR:-/tmp}/tad-bk-probe.XXXXXX")" || return 1
   ( cd "$base" 2>/dev/null && find . -type f -exec cksum {} + ) > "$t/f" 2>/dev/null || rc=1
@@ -335,6 +388,12 @@ payload_probe() {
   ( cd "$base" 2>/dev/null && find . ! -type d ! -type f ! -type l -print ) > "$t/o" 2>/dev/null || rc=1
   ( cd "$base" 2>/dev/null && find . \( -type f -o -type l \) -print0 ) > "$t/z" 2>/dev/null || rc=1
   [ -s "$t/o" ] && rc=1
+  # removability: every folder that would be emptied (the payload and all folders under it) must be writable and
+  # enterable by us, or a delete would stop half way
+  if [ "$rc" = "0" ]; then
+    ( cd "$base" 2>/dev/null && find . -type d -exec sh -c 'for d; do [ -w "$d" ] && [ -x "$d" ] || printf "%s\n" "$d"; done' sh {} + ) > "$t/w" 2>/dev/null || rc=1
+    if [ -s "$t/w" ]; then rc=1; P_WHY="a folder in it is read-only, so it cannot be emptied completely; it is not cleared (nothing is removed), open it yourself"; fi
+  fi
   if [ "$rc" = "0" ]; then
     n="$(LC_ALL=C tr -cd '\000' < "$t/z" | wc -c | tr -d ' ')"
     P_FILES="${n:-0}"
@@ -379,12 +438,18 @@ item_eval() {
   proj="$(kv_get "$it/item.tsv" project)" || { IT_WHY="no project in its record"; return 1; }
   [ "$proj" = "$PROJECT_PHYS" ] || { IT_WHY="belongs to another project"; return 1; }
   [ -d "$it/payload" ] && anchor_quiet "$it/payload" || { IT_WHY="its payload is not a real folder"; return 1; }
-  payload_probe "$it/payload" || { IT_WHY="a folder or file in it cannot be read, or it holds an unusual entry; it is not cleared, open it yourself"; return 1; }
+  payload_probe "$it/payload" || { IT_WHY="$P_WHY"; return 1; }
+  if [ ! -w "$it" ] || [ ! -x "$it" ] || [ ! -w "$HOLD" ] || [ ! -x "$HOLD" ]; then IT_WHY="its folder is read-only, so it cannot be removed completely; it is not cleared (nothing is removed), open it yourself"; return 1; fi
   IT_FILES="$P_FILES"; IT_BYTES="$P_BYTES"
   rec="$(kv_get "$it/item.tsv" digest)" || { IT_WHY="no content record from the classification"; return 1; }
   [ "$rec" = "$P_DIGEST" ] || { IT_WHY="its files changed after they were classified"; return 1; }
   IT_LINE="$id $P_FILES $P_BYTES $P_DIGEST"
-  [ "$mode" = "any" ] && return 0
+  if [ "$mode" = "any" ]; then
+    # every file of the payload must be one the class list (and so the salvage listing) can name: a file whose name holds a
+    # line break or tab is never listed, so the item is not offered for a discard
+    if [ -f "$it/classes.tsv" ] && [ ! -L "$it/classes.tsv" ] && [ "$(wc -l < "$it/classes.tsv" | tr -d ' ')" = "$P_FILES" ]; then return 0; fi
+    IT_LINE=""; IT_WHY="it holds files that cannot be listed (a name with a line break or tab) or has no class list; it is not offered for discard, open the folder yourself"; return 1
+  fi
   kind="$(kv_get "$it/item.tsv" kind)" || { IT_LINE=""; IT_WHY="no kind in its record"; return 1; }
   [ -f "$it/classes.tsv" ] && [ ! -L "$it/classes.tsv" ] || { IT_LINE=""; IT_WHY="no class list"; return 1; }
   if [ -n "$(cut -f3- "$it/classes.tsv" | LC_ALL=C sort | LC_ALL=C uniq -d | head -n 1)" ]; then IT_LINE=""; IT_WHY="its class list names a file twice"; return 1; fi
@@ -761,7 +826,7 @@ cmd_clearable() {
 # removes it only when the result equals the line that was listed; the size and count shown and logged are the measured ones
 CLEARED_N=0; SKIPPED_N=0
 clear_item() {
-  local id="$1" want="$2" how="$3" mode="$4" it origin bytes files
+  local id="$1" want="$2" how="$3" mode="$4" it origin bytes files left
   it="$HOLD/$id"
   printf '%s' "$id" | grep -Eq "$IDRE" || { warn "skipped $id: not an item id"; SKIPPED_N=$((SKIPPED_N + 1)); return 0; }
   anchor "$it" || { SKIPPED_N=$((SKIPPED_N + 1)); return 0; }
@@ -774,7 +839,12 @@ clear_item() {
     append_line "$HOLD/deletions.log" "$(date +%Y-%m-%dT%H:%M:%S)$TAB$id$TAB$(clean "$origin")$TAB$bytes$TAB$files$TAB$how" || warn "deletions.log not written for $id"
     echo "Cleared $id ($(clean "$origin"), $(human_kb "$bytes"))"
   else
-    warn "could not remove $it"
+    # the removal stopped half way: say so, log it as partial, keep what is left (its digest no longer matches, so it is
+    # held for review from now on)
+    left="$(find "$it" -type f 2>/dev/null | wc -l | tr -d ' ')"
+    warn "partly removed $id: $left file(s) are still in $it; nothing more was touched; open it yourself"
+    append_line "$HOLD/deletions.log" "$(date +%Y-%m-%dT%H:%M:%S)$TAB$id$TAB$(clean "$origin")$TAB$bytes$TAB$files$TAB$how (PARTLY removed: $left file(s) left)" || warn "deletions.log not written for $id"
+    echo "Partly removed $id ($left file(s) left in it)"
     SKIPPED_N=$((SKIPPED_N + 1))
   fi
 }
@@ -868,7 +938,8 @@ salvage_container() {
     fi
   done < "$cls"
   if [ "$shown" = "1" ] && [ "$isitem" = "1" ]; then
-    if item_eval "$id" any; then echo "  To discard: /bin/bash .tad/scripts/tad-backups.sh clear --id $id --token $(token_of "$IT_LINE") --yes"; fi
+    if item_eval "$id" any; then echo "  To discard: /bin/bash .tad/scripts/tad-backups.sh clear --id $id --token $(token_of "$IT_LINE") --yes"
+    else echo "  Not offered for discard: $IT_WHY"; fi
   fi
   return 0
 }

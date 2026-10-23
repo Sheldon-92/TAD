@@ -1759,7 +1759,7 @@ case_post_update() {
 cc_seed() { # <project> <group dir> <run backup> — held items through the project's own lifecycle step
     local p="$1" g="$2" b="$3" d
     mkdir -p "$p/.tad-backup"
-    for d in "${@:4}"; do mkdir -p "$p/.tad-backup/$d"; printf 'action\tstatus\tpath\tdetail\nreport %s\n' "$d" > "$p/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
+    for d in "${@:4}"; do mkdir -p "$p/.tad-backup/$d"; printf 'action\tstatus\tpath\tdetail\nreport %s\tok\t-\t-\n' "$d" > "$p/.tad-backup/$d/MIGRATION-REPORT.tsv"; done
     ( cd "$p" && /bin/bash .tad/scripts/tad-backups.sh lifecycle --project "$(pwd -P)" --group-dir "$g" --run-backup "$b" --ledger "$REPO_ROOT/.tad/provenance/framework-released.tsv" ) >/dev/null 2>&1
 }
 case_check_clear() {
