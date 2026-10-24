@@ -114,3 +114,13 @@
 - **failure_mode**: Naive default: bump one file. Why wrong: the human sees two versions in one session.
 - **Validator**: One grep over the carriers returns a single version.
 - **Grounded in**: `.tad/evidence/yolo/tad-update-flow/phase2-gate-report.md` candidate 2 and Open P1 4.
+
+### A Git Repository Inside a File-Sync Folder With Name-Based Deny Patterns Shows Stale Copies as Modified — Compare With the Older Commit Before Trusting or Committing - 2026-10-10
+- **Source confidence**: 转述 (relayed from the auto-memory record of a 2026-10-10 observation; the sync-conflict copies visible in `git status` here are consistent with it, the stale-content cases were not re-run)
+- **Selector**: Triggers when `git status` shows unexpected modified files in a repository that lives in a folder shared by a file-sync tool (two machines commit to it); when file names match the sync tool's credential deny patterns (`*token*`, `*secret*`, `.env.*`); when `.sync-conflict-*` files or archived conflicts appear in the tree or inside `.git`. Near-miss exclusion: does NOT apply to a repository outside any sync folder.
+- **Context**: The repository and its `.git` were synced between two machines, while the sync tool's deny patterns kept some tracked files (matched by name only) from syncing. Those files kept old content on one machine and showed as modified; sync-conflict copies of git's own index and refs also appeared.
+- **Discovery**: A deny pattern is applied to names, not to tracked status, so files git tracks can silently stop syncing while their commits do. The working-tree copy is then an old version, and committing it reverts a newer commit.
+- **Action**: Before trusting or committing an unexpected modified file, compare its modification time with its last commit and run `git diff <older-commit> -- <file>`; if the content equals an older commit it is a stale copy, so restore it from HEAD instead of committing. Do not edit the sync tool's ignore file from this repository; recommend the change to its owner. Re-read the ignore file before assuming a recorded sync arrangement still holds.
+- **failure_mode**: Naive default: treat every modified file as the user's pending work and stage it with the rest. Why wrong: a stale copy committed this way undoes a newer commit with no conflict marker.
+- **Validator**: Each modified file in the commit was compared against an older commit's content and is not equal to it; no `*.sync-conflict-*` file is staged.
+- **Grounded in**: `.tad/memory/reference_syncthing-git-drift.md` (2026-10-10); capture layer only.
