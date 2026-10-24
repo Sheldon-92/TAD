@@ -1,4 +1,4 @@
-# schema=1 rows=2052
+# schema=1 rows=2057
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -800,6 +800,7 @@ skill	3f81fc4a0557c71d819db417785a208fe50c410a	tad-help/SKILL.md
 skill	3f8485456e8e408667ff88695e0175311c994be5	agent-skill-evolution/references/multi-timescale-memory.md
 skill	3f8dfb02a06a943db4f6be05328aa1e0a90ceda8	alex/references/sync-protocol.md
 skill	3f934eb1eb6e393859c3fda26d077c1c27ced083	product-thinking/SKILL.md
+skill	3f97b9f1c9767e3d92a1f1f9a0ca45c9bbd7fe85	cora/SKILL.md
 skill	3ff141fb763e4b5d5520edef128a8602071f1572	ai-tool-integration/references/tool-permission-rules.md
 skill	4007c5ee18ac7b816b310dc4e45b8512baaba2fc	gate/SKILL.md
 skill	4053e036bfa00b7980940bc47dc9f51ee343688f	agent-memory/references/memgpt-letta-mem0.md
@@ -1030,6 +1031,7 @@ skill	62f7b87fe34e6c510a2ecf2acf63a7221f67a0de	agent-memory/references/memory-ar
 skill	6302a8d1c4df2fd9ec7568f897a72990236cf707	research-notebook/SKILL.md
 skill	6307925aa32e3c71957cfe4b9be51a113fc745a7	alex/SKILL.md
 skill	630b1673f062cb789cf6e7bb7a80188b6ae544b9	cora/SKILL.md
+skill	633d728c41f77de852c3fad2e0973acd59988723	cora/references/requirement-clarification.md
 skill	639f9541833470e7578ef0870844ffc96a8afbca	capability-builder/references/evolve-protocol.md
 skill	63c7e928ab129a102f0dcacd557a70f43f42f9f2	alex/references/research-review-protocol.md
 skill	63cb58846a384f4910f1ba5c5796444dc0e78cd0	tad-help/SKILL.md
@@ -1099,6 +1101,7 @@ skill	6dac9387c4246b2c61ae84c366ef5d62cec8f3db	data-engineering/references/inges
 skill	6dced5f9ea40b2c76179c903ef5745816e45b9eb	alex/references/cancel-protocol.md
 skill	6de101523a452e0fc55a3b9eea99266a8086db79	ai-voice-production/references/audiobook-pipeline.md
 skill	6e59ac50f894ba72b7c2d046dec82004a4456e8d	tad/SKILL.md
+skill	6e63a0b87cddfbbb499d34e7786d2c28a178ec62	alex/references/handoff-creation-protocol.md
 skill	6ee2fa591d31e678df815af34c207d271b17dff1	alex/references/handoff-creation-protocol.md
 skill	6f20d2413acfad482a3af93652ad5469eb998487	_archived/product-management.md
 skill	6f3c7dfef5a558c784ab0dab15d95ea450beded6	reading-companion/tools/text-ingest.py
@@ -1810,6 +1813,7 @@ skill	e04ab64a73427fabf6e8bd4bdbcad239a5bce044	web-frontend/references/state-man
 skill	e092244790e05165a5bda9c8e9e2ba8d196818df	gate/SKILL.md
 skill	e093aa6353ec9b7af5ef5bef6c7e39e03aac13a4	product-thinking/LICENSE
 skill	e0a61fb2dab637812a8bc9513c92a4d33f3e03b0	cora/references/requirement-clarification.md
+skill	e0c5f6f3c23426a9d4e91ef3202e1c8837f84d58	alex/references/conductor-dispatch-mode.md
 skill	e0f6373244dbe536f8a0247b67cc632c6ba65347	research-github/SKILL.md
 skill	e174292d576cc1cf0e86c25676394906acf0c75c	alex/references/handoff-creation-protocol.md
 skill	e1f16ecaea10c2b25df98af0157effa477897fd6	hw-enclosure/SKILL.md
@@ -1946,6 +1950,7 @@ skill	f63088c2bbdf25685c3a0fd5d13e3a879889fc71	academic-research/references/writ
 skill	f645aecd2f1eebc89d55b15cac31711ae7ce282f	alex/references/accept-command.md
 skill	f68c32dcf1455c2f760e0b58f7fbc87c90042e1e	alex/SKILL.md
 skill	f6999552ed62d323561337a67f4e0d0fe04c791e	rag-retrieval/SKILL.md
+skill	f6bf015ab5069f4550c9c743e2782e051bb898aa	cora/references/conductor-protocol.md
 skill	f6ffacfe080c695a09ec2c63e69f85294ea6cf3c	ai-voice-production/references/voice-cloning.md
 skill	f71079b2e0e9c52c32153847901a1c4d1161a6cb	web-frontend/SKILL.md
 skill	f7420fbe158dbc6f09851572badefbe3f878415f	ai-guardrails/examples/ai-guardrails-fixture.md
