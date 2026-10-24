@@ -1,4 +1,4 @@
-# schema=1 rows=2070
+# schema=1 rows=2074
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -823,6 +823,7 @@ skill	41d4fe52ca16cd49c5c0878576c945e3679058b9	tad-help/SKILL.md
 skill	41eae65af97ad2f39cfaf05f83f0100236fcb0b1	cora/SKILL.md
 skill	4215a6eeaa9b7486558be4895ade0ce2a2c7331b	knowledge-graph/references/entity-resolution.md
 skill	42222192c4ac5f26674736f3c84934dd240e5d36	web-ui-design/SKILL.md
+skill	4236838044935612604d2b0efa8d3c4f0fd8a2c7	alex/references/design-protocol.md
 skill	42381e06e9f0ed252dde6911e2c98687dda932d3	alex/SKILL.md
 skill	4259d5ab3b0a1e5ba66b0bce6cda1f3b91695008	web-frontend/checklists/frontend-quality.md
 skill	4273f8fc7612e62fcb48834324036c15db98aa28	video-creation/SKILL.md
@@ -1047,6 +1048,7 @@ skill	645834a542552e44611983856ac10077ad01959b	ai-podcast-production/references/
 skill	6480876d7d941f0c09db8ee5e7c0d3f7df167c2f	blake/SKILL.md
 skill	649297709d27ad045a533adb05479f0340ff0490	ai-agent-architecture/SKILL.md
 skill	64982523838c2b80b36c6dde5414ccce4a331d3b	agent-memory/examples/agent-memory-fixture.md
+skill	64b2dfceadf7bc02f77769777279b46f8ab12c31	cora/references/conductor-protocol.md
 skill	64dbce6070ce813ba5158ad191b3677ff7da5029	alex/references/handoff-creation-protocol.md
 skill	64ebb37ee3967fc7e4a8377430626e56dd229031	alex/SKILL.md
 skill	64feb367db7f221b5bf855eb81df30a3e2271948	gate/SKILL.md
@@ -1363,6 +1365,7 @@ skill	9861b998b02cf5050db7c5dd458852cc4f13a6f7	blake/SKILL.md
 skill	9887d3ff8640709597e49fbde66162293fcd2494	data-engineering/examples/data-engineering-fixture.md
 skill	9889dad9e74d28e4256499e56301cb22410d5d38	cora/references/conductor-protocol.md
 skill	98a7c3f597784a45e17cd9a3ba018cf00139fa51	web-ui-design/LICENSE
+skill	98c7b350a1d5f19f7827ff0ee26d8349ec2732f6	alex/SKILL.md
 skill	98e6f9648a74e957ee088d267ba7f2cae70a97c2	llm-observability/references/tracing-platform-rules.md
 skill	99528f227da8d15b2ede245cdf91ea582ca39f13	ai-prompt-engineering/examples/system-prompt-template.md
 skill	9967fefc54d3b674f04106e31e15ae038a6dacbf	research-notebook/SKILL.md
@@ -1601,6 +1604,7 @@ skill	b8a28631eb32cd136e9de9bfcabe8b85c85d8d94	_archived/pdf-processing.md
 skill	b8aba35677915dd0e8ed0a02de335fa6d98b8b15	tad-help/SKILL.md
 skill	b8afa35b54cc7662b548cd8e989be4c7c3f82dda	release-runbook/SKILL.md
 skill	b8b8cb9a8853f66d2c766ed6c6e4736ba151da92	academic-research/references/domain-biomedical.md
+skill	b8bd429e5ff616f1bb5e2e6fc50b71ea2b9a9ec8	alex/references/acceptance-protocol.md
 skill	b92854338a12ee4493cd12eaaa52ed5ef60530b1	video-creation/SKILL.md
 skill	b93c4e5d15782313be97bf297decf9be310a5031	ai-podcast-production/references/show-notes.md
 skill	b99677a65f4fc03bfd81dac58aa7cb360b795ca4	web-frontend/scripts/lighthouse-check.sh
