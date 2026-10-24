@@ -22,7 +22,7 @@
 #   its base. Prints `checkpoint: 2E` and `guard: 3E`. CHECKPOINT (exit 0) when
 #   count + 1 >= 2E and < 3E: Cora's own re-route point (cora SKILL.md, Route and
 #   spend). ALARM (exit 1) when count + 1 >= 3E: the next dispatch would be the
-#   3E-th, the stop. Per `Dispatched:` line prints present / other-id <x> / missing.
+#   3E-th, the stop. A `carried-spent <N>` on the Budget line (Up 5) is added to the count. Per `Dispatched:` line prints present / other-id <x> / missing.
 # gate3-files: by file name only, in .tad/evidence/yolo/<slug>/ (cwd = repo root): the
 #   Gate 3 files the protocol (step_Y6) requires for phase N exist: the run verdict
 #   phase<N>-gate3-verdict, the consistency review phase<N>-impl-review-consistency,
@@ -137,6 +137,10 @@ EOF_R
       else { base = id; m = 1 }
       if (!(base in w) || m > w[base]) w[base] = m }
     END { n = 0; for (b in w) n += w[b]; print n }')
+  # carried count (Up 5): a retriaged Epic's Budget line may say `carried-spent <N>`: the dispatches the former
+  # simple task already spent. They are added, so the 3x guard counts all dispatches, not only this Epic's own.
+  carried=$(printf '%s\n' "$bline" | LC_ALL=C sed -nE 's/.*carried-spent[[:space:]]+([0-9]+).*/\1/p')
+  [ -n "$carried" ] && cnt=$((cnt + carried))
   echo "count: $cnt"
   if [ -z "$est" ]; then
     echo "estimate: none (old Epic; no checkpoint or alarm)"
