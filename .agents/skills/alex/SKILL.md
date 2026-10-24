@@ -1298,7 +1298,7 @@ mandatory_review:
     reference: "references/acceptance-protocol.md step3 (key lines) and the gate skill Gate 4 Acceptance_By_Real_Use"
     steps:
       step1: "Confirm the Gate 3 files exist (run + consistency, domain when listed; the run file's `## AC runs` table)"
-      step2: "Dispatch the acceptor, a fresh subagent that took no part (never me: I designed it); a paid call or a browser install: I ask the human"
+      step2: "Dispatch the acceptor, a fresh subagent that took no part (never me: I designed it); a paid run (billed separately in real money; a plan session is ordinary work, not one) or a browser install: I ask the human"
       step3: "Read its header and relay `## For the human` (verdict + 3-5 evidence lines; Needs you / Not run items with reasons)"
       step4: "Knowledge Assessment: record business discoveries under .tad/project-knowledge/"
 
