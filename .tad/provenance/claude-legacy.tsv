@@ -1,4 +1,4 @@
-# schema=1 rows=2061
+# schema=1 rows=2067
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -6,6 +6,7 @@ agents-md	224e922fd3a558aaca4508bf97ba6f41f38a5bd1	-
 agents-md	28217dd7b08403b9cc6675c38c244434e690c444	-
 agents-md	2ed515504a0991a646f38d182ee2d709ba02770d	-
 agents-md	3259371bce9c4d1b443387fa3d2cbab207801091	-
+agents-md	3dcb3ba7a9eed14f1827521e26c29111b279d238	-
 agents-md	3eb5c848aec8a8463b0dbb9d497dda08ce185d1d	-
 agents-md	4046b9d841568b431d1e00871625b2cdb22506eb	-
 agents-md	41df32ebe47dfdec86c8121a88a2d68185fedc6b	-
@@ -1083,6 +1084,7 @@ skill	6aaaf1f4856e91ea3d52a8651918325f6a977445	tad-maintain/SKILL.md
 skill	6ababe909a3cd918dd7984489cef79c921fb0cf1	blake-lite/SKILL.md
 skill	6acd34a51c3e026e14b2aa511983ef86001e79c2	synthetic-data/references/deduplication-rules.md
 skill	6aec51617d54939f12537eb5a923b1f5d7a8f093	product-thinking/checklists/per-type-validation.md
+skill	6b055487b40186ba007f95a829479b173177c6a9	cora/SKILL.md
 skill	6b2c90db2322cb73a290a1759435aa86f99c8d2c	release-runbook/SKILL.md
 skill	6b303b51dec132dca17536787440570d73a1b811	_archived/verification.md
 skill	6b5db8e3ad65c12e62c54b77a83e15b04a598ddb	alex/references/deps-protocol.md
@@ -1226,6 +1228,7 @@ skill	8139ff6255f95afacedb25f139c763efc40cd30b	alex/references/distillation-loop
 skill	81739958dbd1839a3f059f535c532e0c9238a900	alex/references/research-track-protocol.md
 skill	817729d3166f6b153379e1c14e840d79332deb4d	web-testing/SKILL.md
 skill	829335eb952f2cda3611d41718e1af2eb17f836b	tad-help/SKILL.md
+skill	829ead6338a67a95590aee7a7f019680161b7288	cora/references/conductor-protocol.md
 skill	82b11d5516032513bd5a83b1420892bf9bab18c6	ai-agent-architecture/examples/multi-agent-design-decisions.md
 skill	82da18196a2ea8019884e7358e51a58d31e0ad3d	blake/SKILL.md
 skill	82f7a5303e3f681513301a3043053476679326d5	alex/references/acceptance-protocol.md
@@ -1280,6 +1283,7 @@ skill	8a4c99e17f0952571bfd16ee6dabd4251b883d37	tad-help/SKILL.md
 skill	8a54b1487723ef542ef341b2bd41450261e8e831	supply-chain-security/SKILL.md
 skill	8aac9e9e2d930093bd741ca33a2ba813c663ece3	academic-research/references/domain-physical.md
 skill	8ae59fea6ff93bbffcf9978c31db80406ccbe8e0	ai-prompt-engineering/references/claude.md
+skill	8b10fe37ecc720534bcf0b75299bbee566c7ee6d	tad-help/SKILL.md
 skill	8b1a966e392ba321a69057025bcc1fa9cb9fe77a	web-testing/examples/test-pyramid-strategy.md
 skill	8b3134a50e237e704a3fb0d109f33520969fe3d5	release-runbook/SKILL.md
 skill	8b3ed1545ab543acf8bad7eb538b965f2aca25b1	alex/references/discuss-path-protocol.md
@@ -1476,6 +1480,7 @@ skill	a7e69c15390b0fe26e851d56a9bc5b9ad9c855bc	alex/references/conductor-dispatc
 skill	a7e881ba87bfb348c916bdd74605ab49c404f6bf	tad-status/SKILL.md
 skill	a7efde0448bc2d4663886ebdd8fc623befc79120	hw-enclosure/references/pcb-fitting.md
 skill	a7f30af11592e8c109efc5a8d2f564a4f5cc32a7	ai-guardrails/examples/ai-guardrails-fixture.md
+skill	a8006da27a443bb46b4c44266a1f044a8088213f	alex/SKILL.md
 skill	a8120cd63424ac29ea198dd9c30924251738094d	cora/references/conductor-protocol.md
 skill	a83c47929b7da26b51cc751e4f18ff8a68c92527	alex/references/handoff-creation-protocol.md
 skill	a86b1cc5e3730db4d7d2b3885d08e32d0a6fcf56	research-notebook/SKILL.md
@@ -1494,6 +1499,7 @@ skill	a9ee02627b41efbd8ffff09a597e129187e846cf	tad-help/SKILL.md
 skill	aa1b50edb1cacce753d57af08e0959e86b8b73b3	cora/SKILL.md
 skill	aa220afa169996490121b205d1a6e964beb36d35	ai-agent-architecture/references/production-disasters.md
 skill	aa3429c0f7883827329aa2733afc89e8fce4afec	alex/references/handoff-creation-protocol.md
+skill	aa50fe68563d9faaa263a9fcdc8631bab67fff22	blake/SKILL.md
 skill	aa55cd1aea644cfc67d8d03e7f83fd91c07e7f43	academic-research/scripts/academic-search.sh
 skill	aa6dea6be11d5906f0590b7a35f8d2e9bd320c68	knowledge-graph/references/entity-resolution.md
 skill	aa8c84e74ada37e97e76ced5ab93e2c551d1c9ee	alex/references/yolo-execution-protocol.md
