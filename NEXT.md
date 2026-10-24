@@ -7,17 +7,17 @@
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.6（已发布 2026-10-21，main = tag v4.0.6 = a759ab70）（上一已发布版本 4.0.5，tag v4.0.5 = 4bf0e848）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.7 (prepared locally, not pushed or tagged)（上一已发布版本 4.0.6，tag v4.0.6 = a759ab70）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
 
-### ✅ DONE 2026-10-24. EPIC-20261023 cora-route-judgement — accepted and archived, not yet released
+### ✅ DONE 2026-10-24. EPIC-20261023 cora-route-judgement — accepted and archived, released in v4.0.7 (prepared locally)
 - Epic: `.tad/archive/epics/EPIC-20261023-cora-route-judgement.md`. Cora owns route and spend (result first); fixed floor; 2x checkpoint, 3x stop; condition (c) by class, checked by consistency. Paid run = billed separately in real money (rulings 2026-10-24).
 
 
-### ✅ DONE 2026-10-23. EPIC-20261022 tad-update-flow — accepted and archived, not yet released
+### ✅ DONE 2026-10-23. EPIC-20261022 tad-update-flow — accepted and archived, released in v4.0.7 (prepared locally)
 - Epic: `.tad/archive/epics/EPIC-20261022-tad-update-flow.md`. One-sentence TAD update (/tad-update or "升级 TAD"), all platforms in one run, changed-only backup, honest process-file report; then live use + daily reminder; then backup lifecycle.
 - [x] Phase 1 update flow — 32caf0c3..e21d3aca; Gate 4 PASS (real Claude Code session "升级 TAD": one yes, changed-only backup 946 KB, process files unchanged)
 - [x] Phase 2 live use and update reminder — 64efc9df, 87d44f79; Gate 4 PASS (real Claude Code session: after-update block honest; reminder only)

@@ -5,7 +5,9 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.7] - 2026-10-24
+
+Minor-feature patch release. Two Epics: the one-sentence TAD update with its backup lifecycle (EPIC-20261022-tad-update-flow, 16 commits f794fbe4..c27a4625) and Cora owning route and spend (EPIC-20261023-cora-route-judgement), plus two follow-up fixes to the Cora skill (paid run, Down 1 lead-in).
 
 ### Added
 
@@ -24,6 +26,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Update reminder.** At session start, at most one line per project per day when a newer TAD exists; one network call per day per user, bounded to about 2.3 s, off with `.tad/active/update-reminder.off`. It never starts an update. Reach per harness is stated in `AGENTS.md` and `docs/MULTI-PLATFORM.md`.
 - **Final paths only, no colour when piped.** The apply log no longer prints a backup path the run later removes (the final `Backup:`, `Change list:` and `Report file:` lines carry the paths), and colour codes are off when stdout is not a terminal or `NO_COLOR` is set.
 - **First hop.** A project on 4.0.6 or earlier updates with its old helper and skill (PATH `bash`, one `--platform codex`); the new installer re-executes itself under `/bin/bash`. Full Claude Code refresh and "升级 TAD" to Cora start from the next update.
+
+- **Cora owns route and spend (EPIC-20261023-cora-route-judgement).** `.agents/skills/cora/SKILL.md` section "Route and spend: result first": the result he asked for is the goal; tier, depth, path changes and spend are Cora's call, recorded in one line. Fixed floor (independent check before done, carried serious problems, stop list). The estimate is a guide: twice it is Cora's own re-route checkpoint, three times the estimate he last saw is a stop. Down 1 to 3 and Up 4 to 8 act only on a signal on disk. A premise's condition (c) is judged by class and checked by the consistency lens. One end line per matter: `Route: ... | Spend: ... | Why: ...`.
+- **Paid run means billed separately.** A paid run needing his confirmation is one billed separately in real money (an API key, a paid service, a metered external account). Model sessions under his subscription plans (Claude Code, Cursor, OpenCode, Codex) are ordinary work under Cora's judgement, named in the plan and the end line (`; plan sessions: <what>`). Human ruling 2026-10-24.
+- **Down 1 lead-in.** The trigger list now reads "no Down 2 on a no-patch trigger", so Down 1's own recorded case (a Gate 2 round whose open P0s name only test, fixture or harness files) holds.
+
+### Known gaps (open P1s from the Epics' gate reports)
+
+- Update flow: absorbing an edited TAD file copies any secret it contains into `.tad/project-knowledge/salvage/` (per-item yes, diff seen locally first); `released` rows of a held item are bound by the stored digest only; `classify` echoes its path arguments raw (not on any relayed flow); the `.tad/brain-index.md` minute stamp shows as a changed TAD path on every update; the first check screen does not say how many backup files will move; "看备份" does not see an edit in an older in-project backup; the same-yes clear on the next upgrade's check screen ran only in fixtures; node 24.7.0 segfaults intermittently in `tad-install-fixture` (pre-existing); Codex not measured, Cursor and OpenCode live behaviour measured once each.
+- Cora route judgement: Up 7 (a carried P1 on a deletion, security or data path gets one hardening rework) has no scope and raises spend; the acceptance message lists every `decided:` line with no cap or order; a decided narrowing of what a report promises may touch the Requirement text (the skill does not say who may edit it); stop reason 2 does not itself name a missing reviewer; the dispatch count undercounts retries and files without the header. No live Cora matter has run the new rules yet.
+
+### First upgrade into 4.0.7
+
+A project on 4.0.6 or earlier updates with its old `/tad-update` and its old helper (one confirmed run, PATH `bash`). The new installer re-executes itself under `/bin/bash`. The full flow (one sentence "升级 TAD", changed-only backup, report, reminder, backup lifecycle) starts from the next update after that.
 
 ## [4.0.6] - 2026-10-21
 

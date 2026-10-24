@@ -1,0 +1,10 @@
+schema_version: 1
+from: "4.0.6"
+to: "4.0.7"
+generated_by: "manual"
+note: |
+  Patch v4.0.7 - update flow (one-sentence update through the helper, changed-only
+  backup, update report, backup lifecycle) and Cora route and spend judgement.
+  No framework files are removed or renamed by this hop.
+delete: []
+rename: []
