@@ -1,4 +1,4 @@
-# schema=1 rows=2060
+# schema=1 rows=2061
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -1654,6 +1654,7 @@ skill	c33485550d8cb05c66c8b577552ba59eac279043	alex/references/research-plan-pro
 skill	c339adb606e8daf460beebd931ccb90bd518c53b	blake/SKILL.md
 skill	c35a16cf1e021b64ecbdf69d7b567c5e89ae301c	cora/SKILL.md
 skill	c365c51b288046213aee1d3a87be28fa174201a9	alex/SKILL.md
+skill	c373c86c2448bfdc63d60132552f3cf57dd89de0	cora/SKILL.md
 skill	c39afe7b2fea2acbc7eca313efde5978c97896f7	research-methodology/SKILL.md
 skill	c3c642fbaa500e5b5ef1df09406a478721c53c54	alex/SKILL.md
 skill	c45216489ba259505d1ad3561a58073274b6e63e	mobile-development/references/platform-features.md
