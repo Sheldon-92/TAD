@@ -94,3 +94,23 @@
 - **failure_mode**: Naive default: "keep the latest {N}" and test one rerun. Why wrong: the no-op reruns are the commonest user action after an upgrade, they are exactly what evicts the rollback copy, and a one-rerun test cannot see eviction that needs {N}+1 copies.
 - **Validator**: After one state change followed by {N}+1 no-op runs, the backup carrying the old state's marker still exists; running the same sequence on the pre-fix tree fails on that assertion.
 - **Grounded in**: `.tad/evidence/yolo/installer-fixes/phase1-completion.md` AC 6 and RP1, `phase1-impl-review-run.md` RP-force3; fixture case `fx.e` in `.tad/tests/installer-data-safety-fixture.sh`
+
+### What a Running Session Must Be Told After an Upgrade Belongs in What the New Installer Prints — Skill and AGENTS Text Are Cached by the Harness, and the First Hop Always Runs the Old Text - 2026-10-23
+- **Source confidence**: 实测
+- **Selector**: Triggers when an upgrade must change how the current conversation behaves or what it tells the human (what changed, which files to re-read, which need a new session); when instructions are placed in a skill or AGENTS text that the upgrade replaces. Near-miss exclusion: does NOT apply to changes that matter only from the next session.
+- **Context**: One headless session per installed harness (3 runs, 0 retries) changed a skill body, added a skill, changed a reference, AGENTS.md, CLAUDE.md and hook wiring mid-session. Measured: references are read live everywhere; AGENTS.md and CLAUDE.md never refresh in-session; a changed skill body is live only where the model reads the file itself (the Claude Code and OpenCode skill tools answered with the old body); a new skill is live only on Claude Code after a lag; hook wiring is live only on Claude Code. A real upgrade session gave a correct after-update statement while its loaded skill was still the old one, because the report the new installer printed carried the instructions and named three files to re-read.
+- **Discovery**: What a harness reloads is a per-harness measured fact, not a design assumption; text delivered through a file the conversation has already loaded does not arrive. The first upgrade is run by the old helper and old skill.
+- **Action**: Put post-upgrade instructions and the re-read list in the installer's printed report; list per-harness "new session needed" from a measured table, saying "not measured" where it is; do not rely on a skill or AGENTS edit reaching the running conversation; say in the report when the first hop used old text.
+- **failure_mode**: Naive default: edit the skill and trust the next step to follow it. Why wrong: the running conversation keeps the cached text and never sees the new step.
+- **Validator**: The real session's transcript shows the model acting on the installer-printed block; the table cites a transcript per harness cell.
+- **Grounded in**: `.tad/evidence/yolo/tad-update-flow/phase2-live-reload.md` and `phase2-look/*.jsonl`; `phase2-gate-report.md` candidate 1. Per-harness cells are recorded in the instance files.
+
+### A Scratch Release Candidate Must Stamp Every Version Carrier, Not Only the Version File - 2026-10-23
+- **Source confidence**: 实测
+- **Selector**: Triggers when a Gate 4 or fixture fabricates "the next version" by editing version.txt and a changelog heading; when the release step bumps versions by hand. Near-miss exclusion: does NOT apply when one script stamps all carriers.
+- **Context**: A candidate stamped only `.tad/version.txt`; the session-start summary read `.tad/config.yaml` `version:` and printed v4.0.6 beside a reminder that said 4.0.7. The same carriers must be bumped together at release.
+- **Discovery**: Several files carry the version and different readers read different ones; one stamped carrier shows two versions side by side.
+- **Action**: List every file a reader consults for the version and stamp all in the candidate and in the release step; assert they are equal.
+- **failure_mode**: Naive default: bump one file. Why wrong: the human sees two versions in one session.
+- **Validator**: One grep over the carriers returns a single version.
+- **Grounded in**: `.tad/evidence/yolo/tad-update-flow/phase2-gate-report.md` candidate 2 and Open P1 4.

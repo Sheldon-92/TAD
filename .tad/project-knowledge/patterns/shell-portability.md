@@ -387,3 +387,23 @@
 - **failure_mode**: Naive default: pipe to a filter for readable output and then echo `$?`. Why wrong: the recorded code belongs to the filter, so a failing checker appears to pass.
 - **Validator**: Each recorded exit code comes from a command line containing no pipe, or from `PIPESTATUS`.
 - **Grounded in**: `.tad/evidence/journal/cora-loop-fixes-phase2-2026-10-21.md` Surprise 2.
+
+### An Installer That Overwrites the Script Running It In Place Exits 127 After a Correct Install — Replace by Temp File and Rename, Wrap the Entry in One Function, and Make the Fixture Commit the Change - 2026-10-23
+- **Source confidence**: 实测
+- **Selector**: Triggers when a self-updating script or helper copies a new version of itself (or a file it sources) over its own path while it is still running; when a fixture builds the "new" version from `git archive HEAD`. Near-miss exclusion: does NOT apply to replacing files the running script has already finished reading.
+- **Context**: An old helper was overwritten in place by the update it ran; bash read the new bytes at the old file offset and the helper exited 127 after a successful install, a user-visible error on the first update. Fix: write a temp file and `mv` it over the path (new inode; the old process keeps reading the old one), with the new helper's body in a single function so later hops are safe. The first-hop fixture still showed 127 until the fix was committed, because it builds the candidate from the committed tree. A second rework was needed because the two new `rm -f` sites lacked the repository's destructive-guard markers, which only the slow suite checks.
+- **Discovery**: Bash reads scripts incrementally by offset, so editing the file under a running shell changes what it executes next. The first hop is always run by the old code and cannot be repaired from the new one except by how the new one replaces files.
+- **Action**: Replace a running script with temp plus `mv`, never `cp` over it; keep entry logic in one function called last. Test the first hop from a genuine old helper against a committed candidate, and run the repo's destructive-guard in the fast loop for any installer edit.
+- **failure_mode**: Naive default: `cp new old` and continue. Why wrong: the process executes garbage or exits 127 after the real work is done, and the error reads as a failed update.
+- **Validator**: First-hop fixture from the old helper exits 0 with the new version stamped; the destructive-guard run is in the Layer 1 list for installer edits.
+- **Grounded in**: `.tad/evidence/journal/tad-update-flow-phase1-2026-10-22.md` (Surprise 1, Rework 1 and 2); `phase1-gate3-verdict-r2.md`.
+
+### A Failed `cd` in a Scratch Script Keeps Running in the Repo Root — Chain With `|| exit`, Use Absolute Paths, and Compare Directories With `find -newer`, Never a Listing Digest - 2026-10-23
+- **Source confidence**: 实测
+- **Selector**: Triggers when a reviewer or fixture script does `cd <scratch>` then writes or deletes with relative paths; when "directory untouched" is proven by a checksum of `ls -laR`. Near-miss exclusion: does NOT apply to read-only inspection.
+- **Context**: A reviewer's `cd` into a scratch dir failed; the following lines ran in the repo root, overwrote `AGENTS.md` and created `CLAUDE.md` (restored, verified by `git status`). Separately, `ls -laR <dir> | md5` was used to show a directory under `$HOME` untouched; the listing includes the `..` entry, whose mtime changes with any session, so it raised a false "touched" alarm in two Gate 4 runs.
+- **Discovery**: A failed `cd` does not stop a script; relative writes then land wherever the shell is. A listing digest includes entries outside the directory.
+- **Action**: Write `cd "$D" || exit 1` (or use absolute paths) before any relative write; prove "untouched" with `find <dir> -newer <marker>` plus `-cnewer`, with the marker file created before the run.
+- **failure_mode**: Naive default: `cd scratch; rm ...` and `md5` of a listing. Why wrong: destructive lines run in the repo, and the digest alarms or is ignored.
+- **Validator**: `git status` clean after reviewer runs; the untouched claim cites both `find` outputs, empty.
+- **Grounded in**: `.tad/evidence/journal/conductor-tad-update-flow-2026-10-22.md` (Y4 r4 reviewer accident); `phase1-gate-report.md` and `phase3-gate-report.md` candidates (listing digest).

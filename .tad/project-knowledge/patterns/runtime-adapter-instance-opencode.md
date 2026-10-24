@@ -10,3 +10,5 @@
 | ④ 工作区权限 | config `permission` 面存在且可编程（OC-5：官方文档＋实测 deny 生效——`edit: deny` 后 write/edit 工具自会话名册消失）；字段集与样例见件 3.5 核查表第 3 行及 `.tad/templates/runtime-permission-examples/opencode-permission.json`。另有 `external_directory` 模式对象面（grokbox 全局配置在盘实存）。 |
 | ⑤ 状态与失败信号 | 退出码＋会话 stdout；事件总线（session.created/idle 等）可由插件观测。失败形态已实测：stdin 未关→无限阻塞（处置：`</dev/null`）；后端 stall→init 后无请求日志（处置：`--print-logs` 判读、按后端健康口径处置）。 |
 | ⑥ 证据出口 | traces：插件调共享脚本写 `.tad/evidence/traces/<日期>.jsonl`（与 Codex 面同源同格式）；transcript：`.tad/evidence/live-regression/opencode-20261006.md`（PASS 基线）。启动注入面缺失的证据形态：触发以插桩 fixture 的 envelope 捕获为凭（Phase 1 验证件 §5）。残项：**R-OC-1**（启动上下文注入无对等面）、**R-OC-2**（无头面无 question 工具，捕获分支不注册）。 |
+
+**会话内刷新（2026-10-22 实测，opencode 1.18.32，无头一次）**: `skill` 工具对已调用技能返回旧正文、对新增技能报 not found；`AGENTS.md` 改动、插件 hook 接线改动都需新会话；reference 文件按需读取即时；`AGENTS.md` 存在时 `CLAUDE.md` 根本不加载。证据：`.tad/evidence/yolo/tad-update-flow/phase2-live-reload.md`。

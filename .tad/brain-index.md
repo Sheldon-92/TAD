@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-10-21 17:31
+Generated: 2026-10-24 00:26
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,10 +24,10 @@ Generated: 2026-10-21 17:31
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template, format-line gates advisory |
-| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references, stage-split shared steps, format change replace old shape in every copy, disk count is a floor |
-| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss, globstar absent on bash 3.2, $? after pipe |
-| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault, replay recorded case through protocol change, run new check on old-shape input |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template, format-line gates advisory, destructive action re-proves from payload at act time, reviewer set by risk_triggers script |
+| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references, stage-split shared steps, format change replace old shape in every copy, disk count is a floor, enumerated safety list vs default-deny proof, family-level re-plan check, anchor before mutation, class-fix axis grid + idiom grep, no file content in conversation, final paths only, budget guard = checkpoint 2x + stop 3x carried across re-triage, delegated-decision rule keyed to action effect, floor must define resource and plan grant |
+| Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss, globstar absent on bash 3.2, $? after pipe, overwrite running script in place exit 127 (temp+mv), failed cd in scratch script, find -newer not ls digest |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault, replay recorded case through protocol change, run new check on old-shape input, real-path setup mock first + check stamped version, fixture needs a witness the behaviour ran, lead-in over list replayed against each item's recorded case, count AC fixes draft shape |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
@@ -35,7 +35,7 @@ Generated: 2026-10-21 17:31
 | Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改, judge verbatim quotes/全角标点 |
 | Research Methodology | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
-| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, download-path install proof, export-ignore/symlink archive members, deprecation vs shipped, count retention evicts sole pre-upgrade backup |
+| Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, download-path install proof, export-ignore/symlink archive members, deprecation vs shipped, count retention evicts sole pre-upgrade backup, post-upgrade text lives in installer output (session caches skill/AGENTS), stamp every version carrier |
 | Runtime Adapter Checklist | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU |
 | Runtime Adapter Instance — Codex | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 | Codex](runtime-adapter-instance-codex.md) — Codex 实例六维声明：codex 0.159.3 无头面、ChatGPT 登录态与限额失效信号（exit 1＋厂商原文）、.codex/hooks.json 三点位、workspace-write 沙箱口径、traces 与 live-regression 证据出口 |
 | Runtime Adapter Instance — Cursor | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 | Cursor](runtime-adapter-instance-cursor.md) — Cursor 实例六维声明：agent CLI 无头面与 --trust 前置、项目 .cursor/hooks.json 实测触发与垫片转码注入、cli.json permissions 可编程声明面、退出码失败信号、R-CU-1 残项 |
@@ -57,6 +57,7 @@ Generated: 2026-10-21 17:31
 | Role Switching | role switching | Harness activation: `$cora` / `$alex` / `$blake` = Codex invocation; `/cora` / `/alex` / `/blake` = Claude Code / OpenCo |
 | Knowledge Ingress (read on activation) | knowledge ingress read on activation  | - Every role activation reads `.tad/project-knowledge/principles.md` and |
 | Critical Rules | critical rules | - Reading `HANDOFF-*` requires Blake plus Gate 3/4; `/tad-maintain` CHECK/SYNC is exempt. |
+| File Ownership (TAD vs project) | file ownership tad vs project  | An update replaces TAD's files and leaves the project's alone. Nothing here is code: it is the list a human or a role ca |
 | Default Behavior (no role specified) | default behavior no role specified  | If no role is requested, act as a general TAD assistant: |
 | Capability Packs (Domain Expertise) | capability packs domain expertise  | When a user's task matches a capability pack's keywords, announce a pointer — never Read the pack file up front. These |
 | Codex-Specific Notes (Codex harness only — not applicable to Claude Code/OpenCode/Cursor) | codex-specific notes codex harness only not applicable to claude code opencode cursor  | - Use `codex exec resume --last` to continue multi-turn TAD workflows |
@@ -66,14 +67,13 @@ Generated: 2026-10-21 17:31
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-2026-10-21-cora-loop-fixes-phase1.md | mixed#protocoltextonly:Alex/Cora/gateskillandreferencefiles(md+yaml-in-md),twotemplates,onechecklistline;noscript,nocode | Text changes to Alex's design flow and to the Gate 2 (design review) loop so a design converges instead of being patched |
-| HANDOFF-2026-10-21-cora-loop-fixes-phase2.md | mixed#Cora/Alex/gateskillandreferencetext,threetemplates,onechecklist;oneshellscriptchanged(gate1-format-check.sh),onecreated(cora-check.sh),withcommittedfixturesunder.tad/tests/ | Text changes to Cora's skill and its references, the gate skill, the Gate 1/Gate 4 checklist and three templates, plus t |
+| HANDOFF-2026-10-23-cora-route-judgement-phase1.md | mixed#skill/protocol/contracttext(5files)+theadvisorycora-check.shoutputlinesanditsbudgetfixture | One new section in Cora's skill body, `## Route and spend: result first`, that states the human's 2026-10-22 rule once f |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261021-cora-loop-fixes.md | **Epic ID**: EPIC-20261021-cora-loop-fixes |
+| EPIC-20261023-cora-route-judgement.md | **Epic ID**: EPIC-20261023-cora-route-judgement |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -99,6 +99,7 @@ Generated: 2026-10-21 17:31
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
+| HANDOFF-20261017-full-layer2-review-brakes.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid.md | docs | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid |
 | HANDOFF-20260914-ocr-review-habits.md | doc-only | HANDOFF-20260914-ocr-review-habits |
 | HANDOFF-20260913-skill-authoring-habits.md | doc-only | HANDOFF-20260913-skill-authoring-habits |
@@ -127,12 +128,11 @@ Generated: 2026-10-21 17:31
 | HANDOFF-20260902-local-wiki-phase3r-native-capture.md | mixed | Handoff — Local Wiki Phase 3R Native Browser Capture |
 | HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
 | HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
-| HANDOFF-20260901-local-wiki-phase2-retrieval.md | code | HANDOFF-20260901 — Local Wiki Phase 2 Retrieval Foundations |
 
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
-| evidence/acceptance-tests/ | 647 | acceptance-tests |
+| evidence/acceptance-tests/ | 690 | acceptance-tests |
 | evidence/activation-packages/ | 25 | activation-packages |
 | evidence/audits/ | 3 | audits |
 | evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
@@ -142,6 +142,7 @@ Generated: 2026-10-21 17:31
 | evidence/decisions/ | 0 | decisions |
 | evidence/designs/ | 56 | designs |
 | evidence/discuss/ | 4 | discuss |
+| evidence/discussions/ | 1 | discussions |
 | evidence/dogfood/ | 3 | dogfood |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
 | evidence/e2e/ | 3 | e2e |
@@ -157,7 +158,7 @@ Generated: 2026-10-21 17:31
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 62 | journal |
+| evidence/journal/ | 70 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 13 | live-regression |
@@ -171,25 +172,25 @@ Generated: 2026-10-21 17:31
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 162 | pm |
+| evidence/pm/ | 204 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 16 | ralph-loops |
+| evidence/ralph-loops/ | 18 | ralph-loops |
 | evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
 | evidence/releases/ | 17 | releases |
 | evidence/research/ | 194 | research |
-| evidence/reviews/ | 845 | reviews |
+| evidence/reviews/ | 905 | reviews |
 | evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
-| evidence/simple/ | 17 | simple |
+| evidence/simple/ | 23 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 10084 | yolo |
+| evidence/yolo/ | 10166 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
@@ -226,6 +227,7 @@ Generated: 2026-10-21 17:31
 | config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
 | config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Gate 3 reviewers per review contract (run, consi |
 | config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
+| config-quality.sync-conflict-20261019-191119-7JSDFCH.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics     |
 | config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, agent_c, human),      - interaction_protocol |

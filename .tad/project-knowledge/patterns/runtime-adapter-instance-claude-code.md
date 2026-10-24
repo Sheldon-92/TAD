@@ -27,3 +27,11 @@
 - **failure_mode**: 朴素默认：看到这条厂商报错就判定「账号权限没了」，停下来请人去恢复权限。为什么错：同一账号、同一机器从 Claude Code 会话里启动就能跑；该报错只说明「从这个外层 harness 里启动不行」，正确的路由是换到 Claude Code 会话里跑这些格，或在外层 harness 里先做一个最小 `claude -p` 探针再派发。
 - **validator**: 跨 harness 派发 `claude` 格之前，在发起方会话里跑一次最小 `claude -p` 探针并记录退出码；出现上述报错时，记录写「从 {外层 harness} 启动被拒」，不写原因推断。
 - **Grounded in**: `.tad/evidence/yolo/cora-carry-forward-fixes/phase2-codex-session-not-run/`（三份 exit 1 转录与 not-run 文件）；`phase2-queue/transcript-claude-q1..q3.md`（exit 0）；`phase2-record-check.md` 第 3 条；`phase2-gate-report.md` KC-P2-5。
+
+**R-CC-10（①② 无头配方与会话内刷新，2026-10-22 实测，一台机器、`claude` 2.1.295）**:
+- **Source confidence**: 实测
+- 从临时 `HOME` 启动 `claude -p` 返回 "Not logged in"；用真实 `HOME`，安装器的副作用目录用环境变量固定到临时目录。
+- 「问一次、回一次」两轮：先 `claude -p ... --session-id <id>`，再 `claude -p ... --resume <id>`；`--allowedTools "Bash Read Skill"`，转录用 `--output-format stream-json --verbose`。
+- 会话内刷新：已调用过的技能改了正文，Skill 工具答「已加载，说明未变」；新技能目录先报 Unknown skill，之后经 system-reminder 刷新才可用（有延迟）；`AGENTS.md`/`CLAUDE.md` 改动不刷新；改 hook 接线即时生效；被模型按需读取的 reference 文件即时。
+- **failure_mode**: 朴素默认：升级后靠改技能文字让当前会话换做法。为什么错：当前会话保留旧技能文字与指令文件；见 `release-sync.md` 同日条目。
+- **Grounded in**: `.tad/evidence/yolo/tad-update-flow/phase2-live-reload.md`；`phase1-gate4/rp2-setup.md`。

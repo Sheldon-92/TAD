@@ -10,3 +10,5 @@
 | ④ 工作区权限 | 项目 `.cursor/cli.json` 为可编程声明面（文档确证）：`permissions.allow/deny`（精确字符串）、`approvalMode`、`sandbox.mode/networkAccess`；TAD 样例（inert，不随安装器分发）见 `.tad/templates/runtime-permission-examples/cursor-cli.json`，定案见件 3.5 核查表第 4 行（PM 裁断 D-4：样例 inert）。 |
 | ⑤ 状态与失败信号 | 退出码（0 正常／1 前置失败如未信任）＋会话 stdout；hook 侧信号＝payload 字段集（conversation_id/session_id/hook_event_name/cursor_version/workspace_roots，OC-2 实测样本在 Phase 0 记录件）。失败形态已实测：未信任 exit 1（处置：`--trust`）。 |
 | ⑥ 证据出口 | traces：垫片调共享脚本写 `.tad/evidence/traces/<日期>.jsonl`（同源同格式）；transcript：`.tad/evidence/live-regression/cursor-20261006.md`（PASS 基线）。残项：**R-CU-1**（无提问工具事件，捕获无落点）；**R-CU-2 未成立**（CLI 触发项目 hooks 已实测，分支 B 不发生）。 |
+
+**会话内刷新（2026-10-22 实测，agent 2026.10.22，无头一次）**: 无技能工具，模型直接读 `SKILL.md`，改后再读即新内容（live）；新增技能目录、hook 接线、`AGENTS.md`、`CLAUDE.md`（Cursor 会加载）改动都不刷新，需新会话；reference 文件即时。Codex 同表格未测（CLI 缺失）。证据：`.tad/evidence/yolo/tad-update-flow/phase2-live-reload.md`。
