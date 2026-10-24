@@ -13,6 +13,10 @@
 
 ## 🔴 优先队列
 
+### ✅ DONE 2026-10-24. EPIC-20261023 cora-route-judgement — accepted and archived, not yet released
+- Epic: `.tad/archive/epics/EPIC-20261023-cora-route-judgement.md`. Cora owns route and spend (result first); fixed floor; 2x checkpoint, 3x stop; condition (c) by class, checked by consistency. Paid run = billed separately in real money (rulings 2026-10-24).
+
+
 ### ✅ DONE 2026-10-23. EPIC-20261022 tad-update-flow — accepted and archived, not yet released
 - Epic: `.tad/archive/epics/EPIC-20261022-tad-update-flow.md`. One-sentence TAD update (/tad-update or "升级 TAD"), all platforms in one run, changed-only backup, honest process-file report; then live use + daily reminder; then backup lifecycle.
 - [x] Phase 1 update flow — 32caf0c3..e21d3aca; Gate 4 PASS (real Claude Code session "升级 TAD": one yes, changed-only backup 946 KB, process files unchanged)
