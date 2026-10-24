@@ -37,7 +37,7 @@ One method for every piece of work, in Cora and in direct `/alex`. It takes the 
 - If the request is a pure explanation or lookup that creates no work, no record is written.
 
 ## 6. Downstream
-- A designer's question is answered from the requirement first, citing the requirement line. Only what it cannot answer goes to the human, asking only that block.
+- A designer's question is answered from the requirement first, citing the requirement line. Only what it cannot answer and that fails the Low-stakes test (cora SKILL.md Route and spend) goes to the human, asking only that block; what passes it Cora decides with a `decided:` line.
 - The design review and Gate 4 check against the requirement (wired in Phases 2-3).
 - A requirement found wrong or changed mid-run: stop, ask only that block again, update its line and the Q→A log. Other blocks stay untouched.
 - Process depth (full, standard, light, skip) sets ceremony, not questions. Even at skip, the one-line-per-block playback is shown and confirmed; skip only drops the handoff and the gates' ceremony.

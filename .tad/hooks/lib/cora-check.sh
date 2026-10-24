@@ -9,18 +9,20 @@
 #   cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-....md>
 #   cora-check.sh gate4-record <gate report .md>
 #   cora-check.sh gate3-files <.tad/{active,archive}/epics/EPIC-....md> <phase N>
-# Exit: 0 = fine, 1 = ALARM / MISSING, 2 = usage (also: not run from a root, absolute
+# Exit: 0 = fine (a CHECKPOINT line is still exit 0), 1 = ALARM / MISSING, 2 = usage (also: not run from a root, absolute
 #       or odd Epic path, unreadable file). An Epic whose Budget line has no
 #       `estimate <N>` (or a leading `约 N 次派发` / `N dispatches`) is not an error: `dispatches` prints the count and
-#       `estimate: none (old Epic; no 2x alarm)` and exits 0.
+#       `estimate: none (old Epic; no checkpoint or alarm)` and exits 0.
 #
 # dispatches: counts this Epic's dispatches from the files on disk: ids in the first
 #   15 lines of every *.md under .tad/evidence/yolo/<slug>/ (any depth) and of the
 #   handoffs HANDOFF-<date>-<slug>-phase<n>.md (active + archive), read from
 #   `dispatch_id:` and `dispatch_history:`; plus the ids of the Epic's `Dispatched:`
 #   lines (a dispatch in flight is spent). An id ending -t<m> counts m, merged with
-#   its base. ALARM (exit 1) when count + 1 >= 2 x estimate: the next dispatch would be
-#   the 2E-th. Per `Dispatched:` line prints present / other-id <x> / missing.
+#   its base. Prints `checkpoint: 2E` and `guard: 3E`. CHECKPOINT (exit 0) when
+#   count + 1 >= 2E and < 3E: Cora's own re-route point (cora SKILL.md, Route and
+#   spend). ALARM (exit 1) when count + 1 >= 3E: the next dispatch would be the
+#   3E-th, the stop. Per `Dispatched:` line prints present / other-id <x> / missing.
 # gate3-files: by file name only, in .tad/evidence/yolo/<slug>/ (cwd = repo root): the
 #   Gate 3 files the protocol (step_Y6) requires for phase N exist: the run verdict
 #   phase<N>-gate3-verdict, the consistency review phase<N>-impl-review-consistency,
@@ -55,7 +57,7 @@ idsof() {
 }
 
 cmd_dispatches() {
-  local epic="$1" slug est ids runs line id paths t p cnt guard st first_other present other
+  local epic="$1" slug est ids runs line id paths t p cnt chk guard st first_other present other
   [ -n "$epic" ] && [ -d .tad ] || usage
   case "$epic" in
     .tad/active/epics/*|.tad/archive/epics/*) ;;
@@ -137,17 +139,22 @@ EOF_R
     END { n = 0; for (b in w) n += w[b]; print n }')
   echo "count: $cnt"
   if [ -z "$est" ]; then
-    echo "estimate: none (old Epic; no 2x alarm)"
+    echo "estimate: none (old Epic; no checkpoint or alarm)"
     printf '%s\n' "$out" | sed '/^$/d'
     exit 0
   fi
-  guard=$((est * 2))
+  chk=$((est * 2))
+  guard=$((est * 3))
   echo "estimate: $est"
+  echo "checkpoint: $chk"
   echo "guard: $guard"
   printf '%s\n' "$out" | sed '/^$/d'
   if [ $((cnt + 1)) -ge "$guard" ]; then
-    echo "ALARM: the next dispatch would be number $((cnt + 1)) of a guard of $guard (twice the estimate $est); stop and ask before it goes out"
+    echo "ALARM: the next dispatch would be number $((cnt + 1)) of a guard of $guard (three times the estimate $est); stop and tell the human before it goes out"
     exit 1
+  fi
+  if [ $((cnt + 1)) -ge "$chk" ]; then
+    echo "CHECKPOINT: the next dispatch would be number $((cnt + 1)); twice the estimate $est: re-route (cora SKILL.md Route and spend) and record why"
   fi
   exit 0
 }
