@@ -1,4 +1,4 @@
-# schema=1 rows=2067
+# schema=1 rows=2070
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -885,6 +885,7 @@ skill	494b390ddb30b47d3123a9682ccdd8a6cc6b9690	release-runbook/references/publis
 skill	4964b83e8f1aa1c6db88570d5edaa4c847ac807f	knowledge-graph/references/graph-database.md
 skill	49c14f71b8898cdda32bfeb48d1f2db065628cbc	alex/SKILL.md
 skill	49cd368e52e30c1490f23c5e035722dd53d211e5	blake/SKILL.md
+skill	49cf2a600b4c473e6e97d62f4704aa62e41f65a0	cora/references/conductor-protocol.md
 skill	4a2fe0b2772affe0701b0839ac2faff53c267325	tad-help/SKILL.md
 skill	4a9c293170e04a46e174a32f61ba678635277b84	blake/SKILL.md
 skill	4abf65f4401e6c86c234b8f770e62d7de0392cdf	ml-training/references/lora-finetune.md
@@ -1825,6 +1826,7 @@ skill	e093aa6353ec9b7af5ef5bef6c7e39e03aac13a4	product-thinking/LICENSE
 skill	e0a61fb2dab637812a8bc9513c92a4d33f3e03b0	cora/references/requirement-clarification.md
 skill	e0c5f6f3c23426a9d4e91ef3202e1c8837f84d58	alex/references/conductor-dispatch-mode.md
 skill	e0f6373244dbe536f8a0247b67cc632c6ba65347	research-github/SKILL.md
+skill	e1597ce4317cf9ebb2cc76647ce9094946f6af24	cora/SKILL.md
 skill	e174292d576cc1cf0e86c25676394906acf0c75c	alex/references/handoff-creation-protocol.md
 skill	e1f16ecaea10c2b25df98af0157effa477897fd6	hw-enclosure/SKILL.md
 skill	e1f1944f24717a0f67c0c2bb3488c52e4264a86c	tad-help/SKILL.md
@@ -1870,6 +1872,7 @@ skill	e8ac606940d6212180711d0e9cf19aeb83a598be	_archived/testing-strategy.md
 skill	e8ad1247c1886446cf1852b4f93ecf8fbb9ed4b7	llm-observability/references/online-eval-drift-rules.md
 skill	e8ad1f5a9513cfa3f28010d240b8f6cdf847c725	cora/SKILL.md
 skill	e8f63f34d685497b2e4b46f6140abdcd1fb2473c	ai-voice-production/SKILL.md
+skill	e921e832cc87a80fb7bd840b5b8b64ae54a957b3	gate/SKILL.md
 skill	e92446d609b32787116917c5945dce334aec88a3	academic-research/references/domain-social.md
 skill	e932fbc9a59e42bbba51550fd93f7203978fe04b	blake/SKILL.md
 skill	e944eb33bd167b381ab5ca646243c3e89ba251bb	cora/SKILL.md
