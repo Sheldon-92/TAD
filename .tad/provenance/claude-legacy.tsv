@@ -1,4 +1,4 @@
-# schema=1 rows=2057
+# schema=1 rows=2060
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -450,6 +450,7 @@ skill	0a76189e27b5a89eefbdf9e0d39e6ec5a9887c2e	tad-help/SKILL.md
 skill	0ab058579771c2d425e1d4e7f221bd0fa276e633	blake/SKILL.md
 skill	0ac9aedf719c98e7b9b442d48f9d853f236e1317	academic-research/SKILL.md
 skill	0ad585b33cbf8f8fd83a0ccc3ae9e99071946289	tad-help/SKILL.md
+skill	0ad95f64d163b73e3673cd3b1e069f2a79cb6bd1	cora/references/conductor-protocol.md
 skill	0af2fd439a82d2da7ec324d160aefd135022c57b	product-thinking/skills/shotgun.md
 skill	0b0941def42a9ec62cfaaebacf1f4e6b85074f9e	web-deployment/references/security-hardening-rules.md
 skill	0b2a4b7ede5d54378a9be720c88c0ed421c895e1	ai-evaluation/references/pipeline-rules.md
@@ -1237,6 +1238,7 @@ skill	83f71f7c60a4456e816be9b625f369c462477a0b	alex/references/handoff-creation-
 skill	840725420436bca430b849dda32a89f00c169cab	web-testing/scripts/mutation-gate.sh
 skill	8437915e6da5167c2a03745e1baed320ff85d05c	release-runbook/SKILL.md
 skill	843cacd466bf10ad8d79365034b48ed5c25dd9e0	alex/SKILL.md
+skill	849aa6d0d3a5e9a3d76cf3e98f2c152bd08f7b1e	cora/SKILL.md
 skill	84c263491eb4f8c4abaf49ac2b13ce8dade9bbf1	alex/references/conductor-dispatch-mode.md
 skill	84eabaf1f39d261f6fb5c07fe163ee2785f81f03	cora/references/tad-update.md
 skill	850868fd409c854c7540a03b2426ff1cb891a0d9	cora/references/conductor-protocol.md
@@ -1438,6 +1440,7 @@ skill	a2c26434ed717f9ec6de9e9fce97cb9de087bdb8	blake-lite/SKILL.md
 skill	a2df2891d5d473b1337570c8dd8d17c8887cc7bf	gate/SKILL.md
 skill	a2e2d2787eef4d63aefe8573c65537d6023ba844	gate/SKILL.md
 skill	a2f7b25a773ef42845d985cae3af6cff260f3e60	alex/references/workflow-completion-trigger.md
+skill	a2fff0062b037f19ebe7c44f8ac0fcc3768ee56e	alex/references/conductor-dispatch-mode.md
 skill	a30727c84d6e58b68fda2afc282a301a5f46b8fd	ai-tool-integration/examples/cli-vs-mcp-decision.md
 skill	a3260c10a8dc091b4120d5fb4dc06f50e22ef248	ai-guardrails/scripts/check-guardrail-config.sh
 skill	a3521640f1eee503b45dd66263d18465a8511950	release-runbook/SKILL.md
