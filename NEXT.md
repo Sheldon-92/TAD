@@ -8,7 +8,7 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
 
-**当前版本**：4.0.8（prepared locally, not pushed or tagged）（上一已发布版本 4.0.7，tag v4.0.7 = 71ef5724）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.8（已发布 2026-10-28，main = tag v4.0.8 = df18c462）（上一已发布版本 4.0.7，tag v4.0.7 = 71ef5724）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
