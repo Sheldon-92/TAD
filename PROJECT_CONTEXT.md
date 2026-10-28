@@ -20,9 +20,9 @@
 
 ## Recently Completed
 
-- **EPIC-20261027 r4-batch and its three distillation tickets** (2026-10-28) — released in v4.0.8 (prepared locally, push/tag pending the release checks): measurement layer (judge-case set v1 provisional, should-have-blocked incident field, tiering cross-checks, pre-declared replay criteria, evidence-strength labels, standing AC dry-run), code-metrics accounting on the Gate 3 evidence surface (no thresholds, no pilot site yet), brain-index routing standing verification, and the gate3-check.sh false-negative fix (one explained residual line; T-1b Gate 2 form line filed, not executed); known gaps in the v4.0.8 release note.
+- **EPIC-20261027 r4-batch and its three distillation tickets** (2026-10-28) — released in v4.0.8 (published 2026-10-28; tag v4.0.8 = df18c462): measurement layer (judge-case set v1 provisional, should-have-blocked incident field, tiering cross-checks, pre-declared replay criteria, evidence-strength labels, standing AC dry-run), code-metrics accounting on the Gate 3 evidence surface (no thresholds, no pilot site yet), brain-index routing standing verification, and the gate3-check.sh false-negative fix (one explained residual line; T-1b Gate 2 form line filed, not executed); known gaps in the v4.0.8 release note.
 
-- **EPIC-20261022 tad-update-flow and EPIC-20261023 cora-route-judgement** (2026-10-24) — released in v4.0.7 (prepared locally, push/tag pending the human): one-sentence update with changed-only backup, report, reminder and backup lifecycle; Cora owns route and spend (paid run = billed separately); known gaps in the v4.0.7 release note.
+- **EPIC-20261022 tad-update-flow and EPIC-20261023 cora-route-judgement** (2026-10-24) — released in v4.0.7 (published 2026-10-24; tag v4.0.7 = 71ef5724): one-sentence update with changed-only backup, report, reminder and backup lifecycle; Cora owns route and spend (paid run = billed separately); known gaps in the v4.0.7 release note.
 
 - **EPIC-20261021 cora-loop-fixes** (2026-10-21) — released in v4.0.6: design loop rules, clarification playback check, disk-based dispatch count, Why not me, Gate 4 record, resume from disk; 5 open P1s listed in the v4.0.6 release note.
 
