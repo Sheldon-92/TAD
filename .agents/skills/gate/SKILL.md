@@ -86,7 +86,7 @@ Owner: Agent A (Alex)
 Critical Check (10 items):
   - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md).
   - [ ] All P0 resolved
-  - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run)
+  - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). AC 字面 dry-run 常设化：consistency 评审文件须含 `## AC dry-run (baseline)` 表（逐 §9.1 行：字面命令｜baseline 实跑结果｜预期形态（该失败且失败理由对／该通过）｜match y/n）；§9.1 有行而表中无对应行＝该轮 Gate 2 不完整（既有门的完备性规则，不新设门）。命令文本的常设预检 linter 点名 `.tad/hooks/lib/verify-ac-commands.sh`：严格按其头部纪律——advisory、exit 恒 0、不注册任何 hook、不作拦截；字面实跑仍由评审人做，不造自动执行器. Why ME: 只检查"验证方法合法"
   - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
   - [ ] Architecture complete
   - [ ] Components specified
@@ -280,8 +280,8 @@ Git_Commit_Verification:
 # ═══ Gate Checklist Items (inline — derived from canonical) ═══
 # Canonical source: .tad/gates/gate-canonical-checklist.md
 # Edit canonical FIRST, then sync here. Drift check: diff canonical vs this section.
-# MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
-Critical Check (9 items):
+# MECE: verified 2026-10-19 — 10 items check 10 distinct artifacts
+Critical Check (10 items):
   - [ ] Code/deliverable complete (all handoff tasks done; Ralph COMPLETED on the final commit with every review-contract §8 lens covered; ESCALATED_TO_ALEX/BLOCKED_STATE/BLOCKED_RISK/ABORTED/NOT_RUN are not clean completion)
   - [ ] §9.1 Spec Compliance: every row's Verification Method executed and matches Expected Evidence (any FAIL → BLOCK; empty §9.1 → BLOCK)
   - [ ] Evidence files exist per the handoff's Required Evidence Manifest; preserve original severity/raw findings plus independent checked-input disposition ledger: fixed / pre-existing / dismissed count as addressed only after relevant independent recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed needs counterevidence. Blake proposals remain open. Pure out-of-scope serious risk goes to Alex/human. Unmet AC/missing evidence/evidence veto still block.
@@ -289,6 +289,7 @@ Critical Check (9 items):
         若重跑产生全量改动（随机 ID / 时间戳 / commit SHA 入了证据体）→ WARN：
         任何改动都会触发全量重采，reviewer 无法 diff 只能重读全文，代价随轮数线性放大。
         建议先修证据管道（把不确定性字段移出证据体或固定种子）再继续。
+  - [ ] Code metrics（记账，仅试点链）：试点名单内的链，证据集中有 code-metrics 运行记录或合格 not-run 理由；缺失、或 not-run 理由不合格（枚举外理由／缺写入者／缺日期），同样只记 pilot coverage gap，不单独构成 Gate 3 的 FAIL／P0／PARTIAL／CONDITIONAL；非试点链无记录义务；本批内指标数值不决定 verdict。注：本节『试点链』指代码指标记账的试点名单，与 Gate 2『Pilot declared』的同构单元先行 pilot 不是一事，勿混。
   - [ ] Git commit done (commit hash recorded, or NONE for doc-only)
   - [ ] Knowledge Assessment complete (BLOCKING - must answer explicitly)
   - [ ] Provenance non-empty (advisory, WARN-not-BLOCK): ≥1 provenance row per CREATE file

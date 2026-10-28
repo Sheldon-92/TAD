@@ -475,3 +475,30 @@
 - **failure_mode**: Naive default: let the subagent background the long command and wait for its completion note. Why wrong: the completion note does not reach it, and the conductor waits on a run that will not resume.
 - **Validator**: The brief contains the foreground instruction; no dispatch stays silent past the expected duration without a probe in the journal.
 - **Grounded in**: `.tad/memory/project_multi-harness-restore-v330.md` (last bullet, 2026-10-10); capture layer only.
+
+### K-2 规则的唯一载体若是数据文件的表头，它在规程读取面就没有装载点 — 2026-10-27（源 N-02）
+
+- **Discovery**: 分档建议规则的全文只写在 tiering-log（数据文件）的表头里；handoff-creation 规程只有一条「照该日志表头」的转指注记。结果：Phase 3 链在合同作成时根本没有产生计划行——不是作者疏忽一处，而是义务的正文不在作者的读取路径上，Gate 3 run 评审收束时才发现并事后补 recon 行。规则存在、装载点缺失，与「没写」在效果上同形。
+- **Action**: 凡要求某角色在某步执行的规则，其正文（或可独立执行的完整形态）必须出现在该步的规程载体里；数据文件表头只配承载记账格式与本表口径，不配独占规则正文。转指注记只许指向规程面，不许指向数据面。新增记账类义务时，验收项之一＝「不打开该数据文件，能否从规程推出该义务」。
+- **failure_mode**: 朴素默认：规则写过一次（写在最顺手的数据文件表头）即视为已立，规程里留个转指就算装载。为什么错：执行者的读取路径由规程决定，不由规则作者的记忆决定；转指指向数据面时，执行者要先知道有这条义务才会去翻那张表——义务的发现依赖义务本身已知，循环落空，且落空时无声（缺记要到收束复算才暴露）。
+- **Grounded in**: `.tad/evidence/yolo/r4-batch/phase3-completion.md` §5 conductor 更正附记（run P1-1：holder＝conductor、蒸馏处置）；`.tad/evidence/tiering-log.md` 表头；`.agents/skills/alex/references/handoff-creation-protocol.md` 第 555–556 行。
+- **可变量化检验**: 通过——变量为「任一记账/执行义务 × 其正文载体」，tiering 只是首例。
+- **推荐落点**: `patterns/handoff-design.md`（与既有「装载点位」族同处）；具体文本修复走 T-2。
+
+### K-6 实施禁区集不得纳入编排者自维护的活台账，除非预声明记名例外 — 2026-10-27（源 N-07）
+
+- **Discovery**: Phase 5 的范围守卫集把 Epic 本体列入禁区，而 Epic 的 `## Run` 记账由 conductor 在每个派发窗口更新——Gate 3 时守卫命中唯一变更件正是 Epic、变更者是 conductor 本人，实施方被记 AC16 命中，最终靠 conductor 记名接受关账。Phase 4 的对照形态在盘：合同预声明 Epic 为记账活文件、「合法的中间变更只有 Run 记账」，守卫以 (b2) 记名制补账，未成 FAIL 驱动项。同一构造，预声明与否决定它是记账形态还是门级事故。
+- **Action**: 构造实施禁区集时，编排侧活台账（Epic 本体、conductor journal 一类注定被编排动作改写的文件）二选一：不纳入禁区集；或纳入时在合同中预声明其合法变更形态与记名补账法（谁、何时、何种行）。事后记名接受只作补救，不作定式（补救成立的前提是变更者与时序可由盘面独立证明）。已知形态注记：additions-only 守卫只核行集合、不核装饰（加粗/反引号差）——本批 F3 一例在此口径下 PASS，处置为留置不收紧（见蒸馏报告 §2），引用定稿以合同文本为准。
+- **failure_mode**: 朴素默认：禁区集＝「本步不许动的一切文件」的直觉枚举，把最显眼的 Epic 本体顺手列入。为什么错：Epic 的记账更新是编排流程的固有动作，与实施方的写集守卫在构造上必然相撞；相撞时守卫分不清「实施方越界」与「编排者记账」，轻则一轮 FAIL 的修复成本，重则把编排记账逼成守卫的盲区默许——两种结局都源于集构造时没问「这份文件在本步窗口内由谁合法改写」。
+- **Grounded in**: `.tad/evidence/yolo/r4-batch/phase5-completion.md` 文末收口附记第 2 条；`phase4-completion.md` Manifest (b2)；`phase5-gate3-review-run2.md` Carried P2。
+- **可变量化检验**: 通过——变量为「任一带范围守卫的实施步 × 任一编排活台账」。
+- **推荐落点**: `patterns/handoff-design.md`（集构造属 handoff 设计面）。定式采预声明制还是保留事后接受为等效路径，见回问 QC-3（条目暂按预声明为正、事后接受为例外写）。
+
+### K-8 双审体制下，修订＋复核轮是每 phase 的基线成本，不是返工意外 — 2026-10-27（源 N-18）
+
+- **Discovery**: 本批 estimate 40 次派发（Phase 拆分 6/10/8/10/6），实落约 62（Phase 5 开工前已实测 46）。逐 phase 看成因无一例外：五 phase 全部在首轮双审后产生 findings 驱动的修订一轮＋复核一轮（Phase 2 另有 verdict 补全步与 Gate 3 补判轮、Phase 3 另有漂移修复步、Phase 4 另有实施分段与检查点、Phase 5 另有 Gate 3 修复＋复核＋微修）。没有一轮是闲置派发；超支是估计模型把「首轮即过」当基线的结果。其中 Phase 5 分配 6 次、实耗 15 次为全批最大偏差——它承担全批最杂的实施面（建造/运行分离、双段实施、呈报与立票），Gate 2 risk 评审在 Phase 1 即已点名此不匹配（设计 §9 L9），L9 重排（总量内流用＋checkpoint 80 未触发）使全批未停。
+- **Action**: Epic 估算按 phase 建模：基线步（作成＋双审＋实施＋Gate 3 双审＋Gate 4）之外，每 phase 固定计入「修订 1＋复核 2」的期望轮次，Gate 3 修复轮按批内概率另计储备；phase 分配按实施面杂度加权，不按 phase 数均分。checkpoint/guard 的作用是失控保险，不是把估计错误拖到中途才发现的工具——开工前用上一批的实际轮次结构校准拆分。
+- **failure_mode**: 朴素默认：按顺境路径数步子估算（作成→审→实施→审→验收），把修订轮当作「出问题才有」的意外储备。为什么错：在双镜头独立评审＋证据否决体制下，首轮 findings 几乎必然出现（本批 5/5 phase、且多为真缺陷），修订＋复核是体制的正常运转成本而非异常；按顺境估算的 Epic 必然中途超支，超支本身再消耗裁断与重排的派发，形成二次损耗。
+- **Grounded in**: Epic Budget 行与 Phase 5 收口记录；journal L9 预算重排行（实测 46 与成因逐 phase 指认）；设计正本 §9 L9；Phase 5 合同 §10.3 算术链（46＋10＝56／57／59 的作成期推算）。
+- **可变量化检验**: 通过——变量为「任一双审体制 Epic 的 phase 轮次结构」；具体倍数（本批实落/estimate≈1.55）是本批参数、不写成普适常数，普适的是轮次结构项。
+- **推荐落点**: `patterns/handoff-design.md`（既有 budget 条目族：estimate＋runaway guard 一侧补估计法）。

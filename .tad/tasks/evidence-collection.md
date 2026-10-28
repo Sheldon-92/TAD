@@ -301,6 +301,16 @@ A finding that something did NOT happen — no log line, no file, no event, an e
 
 Instance: 2026-10-05 BrowserSkill pairing diagnosis — failed authorize exchanges write no daemon log lines; absence in the log was misread as "the client never sent a request" until a fake-token probe (HTTP 401 returned, log still silent) proved the probe channel works and the log is blind on that path.
 
+### Positive Evidence Strength （正向证据强度，与负证据三标签并存）
+
+A factual claim that something IS the case — a number, a state, a count — carries one of three strength labels wherever it is filed, inline or in the chain's claims table:
+
+- `recomputed` — obtained by re-running a read-only command; the command output must be filed at the claim's pointer.
+- `disk-read` — obtained by reading the file on disk directly.
+- `reported` — another party's self-report, not independently re-checked.
+
+Rule: 凡带数字或状态断言的事实性自报，行内或在 claims 表中带一枚标签；标 `recomputed` 而指针处无命令输出者，评审可立 finding。The author writes the label; the Gate 3 run reviewer spot-checks. These three coexist with the negative-evidence labels above (`probed` / `observed-absent` / `assumed`) — neither set replaces the other, and existing filings are not retro-labeled.
+
 ## Pattern Recognition Protocol
 
 ### Success Pattern Identification

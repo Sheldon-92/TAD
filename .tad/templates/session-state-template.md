@@ -1,5 +1,13 @@
 # TAD Session State
 <!-- Auto-maintained by TAD agents. See .tad/templates/session-state-template.md -->
+trust: unverified
+<!-- 信任标记约定（六面）：标记形态为一行 `trust: disk-verified <YYYY-MM-DDThh:mm TZ> by <角色或检查名>`
+     或 `trust: unverified`；TZ 为标记所在机器的本地时区缩写，由 `date '+%Y-%m-%dT%H:%M %Z'` 生成时随附。
+     进 WARN 检查的面（四面）：session-state 活文件（`.tad/active/session-state.md` 头部）、`NEXT.md` 头部、
+     `ROADMAP.md` 头部、`AGENTS.md` 头部/版本声明处——由 state-surface-check 的 trust 检查扫。
+     只落标记约定的面（两面）：`docs/pm/now.md` 头部、Epic `## Run` 块内——这两面不进检查，
+     不得在任何文本中冒称已被信任检查覆盖。
+     写者规则：只许当轮真正拿盘面核对过该面的人写 `disk-verified`；未核对顺手抄前＝违规。 -->
 Last Updated: {YYYY-MM-DDTHH:MM:SSZ}
 Hook Last Touched: <none>                  <!-- Updated by post-write-sync.sh hook -->
 Last File Written: <none>                  <!-- Updated by post-write-sync.sh hook -->

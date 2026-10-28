@@ -17,3 +17,7 @@
 - Asked by Cora (after EPIC-20261023-cora-route-judgement Gate 4): A only things billed separately in real money (API keys, paid services); real sessions under his plan (Claude Code, Cursor, etc.) are normal work / B plan sessions count, but those named in the approved plan are granted / C ask every time. Cora recommended A.
 - The human: "A"
 - Reading recorded by Cora: a paid run that needs his confirmation is one billed separately in real money (an API key, a paid service, a metered external account). Model sessions running under his subscription plans (Claude Code, Cursor, OpenCode, Codex) are ordinary work under Cora's own route-and-spend judgement and need no separate confirmation; Cora still names them in the plan and the end-of-matter line.
+
+## 2026-10-24 10:06 ET — 推送到 main 已预先批准（2026-10-27 由 GM 写入本文件）
+- 出处：用户 2026-10-24 10:06 ET 确认「推送即预先批准」（`gm/rules/github-single-source-rules.md` 第 4 条）；用户 2026-10-26 对 menu-tales 的 Mac Cora：「你就是要推送，你就相当于pm」；用户 2026-10-27 10:39 ET 授权把这条写进各项目。
+- 读法：推送到 main 已预先批准（用户 2026-10-24 10:06 ET），见《同步与推送.md》§2。用 `../gm/bin/推送` 把本仓推到 main，Cora 不再停下来问；停点清单里只有这一件事不再停。仍要用户当场点头：强推 / 改历史、新建仓、改公开 / 私有、加协作者、加放行清单或 `.gitleaksignore`、`--allow-delete` / `--import`、花钱、轮换密钥、真删除用户内容、Publish / 发版 / 打 tag / 正式上线。

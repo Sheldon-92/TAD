@@ -191,6 +191,9 @@ handoff_creation_protocol:
             Epic-level TAD flow. Either create an Epic first, or reclassify this change
             as an L2 pattern edit (patterns/*.md) if it's not truly a methodology change."
             Use AskUserQuestion: "Override?" / "Create Epic first" / "Change target to patterns/"
+      verbatim_copy_rule: "handoff 把规程步骤转成执行清单时逐字抄录、不转述——因为完成件的步骤记录要按逐字文本对账。"
+      pilot_hard_step: |
+        Pilot 硬步（fan-out 前置）：一个 handoff 的执行拆成 ≥3 个同构单元时触发——同构＝共用同一 handoff 模板/配方＋同一 §9.1 验收方法、仅目标与输入不同；单元数 <3、单元验收方法互异、单一交付物的内部部件拆分，不触发。触发时 handoff 必须点名 pilot 单元（第一个跑的单元）与证伪出口（pilot 出现何种结果→改配方、何种结果→弃配方）；pilot 结果与据此所做的修订记入盘（handoff 修订行或 phase{N}-pilot-<k>.md）之后，才许派发其余单元。证伪结论落盘后才许 fan-out。
 
     step1_ac_generation:
       name: "§9.1 Acceptance Criteria Auto-Generation (task-scoped)"
@@ -548,6 +551,29 @@ handoff_creation_protocol:
       name: "Parallel Gate 2 Review"
       action: "dispatch both in parallel; each prompt = the contract's §0 list; outputs under `.tad/evidence/reviews/alex/<slug>/`"
       execution: "使用 Task tool 并行调用两个 reviewer"
+
+    # Tiering 记账（P2-3，只记账）：派发方在本步 Gate 2 派发时，往 `.tad/evidence/tiering-log.md`
+    # 追加一行计划行。建议规则（可复算，本注记为权威文本；日志表头只保留记账格式与本表
+    # 口径，两处冲突时以本注记为准）：
+    # - 输入＝该链计划改动面（handoff 的 Files／§9.1 面）；档位序列：light ＜ standard ＜ deep。
+    # - 信号一（敏感命中）：计划面与 `.tad/eval/tiering/sensitive-paths.txt` 有交集 → 建议
+    #   升一档。匹配语义：条目一律仓内相对路径；以 `/` 结尾的目录条目＝前缀递归匹配；
+    #   文件条目＝精确匹配；日志行记录实际命中的路径原文。
+    # - 信号二（文件数）：计划文件数 ＞8 → 建议升一档。
+    # - 封顶：两条同中仍只升一档（封顶最高档 deep）。
+    # - 计划行字段：date | chain | declared | suggested | agree(yes/no) |
+    #   sensitive_hit(y/n + 命中路径原文) | file_count | pointer。
+    # - 时点：计划行于 Gate 2 派发时追加；Gate 3 收束时由 run 评审按实际改动面追加 recon
+    #   对账行（行首标 recon，字段同计划行），不改原计划行；agree 统计以对账行为准，
+    #   引用分布时声明对账口径。
+    # - 复看点：每 Epic 蒸馏时由该蒸馏报告作者复看全表一次；发版前由 PM 复看一次。复看
+    #   只许决定是否另立设计议题，不自动升闸；复看动作在日志尾部记一行（日期＋复看者
+    #   ＋结论指针）。
+    # 只记账：declared 与 suggested 不一致无任何后果、不拦、不升闸。
+
+    # 作成自查（回放触发）：本链写集或步序命中回放触发类（判据/提示/模型变更后须回放
+    # 既有样本集者），合同须在前置节显名回放步、冻结口径、隔离口径与判读口径（含裁断位），
+    # 不得留到 Gate 3 门口补。
 
     # Agent Teams review mode retired 2026-10-19 (EPIC-20261019-review-redesign): its cross-challenge asked reviewers whether a P0 "could be downgraded", against AR-001; Gate 2 composition is the review contract's.
 

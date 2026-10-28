@@ -38,6 +38,17 @@
 #      reported as INFO; older than BRAIN_INDEX_WARN_AGE_DAYS is WARN only,
 #      while a missing or unparseable Generated date is FAIL.
 #   8. Keyword-conflict assertion on registered governed-surface pairs.
+#   9. Trust marking on four registered faces (session-state, NEXT.md,
+#      ROADMAP.md, AGENTS.md): WARN only — a face with no parseable
+#      `trust:` line, an `unverified` mark, or a mark timestamp earlier
+#      than the file's own mtime is reported as WARN. This check never
+#      increments the fail count and never changes the exit code: a trust
+#      mark is information, not a gate. A mark proves someone verified
+#      the face at the marked time; it proves nothing about content
+#      written after the mark. The comparison runs at minute
+#      granularity — the mark's own precision — so edits inside the
+#      same minute as the mark are outside this check's reach, and
+#      this text says so rather than claiming finer detection.
 #
 # bash + grep + sed only; no yaml, no network, no node.
 
@@ -409,6 +420,81 @@ else
     fi
   fi
 fi
+
+# ---- Check 9: trust marking on registered faces (WARN only) ---------------
+# Faces are the four rows marked "into the WARN check" in the design's
+# per-face table (session-state live file, NEXT.md, ROADMAP.md, AGENTS.md).
+# docs/pm/now.md and Epic Run blocks carry the marking convention only and
+# are NOT scanned here; no text may claim they are covered by this check.
+TRUST_FACES=".tad/active/session-state.md NEXT.md ROADMAP.md AGENTS.md"
+
+# File mtime as epoch seconds. Perl's stat is portable across GNU and BSD
+# userlands; this check deliberately avoids one-sided GNU/BSD stat/date
+# conversion forms (see patterns/shell-portability.md).
+file_mtime_epoch() {
+  perl -e 'my @s = stat($ARGV[0]); exit 1 unless @s; print $s[9]' "$1"
+}
+
+# Local UTC offset in seconds, from `date +%z` (+HHMM / -HHMM), which both
+# GNU and BSD date support for the current offset.
+tz_offset_seconds() {
+  local z sign hh mm
+  z="$(date +%z)"
+  case "$z" in
+    +*) sign=1; z="${z#+}" ;;
+    -*) sign=-1; z="${z#-}" ;;
+    *)  printf '0'; return ;;
+  esac
+  hh=$((10#${z%??}))
+  mm=$((10#${z#??}))
+  printf '%s' $(( sign * (hh * 3600 + mm * 60) ))
+}
+
+check_trust_face() {
+  local rel="$1" p="$REPO/$1"
+  local line ts datepart timepart y rest m d hh mm naive_secs mtime local_mtime
+  if [ ! -f "$p" ]; then
+    echo "WARN check9: trust face $rel is missing on disk (no trust line readable)"
+    return
+  fi
+  line="$(grep -m 1 '^trust:' "$p" || true)"
+  if [ -z "$line" ]; then
+    echo "WARN check9: $rel has no parseable trust line"
+    return
+  fi
+  case "$line" in
+    *'trust: unverified'*)
+      echo "WARN check9: $rel is marked trust: unverified"
+      return
+      ;;
+  esac
+  ts="$(printf '%s' "$line" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}' | head -n 1 || true)"
+  if [ -z "$ts" ]; then
+    echo "WARN check9: $rel trust line is not parseable: $line"
+    return
+  fi
+  datepart="${ts%%T*}"
+  timepart="${ts##*T}"
+  y="${datepart%%-*}"
+  rest="${datepart#*-}"
+  m="${rest%%-*}"
+  d="${rest#*-}"
+  hh="${timepart%%:*}"
+  mm="${timepart##*:}"
+  naive_secs=$(( $(date_to_days "$y" "$m" "$d") * 86400 + 10#$hh * 3600 + 10#$mm * 60 ))
+  mtime="$(file_mtime_epoch "$p")"
+  local_mtime=$(( mtime + $(tz_offset_seconds) ))
+  # Minute granularity: the mark carries no seconds, so the file mtime is
+  # truncated to the minute before comparing (see the check-9 header).
+  local_mtime=$(( local_mtime - local_mtime % 60 ))
+  if [ "$naive_secs" -lt "$local_mtime" ]; then
+    echo "WARN check9: $rel trust timestamp $ts is earlier than the file mtime"
+  fi
+}
+
+for tf in $TRUST_FACES; do
+  check_trust_face "$tf"
+done
 
 if [ "$fails" -eq 0 ]; then
   echo "state-surface: PASS (repo: $REPO, version $SSOT)"

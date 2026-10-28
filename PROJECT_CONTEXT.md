@@ -1,10 +1,10 @@
 # Project Context - TAD Framework
 
 ## Current State
-- **Version**: 4.0.7 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
-- **Last Updated**: 2026-10-24
+- **Version**: 4.0.8 (Full is the default channel, lite frozen 2026-08-13 + Lite core closure + 26 capability packs + brain-native knowledge search + Claude Science skill architecture; Claude Code, Codex, OpenCode and Cursor are install targets, each with a hook configuration (Claude Code: only if the project has no settings.json); verification depth per harness in docs/MULTI-PLATFORM.md)
+- **Last Updated**: 2026-10-28
 - **How work goes**: three roles. You talk to Cora and agree a result; she has an Epic written and stops; you say "continue" and she runs it through Alex, Blake and the gates via subagents; you look at the result. `/alex` and `/blake` still work directly.
-- **Framework**: TAD v4.0.7 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
+- **Framework**: TAD v4.0.8 + Full-default/Lite-frozen + 26 Capability Packs + Claude Code / Codex / OpenCode / Cursor install targets + Local Wiki Research + Compact Recovery
 
 ## Active Work (parked epics — open phases, not zombies)
 - **EPIC: Capability Builder v1** — Phases 1–3 of 4 Gate 4 accepted (Phase 1 on 2026-09-02 at `2d7e359b`; Phases 2+3 on 2026-09-03 at `bba6ce84`, acceptance confirmed by the human 2026-10-10). TAD provides bounded creation of project-owned Agent Skills with canonical `.agents` ownership, safe `.claude` projection, and fresh behavioral proof, plus signal-driven `evolve` and explicit one-Skill/one-Plugin `package`. Phase 4 (Voice Studio dogfood) is parked and is started by the human from that project.
@@ -19,6 +19,8 @@
 - Capability packs: 11 auto-match-active / 14 frozen (status on CAPABILITY + registry; files stay). Behavioral eval (lean-trustworthy P5) verified 2, web-backend held pending; remaining eval is a follow-up
 
 ## Recently Completed
+
+- **EPIC-20261027 r4-batch and its three distillation tickets** (2026-10-28) — released in v4.0.8 (prepared locally, push/tag pending the release checks): measurement layer (judge-case set v1 provisional, should-have-blocked incident field, tiering cross-checks, pre-declared replay criteria, evidence-strength labels, standing AC dry-run), code-metrics accounting on the Gate 3 evidence surface (no thresholds, no pilot site yet), brain-index routing standing verification, and the gate3-check.sh false-negative fix (one explained residual line; T-1b Gate 2 form line filed, not executed); known gaps in the v4.0.8 release note.
 
 - **EPIC-20261022 tad-update-flow and EPIC-20261023 cora-route-judgement** (2026-10-24) — released in v4.0.7 (prepared locally, push/tag pending the human): one-sentence update with changed-only backup, report, reminder and backup lifecycle; Cora owns route and spend (paid run = billed separately); known gaps in the v4.0.7 release note.
 

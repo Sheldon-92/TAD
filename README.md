@@ -1,6 +1,6 @@
 # TAD - Triangle Agent Development
 
-**Version 4.0.7 — Claude Code · Codex · OpenCode · Cursor**
+**Version 4.0.8 — Claude Code · Codex · OpenCode · Cursor**
 
 **You talk to Cora. She gets the work done and shows you the result.**
 
@@ -109,7 +109,7 @@ Details: [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md). Claude Code loads `AGEN
 To check an install:
 
 ```bash
-cat .tad/version.txt     # 4.0.7
+cat .tad/version.txt     # 4.0.8
 ```
 
 Installed projects update with one sentence ("升级 TAD" to Cora, `/tad-update`, or `$tad-update`): the check is read-only and prints the exact line to run, `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`; after your one yes it updates every platform listed in one run, keeps a backup of only the files it changes or removes, and ends with a report (version, project files unchanged or the paths that changed, your edits in TAD files, backup path, holding area). Older backups move to a holding area and are deleted only with your yes ("清掉" clears them; the next update's check also offers it); before each deletion the held item is measured again from its files and kept if anything changed since it was listed. "看备份" lists the TAD files you edited: each diff is written to a local file you open yourself (no file content is printed in the conversation), and one yes absorbs a file into the salvage folder under the project knowledge directory, never into `AGENTS.md`. `AGENTS.md` has a File Ownership section that says which files are TAD's and which are yours.
@@ -157,6 +157,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**TAD v4.0.7 — Claude Code · Codex · OpenCode · Cursor**
+**TAD v4.0.8 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

@@ -94,6 +94,12 @@ At the same *accept trigger, ALSO scan the native auto-memory capture layer:
 5. After the scan (regardless of graduation count): touch .tad/evidence/memory-distill-cursor
 6. No memory dir / empty scan → skip silently (Codex-edition projects have no auto-memory).
 
+## Escape／Incident 汇总指令（每份蒸馏报告必带）
+
+- **层 × 问题类别矩阵**：每份蒸馏报告含一张「层 × 问题类别」计数表（矩阵）。数据源＝escape-log 全表（`.tad/evidence/escape-log.md`，层取其 `gate that should have caught it` 列）＋期内新格式 incident（`.tad/project-knowledge/incidents/` 中带 `Should have caught: <layer>` 行的条目）；无数据时明写空表，不许静默略过。
+- **class 归一**：问题类别按 `.tad/eval/judge-cases/INDEX.md` 的 class 受控表归一；矩阵保留原值与归一值两列，不许改写原始记录。
+- **甲 2 重开核对**：报告作者须核期内 escape／incident 有无命中甲 2 的事实形态——scenario 的因果事实指向「项目常设项未入该链 §9.1 致逃逸 Gate 3」；命中者复制一行入该报告的 carry／下一设计议题清单并点名甲 2 重议。`class` 字面只作检索辅助，不得以字面不合为由漏触发，也不得仅凭字面套用。
+
 ## Anti-Theater
 - If user decides to skip distillation → legitimate (soft, not blocking); KA writes "User skipped distillation"
 - If Blake wrote no journal (Q1=No) → legitimate; KA writes "No discoveries"

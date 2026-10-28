@@ -48,11 +48,22 @@ List each `real_paths` id from the handoff and any path you expect to end `not-r
 
 ### Evidence
 
+> 引用纪律：COMPLETION 引用只限本链真读过的原件，带节号（正本：`.tad/templates/review-contract.md` Part A §4）。
+> 可选引用形态：项目有 verify 技能时，Acceptance Verification 行引其运行产出指针（路径＋运行日期）替代步骤复述（形态正本：`.tad/templates/acceptance-verification-guide.md` §10）。
+
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
 | Expert Evidence | ✅/⚠️/❌ | [the lens files (gate3-verdict, consistency, domain)] |
 | Ralph Loop Summary | ✅/⚠️/❌ | [Ralph Loop 执行摘要] |
 | Acceptance Verification | ✅/⚠️/❌ | [AC 验证脚本执行通过] |
+
+#### Claims vs Records
+
+事实性自报逐条入表：每条 claim 附产生该数字的只读命令与输出指针；无指针的 claim 不成立，转述不算指针。证据强度取 `.tad/tasks/evidence-collection.md` 的强度词表（`recomputed`／`disk-read`／`reported`），不在此重定义。
+
+| claim | 只读命令 | 输出指针 | 证据强度 |
+|---|---|---|---|
+| [一条事实性自报] | [产生该数字的只读命令] | [输出文件或日志指针] | [recomputed / disk-read / reported] |
 
 ### Knowledge Assessment
 
@@ -102,6 +113,14 @@ List each `real_paths` id from the handoff and any path you expect to end `not-r
 - [完成项1]
 - [完成项2]
 - [完成项3]
+
+### 步骤执行记录
+
+步骤自所据规程/handoff 清单**逐字**抄录；每步标 done，或 `skip: <理由>`；既非 done 又无 skip 理由的步＝完成件缺陷。
+
+| 步骤（逐字抄录） | 状态 |
+|---|---|
+| [规程/handoff 清单的步骤原文] | done / skip: [理由] |
 
 ### 修改的文件
 ```
@@ -336,3 +355,7 @@ PM-Blockers: <one line>
 **Report Created By**: Blake (Agent B)
 **Date**: [Date]
 **Version**: 2.0
+
+## Citation findings
+
+Reviewer-appended only (Gate 3 run reviewer, per `.tad/templates/review-contract.md` §4/§5); the author writes nothing here. One line per finding: `<date> | <reviewer dispatch_id> | <citation as written> | <read-list fact>`. No lines = no citation outside the read list was found.

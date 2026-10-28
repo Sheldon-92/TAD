@@ -87,7 +87,7 @@ blocked_ok() { # $1 = id
 }
 # normalised status word class of a status cell: run | notrun | blocked | empty | other
 stclass() { # $1 = cell
-  n=$(printf '%s' "$1" | tr 'A-Z_-' 'a-z  ' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+/ /g')
+  n=$(printf '%s' "$1" | tr 'A-Z_-' 'a-z  ' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+/ /g; s/^\*+//; s/\*+$//')
   case "$n" in
     "") echo empty ;;
     "not run"*|notrun*|skip*) echo notrun ;;
@@ -126,8 +126,8 @@ tabrows() { # $1 = section text
       hdr = 1; n = cells($0); sc = 0; ec = 0; xc = 0
       for (i = 2; i <= n; i++) {
         h = tolower(c[i])
-        if (!sc && (h == "result" || h == "status")) sc = i
-        if (!ec && (h ~ /output/ || h ~ /pointer/ || h ~ /evidence/)) ec = i
+        if (!sc && (h == "result" || h == "status" || index(h, "结果") > 0)) sc = i
+        if (!ec && (h ~ /output/ || h ~ /pointer/ || h ~ /evidence/ || index(h, "证据") > 0)) ec = i
         if (!xc && h == "exit") xc = i
       }
       if (!ec) ec = xc
@@ -156,6 +156,8 @@ classify() { # $1 = section text, $2 = known ids of that table
     [ -n "$rid" ] || continue
     [ "$rid" = NOCOL ] && continue
     base=${rid%%/*}
+    btok=$(printf '%s' "$base" | sed -E 's/^((AC|RP)[0-9]+) .*/\1/')
+    [ "$btok" != "$base" ] && base=$btok
     why=""
     known=0
     for k in $2; do [ "$k" = "$base" ] && known=1; done
@@ -192,6 +194,32 @@ EOF
 }
 inset() { case "$1" in *" $2 "*) return 0 ;; esac; return 1; }
 
+# Harvest list-form Real paths items (`- **RP<n>...` / `- RP<n>...`, the id at
+# the item start) into table rows `| <id> | <status> | <rest> |`. Status, in
+# order: the line holds `not-run` or `not run` -> `not-run: <rest>`; it holds
+# `已走查` -> `ran`; it holds a standalone pass/passed/ok/done word -> `ran`;
+# otherwise the status stays empty, so the classifier reports the row
+# UNEXPLAINED (no status marker, no silent pass). <rest> is the line minus
+# the `- ` bullet, the id token, the bold markers and the title parenthesis
+# after the id, with `|` flattened to `/`.
+rpharvest() { # $1 = section text
+  printf '%s\n' "$1" | while IFS= read -r line; do
+    printf '%s' "$line" | command grep -Eq '^- +\*\*RP[0-9]+|^- +RP[0-9]+' || continue
+    id=$(printf '%s' "$line" | command grep -oE 'RP[0-9]+' | head -1)
+    rest=$(printf '%s' "$line" | sed -E 's/^- +//; s/\*\*//g; s/^RP[0-9]+//; s/^（[^）]*）//; s/^[[:space:]]+//; s/^：//; s/^:[[:space:]]*//; s/\|/\//g')
+    if printf '%s' "$line" | command grep -Eq 'not-run|not run'; then
+      st="not-run: $rest"
+    elif printf '%s' "$line" | command grep -q '已走查'; then
+      st="ran"
+    elif printf '%s' "$line" | command grep -Eiq '(^|[^A-Za-z])(pass|passed|ok|done)([^A-Za-z]|$)'; then
+      st="ran"
+    else
+      st=""
+    fi
+    printf '| %s | %s | %s |\n' "$id" "$st" "$rest"
+  done
+}
+
 # Final state of one id after classify: prints <runline> / <notrunline> / BLOCKED /
 # MISSING; invalid ids were already reported.
 settle() { # $1 = id, $2 = run label, $3 = not-run label
@@ -219,9 +247,13 @@ $nr
 EOF
 
 # ---- AC rows of the handoff's AC table, found by its header row (not by a heading):
-# a markdown table row whose cells include `Expected Evidence` and an AC-criterion
-# column (`Acceptance Criterion`/`Acceptance Criteria`/`Criterion`); the rows below it
-# (until the table ends) are read, first cell `AC<n>`.
+# two header forms latch the table. Form A (`.tad/templates/handoff-a-to-b.md`
+# §9.1): a row whose cells include `Expected Evidence` and an AC-criterion column
+# (`Acceptance Criterion`/`Acceptance Criteria`/`Criterion`). Form B (the r4
+# phase4/phase5 contracts' current form): a row whose cells include all of an
+# id column (`ID`/`#`), `Requirement`, `Verification Method` and
+# `Verified Output`. The rows below the header (until the table ends) are
+# read, first cell `AC<n>`.
 acs=$(awk '
   function lowcells(line,   n, i, t) {
     n = split(line, c, "|")
@@ -230,12 +262,16 @@ acs=$(awk '
   }
   /^[[:space:]]*\|/ {
     if (!intab) {
-      n = lowcells($0); ev = 0; cr = 0
+      n = lowcells($0); ev = 0; cr = 0; idc = 0; rq = 0; vm = 0; vo = 0
       for (i = 1; i <= n; i++) {
         if (c[i] ~ /^expected evidence/) ev = 1
         if (c[i] ~ /^(acceptance criteri|criterion)/) cr = 1
+        if (c[i] == "id" || c[i] == "#") idc = 1
+        if (c[i] ~ /^requirement/) rq = 1
+        if (c[i] ~ /^verification method/) vm = 1
+        if (c[i] ~ /^verified output/) vo = 1
       }
-      if (ev && cr) { intab = 1 }
+      if ((ev && cr) || (idc && rq && vm && vo)) { intab = 1 }
       next
     }
     if ($0 ~ /^[[:space:]]*\|[-:| \t]*$/) next
@@ -256,18 +292,43 @@ classify "$acr" "$acs"
 for id in $acs; do settle "$id" AC AC; done
 
 # ---- real_paths of the handoff front matter
+# The front matter may be preceded by a dispatch header: `dispatch_id:` /
+# `dispatch_history:` key lines and blank lines (the dispatch_id_rule form of
+# conductor-protocol) — at most 4 skipped lines, and at least one dispatch key
+# line must have been seen before the opening `---` counts. Any other leading
+# content ends the scan exactly as before: no tolerance for arbitrary headers.
 ids=$(awk '
-  NR == 1 && $0 != "---" { exit }
-  NR > 1 && $0 == "---" { exit }
-  /^real_paths:/ { on = 1; next }
-  on && /^[^[:space:]-]/ { on = 0 }
-  on && /^[[:space:]]*- id:/ { sub(/^[[:space:]]*- id:[[:space:]]*/, ""); gsub(/["'\'']/, ""); sub(/[[:space:]].*$/, ""); print }
+  BEGIN { st = 0; key = 0; skipped = 0 }
+  st == 0 {
+    if ($0 == "---") { if (NR == 1 || key) { st = 1 } else { exit } next }
+    if ($0 ~ /^dispatch_(id|history):/ || $0 == "") {
+      if ($0 != "") key = 1
+      skipped++; if (skipped > 4) exit
+      next
+    }
+    exit
+  }
+  st == 1 && $0 == "---" { exit }
+  st == 1 && /^real_paths:/ { on = 1; next }
+  st == 1 && on && /^[^[:space:]-]/ { on = 0 }
+  st == 1 && on && /^[[:space:]]*- id:/ { sub(/^[[:space:]]*- id:[[:space:]]*/, ""); gsub(/["'\'']/, ""); sub(/[[:space:]].*$/, ""); print }
 ' "$handoff")
 if [ -z "$ids" ]; then
   echo "MISSING real_paths"
   rc=1
 fi
-classify "$rp" "$ids"
+# A verdict may file Real paths as a list instead of a table (r4 phase5 run
+# file): only when the section yields no table data rows, harvest its list
+# items into a synthetic table appended to the section text and classify
+# that; otherwise classify the section exactly as before.
+rptext="$rp"
+if [ -z "$(tabrows "$rp" | awk -F '\037' '$1 != "NOCOL" && $0 != "" { print; exit }')" ]; then
+  synth=$(rpharvest "$rp")
+  if [ -n "$synth" ]; then
+    rptext=$(printf '%s\n| id | result | output pointer |\n| --- | --- | --- |\n%s' "$rp" "$synth")
+  fi
+fi
+classify "$rptext" "$ids"
 for id in $ids; do settle "$id" COVERED COVERED; done
 
 exit $rc

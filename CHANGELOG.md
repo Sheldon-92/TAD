@@ -5,6 +5,38 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.8] - 2026-10-28
+
+Measurement-and-reliability patch release. One Epic (EPIC-20261027-r4-batch, five phases, every Gate 4 verdict CONDITIONAL with p0 = 0) plus the three tickets its distillation filed, executed the same day: the measurement layer (judge cases, incident fields, tiering cross-checks), the code-metrics accounting form on the Gate 3 evidence surface, the adopted 甲/乙 items, and the gate3-check.sh false-negative fix.
+
+### Added
+
+- **Judge-case set v1 (provisional).** `.tad/eval/judge-cases/` holds recorded failure cases and controls for replaying a judge (criteria, prompt or model) change against known outcomes: 2 failure cases, 2 controls at v1 (three seed cases removed as unfit). The first replay through this channel caught 0/2 with false-alarm 0/2, and a standing caveat (P1-4) is on record: scores from a replay this size are a smoke signal, not a measurement, and any citation of them must carry that qualification.
+- **Should-have-blocked layer.** Incident records gain a field naming the layer that should have caught the escape (Gate, check, or review), so escape analysis accumulates by layer instead of by anecdote.
+- **Sample production line and criteria pre-declaration.** Replay and evaluation work now pre-declares its criteria and assertion layers before running, and evidence claims carry a strength label (`recomputed` / `disk-read` / `reported`, with the negative-evidence labels beside them).
+- **State-surface trust marks and standing AC dry-run.** State surfaces mark which of their statements are disk-verified; an AC dry-run is a standing step when a handoff is authored, not an improvisation at the gate.
+- **Standing routing verification （借4, limited form).** `.tad/brain-index.md` routing is now verified on a standing basis against a frozen question set: first round Recall@3 8/8 (every expected entry ranked first), false alarms 0/5, against a pre-registered pass line of ≥6/8 and ≤3.
+- **Two fail-closed hard forms (F-S2).** Where a checker meets a malformed date cell or a broken anchor it now stops loudly (a BLOCK line with exit 1; an ERROR with exit 2) instead of passing over the row.
+
+### Changed
+
+- **Code metrics, accounting only (Phase 3).** Two 0BSD tools (crapper, mutator; six-language closed enumeration: Clojure, Java, Go, TypeScript, Rust, Python) are wired to record — never to judge — on the Gate 3 evidence surface. No endorsed thresholds, not a criterion; the dryer tool was excluded. The canonical checklist gained exactly one line. No pilot site has been selected yet.
+- **Adopted 甲/乙 items (Phase 4).** Empty-veto handling （甲1), the change-of-person continuation brief （甲3), decision narrowing （甲4), and 乙1–乙4 landed as designed; 甲2 was judged and not stood up. The second judge-case replay produced one false alarm (1/2), judged at Gate 4 as reviewer over-application; the case carries a known-gap note (CTL-01) in the set's INDEX.
+- **Tiering rule lives where it is used (T-2).** The tiering suggestion rule's executable text moved into the handoff-creation protocol; the tiering log's header keeps the accounting format and points back (the protocol wins on conflict). A standing self-check sentence in the same protocol requires any chain whose write set or step order hits the replay-trigger class to name its replay step, freeze, isolation and reading rules up front — three chains in the R4 batch imported that obligation three different ways, one of them at the Gate 3 door.
+
+### Fixed
+
+- **gate3-check.sh systematic false negatives (T-1).** The checker reported missing evidence on complete review files four times in one batch. Six location/normalisation fixes, classification semantics untouched: a dispatch header before the front matter is tolerated (dispatch keys and blank lines only, at most 4 lines, a key line required); the AC table is also found in its Form B header shape; verdict column names `结果`/`证据` are recognised; a list-form Real paths section is harvested into rows (a missing status marker stays UNEXPLAINED, never a silent pass); a conditional-row id suffix is split as the author pre-signalled; status cells wrapped in `**…**` are normalised — the last one had hidden two real FAIL rows. Regression: the batch's run files now settle line by line (three pairs exit 0), six deliberate-deletion negative controls all fail loudly, and a legacy `---`-first pair's output is byte-identical to before. The pre-fix script is kept beside it as `gate3-check.sh.bak-20261028-t1`.
+- **Framework text pack (T-3).** The tiering log header defines its `corr` and `review` row types (the forms already in use); a pointer addendum beside a falsified path claim in the Phase 1 design names the real surface; a note in the canonical checklist separates the two senses of "pilot" (code-metrics pilot list vs Gate 2 pilot unit); the Gate 3 section head count is corrected 9 → 10 items and synced to the gate SKILL (entry-set drift check empty); the acceptance guide §10 names the delivery record's carrier (the verify-output citation row in the delivering chain's completion report Evidence section).
+
+### Known gaps
+
+- The judge-case set is v1 provisional: 2 failure cases is a floor form, and replay results through it carry the P1-4 qualification above (first replay caught 0/2).
+- One named residual in the checker: the Phase 5 pair still exits 1 with exactly one explained line, `UNEXPLAINED AC19 条件行` — a self-invented conditional-row status (`不触发`) that no current text defines. The classification layer was deliberately not bent for it; the path out is a conditional-row form in the review contract first, the checker following the text.
+- Code-metrics pilot: the six-language list, licences and command forms are on disk; no pilot site has been chosen (the user's / project seats' call).
+- T-1b is filed, not executed: a Gate 2 mechanical line (handoff first line `---` with `dispatch_id` inside the front matter; §9.1 in Form A) so new contracts converge at production time instead of relying on the checker's tolerance, which stays for in-field files only.
+- The D9 candidate worktree (`.worktrees/tad-yolo2-candidate`) has a ruling on record (archive-compress, 2026-10-28) but is not executed: it waits for the cloud-sync thaw or a specific approval, and stays frozen until then. It is not part of the release tree.
+
 ## [4.0.7] - 2026-10-24
 
 Minor-feature patch release. Two Epics: the one-sentence TAD update with its backup lifecycle (EPIC-20261022-tad-update-flow, 16 commits f794fbe4..c27a4625) and Cora owning route and spend (EPIC-20261023-cora-route-judgement), plus two follow-up fixes to the Cora skill (paid run, Down 1 lead-in).

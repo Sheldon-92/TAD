@@ -214,3 +214,19 @@ else:
     sys.exit(1)
 "
 ```
+
+## 10. Standing Verify Skill (Optional, Project-Owned)
+
+A project may keep a standing verify skill at `.agents/skills/verify/` in its own repo. Three layers divide the work and do not substitute for each other:
+
+- **This guide** is the method: how acceptance verification scripts are written, where they live, and how their results are reported (Sections 1–9 above).
+- **The verify skill** is the project-owned driver: five sections — Launch / Doctor / Drive / Evidence / Cleanup — plus a feature map split by function. Gate evidence accepts the verify skill's run output (path + run date); it does not accept a narrative retelling of a run.
+- **Capability packs** are judgment knowledge: a verify skill may reference pack content; it must never copy pack content into the skill.
+
+Feature-map granularity: One feature-map row is one function or delivery surface a user or caller can name; never split by file, never split down to single acceptance criteria; if the map would exceed roughly 40 rows, group by functional domain first, then list rows.
+
+Delivery rule: A verify skill counts as delivered only after its author has run it end to end once — the full feature set or a named smoke subset, with the Doctor section always run in full; the run output is filed on the project's evidence surface and the delivery record — the verify-output citation row in the delivering chain's completion report Evidence section (see `.tad/templates/completion-report.md`) — points at it. A skill that has never run end to end is a draft, not a delivery.
+
+Maintenance loop: When a Gate 4 fails on driver drift, or a feature is added or removed, the skill is updated in the same chain that surfaced the drift.
+
+Non-goal: TAD does not build a verify skill for any project; whether to adopt one is the project seat's own decision. This section fixes only the shape.

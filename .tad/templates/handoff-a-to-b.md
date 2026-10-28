@@ -44,7 +44,7 @@ real_paths:
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 4.0.7
+**Handoff Version:** 4.0.8
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md — cite previous handoff if this one supersedes. Enables /tad-maintain drift check (Phase 1 P1.2.c) to propose archiving the superseded one. -->
 
@@ -130,6 +130,8 @@ Blake在开始实现前，请确认：
 Epic phase: point to the Epic's `## Requirement` (and name the blocks this phase covers). Direct /alex without an Epic: block lines `- **<block>**: …` including `- **Done check**: …` and `- **Not wanted**: …`, then `#### Q→A log` and `#### Assumptions (not asked; Gate 4 lists them)`. A direct /alex handoff also carries the record line (checked by `gate1-format-check.sh`):
 
 playback confirmed: "{his words}"
+
+**Pilot**（可选；fan-out ≥3 同构单元时必填，判据见 `.tad/gates/gate-canonical-checklist.md` Gate 2「Pilot declared」行）: pilot 单元 = [单元名] | 证伪出口 = [何种结果改配方 / 何种结果弃配方] | 记录落点 = [handoff 修订行 / phase{N}-pilot-<k>.md]
 
 ---
 
@@ -721,4 +723,4 @@ Blake完成后填写：
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 4.0.7
+**Version**: 4.0.8

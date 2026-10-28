@@ -1,0 +1,20 @@
+schema_version: 1
+from: "4.0.7"
+to: "4.0.8"
+generated_by: "manual"
+note: |
+  Patch v4.0.8 - measurement and reliability: the R4 batch (judge-case set,
+  should-have-blocked field, tiering cross-checks, code-metrics accounting on
+  the Gate 3 evidence surface) and three follow-up fixes (gate3-check.sh
+  false negatives, handoff-creation load points, framework text pack).
+  No framework files are removed or renamed by this hop.
+  Derivation (2026-10-28): the v4.0.7 tag was never pushed to GitHub
+  (tad-yun carries refs/heads/main only), so the baseline is the GitHub
+  first-import tree 6eff22f6 (2026-10-25, the working folder one day after
+  the 4.0.7 release was prepared) against the current folder, both sides
+  filtered to the gen-framework-provenance release surface (regular files
+  only): 1469 baseline paths, 1489 current paths, baseline-minus-current
+  empty, so no deletes and no renames. Record:
+  .tad/evidence/simple/2026-10-28-release-408-completion.md
+delete: []
+rename: []

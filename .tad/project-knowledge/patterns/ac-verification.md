@@ -837,3 +837,21 @@
 - **failure_mode**: Naive default: draft the prose first and fix rows afterwards one at a time. Why wrong: each cosmetic fix can break a sibling row, and a nested list or a capitalised word looks identical to a reader while failing the count.
 - **Validator**: The row set is re-run in full after every edit and every row's output matches its stated expectation; the draft's list items start at column 0 where a row counts them.
 - **Grounded in**: `.tad/evidence/journal/blake-cora-route-judgement-phase1-2026-10-23.md` (Surprise lines in the first section and Rework 1); `.tad/evidence/yolo/cora-route-judgement/phase1-completion.md` Knowledge Assessment. Related: the "Dry-run every AC against a simulated CORRECT implementation" entry above.
+
+### K-1 新鲜度比较须按较粗一侧的精度运行 — 2026-10-27（源 S-01）
+
+- **Discovery**: trust 标记（分钟精度时间戳）落盘数秒后的首跑，检查器对四面全出 WARN「标记早于文件 mtime」——根因是比较两侧精度不一致：标记分钟级、mtime 秒级，新鲜标记在构造上必被误报。与精度无关的检查全过，唯独新鲜度比较全灭。
+- **Action**: 凡「时间戳字段 vs 文件 mtime」类新鲜度比较，比较前把较细一侧截断到较粗一侧的精度；并在检查文本里明写粒度边界（同粒度单位内编辑不可检出，不冒称更细）。标记面与检查面同批落地时，fixture 须含「刚落标记即跑」一例。
+- **failure_mode**: 朴素默认：两侧时间值直接比较（`marker_ts < mtime` 即判陈旧）。为什么错：精度差被读成时间差，最新的标记反而必然触发陈旧警报；警报在每次正常落标记后必响，等于训练操作者忽略该检查——真陈旧到来时同响一声、无人信。
+- **Grounded in**: `.tad/evidence/yolo/r4-batch/phase2-completion.md` Reflexion History 与 Knowledge Assessment 节；`.tad/hooks/lib/state-surface-check.sh` check9 头部边界文本。
+- **可变量化检验**: 通过——变量为「任一精度 P1 的时间戳字段 vs 精度 P2 的文件系统时间」，与 trust 标记这一具体字段无关。
+- **推荐落点**: `patterns/ac-verification.md`（验证语义面：检查不得系统性误报）；做者候选的另一落点 shell-portability 处理的是平台命令差异、非比较语义，本席不取，终裁见回问 QC-2。
+
+### K-4 冻结字面标记双向脆弱；回放判读先做基线 diff、冻结记录写明 bundle 段落范围 — 2026-10-27（源 N-05）
+
+- **Discovery**: 两轮实证同向汇合。①前置回放整轮机械 FAIL 的全部命中经一手语境复算可归因于字面标记集：被测答复在代码块中逐字引用原问题命令作批评对象，被计为违规（引用误计）；答复在否定/复述语境中出现标记串，被计为命中（否定误计）；答复用同义异写（「授权登记/清单」）表达了正确行为，被计为漏检（异写漏检）。②第二轮回放的 false-alarm 1/2，判者所指字面（对照件缺 `repeat_of:` 行）属实，但 Gate 4 基线 diff 证明字段要求在该 phase 之前早已在行、对照成立——差异实为 bundle 纳入的段落范围，不是规则变严、也不是判者误报；先前「对照干净是相对规则版本」的候选解释被此 diff 证伪。
+- **Action**: （a）以字面标记集计分的回放，机械分数只作信号：判读前逐命中回读语境（引用/否定/异写三类先行排除或显名），归因顺序写死为先查标记集与 bundle 范围、后论被测侧行为。（b）冻结记录必备第四件：bundle 的段落范围（纳入了被测文本的哪些节/行），与判读规则、输入哈希集、目标版本标识并列。（c）false-alarm 归因前必须做基线 diff：判者所指要求在对照入集时点是否已在行——在行且对照成立者，记 `n/a (known gap)` 类，不记判者误报。（d）样本集维护面：v2 入集加字面形态核；标记集刷新或语境感知评分属样本维护链处置，不临场改冻结口径。
+- **failure_mode**: 朴素默认 A：机械分数即结论——FAIL 就是被测侧退化、false-alarm 就是判者误报。为什么错：字面集对语境全盲，分数同时混着仪器误差与真实信号，按分数问责被测侧会把仪器病记成行为病。朴素默认 B（本批被证伪的候选）：把 false-alarm 解释成「规则文本变严、对照相对旧版本干净」这一顺耳叙事而不做基线 diff。为什么错：该叙事的前提（字段要求系本轮新增）经 diff 为假，顺耳解释一旦入册，后续每轮都会按它记账，真因（bundle 段落范围）永远不进冻结记录。
+- **Grounded in**: journal Phase 4 前置回放行与 PM 裁断行；`.tad/evidence/yolo/r4-batch/phase4-gate4-review.md`（判定 (i) 与基线 diff）；`.tad/eval/judge-cases/INDEX.md` CTL-01 已知缺口注记；`phase2-gate3-review-run-addendum.md` P1-4 附带（activation-bypass 标记对异写脆弱）。
+- **可变量化检验**: 通过——变量为「任一字面标记集 × 任一回放轮次」。
+- **推荐落点**: `patterns/ac-verification.md`（回放/验收方法面）；操作面的一半（v2 字面形态核、冻结记录 bundle 范围）已由 INDEX 注记承载、随 v2 开集执行（见 §1 N-05 留置半）。

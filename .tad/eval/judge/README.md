@@ -29,3 +29,5 @@ If a judge returns invalid JSON or refuses to evaluate:
 2. If still failing → create `results/round{N}/{slug}.EVAL_ERROR` marker
 3. ≥2 EVAL_ERROR in a round → harness defect, fix and re-run (doesn't consume iteration)
 4. GS-11/GS-03/GS-06 EVAL_ERROR after re-spawn → that gate is inconclusive → PIVOT
+
+- Regression set for judge-face changes: `.tad/eval/judge-cases/` — 判据文档／评审提示／模型锁变更前，先对 judge-cases 做回放烟测（建集规则与回放记法见该目录 `INDEX.md`，方法见 `METHOD.md`）。

@@ -1,7 +1,7 @@
 # TAD · 项目状态（准入三件套）
 
 > 总经理起草：2026-09-04。人点名配置项目经理。职责 SSOT：`云同步/grok-cloud/docs/pm-charter.md`。
-> 项目经理 agent：`TAD 项目经理`（id `6cea3eb5-afd4-4cf9-bb80-9673fb7243e9`）。
+> 项目经理 agent：`TAD PM`（id `JQACSLdzARJFMmJoaNFWeD`，创建于 2026-10-07）。
 
 ## 一句话
 上游方法库（GitHub `Sheldon-92/TAD`）：维护/发布 TAD 框架本身（有益摩擦、三角模型、安装与升级），不是业务应用仓。

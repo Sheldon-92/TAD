@@ -80,8 +80,10 @@ is_safety_surface() {
 check_ledger() {
   local platform="$1" ledger="$2"
   local in_table=0 header_seen=0
+  local lineno=0
 
   while IFS= read -r line; do
+    lineno=$((lineno + 1))
     if echo "$line" | grep -qE '^\|[[:space:]]*surface[[:space:]]*\|.*owner'; then
       header_seen=1
       continue
@@ -149,22 +151,28 @@ check_ledger() {
         ;;
     esac
 
-    if [ -n "$next_rev" ] && echo "$next_rev" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
-      local review_age
-      review_age=$(days_between "$next_rev" "$TODAY") || { echo "GATE: runtime-freshness exit=2"; exit 2; }
-      if [ "$review_age" -gt 0 ]; then
-        case "$vol" in
-          high)
-            echo "BLOCK [$platform] $surface: next_review overdue ($next_rev < $TODAY, high-volatility)"
-            entry_result="block"
-            ;;
-          *)
-            if [ "$entry_result" != "block" ]; then
-              echo "WARN  [$platform] $surface: next_review overdue ($next_rev < $TODAY)"
-              entry_result="warn"
-            fi
-            ;;
-        esac
+    if [ -n "$next_rev" ]; then
+      if ! echo "$next_rev" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+        # fail-closed: a non-empty next_review that is not a date must not pass silently
+        echo "BLOCK [$platform] $surface: unparseable next_review '$next_rev' ($ledger line $lineno)"
+        entry_result="block"
+      else
+        local review_age
+        review_age=$(days_between "$next_rev" "$TODAY") || { echo "GATE: runtime-freshness exit=2"; exit 2; }
+        if [ "$review_age" -gt 0 ]; then
+          case "$vol" in
+            high)
+              echo "BLOCK [$platform] $surface: next_review overdue ($next_rev < $TODAY, high-volatility)"
+              entry_result="block"
+              ;;
+            *)
+              if [ "$entry_result" != "block" ]; then
+                echo "WARN  [$platform] $surface: next_review overdue ($next_rev < $TODAY)"
+                entry_result="warn"
+              fi
+              ;;
+          esac
+        fi
       fi
     fi
 
@@ -175,6 +183,13 @@ check_ledger() {
     esac
 
   done < "$ledger"
+
+  if [ "$header_seen" -eq 0 ] || [ "$in_table" -eq 0 ]; then
+    # fail-closed: a ledger whose table anchor never matched contributed 0 rows silently
+    echo "ERROR: ledger $ledger: header anchor not found — ledger contributed 0 rows" >&2
+    echo "GATE: runtime-freshness exit=2"
+    exit 2
+  fi
 }
 
 echo "========================================="

@@ -433,3 +433,30 @@
 - **failure_mode**: Naive default: require two or more lenses to agree before acting, and keep verdicts in memory. Why wrong: the single-lens P0 that only one lens was positioned to see is discarded, and an interrupted run loses the minority findings.
 - **Validator**: The run log shows a validate step before each fix and a recorded skip reason for each rejected finding; every lens finding exists as a file; each factual claim in the fact lens output carries a source.
 - **Grounded in**: `.tad/memory/project_pack-quality-leveling-epic.md` (method notes, 2026-06-13); capture layer only, original evidence under `.tad/evidence/yolo/capability-pack-quality-leveling/`.
+
+### K-3 「逐字全载」类自称只能由机械抽取产生、由空 diff 证明 — 2026-10-27（源 N-08）
+
+- **Discovery**: Phase 5 验证记录件首声称「逐字全载定稿限定四条」，实际承载的是执行者凭印象自拟的替代文本（经验索引/静态回放一套），与定稿四条无一对应，且全仓检索该文本只命中记录自身——Gate 3 consistency 判 P0（自报与重算不符、证据否决），run 判 AC7 FAIL。分数与冻结链经独立重算全属实，错只在汇编环节的「抄录」被「改写」顶替。修复轮按行号从定稿机械抽取替换、diff 为空，双镜头亲跑 diff 关账。第二落点：件首换正后，记录尾节仍按已证伪的自拟编号引用限定——替换一处不等于全件清净，凡引用被替换文本的编号/语义处须全件扫除（尾节去编号化微修复＋Gate 4 以扫查零命中为关闭凭据）。
+- **Action**: 任何带「逐字／原文／定稿」自称的承载，产生方式必须是机械抽取（按行号/锚点复制），且自称旁附机械凭据（与源的 diff 为空，或逐字比对命令与输出指针）；汇编者不得凭记忆复述定稿文本。替换已证伪文本时，同件内对该文本的全部引用（编号、简称、语义指代）一并扫除并以扫查结果为关闭凭据。
+- **failure_mode**: 朴素默认：汇编者读过定稿、自信记得大意，于是「按定稿精神」写出四条并标注逐字——甚至诚实地相信自己写的是原文。为什么错：印象复述必然漂移（本例四条全漂），而「逐字」自称使下游读者跳过核对直接引用，漂移文本以定稿权威流通；自报与重算不符一旦成立，按证据纪律整行否决，连带真实成绩的可信度陪葬（本例分数全对仍判 FAIL）。
+- **Grounded in**: `.tad/evidence/yolo/r4-batch/phase5-gate3-review-consistency.md`（P0）；`phase5-g3-fix-report.md`；`phase5-gate3-review-consistency2.md`（关闭凭据）；journal Gate 3 三行。
+- **可变量化检验**: 通过——变量为「任一定稿文本 × 任一汇编载体」。
+- **推荐落点**: `patterns/gate-design.md`（Evidence discipline 同族）；与 K-5 互引（自报须机械凭据的两个物种）。
+
+### K-5 计数类自报必须带推导与查法，否则按未核处理 — 2026-10-27（源 N-06）
+
+- **Discovery**: 同一 Epic 内计数自报三度同型失实：tiering 计划行 file_count 25（自述构成「§7.2 十五项」实为 14，recon 复算 24）；COMPLETION 自报「14 件抽核全等」（产物实 13 件，数值逐件全对、唯计数错）；tiering 计划行 file_count 11（与自述口径 §7.1 十条目＋§7.2 两条目＝12 不符）。三例全部由独立复算抓住、自报者无一自查发现；反例同在盘内：带推导的计数（甲 4 计数 2/5 附构成、corr 行附全枚举）全数经复算成立。近失一例（计划 15 vs recon 17）差额可由修订轮新增两件解释——有推导链可回溯时，差额是信息而非错误。
+- **Action**: COMPLETION、记账行、回报中的每个计数自报，行内带两件：构成推导（n＝a＋b＋…，逐项可指）与查法（只读命令或数法指针）。无推导的计数，评审按未核处理并复算；复算不符按证据纪律记该行自报不实（数值对、计数错同罪——本批第三例即计数与自述口径自相矛盾）。
+- **failure_mode**: 朴素默认：计数是「顺手报个数」，凭写作时的印象或局部枚举填入，默认大致不错、无须像断言一样备证。为什么错：计数错不改变任何单件数值的对错，逐件核查全过时最易漏网；而计数恰是被下游当作完备性凭据引用的（「14 件全等」读作全覆盖证明）——错的计数以全覆盖的权威流通，且同型错误在无人立规时按批复发（三度）。
+- **Grounded in**: `.tad/evidence/tiering-log.md` 计划行/recon 行/corr 行三组对照；`.tad/evidence/yolo/r4-batch/phase4-completion.md` 文末 conductor 更正记名附记；journal Phase 5 Gate 2 行（「计数家族本批第三次复发」）。
+- **可变量化检验**: 通过——变量为「任一自报计数 × 任一收口载体」。
+- **推荐落点**: `patterns/gate-design.md`（与 Evidence discipline「自报与重算不符」行同族）；与 K-3 互引。
+
+### K-9 盲测对象不走角色激活：盲跑折入实施段、以裸上下文子派发运行 — 2026-10-27（源 N-19）
+
+- **Discovery**: 借 4 常设验证的 runner 需要盲跑（只见题面与三面索引、不得读被测语料的结论面）。为其单开的派发任务书被 spawn-lint 正当拦截：lint 要求 skill 壳、激活自报与角色声明，而激活协议的第一步就是读入仓内规程与知识面——盲性在激活完成的瞬间即被摧毁。两者不是谁错了：lint 守的是「无激活不开跑」，盲测守的是「多读一字即污染」，在同一派发形态里不可兼得。conductor 裁定不以空话填表过闸，改按 Phase 4 回放判者的既有先例：盲跑折入一个实施段派发，由该段 Blake 以 fresh 裸上下文子派发运行，只喂冻结输入＋返回协议，原始返回逐字落盘、汇编者不改字。盲跑结果（Recall@3 8/8、误报 0/5）与冻结链复算全等，协议无事故。
+- **Action**: 凡被测对象是「上下文纯净度」本身的派发（盲判、盲检索、对照捕获），不走角色激活通道：以宿主段（实施段或评审段）内的裸上下文子派发形态运行，喂入面逐件枚举并留痕，返回原文逐字落盘；派发闸（lint 类）拦截此类任务书时按结构性冲突处理，不许以形式字段空填绕闸。宿主段的激活与盲跑子派发的隔离边界写进宿主合同（如「子派发只见四件」）。
+- **failure_mode**: 朴素默认 A：把盲跑当普通一步派发，任务书被闸拦后逐项补形式字段（写个名义 skill 壳、让 runner「自报激活」）以求过闸。为什么错：补齐的形式字段恰好执行了激活读取，盲测在开跑前已失效，而成绩单上看不出来——测到的不再是盲态能力。朴素默认 B：认定闸是误拦、绕过或关掉它。为什么错：闸拦对了——无激活派发对普通步确实危险；问题在派发形态选错，不在闸。
+- **Grounded in**: journal「runner 形态改判（conductor）」行；`.tad/evidence/yolo/r4-batch/phase5-completion.md` Claims 行 9 与步骤行 2b；Phase 4 Step 7b 先例（`phase4-completion.md` 步骤执行记录）。
+- **可变量化检验**: 通过——变量为「任一以盲态为测量对象的子派发」。
+- **推荐落点**: `patterns/gate-design.md`（独立视角/干净上下文族，与 principles「Independent Judgment」的形态面相邻）。

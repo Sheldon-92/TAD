@@ -104,3 +104,12 @@
   (interruption-a/b/c, control), commits 00570c00/0ccd30cd/84c3666c,
   `.tad/evidence/yolo/yolo2-verified-orchestration/phase1/` incl.
   knowledge-assessment.md (discoveries B1-B3)
+
+### K-7 已被盘面证伪的断言句，在原句位置留指针，不改原文、不靠后人记忆绕行 — 2026-10-27（源 N-09）
+
+- **Discovery**: Phase 1 设计正本断言兼容评估台账在 `.tad/runtime-compat/ledgers/` 子目录——该目录不存在，校验器脚本常量直指上层四件。更正在 Phase 5 合同 §2.2 与 §10.5 Q1、并经 Gate 2 确认，链内执行无误；但设计原句至今无就地指针，任何日后只读设计正本的人都会先去找那个不存在的目录。同一批的对照面：本席（PM 席）在 Phase 3 S1、Phase 4 Q1 两度把转述压缩失真写进任务书，也都靠「以原件为准」的当场裁断化解——裁断只活在当轮，未落回被误读的文本旁。
+- **Action**: 设计/合同/判词中的断言句一经后续盘面证伪，在原句位置以附记形态加证伪指针（错在哪、以何为准、更正载体指针），原文不回改。蒸馏与收口时把「期内被证伪的断言句」列为一类扫查面：凡蒸馏作者读到的已证伪句，核其原位有无指针，无则登记。
+- **failure_mode**: 朴素默认：更正落在新文件里（合同存疑、评审 verdict、journal 裁断），原句保持「干净」以示尊重原件。为什么错：读者的读取路径从原句开始，不从更正开始；原句无指针时，更正的存在对按原句执行的人不可见——错的不是没人纠正，而是纠正没有落在错误被读到的地方。
+- **Grounded in**: `.tad/evidence/yolo/r4-batch/phase1-design.md` §6 P5-2；`.tad/active/handoffs/HANDOFF-20261027-r4-phase5-borrow4.md` §2.2、§10.5 Q1；phase5-completion.md 蒸馏话题登记行「新登记两条」①。
+- **可变量化检验**: 通过——变量为「任一规范性文本中的事实断言句」。
+- **推荐落点**: `patterns/memory-and-learning.md`（与「摘要会压掉结论」条同族：文本的后续读者只见原句不见语境）；具体落字走 T-3(b)。

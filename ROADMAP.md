@@ -1,6 +1,7 @@
 # Roadmap
+trust: disk-verified 2026-10-27T22:06 UTC by Blake
 
-> Strategic direction for TAD. Updated 2026-10-24 for v4.0.7.
+> Strategic direction for TAD. Updated 2026-10-28 for v4.0.8.
 > See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) for current state and
 > [NEXT.md](./NEXT.md) for the tactical queue.
 

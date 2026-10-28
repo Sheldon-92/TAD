@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 4.0.7 (Claude Code, Codex, OpenCode and Cursor are install targets)
+**Version**: 4.0.8 (Claude Code, Codex, OpenCode and Cursor are install targets)
 
 TAD runs on **Claude Code, Codex, OpenCode, and Cursor as supported install targets**, with a shared protocol.
 On each of them you can start with Cora (`/cora`, or `$cora` on Codex; not yet run on Cursor and OpenCode): she is the conductor you talk to, and she dispatches Alex, Blake and reviewers as subagents; `/alex` and `/blake` still work directly. What has been run for Cora on each harness is in the section "Cora on each harness" below; the table below covers the hooks and the rest of the framework.
@@ -282,4 +282,4 @@ Update reminder limits: one network call per 24 h per user (a failed or slow che
 
 ---
 
-*TAD v4.0.7 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*
+*TAD v4.0.8 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*

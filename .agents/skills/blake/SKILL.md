@@ -153,6 +153,8 @@ recovery:
   stale_threshold: 30  # minutes
 ```
 
+换执行者（非同会话 resume）以 resume brief 为开工件；无 brief 时，接手者的第一份产出是『brief 缺失』记录＋盘面清单，不是工作本身。
+
 ### 配置文件位置
 ```
 .tad/ralph-config/loop-config.yaml      # Loop 配置
@@ -165,7 +167,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v4.0.7 Framework -->
+<!-- TAD v4.0.8 Framework -->
 
 # Agent B - Blake (Execution Master)
 

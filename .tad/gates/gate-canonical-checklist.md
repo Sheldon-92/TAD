@@ -24,7 +24,7 @@ Why CE: 结果 / 完成判据 / 决策与规模 / 估算 — 四个独立条件�
 Checklist items:
 - [ ] Gate 2 review complete — two reviewers with different lenses (consistency + risk or fit; .tad/templates/review-contract.md). Why ME: 流程检查（审查是否发生）
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
-- [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). Why ME: 只检查"验证方法合法"
+- [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). AC 字面 dry-run 常设化：consistency 评审文件须含 `## AC dry-run (baseline)` 表（逐 §9.1 行：字面命令｜baseline 实跑结果｜预期形态（该失败且失败理由对／该通过）｜match y/n）；§9.1 有行而表中无对应行＝该轮 Gate 2 不完整（既有门的完备性规则，不新设门）。命令文本的常设预检 linter 点名 `.tad/hooks/lib/verify-ac-commands.sh`：严格按其头部纪律——advisory、exit 恒 0、不注册任何 hook、不作拦截；字面实跑仍由评审人做，不造自动执行器. Why ME: 只检查"验证方法合法"
 - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
@@ -32,12 +32,13 @@ Checklist items:
 - [ ] Data flow mapped. Why ME: 数据流图存在性
 - [ ] Risk card for high-risk handoffs — 高风险 handoff（触发项：L3 动作（含删除、密钥、公网、生产）／跨仓或跨席位写／引入新连接器、MCP 或依赖／不可逆动作／涉及金额／对外动作，以及 PM 判断为高风险者）附风险卡（模板 `.tad/templates/dispatch-risk-card.md`，落盘 `.tad/evidence/risk-cards/risk-<task_id>.md`），证伪式假设表逐条成立（假设句＋证伪信号＋动作三列齐）；非高风险须在 Gate 2 节写明触发项核对结论. Why ME: 只检查"高风险派发的关键假设是否写明且可证伪"
 - [ ] Load points declared — 本次新增/修改的每条规程、模板、文件逐项写明装载点位（装载面＋触发时点）；无装载点位的项判设计未完成. Why ME: 只检查"写下的东西读不读得到"
+- [ ] Pilot declared — fan-out ≥3 同构单元（同 handoff 模板/配方＋同 §9.1 验收方法、仅目标与输入不同）时：pilot 单元＋证伪出口已点名；不触发时记 n/a. Why ME: 只检查"fan-out 前 pilot 声明在不在"
 
 Why CE: 流程 + 质量 + 4 层设计检查。已 MECE ✅。
 
 ## Gate 3: Implementation Quality
 **Owner:** the Gate 3 run reviewer — not the builder (Blake prepares: completion report, journal, commit) | **When:** After implementation (Layer 1 and commit)
-# MECE: verified 2026-10-19 — 9 items check 9 distinct artifacts
+# MECE: verified 2026-10-19 — 10 items check 10 distinct artifacts
 
 Checklist items:
 - [ ] Code/deliverable complete — all handoff tasks done; Ralph Layer 2 COMPLETED on the final commit with every review-contract §8 lens covered. ESCALATED_TO_ALEX / BLOCKED_STATE / BLOCKED_RISK / ABORTED / NOT_RUN are not clean completion. Why ME: 产出物完整性
@@ -54,13 +55,14 @@ Checklist items:
 - [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
       全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
       reviewer 无法 diff 只能重读全文 → 先修证据管道再谈验收。Why ME: 证据管道确定性
+- [ ] Code metrics（记账，仅试点链）：试点名单内的链，证据集中有 code-metrics 运行记录或合格 not-run 理由；缺失、或 not-run 理由不合格（枚举外理由／缺写入者／缺日期），同样只记 pilot coverage gap，不单独构成 Gate 3 的 FAIL／P0／PARTIAL／CONDITIONAL；非试点链无记录义务；本批内指标数值不决定 verdict。注：本节『试点链』指代码指标记账的试点名单，与 Gate 2『Pilot declared』的同构单元先行 pilot 不是一事，勿混。
 - [ ] Git commit done — hash recorded (or NONE for doc-only). Why ME: 版本控制
 - [ ] Knowledge Assessment complete — journal or "no discovery". Why ME: 知识捕获
 - [ ] Provenance non-empty (advisory) — ≥1 row per CREATE file. Why ME: 生成可追溯性
 - [ ] ACs re-run by the run reviewer in one throwaway project copy — its verdict file's `## AC runs` table has every §9.1 AC row (or a not-run reason); every row compared with Expected Evidence. Why ME: 重算是否真跑
 - [ ] Real paths covered — every real_path has a run row or "not-run: <reason>" (gate3-check.sh exit 0). Why ME: 真实路径覆盖
 
-Why CE: 产出 + 规格 + 证据 + 可重放 + 版本 + 知识 + 追溯 + 脚本重跑 + 真实路径 — 九个独立 artifact。
+Why CE: 产出 + 规格 + 证据 + 可重放 + 指标记账 + 版本 + 知识 + 追溯 + 脚本重跑 + 真实路径 — 十个独立 artifact。
 
 ## Gate 4: Acceptance by Real Use
 **Owner:** an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer | **When:** After Gate 3 passes

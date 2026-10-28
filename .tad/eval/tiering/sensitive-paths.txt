@@ -1,0 +1,10 @@
+# sensitive-paths.txt — 分档机械对照的敏感路径清单（只记账，见 .tad/evidence/tiering-log.md 表头）
+# 匹配语义（写死）：条目一律仓内相对路径；以 / 结尾的目录条目 = 前缀递归匹配
+# （其下任意深度文件命中即算命中）；文件条目 = 精确匹配。日志行须记录实际命中的路径原文。
+# 种子：AGENTS.md File Ownership 的 TAD 框架面 + 判据载体路径。
+AGENTS.md
+.tad/hooks/
+.tad/gates/
+.tad/templates/
+.tad/templates/review-contract.md
+.tad/project-knowledge/principles.md

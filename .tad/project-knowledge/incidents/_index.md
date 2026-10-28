@@ -3,7 +3,9 @@
 > One-time evidence entries supporting L1 principles or L2 patterns.
 > Never pre-loaded into agent context. Queried on-demand via knowledge-blame.sh.
 > Auto-archived after 90 days when linked L2 pattern is stable.
-> Format: `- [title](YYYY-MM/filename.md) — date, linked pattern/principle`
+> Format: `- [title](YYYY-MM/filename.md) — date, Linked to: <pattern/principle>, Should have caught: <layer>`（`Should have caught` 自 2026-10-27 起对新条目生效：layer 沿 escape-log 写法记最早未触发的 gate/机制；历史条目不回填）
+> **检索路由**：incident 类问题先查 `routing.md`（三层索引：家族→子簇→逐件钩子行），再做文件级搜索。
+> **维护规则**：新 incident 入册时，须在同一次改动内为 `routing.md` 补其 drawer 行；入册无 routing 行＝入册未完成（在蒸馏时核，不新设门）。
 
 ---
 
