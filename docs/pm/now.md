@@ -1,3 +1,3 @@
-当前步: phase 1 | step design 已落（EPIC-20261027-r4-batch，设计正本 .tad/evidence/yolo/r4-batch/phase1-design.md，10-27 14:33 ET，dispatch r4-p1-design-1）
-停点: Gate 2 双审未开跑、无审稿落盘；Run 行 Owner=claude-code 10-27 14:24（开跑卡写 Muse VM 原生 subagent），box 侧无在跑进程；已经 INBOX 问 Muse 是否在跑
-下一步: 由 Muse 侧派 Gate 2 双审（两份独立 Alex），PASS 后进 Phase 2；Home 侧只看着，红灯或久停报 GM（用户 10-27 17:54 ET 定）
+当前步: EPIC-20261031-v409-basket Phase 1 ✅、Phase 2 ✅、Phase 3 pack 分诊 ✅（均 Gate 4 CONDITIONAL PASS p0=0，2026-10-31；Phase 3 台账终态 22/1/2/1、Phase 1 条件 C1 已销账）。携带：Phase 1 C2（Mac 腿待同步清零重跑，conductor）、判据形态 P2 两件（Phase 2 AC11＋Phase 3 AC9，同批路由 Phase 4 判据面或下一小修批）、Phase 3 F1 runner locale P2（后续小修批）、agent-computer-interface 观察（4.0.9 发版收口转观察）、C-RR 前向义务（发版前程 replay 捕获）
+停点: step3f 未跑（移到篮子内容落定后、发版前跑，测目标树）；downstream-versions 台账刷新欠账（随发版 step3e.3）；签认层只立票（待与用户口径对齐再立 Epic）；.bak 甲移除未点决（可随小修批先保全转 maintainer-evidence）；D9 candidate 工作区（约 112MB）待特批或解冻；R3 触发＝下次 migrate 或 2027-01-31；月度跨记录自查下次 2026-11-08
+下一步: Phase 4 扫描面走全链（承接 KC3、AC11/AC9 判据形态 P2、三查硬门）；Phase 5 签认层待用户口径对齐；篮子齐后跑 step3f → 发 v4.0.9 → 通报 GM 与 INBOX；now.md 每 phase／发版收口刷新

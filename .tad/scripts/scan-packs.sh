@@ -133,7 +133,7 @@ last_scanned: "$(date -u +%Y-%m-%d)"
 source_repo: "${SOURCE_REPO}"
 source_branch: "${SOURCE_BRANCH}"
 source_base_path: ".tad/capability-packs"
-synced_from_version: "${SYNCED_VERSION}"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
+synced_from_version: "${SYNCED_VERSION}"  # metadata only; the Phase 2 compatibility-check TODO is cut (已裁 — no named consumer ever materialized; see TICKET-20261031-pack-triage)
 packs:
 EOF
 

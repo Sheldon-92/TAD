@@ -5,6 +5,23 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.9] - Unreleased
+
+Basket patch release: one five-phase Epic (EPIC-20261031-v409-basket, every Gate 4 verdict CONDITIONAL with p0 = 0) plus the release-run items its tickets registered.
+
+### Added
+
+- **Live-state three-check gate on the surplus scan surface.** Before a scanned candidate may be ranked, its reader report must carry a live-state source status, a human-prerequisite status, and on-disk cited paths; any check that cannot be established demotes the candidate to needs-human with the reason named. Narrative text can no longer drop a candidate ahead of the field layer — it is recorded as a signal field only (`stale_text_signal`).
+- **Refresh diff alarms.** Each new surplus plan is diffed item-by-item against the previous one; eligibility flips are named in a dedicated alarm section instead of changing silently.
+- **Scan replay set.** A 12-row replay corpus (the AC8 seven-row set plus the three recorded scan failure shapes and two positive controls) re-runs the classification block verbatim with a hash anchor; any drift in the block fails closed.
+- **Second observable surface rule.** Probe-class mechanisms must expose a machine-readable product surface (fields or report files), not only log output — landed as a gate-design rule with this release's scan sidecar and replay report as its first instances.
+
+### Changed
+
+- **Pack fleet triaged on discriminative evidence.** All 26 registered capability packs were re-verified against tightened fixtures: 22 hold `verified-discriminative`, 2 are `no-discriminative-power` pending fixture rebuilds, 1 sits under observation, 1 was deregistered (file retained). Two June-era "no delta" verdicts were overturned as loose-fixture artifacts.
+- **Criteria-form repairs.** Expected-evidence wording now distinguishes output-form from locator-form premises; checker output vocabularies are reconciled against the literal strings criteria cite before delivery; counting criteria must pin their counting surface.
+- **Small-fix batch.** The surplus workflow declares its runtime requirements up front and probes them at zero cost before any agent starts; the workflow survives harnesses without the newer globals; long evidence files are written in verified segments.
+
 ## [4.0.8] - 2026-10-28
 
 Measurement-and-reliability patch release. One Epic (EPIC-20261027-r4-batch, five phases, every Gate 4 verdict CONDITIONAL with p0 = 0) plus the three tickets its distillation filed, executed the same day: the measurement layer (judge cases, incident fields, tiering cross-checks), the code-metrics accounting form on the Gate 3 evidence surface, the adopted 甲/乙 items, and the gate3-check.sh false-negative fix.

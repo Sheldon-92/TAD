@@ -26,6 +26,7 @@ Checklist items:
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
 - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). AC 字面 dry-run 常设化：consistency 评审文件须含 `## AC dry-run (baseline)` 表（逐 §9.1 行：字面命令｜baseline 实跑结果｜预期形态（该失败且失败理由对／该通过）｜match y/n）；§9.1 有行而表中无对应行＝该轮 Gate 2 不完整（既有门的完备性规则，不新设门）。命令文本的常设预检 linter 点名 `.tad/hooks/lib/verify-ac-commands.sh`：严格按其头部纪律——advisory、exit 恒 0、不注册任何 hook、不作拦截；字面实跑仍由评审人做，不造自动执行器. Why ME: 只检查"验证方法合法"
 - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
+- [ ] Handoff header form [handoff-header-form] — 新合同机械核验三点：① 首行须为 `---`；② `dispatch_id` 位于 front matter 块内（首行 `---` 与其闭合 `---` 之间）；③ §9.1 表头须为形态 A（`| # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |`）；④ §9.1 各行 Expected Evidence 非空（表区逐行机械可判；输出形预设的判断面由 AC dry-run 表承接，不在本点）。三点全为盘面事实、评审人机械可判；不合规时合同退回改形，不靠检查器容忍过门。存量豁免：本行只约束本行落地后进入 Gate 2 的新合同，已在野的存量 handoff 与评审件不回改，gate3-check.sh 的定位层容忍不撤销、只服务存量件。 Why ME: 只检查"新合同头形三点是否合规"
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
 - [ ] Functions verified. Why ME: 代码级引用正确性（grep 可验证）

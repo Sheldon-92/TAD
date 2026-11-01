@@ -167,7 +167,7 @@ recovery:
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v4.0.8 Framework -->
+<!-- TAD v4.0.9 Framework -->
 
 # Agent B - Blake (Execution Master)
 
@@ -817,6 +817,9 @@ ralph_loop_execution:
             - If not a git repo → skip with warning
         skip_if: "--worktree flag not present"
         # NOTE: When worktree active, ALL steps run INSIDE .worktrees/tad-{task-id}/ directory.
+        # EXCEPTION: the handoff's ## Gate Rounds section is ALWAYS written via the MAIN-WORKTREE
+        # absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a
+        # worktree (see the no-progress breaker in gate/SKILL.md and mandatory.no_counter_reset).
 
       1_8_optimization_check:
         description: "Detect optimization_target in handoff"
@@ -974,9 +977,21 @@ ralph_loop_execution:
           Round 3 (from round 1 or the last re-plan) with an open P0, or a lens it cannot
           complete: ESCALATED_TO_ALEX with open findings/NOT_RUN/escalation_reason; stop
           repairs and re-review; never round 4 without a re-plan.
+          Gate Rounds boundary-append (no-progress breaker; definitions, the breaker report
+          template and the grant conditions live in gate/SKILL.md, the one shared NO-PROGRESS
+          block): when a round is incremented and STARTED, also append a layer2 boundary row
+          to the MAIN-WORKTREE handoff's ## Gate Rounds (verdict=RUNNING, mechanical category
+          only) — or reuse the tail RUNNING row if one is already open. When the round closes
+          (on_success or on_failure), set that row's verdict in place; RUNNING→terminal is the
+          ONLY in-place edit ever allowed in that table. After setting it, derive G3 and
+          TOTAL_ROUNDS from the table: if G3 >= 3 or TOTAL_ROUNDS >= 6 → emit the
+          NO-PROGRESS CIRCUIT BREAKER report and STOP. This breaker counts every non-PASS
+          round across re-plans within the handoff and never resets on PASS — it is stricter
+          than, and additional to, the round-3 escalation above.
         on_failure:
           - "Apply the standing BLOCKED_RISK veto first; unresolved serious out-of-scope risk goes to Alex/human before any repair/review continuation."
           - "Preserve raw reports/findings and close the FAILED round; the count was consumed BEFORE dispatch, do not increment here."
+          - "Set the open layer2 boundary row's verdict in the MAIN-WORKTREE handoff's ## Gate Rounds to this round's terminal verdict (RUNNING→terminal only), then run the derived no-progress breaker check: G3 >= 3 or TOTAL_ROUNDS >= 6 → NO-PROGRESS CIRCUIT BREAKER report + STOP (gate/SKILL.md)."
           - "Apply same-category >=3 and the existing global iteration/time/Layer 1 breaker exits first if triggered."
           - "Fix issues, re-run Layer 1, commit, then the next round per contract §7 (only the lenses with an open item, and the run lens after every rework)"
           - "Round 3 with an open P0 (counted from round 1 or the last re-plan) → escalate_to_alex; stop repairs/re-review, no round 4 without a re-plan"
@@ -984,6 +999,7 @@ ralph_loop_execution:
         on_success:
           - "Apply the standing BLOCKED_RISK veto BEFORE evaluating COMPLETED; unresolved serious out-of-scope risk prevents completion even if every lens passes."
           - "Only after the risk veto is clear: a round in which every review-contract §8 lens is covered on the SAME final commit with no open P0/FAIL/PARTIAL (P1 carried) -> COMPLETED."
+          - "Set the open layer2 boundary row's verdict in the MAIN-WORKTREE handoff's ## Gate Rounds to PASS (RUNNING→terminal only). A PASS row never resets any Gate Rounds count."
           - "Persist terminal state and summary; COMPLETED allows Gate 3 checks, does not assert Gate 3 PASS."
         input_and_findings: |
           input_id binds handoff digest, task baseline, replayable task delta (bytes,
@@ -1053,6 +1069,7 @@ ralph_loop_execution:
   # Circuit Breaker Logic
   circuit_breaker:
     trigger: "consecutive_same_error >= 3"
+    trigger_no_progress: "the handoff ## Gate Rounds derived G3 >= 3 or TOTAL_ROUNDS >= 6 — a strict count, independent of whether the errors repeat and never reset by PASS (definitions in gate/SKILL.md, NO-PROGRESS block)"
     detection:
       - "Compare error message hash with previous"
       - "Track error category (build/test/lint/type)"
@@ -1148,6 +1165,10 @@ ralph_loop_execution:
         2. 检查 Status = ACTIVE 且 handoff 路径文件存在（stale_detection）
         3. Re-run /blake to reload full SKILL
         4. Resume from Current Position
+      ⚠️ 每次回复前自检（第 2 问）：自上一次写 ## Gate Rounds 以来，我是否又完成了一次
+      「改动 → 重跑验证 → 仍未过」的完整往返？
+        是 → 先补记一行（verdict 可为 RUNNING），再继续本回合。
+      恢复时从 ## Gate Rounds 记录的行继续计数——不得重置计数逃避熔断（mandatory.no_counter_reset）。
 
 # DEPRECATED (2.44.6): NotebookLM layer retired — routing is local_wiki → websearch (SSOT config-workflow.yaml fallback_chains.research).
 # NotebookLM Access (RETIRED 2.44.6 — Blake read-only channel closed; use WebSearch)
@@ -1296,6 +1317,11 @@ mandatory:
   after_completion: "MUST create completion report"
   decision_escalation: "MUST escalate significant implementation decisions not covered by handoff to human"
   frontmatter_compliance: "MUST read and obey handoff YAML frontmatter (task_type, e2e_required, research_required) — these are Alex's design-time decisions, not Blake's runtime judgment"
+  no_progress_breaker: "MUST stop and hand over to the human when the handoff ## Gate Rounds derived G{n} reaches 3 or TOTAL_ROUNDS reaches 6 — strict count, independent of whether the errors are the same (gate/SKILL.md NO-PROGRESS block)"
+  no_counter_reset: "MUST NOT reset ## Gate Rounds counters to evade the circuit breaker, including after compaction or interruption recovery — the only exception is a HUMAN-GRANTED-CONTINUE row meeting all five grant conditions in gate/SKILL.md"
+  no_verdict_upgrade: "A boundary verdict once written into ## Gate Rounds is terminal (RUNNING→terminal excepted). MUST NOT rewrite a recorded verdict; disputes add a NEW row, never edit an old one. Recording PASS at count 2/3 MUST be explained in the Completion section noting 『本判定发生在熔断前一轮』 — not a prohibition, a trace"
+  no_gate_reattribution: "MUST NOT re-attribute the same batch of unresolved findings to another Gate to obtain a fresh 3-round budget; after any Gate reaches 3/3 its unresolved findings stay recorded under the original Gate within this handoff unless a HUMAN-GRANTED-CONTINUE row explicitly re-attributes them"
+  no_decision_log_write: "MUST NOT write to .tad/evidence/decisions/ in any way — that directory is the askuser-capture.sh hook's exclusive mechanical log; an agent write destroys its trust for every downstream use"
 
 # ═══════════════════════════════════════
 # ⚠️ EXECUTION CHECKLIST — 不可精简

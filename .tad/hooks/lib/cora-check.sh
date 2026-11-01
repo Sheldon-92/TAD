@@ -9,6 +9,9 @@
 #   cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-....md>
 #   cora-check.sh gate4-record <gate report .md>
 #   cora-check.sh gate3-files <.tad/{active,archive}/epics/EPIC-....md> <phase N>
+# Slug source (both epic-taking subcommands): the Epic's **Epic ID** line;
+# when that line is absent, the slug falls back to the EPIC-<date>-<slug>
+# filename. An ID line, when present, always wins over the filename.
 # Exit: 0 = fine (a CHECKPOINT line is still exit 0), 1 = ALARM / MISSING, 2 = usage (also: not run from a root, absolute
 #       or odd Epic path, unreadable file). An Epic whose Budget line has no
 #       `estimate <N>` (or a leading `约 N 次派发` / `N dispatches`) is not an error: `dispatches` prints the count and
@@ -66,6 +69,10 @@ cmd_dispatches() {
   case "$epic" in *..*) usage ;; esac
   [ -f "$epic" ] && [ -r "$epic" ] || usage
   slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
+  # Filename fallback: only when the ID line above yields no slug.
+  if [ -z "$slug" ]; then
+    slug=$(basename "$epic" | sed -n 's/^EPIC-[0-9]\{8\}-\([A-Za-z0-9_-]*\)\.md$/\1/p')
+  fi
   [ -n "$slug" ] || usage
   # Estimate from the Budget line (bytewise sed, so UTF-8 約/次派发 work under any locale):
   #   1. the number right after `estimate` (optionally `~`, `约` or `about` between);
@@ -221,6 +228,10 @@ cmd_gate3files() {
   case "$n" in ''|*[!0-9]*) usage ;; esac
   [ -f "$epic" ] && [ -r "$epic" ] || usage
   slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
+  # Filename fallback: only when the ID line above yields no slug.
+  if [ -z "$slug" ]; then
+    slug=$(basename "$epic" | sed -n 's/^EPIC-[0-9]\{8\}-\([A-Za-z0-9_-]*\)\.md$/\1/p')
+  fi
   [ -n "$slug" ] || usage
   dir=".tad/evidence/yolo/$slug"
   need="gate3-verdict impl-review-consistency"

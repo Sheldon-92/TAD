@@ -43,12 +43,23 @@ WORKFLOW-FALLBACK: 没有 Workflow 工具 → 明说「*surplus 在本 harness �
      }
    })
    ```
-3. **Persist the two artifacts.** The workflow runtime is sandboxed (no filesystem
+3. **Persist the two artifacts.** Determine the diff baseline `prev` BEFORE
+   writing anything: the newest existing `.tad/active/SURPLUS-PLAN-*.json`. If
+   its stem equals this run's target stem (a same-day re-run), copy it to a
+   temporary prev file first — the persist below overwrites that path, and the
+   diff must never compare this run against itself. If no prior sidecar exists,
+   `prev` is the literal `NONE`. Then persist: the workflow runtime is sandboxed (no filesystem
    access), so it returns the rendered content. Write them yourself with the Write tool:
    - `result.plan_markdown` → `result.plan_path`  (`.tad/active/SURPLUS-PLAN-<stamp>.md`)
    - `result.sidecar_json`  → `result.json_path`  (`.tad/active/SURPLUS-PLAN-<stamp>.json`)
    The `.json` sidecar is the **Phase-2 contract** — Phase 2 reads JSON, never the Markdown.
-4. **Display** the ranked plan table + the totals summary (total / dropped / stale /
+4. **Append the qualification-flip alarm section.** Run
+   `node .tad/scripts/surplus-plan-diff.mjs <prev|NONE> .tad/active/SURPLUS-PLAN-<stamp>.json`
+   and append its stdout (the `资格翻转告警` alarm section, or the no-baseline line on a
+   first run) to the end of the plan `.md` just persisted. This runs on EVERY
+   `--plan`: eligibility flips between rounds are named in the plan itself,
+   never silent.
+5. **Display** the ranked plan table + the totals summary (total / dropped / stale /
    auto-eligible / needs-human) and point the user at the `🔒 Needs You` section.
 
 ### `*surplus +<budget>`  (e.g. `*surplus +500K`, `*surplus +2M`)
@@ -69,16 +80,26 @@ WORKFLOW-FALLBACK: 没有 Workflow 工具 → 明说「*surplus 在本 harness �
      scriptPath: '.tad/workflows/claude/surplus-execute.workflow.js',
      args: {
        sidecar_rows: <parsed JSON .rows array>,
-       date: '<stamp>'
+       date: '<stamp>',
+       repo_root: '<absolute path of this repo root>',
+       budget_total: <the numeric budget parsed in step 1>,
+       fallback_agent_estimate_tokens: 20000
      }
    })
    ```
+   `repo_root` is required and must be absolute — the workflow fail-closes
+   without it (a defaulted root would silently write outside the repo).
+   `budget_total` is required on runtimes with no native budget global
+   (the workflow then runs a local ledger against it). `fallback_agent_estimate_tokens`
+   is the per-agent-call estimate the ledger charges when a runtime reports
+   no usage figure; omit it to default to the 250K reserve.
 5. **Persist the report.** Write `result.report_markdown` to `result.report_path`
-   (`.tad/active/SURPLUS-REPORT-<stamp>.md`).
+   (returned as an absolute path anchored at `repo_root`; repo-relative form
+   `.tad/active/SURPLUS-REPORT-<stamp>.md`).
 6. **Display summary:**
    - Executed: N tasks (tokens spent)
    - Failed: N tasks (skipped)
-   - Needs You: N SAFETY tasks
+   - Needs You: N tasks (SAFETY holds + branch-0 reroutes)
    - Point user to the full report path.
 
 ## Hard boundaries (Phase 1)
@@ -102,5 +123,16 @@ Key safety properties:
 - **SAFETY zero-execution**: `safety_flag === true` tasks are never executed (strict equality)
 - **Sidecar validation**: fail-closed (throw on malformed rows, not silent skip)
 - **Circuit breaker**: 3 consecutive failures → stop loop
-- **Budget guard**: stops when `budget.remaining() < 250K` reserve
+- **Budget guard**: the workflow probes the runtime budget global at Validate.
+  Where it exists, it delegates verbatim (stops when remaining < 250K reserve);
+  where it is absent, it runs a local ledger against the `budget_total` arg with
+  the same reserve and circuit-breaker semantics, and marks totals estimated
+  with `(ledger est.)` when any charge was an estimate.
+- **Ledger mode limit**: Ledger mode cannot drive the nested step runner: budget='ledger' with steps='nested' throws at Validate ("ledger mode does not support nested workflow").
+- **Runtime-requirements probe （探针）**: both workflow scripts declare their `runtime-requirements:` in the header and probe them at entry (existence-only, before any agent activity) — a missing hard requirement (`agent` / `phase`) throws naming the missing global and stops the run cold, while a missing facade-covered global (`budget` / `workflow`) only logs a degradation line and continues on its designed fallback.
+- **Run integrity (live verification runs)**: when surplus-execute is run
+  for verification (Gate replays, acceptance runs), invoke a byte-identical
+  copy of the workflow file kept in the chain's evidence directory, never
+  the in-repo original; record the copy path and the original's sha256
+  before/after in the run record, and stop on any mismatch.
 - **yolo-epic contract**: 7 required keys (epic_path, epic_slug, phase_number, phase_name, handoff_path, completion_path, steps), result.error/stop_reason for failures (no try/catch); see yolo-execution-protocol.md, result.error/stop_reason for failures (no try/catch)

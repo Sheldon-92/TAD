@@ -1,0 +1,49 @@
+schema_version: 1
+from: "4.0.8"
+to: "4.0.9"
+generated_by: "manual"
+note: |
+  Patch v4.0.9 - the v4.0.9 basket: small-fix batch, distillation batch,
+  capability-pack triage, scan-surface hardening (structured-field-first
+  classification, replay anchor, plan diff), plus the release-prep items
+  (step3f transcripts, standing-stock reconciliation, load budget).
+  One framework relocation ships in this hop: the ml-training source pack
+  was deregistered in the pack triage (Phase 3) and moved, byte-identical,
+  from .tad/capability-packs/ml-training/ to
+  .tad/capability-packs-retired/ml-training/ (the installed skill
+  projection stays and is declared skill-only in
+  .tad/capability-packs/skill-only-declarations.txt). Nothing is deleted.
+  Derivation (2026-11-01): baseline is the GitHub v4.0.8 tag tree
+  (annotated tag 218ef2c0 -> commit df18c462) against the staged 4.0.9
+  release tree, both sides filtered to the gen-framework-provenance
+  release surface (regular files only): 1480 baseline paths, 1502
+  current paths, baseline-minus-current = the 8 ml-training pack paths,
+  each paired with a blob-identical path under capability-packs-retired/,
+  so 8 renames and no deletes. Record:
+  .tad/evidence/yolo/v409-basket/rel-clone-1-record.md
+delete: []
+rename:
+  - from: ".tad/capability-packs/ml-training/CAPABILITY.md"
+    to: ".tad/capability-packs-retired/ml-training/CAPABILITY.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/SKILL.md"
+    to: ".tad/capability-packs-retired/ml-training/SKILL.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/install.sh"
+    to: ".tad/capability-packs-retired/ml-training/install.sh"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/references/cost-estimation.md"
+    to: ".tad/capability-packs-retired/ml-training/references/cost-estimation.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/references/data-preparation.md"
+    to: ".tad/capability-packs-retired/ml-training/references/data-preparation.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/references/lora-finetune.md"
+    to: ".tad/capability-packs-retired/ml-training/references/lora-finetune.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/references/mcp-collaboration.md"
+    to: ".tad/capability-packs-retired/ml-training/references/mcp-collaboration.md"
+    type: "file"
+  - from: ".tad/capability-packs/ml-training/references/platform-selection.md"
+    to: ".tad/capability-packs-retired/ml-training/references/platform-selection.md"
+    type: "file"

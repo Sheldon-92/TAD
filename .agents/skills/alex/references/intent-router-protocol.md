@@ -48,6 +48,28 @@ intent_router_protocol:
         If multiple modes tie: read priority_order from intent_modes.detection in config-workflow.yaml (bug > idea > discuss > learn > analyze).
         If no mode reaches threshold → pre-select "analyze" (standard TAD).
 
+    step2_mechanical:
+      name: "Deterministic pre-pass (2026-10-31, surplus deterministic-rules-over-llm)"
+      action: |
+        Steps 1, 1.5 and 2 above are deterministic as specified (explicit-command
+        table, fixed idle word lists, signal-word counting against
+        config-workflow.yaml with threshold + priority_order). Run them
+        mechanically instead of eyeballing:
+          python3 .tad/hooks/lib/intent-route.py "<user input>"
+        The script prints one JSON object: route (explicit | idle | force |
+        preselect | fallback), the pre-selected mode, per-mode counts and
+        matched words, the step3 candidate list, and any learning-filter
+        overrides applied. Consume it as the step1/1.5/2 result; step3
+        confirmation and step4 routing are unchanged, and the *express
+        never-Recommended guard (AR-001) is enforced inside the script.
+        Learning filter: when the user corrects a pre-selection at step3,
+        append the correction to .tad/hooks/lib/intent-overrides.yaml
+        (force_routes or suppress_words, always with a reason) — future
+        pre-selections then honor it. A project-local
+        .tad/intent-overrides.yaml, if present, is read after the shipped one.
+        If the script cannot run (no python3 / PyYAML), fall back to applying
+        steps 1-2 by reading — the script is an accelerator, not a new gate.
+
     step3:
       name: "User Confirmation (ALWAYS — only triggers when input is ambiguous text, not explicit command)"
       action: |

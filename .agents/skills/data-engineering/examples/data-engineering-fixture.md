@@ -17,7 +17,7 @@ min_marker_count: 4
 # WITH-pack agent emits that a no-pack control would NOT (no-pack agent says
 # "add metadata filtering" / "store history" / "use Polars" — not "recall collapse" /
 # "RRF k=60" / "ACORN" / "is_current = true" / "~94x").
-discriminative_pattern: "train.?serve skew|recall collapse|Reciprocal Rank Fusion|RRF|k ?= ?60|\\[40, ?80\\]|ACORN|is_current ?= ?true|missing.?field trap|pre.?filter|SCD Type 2|graph islanding|94x|streaming engine"
+discriminative_pattern: "train.?serve skew|recall collapse|k ?= ?60|\\[40, ?80\\]|ACORN|is_current ?= ?true|missing.?field trap|graph islanding"
 min_discriminative: 4
 ---
 

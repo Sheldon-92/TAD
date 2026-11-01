@@ -12,43 +12,63 @@
 #   pending     — fixture(s) exist; NO passing behavioral eval recorded yet.
 #                 Default for every installed capability pack. Count of fixtures
 #                 is NOT verification (count ≠ signal — YOLO audit "validation theater").
-#   verified    — a pack-loaded sub-agent ran a fixture's Input Scenario, the
-#                 captured output PASSED pack-eval-runner.sh (actual ≥ min_marker_count).
-#                 ONLY the Conductor flips pending → verified after a real eval run
-#                 (AC5.6, driven in Y6 — NOT by Blake, NOT by fixture authoring).
+#   verified-discriminative — a pack-loaded sub-agent ran a fixture's Input
+#                 Scenario, the captured output PASSED pack-eval-runner.sh
+#                 (actual ≥ min_marker_count) AND the control run without the
+#                 pack FAILED the same gate (clean delta). This is a
+#                 single-fixture EXISTENCE proof only: it shows the pack can
+#                 drive discriminative behavior on that fixture, nothing more.
+#                 ONLY the Conductor flips pending → verified-discriminative
+#                 after a real eval run (AC5.6, driven in Y6 — NOT by Blake,
+#                 NOT by fixture authoring). (Renamed from `verified` on
+#                 2026-10-31 per TICKET-20261031-pack-triage: the old bare word
+#                 overstated the evidence grade.)
+#   verified-in-use — RESERVED higher grade (not produced in this phase):
+#                 requires real-task replay evidence plus trigger-rate data
+#                 from production use, not fixture runs.
+#   no-discriminative-power — the pack WAS behaviorally evaluated and the
+#                 control run (without the pack) passed the same gate: no
+#                 clean delta, so the fixture does not discriminate. The pack
+#                 stays registered; re-verification requires first tightening
+#                 the fixture's discriminative markers to pack-unique terms.
 #   no-fixture  — pack is registered in .tad/capability-packs/ but is NOT installed
 #                 as a .agents/skills/<pack>/ skill, so it has no examples/ fixture.
+#   deregistered — pack removed from the registry scan surface (source moved
+#                 to .tad/capability-packs-retired/, bytes preserved); the row
+#                 is kept here as history, never deleted.
 #
 # CONTRACT: pack-eval-runner.sh --all <outputs-dir> produces the PASS/FAIL data that
-#   justifies a flip. Never hand-set `verified` — only a passing runner result does.
+#   justifies a flip. Never hand-set `verified-discriminative` — only a passing runner result does.
 # ---------------------------------------------------------------------------
 
 version: 1.0.0
-last_updated: "2026-06-01"
+last_updated: "2026-10-31"
 runner: ".tad/scripts/pack-eval-runner.sh"
 
 packs:
-  academic-research:      pending      # fixture: systematic-review-depth
-  ai-agent-architecture:  pending      # fixture: multi-agent-design-decisions
-  ai-evaluation:          verified     # discriminative gate (2311f9e): WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta, pack-driven behavior proven (2026-05-31)
-  ai-prompt-engineering:  pending      # fixture: hallucination-diagnosis
-  ai-tool-integration:    pending      # fixture: cli-vs-mcp-decision
-  ai-voice-production:    pending      # fixture: audiobook-tool-selection
-  code-security:          verified     # discriminative gate: WITH disc 6/3 PASS, CONTROL disc 2/3 FAIL — clean delta (2026-05-31)
-  ml-training:            no-fixture   # registered in capability-packs/, not installed as a skill
-  product-thinking:       pending      # fixture: pressure-test-verdict
-  research-methodology:   pending      # fixture: five-phase-pipeline
-  video-creation:         pending      # fixtures: photo-to-beat-sync, single-clip-narration (pre-Phase-5)
-  web-backend:            pending      # WITH disc 4/3 PASS but CONTROL disc 3/3 ALSO PASS — no clean delta. Fixture's discriminative markers (keyset/cursor/preStop/SIGTERM) are now common senior-backend knowledge → not discriminative enough. FOLLOW-UP: tighten discriminative_pattern to genuinely pack-unique terms (e.g. the pack's specific rule IDs / numeric thresholds) before re-verifying.
-  web-deployment:         pending      # fixture: cicd-sha-pin-oidc
-  web-frontend:           pending      # fixture: design-token-consumption
-  web-testing:            pending      # fixture: test-pyramid-strategy
-  web-ui-design:          pending      # fixture: anti-slop-landing-design
-  rag-retrieval:          verified     # REAL spot-eval 2026-06-01: WITH disc 13/4 PASS, CONTROL disc 2/4 FAIL — clean delta
-  agent-memory:           verified     # REAL spot-eval 2026-06-01: WITH disc 9/3 PASS, CONTROL disc 1/3 FAIL — clean delta
-  llm-observability:      verified     # REAL spot-eval 2026-06-01: WITH disc 4/3 PASS, CONTROL disc 0/3 FAIL — fixture-theater fix holds on real output
-  ai-guardrails:          verified     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 2/4 FAIL — clean delta
-  data-engineering:       pending      # REAL spot-eval 2026-06-01: WITH disc 10/4 PASS but CONTROL disc 5/4 ALSO PASS — no clean delta. Markers (train-serve skew/RRF/SCD2/pre-filter) are common senior-DE knowledge → not discriminative. FOLLOW-UP: tighten discriminative_pattern to pack-unique rule IDs/numbers (same as web-backend).
-  agent-orchestration:    verified     # REAL spot-eval 2026-06-01: WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta
-  synthetic-data:         verified     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 0/4 FAIL — fixture-theater fix holds on real output
-  knowledge-graph:        verified     # REAL spot-eval 2026-06-01: WITH disc 10/4 PASS, CONTROL disc 2/4 FAIL — clean delta
+  academic-research:  verified-discriminative  # WITH disc 4/2 PASS, CONTROL disc 0/2 FAIL — clean delta (2026-10-31)
+  ai-agent-architecture:  verified-discriminative  # WITH disc 35/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  ai-evaluation:          verified-discriminative     # discriminative gate (2311f9e): WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta, pack-driven behavior proven (2026-05-31)
+  ai-prompt-engineering:  verified-discriminative  # WITH disc 7/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  ai-tool-integration:  verified-discriminative  # WITH disc 9/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  ai-voice-production:  verified-discriminative  # derived fixture: WITH disc 2/2 PASS, CONTROL disc 1/2 FAIL — clean delta (2026-10-31); main fixture CONTROL at gate 3/3, delta proven on derived fixture
+  code-security:          verified-discriminative     # discriminative gate: WITH disc 6/3 PASS, CONTROL disc 2/3 FAIL — clean delta (2026-05-31)
+  ml-training:            deregistered  # deregistered 2026-10-31 (see TICKET-20261031-pack-triage); was no-fixture: registered in capability-packs/, not installed as a skill — row kept as history
+  product-thinking:  verified-discriminative  # WITH disc 3/2 PASS, CONTROL disc 0/2 FAIL — clean delta (2026-10-31)
+  research-methodology:  verified-discriminative  # WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  video-creation:  verified-discriminative  # WITH disc 7/6 PASS, CONTROL disc 0/6 FAIL — clean delta (2026-10-31)
+  web-backend:  verified-discriminative  # tightened-fixture re-verification: WITH disc 3/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  web-deployment:  no-discriminative-power  # no clean delta: main fixture CONTROL disc 6/4 PASS, derived CONTROL disc 3/2 PASS — markers not pack-unique (2026-10-31). FOLLOW-UP: tighten discriminative_pattern to pack-unique terms before re-verifying.
+  web-frontend:  no-discriminative-power  # no clean delta: main fixture CONTROL disc 3/2 PASS; derived fixture has no separation power (its markers are quoted verbatim in the derived scenario text) — rebuild the derived fixture before re-verifying (2026-10-31).
+  web-testing:  verified-discriminative  # WITH disc 8/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  web-ui-design:  verified-discriminative  # WITH disc 3/3 PASS, CONTROL disc 0/3 FAIL — clean delta (2026-10-31)
+  rag-retrieval:          verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 13/4 PASS, CONTROL disc 2/4 FAIL — clean delta
+  agent-computer-interface: pending  # fixture: fixture-browser-task
+  agent-memory:           verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 9/3 PASS, CONTROL disc 1/3 FAIL — clean delta
+  llm-observability:      verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 4/3 PASS, CONTROL disc 0/3 FAIL — fixture-theater fix holds on real output
+  ai-guardrails:          verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 2/4 FAIL — clean delta
+  ai-podcast-production:  verified-discriminative  # WITH disc 10/4 PASS, CONTROL disc 0/4 FAIL — clean delta (2026-10-31)
+  data-engineering:  verified-discriminative  # tightened-fixture re-verification: WITH disc 8/4 PASS, CONTROL disc 0/4 FAIL — clean delta (2026-10-31)
+  agent-orchestration:    verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 5/3 PASS, CONTROL disc 0/3 FAIL — clean delta
+  synthetic-data:         verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 9/4 PASS, CONTROL disc 0/4 FAIL — fixture-theater fix holds on real output
+  knowledge-graph:        verified-discriminative     # REAL spot-eval 2026-06-01: WITH disc 10/4 PASS, CONTROL disc 2/4 FAIL — clean delta

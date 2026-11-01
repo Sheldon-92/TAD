@@ -109,6 +109,39 @@ discuss_path_protocol:
            要重新激活并用它辅助讨论吗？或者它已经完成使命可以归档？"
       blocking: false
 
+    saveable_workflow_check:
+      trigger: "讨论中实际走通了一套可复用流程（detection_signals 全中），或 exit_protocol 中用户选了保存工作流"
+      detection_signals:
+        - "对话中实际执行或逐步验证了 ≥3 个有序步骤（不是泛泛而谈的建议清单）"
+        - "存在可命名的未来触发情境（下次遇到 X 时）"
+        - "至少一条非显然的 gotcha、口径或决策点——纯常识步骤不值得存"
+        - "用户对这套流程表达过认可或复用意图（『就这么办』『下次还这样』类信号）"
+      negative_signals:
+        - "纯观点/方向讨论，没有走通的步骤序列"
+        - "单步问答，或未经验证的推测性流程"
+        - "本段对话已 declined 过一次 → 不再重提"
+      action: |
+        命中时一行提议（非阻塞、不打断讨论节奏）：
+        "这次走通的「{workflow 一句话名}」可以存成 skill，下次遇到 {触发情境} 直接复用——存吗？"
+        经 AskUserQuestion（平台绑定交互决策）三选：
+        - "存入 skill 库" → 按 save_convention 当场成文写入；这一次确认即全部仪式，不再另问
+        - "先看草稿" → 展示完整草稿，用户一次确认后写入（改稿后仍只确认一次）
+        - "不用" → 不写任何文件，本段对话不再重提
+      save_convention:
+        target: ".tad/skill-library/<project>--<slug>.md（与库内现有条目同形），并在 .tad/skill-library/_index.md 追加一行索引"
+        entry_shape: "标题 / Source project / Date / Origin: conversation light path (*discuss) / Type: workflow / Triggers: 触发关键词 / 有序步骤（真实命令与口径） / Gotchas"
+        bypass: |
+          轻路径绕过的是重仪式前端：不写 T1 SCAND、不经 Gate 4 KA 三问、不等收获环节——
+          T2 入库的实质（会话内人类确认）收敛为上面这一次确认本身。
+          条目以 Origin 行标明轻路径出身，事后评审可按出身区分对待；T3 晋升规则不变（仍需 ≥2 项目证据）。
+        boundary: |
+          本检查只做捕获提议，不触碰下方 forbidden 清单：存 skill 不是建 handoff、
+          不生成设计文档、不跑 Gate 检查。
+          与既有 *save-skill / *save-workflow（存 .claude/skills/local/ 的本地战术捕获）分工：
+          彼者是用户显式命令、存项目本地；本路径是讨论中被动检测、存跨项目参考库（T2 层）。
+          用户点名彼者命令时按彼者走，不重复提议。
+      blocking: false
+
     forbidden:
       - "Auto-generating handoff or design documents"
       - "Running Gate checks"
@@ -136,6 +169,7 @@ discuss_path_protocol:
       Use AskUserQuestion:
       "Discussion seems to be wrapping up. Would you like to capture anything?"
       Options:
+      - "Save the workflow we built as a skill" → run saveable_workflow_check 的保存腿（草稿＋一次确认＋写入 skill 库）
       - "Record conclusions to NEXT.md" → append summary to NEXT.md
       - "This is a direction question — take it to Cora" → give the human the sentence from epic_execution_pointer; end
       - "This needs proper design — start *analyze" → switch to adaptive_complexity_protocol

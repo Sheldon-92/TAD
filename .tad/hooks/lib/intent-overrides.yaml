@@ -1,0 +1,33 @@
+# intent-overrides.yaml — the intent router's learning filter.
+#
+# This file is how user corrections change future routing. When the
+# deterministic pre-pass (.tad/hooks/lib/intent-route.py) pre-selects a
+# mode and the user corrects it at confirmation time (intent-router
+# step3), append the correction here instead of re-arguing it next time:
+#
+#   force_routes:  a phrase in the input forces a mode, before counting.
+#     - match: "用户反馈"        # substring, case-insensitive
+#       mode: discuss            # any mode in config-workflow.yaml intent_modes
+#       reason: "why the user marked this (date + one line)"
+#
+#   suppress_words:  a signal word stops counting (one FP source removed).
+#     - word: "评估"             # exact signal word from config-workflow.yaml
+#       mode: experiment         # optional; omit or "*" = suppress for all modes
+#       reason: "why the user marked this"
+#
+# Rules: every entry MUST carry a reason (an unexplained override is
+# indistinguishable from tampering). Unknown modes are skipped with a
+# warning, never fatal. A user-local file at .tad/intent-overrides.yaml
+# (project root) is read after this one and wins on equal specificity.
+# Entries below are commented examples only — this file ships empty of
+# active rules on purpose: the filter learns from THIS user's marks.
+
+version: 1
+force_routes: []
+#  - match: "用户反馈"
+#    mode: discuss
+#    reason: "example: relayed user feedback is a discussion, not a bug report"
+suppress_words: []
+#  - word: "评估"
+#    mode: experiment
+#    reason: "example: in this project 评估 usually means a design review"

@@ -2,11 +2,11 @@
 # Registry status rows are derived from CAPABILITY.md frontmatter (status: active|frozen) — do not hand-edit status
 # Re-generate: bash .tad/scripts/scan-packs.sh after editing any CAPABILITY.md
 version: 1.0.0
-last_scanned: "2026-10-06"
-source_repo: "Sheldon-92/TAD"
-source_branch: "main"
+last_scanned: "2026-10-31"
+source_repo: ""
+source_branch: ""
 source_base_path: ".tad/capability-packs"
-synced_from_version: "4.0.8"  # reserved for cross-version compatibility checks (Phase 2 consumer TBD)
+synced_from_version: "4.0.9"  # metadata only; the Phase 2 compatibility-check TODO is cut (已裁 — no named consumer ever materialized; see TICKET-20261031-pack-triage)
 packs:
   - name: "academic-research"
     description: "Academic research methodology pack for systematic literature review, citation integrity, and quality evaluation. Covers PRISMA systematic reviews, meta-analysis, PubMed search, literature surveys, and academic writing standards. Use for any academic research, literature review, citation analysis, paper evaluation, or systematic review task."
@@ -126,14 +126,6 @@ packs:
     consumes: "User observability/LLMOps task + production LLM-or-agent system description + optional existing tracing/cost/registry configs"
     produces: "Applied observability judgment rules + tracing platform recommendation + cost-attribution & budget-governance design + OTel GenAI semconv audit + latency/TTFT profiling plan + prompt-registry versioning policy + online-eval & drift-detection pipeline"
     keywords: ["可观测性", "observability", "LLMOps", "监控", "monitoring", "分布式追踪", "tracing", "OpenTelemetry", "OTel", "成本归因", "cost attribution", "token 计费", "延迟", "latency", "TTFT", "提示词版本", "prompt registry", "漂移检测", "drift", "groundedness", "Langfuse", "vLLM"]
-    type: "reference-based"
-    status: "frozen"
-  - name: "ml-training"
-    description: "ML model training on cloud GPU capability pack. Covers platform selection, LoRA and QLoRA fine-tuning, cost estimation, and human-AI collaboration via browser MCP. Use for any ML model fine-tuning, cloud GPU training, or model adaptation task."
-    path: ".tad/capability-packs/ml-training/"
-    consumes: "Training data (JSONL/ShareGPT/audio+transcript pairs), base model name, hardware constraints, budget."
-    produces: "Platform recommendation, tool selection, training configuration, cost estimate."
-    keywords: ["fine-tune", "微调", "LoRA", "QLoRA", "train model", "训练模型", "Colab", "Kaggle", "RunPod", "cloud GPU", "云GPU", "云训练", "training data", "训练数据", "GPU hours", "model training", "模型训练", "personality clone", "个性克隆"]
     type: "reference-based"
     status: "frozen"
   - name: "product-thinking"

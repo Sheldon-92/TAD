@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--
+  Judgment Surface Template — TAD
+  Use when: no automatic evaluator exists for a quality AND a human's
+  perception/taste is the judge (see .tad/project-knowledge/patterns/judgment-surface.md).
+  How: the agent copies this file, fills the CONFIG block below with the
+  real candidates and the 2-4 dimensions that discriminate in this domain,
+  and gives the human the file. The human judges; Export emits Feedback
+  JSON Schema v1.0 (.tad/templates/feedback-json-schema.md). The exported
+  JSON is the deliverable — file it with the artifact it judged.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Judgment Surface — {{ARTIFACT_LABEL}}</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 880px; padding: 0 1rem; }
+  .card { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  .card h2 { margin-top: 0; font-size: 1.1rem; }
+  .media audio, .media video, .media img { max-width: 100%; }
+  fieldset { border: none; padding: 0.5rem 0; }
+  legend { font-weight: 600; }
+  label { margin-right: 1rem; }
+  textarea { width: 100%; min-height: 3rem; }
+  .dim { margin: 0.25rem 0; }
+  .dim span { display: inline-block; min-width: 10rem; }
+  #export-out { width: 100%; min-height: 10rem; font-family: monospace; }
+  button.export { font-size: 1rem; padding: 0.5rem 1.5rem; }
+</style>
+</head>
+<body>
+<h1>Judge: {{ARTIFACT_LABEL}}</h1>
+<p>Compare the candidates below in their native medium. For each one pick a
+verdict, score the dimensions, and note anything the grid cannot say.
+Then click <strong>Export JSON</strong> and hand the JSON back — it is the
+structured record of this judgment.</p>
+
+<div id="cards"></div>
+
+<h2>Overall</h2>
+<textarea id="global-notes" placeholder="Global notes about the artifact as a whole"></textarea>
+
+<p><button class="export" id="export-btn">Export JSON</button></p>
+<textarea id="export-out" readonly placeholder="Exported Feedback JSON (schema v1.0) appears here"></textarea>
+
+<script>
+"use strict";
+// ===== CONFIG — the agent fills this in per use =====================
+const CONFIG = {
+  artifact_type: "generic",            // frontend_page|audio|video|design|brand|generic
+  artifact_path: "relative/path/to/artifact",
+  iteration: 1,
+  // 2-4 dimensions that actually discriminate in this domain.
+  dimensions: ["dimension_one", "dimension_two"],
+  candidates: [
+    // { id, label, media_type: "audio"|"video"|"img"|"none", media_src, element_type,
+    //   selector_type: "css"|"time_range"|"spatial"|"semantic", selector_value }
+    { id: "cand-a", label: "Candidate A", media_type: "none", media_src: "", element_type: "generic", selector_type: "semantic", selector_value: "" },
+    { id: "cand-b", label: "Candidate B", media_type: "none", media_src: "", element_type: "generic", selector_type: "semantic", selector_value: "" }
+  ]
+};
+// ====================================================================
+
+const cardsEl = document.getElementById("cards");
+CONFIG.candidates.forEach(function (c) {
+  const card = document.createElement("section");
+  card.className = "card";
+  card.dataset.id = c.id;
+  let media = "";
+  if (c.media_type === "audio") media = '<audio controls src="' + c.media_src + '"></audio>';
+  if (c.media_type === "video") media = '<video controls src="' + c.media_src + '"></video>';
+  if (c.media_type === "img")   media = '<img alt="' + c.label + '" src="' + c.media_src + '">';
+  const dims = CONFIG.dimensions.map(function (d) {
+    return '<div class="dim"><span>' + d + '</span>' +
+      [1,2,3,4,5].map(function (n) {
+        return '<label><input type="radio" name="score-' + c.id + '-' + d + '" value="' + n + '"> ' + n + '</label>';
+      }).join("") + '</div>';
+  }).join("");
+  card.innerHTML =
+    "<h2>" + c.label + "</h2>" +
+    '<div class="media">' + media + "</div>" +
+    "<fieldset><legend>Verdict</legend>" +
+    ["ok","modify","delete","replace"].map(function (v) {
+      return '<label><input type="radio" name="verdict-' + c.id + '" value="' + v + '"> ' + v + "</label>";
+    }).join("") + "</fieldset>" +
+    "<fieldset><legend>Scores (1-5)</legend>" + dims + "</fieldset>" +
+    "<fieldset><legend>Structured feedback (modification instructions)</legend>" +
+    ["text","style","position"].map(function (k) {
+      return '<div class="dim"><span>' + k + '</span>' +
+        '<input type="text" name="sf-' + k + '-' + c.id + '"></div>';
+    }).join("") + "</fieldset>" +
+    '<label>Priority <select name="priority-' + c.id + '">' +
+    '<option value="">—</option>' +
+    ["low","medium","high"].map(function (p) {
+      return '<option value="' + p + '">' + p + "</option>";
+    }).join("") + "</select></label>" +
+    '<textarea name="notes-' + c.id + '" placeholder="Free text: what the grid cannot say"></textarea>';
+  cardsEl.appendChild(card);
+});
+
+function collect() {
+  function sfVal(kind, id) {
+    const el = document.querySelector('input[name="sf-' + kind + '-' + id + '"]');
+    const v = el ? el.value.trim() : "";
+    return v === "" ? null : v;
+  }
+  const elements = CONFIG.candidates.map(function (c) {
+    const verdictEl = document.querySelector('input[name="verdict-' + c.id + '"]:checked');
+    const reviewed = !!verdictEl;
+    const scores = {};
+    CONFIG.dimensions.forEach(function (d) {
+      const s = document.querySelector('input[name="score-' + c.id + '-' + d + '"]:checked');
+      scores[d] = s ? Number(s.value) : null;
+    });
+    const sf = {
+      text: sfVal("text", c.id),
+      style: sfVal("style", c.id),
+      position: sfVal("position", c.id)
+    };
+    const hasSf = sf.text !== null || sf.style !== null || sf.position !== null;
+    const priorityEl = document.querySelector('select[name="priority-' + c.id + '"]');
+    const priority = reviewed && priorityEl && priorityEl.value !== "" ? priorityEl.value : null;
+    return {
+      id: c.id,
+      label: c.label,
+      element_type: c.element_type || "generic",
+      selector_type: c.selector_type || "semantic",
+      selector_value: c.selector_value || "",
+      reviewed: reviewed,
+      verdict: verdictEl ? verdictEl.value : null,
+      structured_feedback: hasSf ? sf : null,
+      scores: scores,
+      free_text: document.querySelector('textarea[name="notes-' + c.id + '"]').value,
+      priority: priority
+    };
+  });
+  return {
+    version: "1.0",
+    artifact_type: CONFIG.artifact_type,
+    artifact_path: CONFIG.artifact_path,
+    feedback_html_path: location.pathname,
+    timestamp: new Date().toISOString(),
+    elements_total: elements.length,
+    elements: elements,
+    global_notes: document.getElementById("global-notes").value,
+    meta: { iteration: CONFIG.iteration, prev_feedback: null }
+  };
+}
+
+document.getElementById("export-btn").addEventListener("click", function () {
+  const data = collect();
+  const text = JSON.stringify(data, null, 2);
+  document.getElementById("export-out").value = text;
+  const blob = new Blob([text], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "judgment-feedback.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>

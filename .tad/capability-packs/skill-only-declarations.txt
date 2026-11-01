@@ -23,3 +23,13 @@ mobile-release
 mobile-testing
 mobile-ui-design
 supply-chain-security
+
+# Declared 2026-10-31, Phase 3 pack triage S1 (per-item evidence:
+# .tad/evidence/yolo/v409-basket/phase1-gate-report.md + pack-ledger-diff.txt).
+# Source: Phase 1 Gate 4 condition C1, option (i) selected for AC8
+# (see TICKET-20261031-pack-triage).
+# Reconciliation: the ml-training source pack was deregistered under that
+# ticket and moved to .tad/capability-packs-retired/ml-training/; this
+# declaration covers ONLY the still-on-disk installed projection
+# .agents/skills/ml-training/, which is by-design skill-only from here on.
+ml-training

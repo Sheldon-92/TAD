@@ -380,6 +380,57 @@ is_invalid_regex() {
 }
 
 # ---------------------------------------------------------------------------
+# Domain trace emission (Stage 1 of IDEA-20260402-self-evolving-domain-pack).
+# Observational, not imperative: this runner emits one trace event per
+# assertion to .tad/evidence/domain-traces/{pack}/{date}.jsonl via the
+# sibling recorder domain-trace.py — the agent never has to remember a
+# helper call (imperative emission was proven unreliable: 1/328 fire rate,
+# see patterns/memory-and-learning.md). Advisory only: emission is guarded
+# with `|| true`, its output is discarded, and it can NEVER change a
+# verdict or an exit code. Disable with DOMAIN_TRACE=0.
+# ---------------------------------------------------------------------------
+DOMAIN_TRACE_RUN_ID="eval-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+_dt_now_ms() {
+  _n=$(date +%s%N 2>/dev/null)
+  case "$_n" in
+    ''|*[!0-9]*) printf '%s' "$(( $(date +%s) * 1000 ))" ;;
+    *) printf '%s' "$(( _n / 1000000 ))" ;;
+  esac
+}
+# domain_trace_emit <fixture-path> <verdict-line> <assert-rc> <duration-ms>
+domain_trace_emit() {
+  [ "${DOMAIN_TRACE:-1}" = "0" ] && return 0
+  _rec="$(dirname "$0")/domain-trace.py"
+  [ -f "$_rec" ] || return 0
+  command -v python3 >/dev/null 2>&1 || return 0
+  _dom="unknown"
+  case "$2" in
+    "PACK "*" FIXTURE "*) _rest="${2#PACK }"; _dom="${_rest%% FIXTURE *}" ;;
+  esac
+  _step=$(basename "$1" .md 2>/dev/null || printf '%s' "$1")
+  case "$3" in
+    0) _status="success" ;;
+    1) _status="failure" ;;
+    *) _status="skipped" ;;
+  esac
+  if [ "$_status" = "success" ]; then
+    python3 "$_rec" record --domain "$_dom" --step "$_step" \
+      --run-id "$DOMAIN_TRACE_RUN_ID" --duration-ms "$4" \
+      --status "$_status" \
+      --tool "pack-eval-runner.sh assert_one $1" \
+      >/dev/null 2>&1 || true
+  else
+    python3 "$_rec" record --domain "$_dom" --step "$_step" \
+      --run-id "$DOMAIN_TRACE_RUN_ID" --duration-ms "$4" \
+      --status "$_status" \
+      --tool "pack-eval-runner.sh assert_one $1" \
+      --failure-reason "$2" \
+      >/dev/null 2>&1 || true
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # assert_one <fixture.md> <output-file> → prints verdict line, returns 0 PASS
 # / 1 FAIL / 2 skipped (no output). NEVER aborts the caller.
 #
@@ -580,8 +631,11 @@ run_all() {
     found_any=1
     base=$(basename "$fixture" .md)
     output="$outdir/$base.md"
+    _t0=$(_dt_now_ms)
     line=$(assert_one "$fixture" "$output")
     rc=$?
+    _t1=$(_dt_now_ms)
+    domain_trace_emit "$fixture" "$line" "$rc" "$(( _t1 - _t0 ))"
     printf '%s\n' "$line"
     case "$rc" in
       0) pass=$((pass+1)) ;;
@@ -647,7 +701,12 @@ main() {
         usage
         return 0
       fi
-      assert_one "$1" "$2"
+      _t0=$(_dt_now_ms)
+      line=$(assert_one "$1" "$2")
+      rc=$?
+      _t1=$(_dt_now_ms)
+      printf '%s\n' "$line"
+      domain_trace_emit "$1" "$line" "$rc" "$(( _t1 - _t0 ))"
       # Map verdict rc to 0 for advisory mode (never fail-closed at exit).
       return 0
       ;;

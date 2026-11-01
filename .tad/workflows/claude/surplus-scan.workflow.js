@@ -9,6 +9,16 @@ export const meta = {
   ]
 }
 
+// runtime-requirements:
+//   agent — hard — step executor behind every reader/generator agent call;
+//                  missing => the entry probe throws naming it, before any agent activity
+//   phase — hard — phase marker for Scan/Generate/Rank; missing => the entry
+//                  probe throws naming it, before any agent activity
+//   (No budget or workflow global is required: this script makes no nested
+//    calls and keeps no budget ledger.)
+// The entry probe (before the first log line) checks existence only via
+// typeof and never calls the probed globals.
+
 // ── Args parsing (Object.keys loop — loop-discover convention) ─────────────
 
 var sources = null
@@ -46,6 +56,18 @@ if (!sources) {
 // JSON sidecar path = same stem as markdown plan, .json extension (P1-2).
 var jsonPath = outputPath.replace(/\.md$/, '') + '.json'
 
+// ── Runtime-requirements probe (existence-only; never calls the probed
+// globals, costs no agent call and no tokens). Hard requirements throw here
+// naming the missing global — before the first phase marker, before any
+// agent activity.
+if (typeof agent !== 'function') {
+  throw new Error('surplus-scan: missing hard runtime requirement: agent — no step executor exists in this runtime; refusing to start')
+}
+if (typeof phase !== 'function') {
+  throw new Error('surplus-scan: missing hard runtime requirement: phase — phase markers do not exist in this runtime; refusing to start')
+}
+log('probe: hard runtime requirements present: agent, phase')
+
 log('surplus-scan: date=' + dateStamp + ', sources=' + sources.length + ', out=' + outputPath + ', json=' + jsonPath)
 
 // ── Candidate schema (reader output — every field the rank phase needs) ─────
@@ -65,7 +87,14 @@ var CANDIDATE_SCHEMA = {
     deliverable: { type: 'string' },      // CONCRETE artifact/AC — required non-empty
     target_paths: { type: 'array', items: { type: 'string' } }, // for mechanical safety
     safety_flag: { type: 'boolean' },
-    risk_tag: { type: 'string', enum: ['safe', 'needs-human'] }
+    risk_tag: { type: 'string', enum: ['safe', 'needs-human'] },
+    // ── 三查 reader 字段（Phase 4 scan-surface，HANDOFF §4.1；与既有 13 字段并列）──
+    source_status: { type: 'string', enum: ['live', 'landed', 'archived', 'completed', 'promoted', 'superseded', 'unknown'] }, // 来源活状态类别，reader 回活状态件核
+    source_status_evidence: { type: 'string' }, // 活状态件引用（路径＋所核字段/计数原值）；source_status 非 unknown 时必填
+    human_prereq: { type: 'boolean' }, // 是否卡在供给型人供前置（边界见三查指令 ⓐ）
+    human_prereq_what: { type: 'string' }, // 前置具体内容；human_prereq=true 时必填
+    cited_paths: { type: 'array', items: { type: 'string' } }, // 立论/交付引用的既有文件（不含 target_paths）
+    cited_missing: { type: 'array', items: { type: 'string' } } // cited_paths 中逐件实存核验后缺位的子集
   },
   required: ['id', 'title', 'source', 'value', 'confidence', 'token_cost', 'deliverable', 'risk_tag']
 }
@@ -81,6 +110,14 @@ var COST_ANCHORS =
   '  S = single file, no new abstraction, ~<30k tokens.\n' +
   '  M = 2-4 files, moderate change.\n' +
   '  L = new workflow / Epic-phase / SAFETY-adjacent / >~100k tokens.\n'
+
+// 三查指令（Phase 4 scan-surface，HANDOFF §4.1）：Scan 与 Generate 两处 agent
+// 指令各加同一段。Generate 合并/改写候选时必须保留来源 reader 的三组字段，不许丢弃。
+var THREE_CHECKS =
+  '三查（扫描侧分诊，逐候选必填；任一不过由 Rank 门控降 needs-human 并显名）：\n' +
+  'ⓐ 人供前置查：逐项列出需人类提供的账号/凭据、grant、出网授权、命名、pins、对接人、人域验收；未备者 human_prereq=true 并在 human_prereq_what 写明具体内容（如「L3 账号＋PM 1:1，只有用户能给」）。边界：只有供给型前置入此面；「未获批/批准出处」类事实不入此面——批准面本身是活状态件，与候选前提矛盾或缺位时走 ⓑ（source_status=unknown、evidence 点名批准面）。反面样本：标 auto-eligible 的候选卡在只有用户能给的 L3 账号＋PM 1:1 上、执行面才发现。\n' +
+  'ⓑ 来源活状态查：候选所据的状态断言必须回活状态件本身核（如队列文件的现行计数、台账的现行行），填 source_status（枚举）与 source_status_evidence（路径＋所核字段/计数原值；非 unknown 时必填）；叙述文本与活状态矛盾时以活状态为准；核不到或只有叙述文本可引时 source_status=unknown。反面样本：据父文档叙述立论称队列有 52 条 parked 待处置，活状态件实况是 52 条已全数出队、挂起 0。\n' +
+  'ⓒ 引用件在盘查：candidate 的立论与 deliverable 引用的每个既有文件路径逐件实存核验，填 cited_paths（只装引用面，不含 target_paths），缺位件入 cited_missing。反面样本：基线引用的 EPIC 文件本体缺位，扫描未标出。\n'
 
 var SCORING_GUIDE =
   'value = 1..5 (strategic/business value, 5 = highest).\n' +
@@ -107,7 +144,7 @@ var scanResults = await parallel(sources.map(function(src) {
       'Read ' + locator + '. If the path does not exist or has no matching files, return an empty array [] (do NOT error).\n\n' +
       'For each distinct backlog item / idea / proposal / candidate / parked-phase you find, extract ONE candidate object.\n' +
       'Skip any item whose file content shows status: archived | completed | promoted (it is no longer actionable).\n\n' +
-      SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' +
+      SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' + THREE_CHECKS + '\n' +
       'Set source to "' + src.kind + '". id = a short slug derived from the item (e.g. file basename).\n' +
       'Return a JSON object {"candidates": [...]} — an array of candidate objects under the "candidates" key. Use {"candidates": []} if nothing actionable.',
       { label: 'scan-' + src.kind, phase: 'Scan', schema: CANDIDATES_SCHEMA }
@@ -144,7 +181,7 @@ var generated = await agent(
   'Each proposal MUST cite a specific OBJECTIVES Key Result (e.g. "O2/KR1") it advances — ' +
   'drop any idea you cannot tie to a concrete KR.\n' +
   'HARD CAP: at most 5 proposals. Quality over quantity.\n\n' +
-  SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' +
+  SCORING_GUIDE + '\n' + COST_ANCHORS + '\n' + THREE_CHECKS + '\n' +
   'Set source to "generated" for every item. Put the cited KR in value_rationale.\n' +
   priorText + '\n\n' +
   'Return a JSON object {"candidates": [...]} — an array (<=5) of candidate objects under the "candidates" key, or {"candidates": []} if no genuinely new KR-linked direction exists.',
@@ -168,11 +205,18 @@ for (var g = 0; g < genItems.length && genClean.length < 5; g++) {
 }
 log('Phase 2 complete: ' + genClean.length + ' KR-linked generated direction(s) (of ' + genItems.length + ' proposed)')
 
+// ── 分层声明（Phase 4）：扫描侧三查是信号＋分诊层——它让计划在产出时就显名
+// 降级；执行侧 surplus-execute 分支 0 仍是硬闸，本 workflow 不改、不弱化
+// 执行侧任何判定。log() 行是运行注记，不是证据面：分类的全部判定落进
+// sidecar 字段面（status_unknown／gate_reasons 等）与回放报告面。
+
 // ── Phase: Rank (plain JS, no agents) ───────────────────────────────────────
 
 phase('Rank')
 
 var all = scanned.concat(genClean)
+
+// === classify-block BEGIN (replay-extractable; keep dependency-free; ANY edit to this block requires re-running .tad/scripts/surplus-scan-replay.mjs to 12/12 PASS before the edit counts as done) ===
 
 // Mechanical SAFETY path-match list (P1-3 defense-in-depth). String/regex literals only.
 var SAFETY_PATTERNS = [
@@ -214,7 +258,9 @@ function isVacuous(deliverable) {
   return false
 }
 
-// Staleness detector (P1-4): summary/source markers indicating no longer actionable.
+// Staleness TEXT detector (P1-4): summary/source markers indicating no longer
+// actionable. Per D11 this is a SIGNAL only (sidecar stale_text_signal): it
+// never decides a disposition on its own — the field layer (§4.2 order) does.
 function isStale(c) {
   var blob = (String(c.summary || '') + ' ' + String(c.source || '') + ' ' + String(c.title || '')).toLowerCase()
   if (/status:\s*(archived|completed|promoted)/.test(blob)) return true
@@ -223,6 +269,50 @@ function isStale(c) {
 }
 
 function normTitle(t) { return String(t || '').toLowerCase().trim().replace(/\s+/g, ' ') }
+
+// Field-layer terminal states (§4.2 step 2): a source_status in this set drops
+// the row as dropped-stale. 'live' and 'unknown' are NOT here — they flow on
+// to the gate step; a missing/unknown status is gated, never text-dropped (D11).
+var DROP_STATUSES = ['landed', 'archived', 'completed', 'promoted', 'superseded']
+
+// classifyCandidate(c) -> {disposition, auto_eligible, status_unknown, reasons,
+// stale_text_signal, risk_tag}; disposition is a closed set:
+// ranked | dropped-stale | dropped-vacuous | needs-human.
+// Decision order is pinned (§4.2): 1 vacuous -> dropped-vacuous; 2 field-enum
+// stale -> dropped-stale; 3 any gate reason -> needs-human (auto=false,
+// risk_tag derived 'needs-human'); 4 else ranked (auto = derived
+// risk_tag==='safe' AND value>=3 AND source!=generated — the pre-Phase-4
+// rule). risk_tag derivation (§4.2 steps 3-4): any gate hit derives
+// 'needs-human'; otherwise the reader tag stands (a reader 'needs-human'
+// stays, anything else reads 'safe'). The safety reason folds in the reader
+// flag OR the mechanical path-match (P1-3), as before.
+function classifyCandidate(c) {
+  var reasons = []
+  var staleText = isStale(c)
+  var readerRisk = (c.risk_tag === 'needs-human') ? 'needs-human' : 'safe'
+  if (isVacuous(c.deliverable)) {
+    return { disposition: 'dropped-vacuous', auto_eligible: false, status_unknown: false, reasons: reasons, stale_text_signal: staleText, risk_tag: readerRisk }
+  }
+  var ss = c.source_status
+  if (DROP_STATUSES.indexOf(ss) !== -1) {
+    return { disposition: 'dropped-stale', auto_eligible: false, status_unknown: false, reasons: reasons, stale_text_signal: staleText, risk_tag: readerRisk }
+  }
+  var statusUnknown = (ss == null || ss === 'unknown')
+  if (statusUnknown) reasons.push('status-unknown')
+  if (c.human_prereq === true) reasons.push('human-prereq')
+  var cm = Array.isArray(c.cited_missing) ? c.cited_missing : []
+  if (cm.length) reasons.push('cited-missing')
+  if (c.safety_flag === true || pathMatchesSafety(c.deliverable, c.target_paths)) reasons.push('safety')
+  if (reasons.length) {
+    return { disposition: 'needs-human', auto_eligible: false, status_unknown: statusUnknown, reasons: reasons, stale_text_signal: staleText, risk_tag: 'needs-human' }
+  }
+  var v = typeof c.value === 'number' ? c.value : 0
+  var auto = (readerRisk === 'safe') && (v >= 3) && (c.source !== 'generated')
+  return { disposition: 'ranked', auto_eligible: auto, status_unknown: false, reasons: reasons, stale_text_signal: staleText, risk_tag: readerRisk }
+}
+
+// === classify-block END ===
+
 function costNumeric(tc) { return tc === 'L' ? 8 : tc === 'M' ? 3 : 1 } // S/M/L → 1/3/8
 
 // Step 1: dedup by normalized title, keep higher expected_value (P0-3).
@@ -256,26 +346,42 @@ var titleKeys = Object.keys(byTitle)
 for (var tk = 0; tk < titleKeys.length; tk++) { deduped.push(byTitle[titleKeys[tk]]) }
 if (dedupMerges) log('Dedup merged ' + dedupMerges + ' duplicate title(s)')
 
-// Steps 2 & 3: anti-theater drop + staleness drop.
+// Steps 2-8: classification by the classify-block （判定序见 §4.2：vacuous →
+// field-enum stale → gate → ranked). The isStale TEXT layer no longer decides
+// any disposition on its own (D11): its hit is recorded per row as the
+// stale_text_signal sidecar field. safety_flag keeps its prior merged
+// semantics (reader flag OR the mechanical path-match). risk_tag is DERIVED
+// by the classify-block (§4.2 steps 3-4: any gate hit -> 'needs-human';
+// otherwise the reader tag stands) and consumed verbatim below, so the plan
+// Risk column, totals.needs_human and the Needs You section cannot disagree.
 var ranked = []
 var droppedCount = 0
 var staleCount = 0
+var statusUnknownCount = 0
 for (var ri = 0; ri < deduped.length; ri++) {
   var cand = deduped[ri]
-  if (isVacuous(cand.deliverable)) {
+  var cls = classifyCandidate(cand)
+  cand.status_unknown = cls.status_unknown
+  cand.gate_reasons = cls.reasons
+  cand.stale_text_signal = cls.stale_text_signal
+  if (cls.disposition === 'dropped-vacuous') {
     droppedCount++
     log('  DROP (vacuous deliverable): ' + (cand.title || cand.id))
     continue
   }
-  if (isStale(cand)) {
+  if (cls.disposition === 'dropped-stale') {
     staleCount++
-    log('  DROP (stale: archived/completed/promoted): ' + (cand.title || cand.id))
+    log('  DROP (stale: source_status=' + cand.source_status + '): ' + (cand.title || cand.id))
     continue
   }
+  cand.auto_eligible = cls.auto_eligible
+  if (cls.reasons.indexOf('safety') !== -1) { cand.safety_flag = true }
+  cand.risk_tag = cls.risk_tag
+  if (cls.status_unknown) statusUnknownCount++
   ranked.push(cand)
 }
 
-// Steps 4-8: enrich every surviving candidate with derived fields.
+// Enrich every surviving candidate with derived fields.
 for (var ei = 0; ei < ranked.length; ei++) {
   var r = ranked[ei]
   var v2 = typeof r.value === 'number' ? r.value : 0
@@ -283,16 +389,6 @@ for (var ei = 0; ei < ranked.length; ei++) {
   r.cost_numeric = costNumeric(r.token_cost)
   r.expected_value = v2 * cf
   r.density = r.expected_value / r.cost_numeric
-
-  // Step 7: mechanical SAFETY override — agent flag OR mechanical path-match (P1-3).
-  var agentFlag = r.safety_flag === true
-  var mech = pathMatchesSafety(r.deliverable, r.target_paths)
-  r.safety_flag = agentFlag || mech
-  if (r.safety_flag) { r.risk_tag = 'needs-human' }
-  if (!r.risk_tag) { r.risk_tag = 'safe' }
-
-  // Step 8: auto_eligible = safe AND value>=3 AND NOT generated (P0-1 floor + P2-2).
-  r.auto_eligible = (r.risk_tag === 'safe') && (v2 >= 3) && (r.source !== 'generated')
 }
 
 // Step 6: sort expected_value DESC, density DESC tiebreaker (value-first — P0-1).
@@ -306,7 +402,8 @@ var needsHumanCount = ranked.filter(function(r) { return r.risk_tag === 'needs-h
 var generatedCount = ranked.filter(function(r) { return r.source === 'generated' }).length
 
 log('Phase 3 complete: ' + ranked.length + ' ranked, ' + droppedCount + ' dropped(vacuous), ' +
-    staleCount + ' stale, ' + autoEligibleCount + ' auto-eligible, ' + needsHumanCount + ' needs-human')
+    staleCount + ' stale, ' + autoEligibleCount + ' auto-eligible, ' + needsHumanCount + ' needs-human, ' +
+    statusUnknownCount + ' status-unknown')
 
 // ── Render markdown plan (from template shape) + JSON sidecar ────────────────
 
@@ -325,7 +422,8 @@ var header =
   ' · dropped (vacuous) ' + droppedCount +
   ' · stale ' + staleCount +
   ' · auto-eligible ' + autoEligibleCount +
-  ' · needs-human ' + needsHumanCount + '\n\n'
+  ' · needs-human ' + needsHumanCount +
+  ' · status-unknown ' + statusUnknownCount + '\n\n'
 
 var tableHeader =
   '| # | Task | Source | Value | Cost | Conf | ExpVal | Density | Risk | Auto? | Deliverable | Why |\n' +
@@ -362,9 +460,18 @@ if (needsYou.length === 0) {
   needsBlock += '| Task | Source | Risk | Why not auto |\n|------|--------|------|-------------|\n'
   for (var ny = 0; ny < needsYou.length; ny++) {
     var n = needsYou[ny]
-    var why = n.source === 'generated' ? 'generated (unvetted)'
-      : n.risk_tag === 'needs-human' ? 'safety/needs-human'
-      : 'value < 3 floor'
+    var why
+    if (n.gate_reasons && n.gate_reasons.length) {
+      var firstReason = n.gate_reasons[0]
+      why = firstReason === 'status-unknown' ? 'status unknown'
+        : firstReason === 'human-prereq' ? 'human prerequisite: ' + (n.human_prereq_what || '')
+        : firstReason === 'cited-missing' ? 'cited artifact missing: ' + (n.cited_missing || []).join(', ')
+        : 'safety/needs-human'
+    } else {
+      why = n.source === 'generated' ? 'generated (unvetted)'
+        : n.risk_tag === 'needs-human' ? 'safety/needs-human'
+        : 'value < 3 floor'
+    }
     needsBlock += '| ' + esc(n.title) + ' | ' + esc(n.source) + ' | ' + esc(n.risk_tag) + ' | ' + why + ' |\n'
   }
 }
@@ -381,7 +488,8 @@ var sidecar = {
     stale: staleCount,
     auto_eligible: autoEligibleCount,
     needs_human: needsHumanCount,
-    generated: generatedCount
+    generated: generatedCount,
+    status_unknown: statusUnknownCount
   },
   rows: ranked.map(function(r) {
     return {
@@ -401,7 +509,16 @@ var sidecar = {
       target_paths: r.target_paths || [],
       safety_flag: r.safety_flag,
       risk_tag: r.risk_tag,
-      auto_eligible: r.auto_eligible
+      auto_eligible: r.auto_eligible,
+      source_status: (r.source_status == null ? null : r.source_status),
+      source_status_evidence: r.source_status_evidence || null,
+      status_unknown: r.status_unknown === true,
+      human_prereq: r.human_prereq === true,
+      human_prereq_what: r.human_prereq_what || null,
+      cited_paths: r.cited_paths || [],
+      cited_missing: r.cited_missing || [],
+      gate_reasons: r.gate_reasons || [],
+      stale_text_signal: r.stale_text_signal === true
     }
   })
 }
@@ -422,5 +539,6 @@ return {
   stale: staleCount,
   auto_eligible: autoEligibleCount,
   needs_human: needsHumanCount,
+  status_unknown: statusUnknownCount,
   generated: generatedCount
 }

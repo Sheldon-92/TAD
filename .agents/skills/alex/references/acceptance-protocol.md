@@ -11,9 +11,17 @@ acceptance_protocol:
 
   step1: "Blake's completion report exists (written before the Layer 2 dispatch)"
   step2: "Confirm the Gate 3 files exist: the run reviewer's gate3-verdict.md (PASS or CONDITIONAL) with its `## AC runs` table, plus the consistency (and domain) files (review contract §8)"
+  step2b_gate_rounds_check: |
+    进入 step3 前先读 handoff 的 ## Gate Rounds 并按 gate/SKILL.md NO-PROGRESS 块派生计数：
+    G4 已达 3 或 TOTAL_ROUNDS 已达 6 → 输出 NO-PROGRESS CIRCUIT BREAKER 报告，不进 step3，交人裁定。
+    未达阈值 → 先追加 gate4 边界行（verdict=RUNNING，主工作树绝对路径），再进 step3。
   step3: |
     Dispatch the acceptor — a fresh subagent that took no part (never me: I designed it), prompt as conductor step_Y7 2 with direct paths (handoff, completion, `.tad/evidence/reviews/blake/<slug>/`, output `.tad/evidence/reviews/alex/<slug>/gate4-report.md`, evidence `…/gate4/`); a paid run (billed separately in real money; a plan session is ordinary work, not one) or a browser install: I ask the human.
     The acceptor acts as the human: does once for real what he will do with the result, or drives a browser (screenshots / run logs under `…/gate4/`); judges against `## Requirement` (handoff §1.5 in direct mode), the Result contract (handoff §1.1/§1.3 when there is no Epic) and Assumptions; runs `gate3-check.sh <handoff> <gate3-verdict.md>`; only a real device, a payment or his own account login go to the human, as `Needs you:` with the reason; no browser tool: `not-run: no browser tool on <harness>` (then I re-dispatch once on a subagent with a browser when this harness offers one); the report ends with `## For the human`, whose evidence reports a real run as `real use: <evidence path> — <what it showed>` and, when at least one path the human will use did not run, carries `light acceptance: <reason>`. I run `/bin/bash .tad/hooks/lib/cora-check.sh gate4-record <report>` (from the repo root): a report it flags is incomplete, so I re-dispatch the acceptor and never fill it in myself or through the designer.
+  step3b_gate_rounds_append: |
+    step3 的 acceptor 判定落盘后，把 step2b 追加的 gate4 边界行 verdict 就地填为终态
+    （RUNNING→terminal，该表唯一允许的原地修改）；填后重派生：若 G4 达 3 或 TOTAL_ROUNDS
+    达 6（本行即第 3 轮非 PASS 时），随判定一并输出 NO-PROGRESS CIRCUIT BREAKER 报告并停止后续收口。
   step4:
     action: "【业务检查 — 逐条 AC 对照】"
     details: |

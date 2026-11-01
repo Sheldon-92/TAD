@@ -98,4 +98,28 @@ bug_path_protocol:
         If user handled it themselves:
           No action needed (user manages their own work)
 
+    step6_saveable_workflow_check:
+      name: "Saveable Workflow Check (conversation light path)"
+      action: |
+        step5 之后自检一次：本次的复现→定位→修复→验证序列是否构成可复用工作流？
+        检测信号（全中才提议，缺一即静默跳过）：
+        - 诊断路径有 ≥3 个有序步骤，且已在本会话实际走通（根因已定、修法已明或已派 mini-handoff）
+        - 存在可命名的未来触发情境（同类症状、同子系统、或同类环境口径再犯时）
+        - 至少一条非显然 gotcha（误导性症状／假根因／环境口径坑）——平凡 typo、拼写类不存
+        提议形态（一行、非阻塞，不改变已定的 step3/step4 处置）：
+        "这套排查流程（{一句话名}）下次遇到 {触发情境} 还能复用——存成 skill 吗？"
+        经 AskUserQuestion（平台绑定交互决策）三选：
+        - "存入 skill 库" → 按下方约定当场成文写入；一次确认即全部仪式
+        - "先看草稿" → 展示完整草稿，用户一次确认后写入
+        - "不用" → 不写任何文件，本 bug 不再重提
+        保存约定（与 discuss-path-protocol 的 saveable_workflow_check 同一约定）：
+        - 目标：.tad/skill-library/<project>--<slug>.md（与库内现有条目同形），
+          并在 .tad/skill-library/_index.md 追加一行索引
+        - 条目形状：标题 / Source project / Date / Origin: conversation light path (*bug) /
+          Type: workflow / Triggers: 触发关键词 / 有序步骤（真实命令与口径） / Gotchas
+        - 绕过范围：不写 T1 SCAND、不经 Gate 4 KA 三问；T2 入库的实质（会话内人类确认）
+          收敛为这一次确认本身。Origin 行标明轻路径出身；T3 晋升规则不变（仍需 ≥2 项目证据）。
+        - 与 *save-skill / *save-workflow（存 .claude/skills/local/）分工：彼者用户显式
+          命令、存项目本地；本步被动检测、存跨项目参考库（T2 层）。用户点名彼者时按彼者走。
+
 # *discuss Path Protocol

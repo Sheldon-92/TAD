@@ -88,6 +88,7 @@ Critical Check (10 items):
   - [ ] All P0 resolved
   - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). AC 字面 dry-run 常设化：consistency 评审文件须含 `## AC dry-run (baseline)` 表（逐 §9.1 行：字面命令｜baseline 实跑结果｜预期形态（该失败且失败理由对／该通过）｜match y/n）；§9.1 有行而表中无对应行＝该轮 Gate 2 不完整（既有门的完备性规则，不新设门）。命令文本的常设预检 linter 点名 `.tad/hooks/lib/verify-ac-commands.sh`：严格按其头部纪律——advisory、exit 恒 0、不注册任何 hook、不作拦截；字面实跑仍由评审人做，不造自动执行器. Why ME: 只检查"验证方法合法"
   - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
+  - [ ] Handoff header form [handoff-header-form] — 新合同机械核验三点：① 首行须为 `---`；② `dispatch_id` 位于 front matter 块内（首行 `---` 与其闭合 `---` 之间）；③ §9.1 表头须为形态 A（`| # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |`）。三点全为盘面事实、评审人机械可判；不合规时合同退回改形，不靠检查器容忍过门。存量豁免：本行只约束本行落地后进入 Gate 2 的新合同，已在野的存量 handoff 与评审件不回改，gate3-check.sh 的定位层容忍不撤销、只服务存量件。 Why ME: 只检查"新合同头形三点是否合规"
   - [ ] Architecture complete
   - [ ] Components specified
   - [ ] Functions verified
@@ -105,11 +106,30 @@ Output Format:
   | Data Flow | ✅ Pass | ... |
 ```
 
+# ⚠️ NO-PROGRESS COUNTER — Gate 2 (BLOCKING; shared definitions in the NO-PROGRESS block after Gate 4)
+```yaml
+no_progress_counter_gate2:
+  1_read_on_entry: "On entering Gate 2, Read the MAIN-WORKTREE handoff's ## Gate Rounds and derive G2/TOTAL_ROUNDS/GRANT. At threshold (G2 >= 3 or TOTAL_ROUNDS >= 6) → emit the NO-PROGRESS CIRCUIT BREAKER report and STOP; do not run this gate."
+  2_boundary_row: "Append this gate's boundary rows at stage boundaries: a review-batch row after each expert review batch (handoff-creation-protocol steps 2/3), then a gate2 row when this gate concludes. Append BEFORE the stage runs with verdict=RUNNING; set the verdict in place when it concludes. If a tail RUNNING row for this stage is already open, fill its verdict instead of adding a row."
+  3_monotonic: "Rows are append-only; the ONLY in-place edit is RUNNING→terminal verdict. A derived value smaller than the previous one, a reverse edit, or editing any other column → STOP and report."
+  4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
+  5_reviewer_invisibility: "Reviewers spawned for this gate MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
+```
+
 ## Gate 3: Implementation Quality (run reviewer, not the builder) - **MANDATORY** 🔴
 > Gate 3 is UNIVERSAL across all task_types. Its checks come from the active handoff's
 > §9.1 Spec Compliance Checklist (the PRIMARY VERIFICATION SOURCE), not from hardcoded
 > tsc/test/lint. When any §9.1 AC references rubric scoring or an independent judge, the
 > `## Rubric Evaluation Protocol` section below ACTIVATES.
+# ⚠️ NO-PROGRESS COUNTER — Gate 3 (BLOCKING; shared definitions in the NO-PROGRESS block after Gate 4)
+```yaml
+no_progress_counter_gate3:
+  1_read_on_entry: "On entering Gate 3, Read the MAIN-WORKTREE handoff's ## Gate Rounds and derive G3/TOTAL_ROUNDS/GRANT. At threshold (G3 >= 3 or TOTAL_ROUNDS >= 6) → emit the NO-PROGRESS CIRCUIT BREAKER report and STOP; do not run this gate."
+  2_boundary_row: "The layer2 boundary rows are appended by Blake's loop machinery at round boundaries (blake/SKILL.md round_dispatch_guards): a row when a round STARTS (verdict=RUNNING), its verdict set in place when the round closes. Whoever closes a round without machinery (manual run) appends the gate3 row the same way. If a tail RUNNING row is already open, fill its verdict instead of adding a row."
+  3_monotonic: "Rows are append-only; the ONLY in-place edit is RUNNING→terminal verdict. A derived value smaller than the previous one, a reverse edit, or editing any other column → STOP and report."
+  4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
+  5_reviewer_invisibility: "Gate 3's fresh reviewers MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
+```
 ```yaml
 When: After implementation (BLOCKING)
 Owner: the Gate 3 run reviewer (not the builder; Blake prepares)
@@ -586,6 +606,15 @@ Rubric_AC_Integration:
 > browser), and hands him a verdict plus 3-5 evidence lines. The Gate 3 lenses, including the
 > domain lens when risk_triggers lists security, data or money, are its prerequisite; for rubric
 > ACs the Gate 3 judge verdict PASS is the prerequisite (see Rubric Evaluation Protocol).
+# ⚠️ NO-PROGRESS COUNTER — Gate 4 (BLOCKING; shared definitions in the NO-PROGRESS block below)
+```yaml
+no_progress_counter_gate4:
+  1_read_on_entry: "On entering Gate 4, Read the MAIN-WORKTREE handoff's ## Gate Rounds and derive G4/TOTAL_ROUNDS/GRANT. At threshold (G4 >= 3 or TOTAL_ROUNDS >= 6) → emit the NO-PROGRESS CIRCUIT BREAKER report and STOP; do not run this gate (acceptance-protocol step2b)."
+  2_boundary_row: "Append the gate4 boundary row BEFORE the acceptance run (verdict=RUNNING); set its verdict in place when the run concludes (acceptance-protocol step3b). If a tail RUNNING row for this gate is already open, fill its verdict instead of adding a row."
+  3_monotonic: "Rows are append-only; the ONLY in-place edit is RUNNING→terminal verdict. A derived value smaller than the previous one, a reverse edit, or editing any other column → STOP and report."
+  4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
+  5_reviewer_invisibility: "The Gate 4 acceptor MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
+```
 ```yaml
 When: After Gate 3 (BLOCKING)
 Owner: an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer
@@ -814,6 +843,91 @@ Post_Pass_Actions:
       - 归档 handoff 和 completion report
       - 更新 PROJECT_CONTEXT.md
       - 确认 NEXT.md 状态
+```
+
+## NO-PROGRESS CIRCUIT BREAKER — Shared Definitions (Gate 2 / Gate 3 / Gate 4)
+
+> One definition source for all three gates. The per-gate NO-PROGRESS COUNTER blocks above
+> carry the entry behavior; this block carries the carrier, the derivation, the breaker
+> report template and the grant conditions. Origin: the lite channel's repair-round cap
+> (blake-lite `## Lite Progress`) proved the immunity comes from boundary-append — write the
+> row at the stage boundary, before the next stage runs — not from the number 3. The full
+> channel previously counted only error-shaped rounds (consecutive_same_error), which any
+> stream of non-repeating failures defeats; this breaker counts rounds, not errors.
+
+```yaml
+gate_rounds_carrier:
+  location: "The handoff file itself, a `## Gate Rounds` section created at handoff creation (handoff-creation-protocol step1). The handoff is the one artifact every gate reads and writes, and .tad/active/handoffs/ lives outside git and outside any worktree — so the count survives compaction, interruption and session loss with no separate state file to lose."
+  skeleton: |
+    The section is delimited by <!-- GATE-ROUNDS-BEGIN --> / <!-- GATE-ROUNDS-END --> and
+    contains, in order: the schema line `GATE-ROUNDS-SCHEMA: v1`, the three derivation
+    lines below (verbatim), then the table:
+      | 时间 | Gate | verdict | 类别 | 记录者 |
+      |---|---|---|---|---|
+    Boundary enumeration: design (Alex, at creation) / review-batch (Alex, after each
+    expert review batch) / gate2 (Alex) / implement (Blake) / ac (Blake) / layer2 (Blake,
+    per Layer 2 round) / gate3 (whoever closes the round) / gate4 (Alex acceptor side).
+    Counter mapping: design, review-batch and gate2 rows count toward Gate 2; implement,
+    ac, layer2 and gate3 rows count toward Gate 3; gate4 rows count toward Gate 4.
+    A row is appended BEFORE its stage runs with verdict=RUNNING; when the stage concludes
+    its verdict is set in place. RUNNING→terminal is the ONLY in-place edit ever allowed in
+    this table; every other change is append-only. `类别` is a MECHANICAL category only
+    (e.g. test-failure) — never a root-cause judgement; root-cause judgement belongs to the
+    breaker report, written after the stop.
+  derivation: |
+    GATE-ROUNDS-DERIVATION: v1
+    G{n} = rows for Gate n AFTER the most recent HUMAN-GRANTED-CONTINUE row (or from the
+    table start when there is none) whose verdict is NOT IN {PASS, RUNNING,
+    HUMAN-GRANTED-CONTINUE}. A GRANT row therefore zeroes every G{n}; verdicts before it
+    stay in the table and still count toward TOTAL_ROUNDS.
+    TOTAL_ROUNDS = ALL rows whose verdict is NOT IN {PASS, RUNNING,
+    HUMAN-GRANTED-CONTINUE} — the lifetime sum of the three gates' non-PASS rounds. It
+    NEVER decreases: a PASS row is recorded (it proves a stage ran) but is not a repair
+    round, and interleaved PASSes leave every count exactly where it was. (Deviation from
+    the archived 2026-08-04 design, flagged for review: its TOTAL also counted PASS rows,
+    which would fire the backstop on a flawless multi-stage handoff; its G{n} formula is
+    kept verbatim.)
+    GRANT = rows whose verdict IS HUMAN-GRANTED-CONTINUE.
+    Counts are DERIVED from the rows on every read. There is no stored counter anywhere;
+    a stored number that disagrees with the derivation loses to the derivation.
+  thresholds: "Breaker fires when any G{n} >= 3 OR TOTAL_ROUNDS >= 6, checked on entering a gate and whenever a boundary row's verdict is set. PASS never resets any count."
+```
+
+### NO-PROGRESS CIRCUIT BREAKER report (the one template, shared by Gate 2/3/4)
+
+```
+【NO-PROGRESS CIRCUIT BREAKER】 Gate {2|3|4} 已达 3/3 轮（或全程 {TOTAL} 轮），严格计数熔断。
+
+已完成轮次：
+  R1: {verdict} — {三行内：问题 id + 类别 + 一行事实}
+  R2: {verdict} — {...}
+  R3: {verdict} — {...}
+未解决项（用问题 id 指称，不重新论证对错）：
+  - {...}
+我的诊断（机械类别级，不是根因定论）：
+  三轮类别分布：{如 test-failure×2, content-conflict×1}
+  是否同一根因：{是/否/无法判定} — {一句依据}
+已尝试的修复路线（每条一行，不评价）：
+  - {...}
+我的推荐（人决定）：
+  {A/B/C 三个动作不同、后果不同、且都可执行的选项 —— 给选项，不给结论}
+⛔ 已停止。等待人裁定。
+```
+
+Rules for the report: the three options must differ in action and consequence and each must
+be executable; a recommendation phrased as a conclusion ("建议判定不通过") is forbidden —
+option framing only ("通过并归档本 handoff" is a legal option). When this is the second or
+later grant on the same handoff (GRANT >= 1 already), the first line gains:
+`⚠️ 这是本 handoff 第 {GRANT+1} 次续行授权后的再次熔断（人此前已授权 {GRANT} 次）`.
+
+```yaml
+grant_conditions: "A HUMAN-GRANTED-CONTINUE row is valid only when ALL five hold:"
+  1_human_turn: "A real human turn in the transcript explicitly approves continuing THIS handoff (a same-reply self-approval is not a human turn)."
+  2_verbatim: "The row's 类别 column carries the human's verbatim words (a quote, not a paraphrase)."
+  3_hook_crosscheck: "Read-side assertion, checked when the row is WRITTEN: in harnesses with the askuser-capture hook, .tad/evidence/decisions/{YYYY-MM}.jsonl must contain a kind=askuser_decision line with decision=approve whose ts falls inside the breaker-report→grant window; the row cites that ts as its cross-key. A grant row with no such line is invalid — breaker state unchanged, and the invalid row itself is reported. (Agents never WRITE that directory: mandatory.no_decision_log_write.)"
+  4_transcript_only_branch: "In a harness with no hook, mark the row `transcript-only (no hook)` and DO NOT hard-stop on it: continue, but flag UNVERIFIED-BY-EXECUTION wherever the grant is relied on."
+  5_cap: "At most 2 grant rows per handoff. Beyond that, only a human editing the handoff directly continues the work."
+  effect: "A valid grant row zeroes every G{n} positionally (derivation above); TOTAL_ROUNDS never decreases. A grant row may explicitly re-attribute a batch of unresolved findings to another Gate (mandatory.no_gate_reattribution's only exception)."
 ```
 
 ## Gate 4 — Rubric-Based Handoffs (universal, no separate branch)

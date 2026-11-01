@@ -502,3 +502,23 @@
 - **Grounded in**: Epic Budget 行与 Phase 5 收口记录；journal L9 预算重排行（实测 46 与成因逐 phase 指认）；设计正本 §9 L9；Phase 5 合同 §10.3 算术链（46＋10＝56／57／59 的作成期推算）。
 - **可变量化检验**: 通过——变量为「任一双审体制 Epic 的 phase 轮次结构」；具体倍数（本批实落/estimate≈1.55）是本批参数、不写成普适常数，普适的是轮次结构项。
 - **推荐落点**: `patterns/handoff-design.md`（既有 budget 条目族：estimate＋runaway guard 一侧补估计法）。
+
+### Re-Verify Every Load-Bearing Baseline Premise on Disk at Design Time — Including Whether the Oracle Can Run in This Environment at All
+
+- **Source confidence**: Medium（首例事件）; near entries: the worktree-grounding entries in this file, and the before/after-baseline entries in `ac-verification.md`.
+- **Selector**: Triggers when a handoff writes quantitative baselines (counts, absence claims, expected checker exits) or names a verification oracle (a test, a fixture, a checker command) that acceptance rows will rely on.
+- **Context**: A design is written from reports, prior verdicts and memory of the tree. Between the events those reports describe and the design session, the tree moves: packages get installed or removed, files land, and the target environment differs from the author's assumption in ways no report mentions.
+- **Discovery**: In the grounding case, two of the phase's four disputed acceptance rows were not implementation defects at all: one baseline premise (a named package "is not installed as a skill") was false on disk, and one oracle (a fixture leg depending on a tool the repository's form does not provide) was structurally unreachable in the target environment — its failure signature mimicked a real defect, so both mismatches surfaced only at acceptance, at full dispute cost, charged to the wrong side.
+- **Action**: At design time, for every load-bearing baseline premise, re-run its disk check inside the design session and record the output beside the premise — the same evidence grade as a line count or a hash. For every oracle an acceptance row names, first prove the oracle can run in the target environment at all (see Oracle reachability below) and record the probe with the design; an oracle that cannot run there gets its row redesigned around a reachable proof surface, not discovered at the gate.
+
+#### Oracle reachability
+
+Before an acceptance row may cite a test, fixture or checker as its proof, run that proof surface once in the environment the row will be judged in. Reachable means: it executes, and its failure signature is distinguishable from the defect it guards. An oracle whose every outcome in that environment is predetermined by the environment itself — a missing tool, an absent repository form — is not an oracle there, whatever it proves elsewhere; rows resting on it are unjudgeable as written and must be redesigned at design time.
+
+#### Output-form and locator-form premises
+
+A baseline premise can be false in FORM while true in substance. When an acceptance row's oracle is a tool's output or a locator string (a file path, a line number, a grep string), the premise re-verification includes running the tool once, or resolving the locator once, in its verbatim form inside the design session: the output's literal shape (full path vs bare name, the exact token printed) and the locator's actual position are part of the premise. A locator or output form taken from a report's paraphrase is an unverified premise of the same class as an unrechecked count. Grounded in this phase's own acceptance history: at the Phase 2 Gate 4 the acceptor's transcribed locator strings returned empty values until re-derived from the verbatim Method text, after which every row matched; and AC11 of the same phase failed in form because its Expected presupposed an output shape the checker never printed (`.tad/evidence/yolo/v409-basket/phase2-gate-report.md`).
+
+- **failure_mode**: Naive default: copy baselines from the input reports that motivated the work. Why wrong: those reports are dated observations of a moving tree; an unrechecked premise silently converts into acceptance rows that cannot be satisfied as written, the dispute lands on the implementer for a design-side fact error, and an unreachable oracle manufactures defect-shaped evidence against sound work.
+- **Validator**: The handoff's grounding record shows a dated disk re-check output for each load-bearing premise and a reachability probe result for each named oracle; acceptance disputes attributable to premise falsity trend to zero.
+- **Grounded in**: EPIC-20261031-v409-basket Phase 1: acceptance rows AC1/AC8 and the Gate 4 report's gate4_delta section (`.tad/evidence/yolo/v409-basket/phase1-gate-report.md`); Knowledge candidates KC1 and KC4 of the same report (merged here, KC4 as the oracle-reachability sub-face).

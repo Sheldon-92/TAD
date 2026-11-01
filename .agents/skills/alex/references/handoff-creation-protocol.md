@@ -153,6 +153,7 @@ handoff_creation_protocol:
         - "YAML frontmatter (MANDATORY — task_type, e2e_required, research_required must be filled)"
         - "Capability Pack References (if packs loaded in *design step1_5b)"
         - "Required Evidence Manifest — MANDATORY section (Phase 3 anchor A-02): explicit YAML block listing every evidence file Blake must produce (expert_reviews, gate_verdicts, completion, blake_reviews, perf_evidence, fixture_results, dogfood, knowledge_updates). PreToolUse hook AW-1/BW-1 will reject the handoff Write if this section is missing."
+        - "## Gate Rounds 段骨架（MANDATORY — no-progress breaker 的载体）：<!-- GATE-ROUNDS-BEGIN --> / <!-- GATE-ROUNDS-END --> 块，内含 schema 行 `GATE-ROUNDS-SCHEMA: v1`、gate/SKILL.md NO-PROGRESS 块的三行派生定义（逐字抄录）与表头 | 时间 | Gate | verdict | 类别 | 记录者 |。初稿落盘后由 Alex 追加首行 design 边界行（verdict=RUNNING，草稿定稿时填终态）。计数靠行派生、无存储计数器，跨 compaction 不丢（定义与熔断模板见 gate/SKILL.md）"
         - "(skip when dispatched by a conductor: the conductor owns session-state during a run) Write .tad/active/session-state.md (keep any `## Conductor run (Cora)` section unchanged): Status=ACTIVE, Active Agent=Alex, Mode={current_mode}, Active Task.Handoff=<draft_path>, Current Position='handoff_creation step1 — drafting', Big Picture.Goal/Why Now/Key Constraint/Success When from task requirements"
       code_bound: |
         The code bound: no fenced block in the handoff over 15 lines and at most 80 fenced lines in all (frontmatter and §9.1 table cells are not fenced). It applies to every handoff that goes through Gate 2 (spike and *experiment included); a *bug mini-handoff has no Gate 2 and is not measured. Measured per handoff file f (counts ``` and ~~~ fences; an unclosed one shows as open=1):
@@ -288,6 +289,44 @@ handoff_creation_protocol:
         look_first: "a record path (Cora run `.tad/evidence/yolo/{epic-slug}/phase{N}-look.md`, direct /alex `.tad/evidence/reviews/alex/<slug>/look.md`) or `\"not-needed: <reason>\"`; `not-needed` while the result acts on a system outside the repo or on real data is a Gate 2 finding (design-protocol step1_2_look_first)"
       gate1_format: "run `bash .tad/hooks/lib/gate1-format-check.sh <draft handoff>` (handoff mode: an Epic pointer prints OK g0; a bug handoff checks Bug Description and the repro row; otherwise §1.5 needs the `- **Done check**: …` and `- **Not wanted**: …` lines, the record line `playback confirmed: "<his words>"`, `#### Q→A log` and `#### Assumptions`). Advisory, exit 1 = fill the missing item or ask the human that block; express and *bug use it the same way. Content is the human's confirmed playback plus my line 'can design from it'."
       violation: "frontmatter 字段缺失或值非法 = VIOLATION — 不能继续 step2"
+
+    step1b_5_volume_gate:
+      name: "Handoff Volume Gate — generation-time size warning (prompt, NOT a hard reject)"
+      trigger: "After step1b frontmatter validation, before step1c grounding — in every case BEFORE step2/step3 spawns any Gate 2 reviewer"
+      enforcement: "prompt-level-only"  # ⚠️ NOT a hook, NOT in settings.json, NOT a tool block (mirrors step1c; mechanical-enforcement-rejected on single-user CLI, principles 2026-04-15)
+      rationale: |
+        NEXT.md mechanism-gap ④ (measured distribution): the one handoff that blew up
+        in review was 107KB/27AC; 64/62/52KB drafts all completed; the rest were <40KB.
+        Reviewer spawn (step3) is the expensive step. A size warning that lands AFTER
+        reviewers are dispatched is useless — by then "keep as-is" is the only rational
+        option, because re-splitting would waste the review already spent. The warning
+        must land here, while splitting is still cheap.
+      counting: |
+        Byte size: the draft file's size in bytes (`wc -c < <draft>`). 80 KB = 81920 bytes.
+        AC count: the draft's §9.1 Spec Compliance Checklist rows, mechanically:
+          grep -cE '^\|[[:space:]]*AC[-_ ]?[0-9]' <draft>
+        (table rows whose first cell is an AC id: AC1 / AC-1 / AC 1 / AC-P2-3 forms).
+      thresholds: "bytes > 81920 OR ac_count > 20 → fire the warning. Both at or under → silent, proceed to step1c."
+      action: |
+        1. Run the counting above on the step1 draft.
+        2. If either threshold is exceeded, surface to the human BEFORE proceeding:
+           "⚠️ Handoff volume gate: draft is {bytes} bytes / {ac_count} AC
+           (limits: 81920 bytes / 20 AC) — options: split into phases, trim AC
+           scope, or proceed as-is."
+           Ask via AskUserQuestion (split / trim / proceed). The human decides.
+        3. Record one line in the handoff draft (§6.5/§6.7 area or the draft notes):
+           "Volume gate (step1b_5): {bytes} B / {ac_count} AC — {split | trimmed | proceed-as-is per human}".
+           If neither threshold was exceeded, no line is required (silence is the record).
+      not_a_reject: |
+        This gate NEVER blocks drafting, NEVER rejects a handoff, and is never re-asked
+        after the human chooses. "Proceed as-is" continues to step1c with no penalty.
+      violation_self_audit: |
+        At step2, if the draft exceeded a threshold but no volume-gate line is recorded
+        in the handoff: self-audit failed → return to step1b_5 and ask now; record that
+        the warning was late.
+      forbidden_implementations:
+        - "MUST NOT register hooks or modify settings"
+        - "MUST NOT turn the thresholds into a hard block on the handoff Write or on step2"
 
     step1c:
       name: "Grounding Pass — Read target files before sending to Expert Review"
@@ -598,6 +637,12 @@ handoff_creation_protocol:
     step5:
       name: "Gate 2 Check"
       action: "执行 Gate 2: Design Completeness"
+      boundary_append: |
+        每批专家评审结束（step2/step3）后追加 review-batch 边界行；本步判定后追加 gate2 边界行
+        （在途行协议：先追加 verdict=RUNNING、判定后就地填终态——这是该表唯一允许的原地修改；
+        路径永远解析主工作树绝对路径，worktree 内不存在 .tad/active/handoffs/）。
+        进入本步前先派生计数：G2 达 3 或 TOTAL_ROUNDS 达 6 → 输出 NO-PROGRESS CIRCUIT BREAKER
+        报告并停止，不跑本步（模板与定义见 gate/SKILL.md NO-PROGRESS 块）。
 
     step6:
       name: "Ready for Implementation"

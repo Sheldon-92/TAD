@@ -88,7 +88,15 @@ item_with() { # <name inside payload> -> the item dir holding it
   for d in "$G"/holding/h*/; do [ -e "${d}payload/$1" ] && { printf '%s' "${d%/}"; return 0; }; done
   return 1
 }
-mode_of() { stat -f '%Lp' "$1" 2>/dev/null || stat -c '%a' "$1" 2>/dev/null; }
+mode_of() {
+  # Semantic-value dispatch (TICKET-20261028-backup-fixture-tmpfs-stat): accept a
+  # stat form only when its output is a pure numeric mode; GNU `stat -f` prints a
+  # multi-line filesystem dump and exits 0, so probe order + output-shape check.
+  local m
+  m="$(stat -c '%a' "$1" 2>/dev/null)" && case "$m" in ''|*[!0-9]*) ;; *) printf '%s\n' "$m"; return 0 ;; esac
+  m="$(stat -f '%Lp' "$1" 2>/dev/null)" && case "$m" in ''|*[!0-9]*) ;; *) printf '%s\n' "$m"; return 0 ;; esac
+  return 1
+}
 
 # ================================================================ ledger
 case_ledger() {

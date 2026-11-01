@@ -13,7 +13,7 @@ min_marker_count: 3
 # generic "offset pagination"/"cursor"/"idempotent" (any senior backend eng emits these).
 # keyset/seek-method pagination, preStop/SIGTERM/graceful-shutdown drain, and secret-manager
 # are the pack's specific rule names a no-pack agent ("add an index") does not produce.
-discriminative_pattern: "keyset|seek method|preStop|SIGTERM|[Gg]raceful [Ss]hutdown|secret manager"
+discriminative_pattern: "terminationGracePeriodSeconds|Sealed Secrets|secrets manager|SIGTERM|10K"
 min_discriminative: 3
 ---
 

@@ -66,7 +66,9 @@
 #       Dual-layer full-repo version drift detection.
 #       Layer 1 (Must-Version Registry): positive-assert that ~12 identity-marker files
 #         contain the expected version. ALWAYS blocking.
-#       Layer 2 (Narrow Drift Sweep): grep for 2.X.Y patterns ≠ expected, excluding
+#       Layer 2 (Narrow Drift Sweep): grep for X.Y.Z patterns whose major is a
+#         shipped TAD major (derived live from .tad/migrations/ manifest filenames
+#         ∪ the expected major — never a hardcoded literal) ≠ expected, excluding
 #         known historical paths (archive/, evidence/, migrations/, skills/*/references/,
 #         _archived/, .tad/active/ideas/, CHANGELOG table rows, metadata annotations,
 #         IP addresses). ADVISORY only — never affects exit code.
@@ -631,7 +633,8 @@ MIG_REN_EOF
   # Full-repo version drift detection. Dual-layer:
   #   Layer 1 (Must-Version Registry): positive-assert that specific files contain the
   #     expected version string. ALWAYS blocking. Exit 1 = stale identity marker.
-  #   Layer 2 (Narrow Drift Sweep): grep for 2.X.Y patterns not equal to expected,
+  #   Layer 2 (Narrow Drift Sweep): grep for X.Y.Z patterns whose major is a
+  #     shipped TAD major (derived live, see below) not equal to expected,
   #     excluding known historical paths. ADVISORY only — never affects exit code.
   # Exit 0 = Layer 1 all PASS (regardless of Layer 2 hits).
   # Exit 1 = ≥1 Layer 1 pattern missing.
@@ -715,9 +718,29 @@ MIG_REN_EOF
     l2_output=""
 
     if git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-      # Get all tracked text files, grep for 2.X.Y patterns (left-anchored: non-digit before 2)
+      # Derive the shipped-major set live: every .tad/migrations/<from>-to-<to>.yaml
+      # filename names two shipped versions; their majors ∪ the expected major are
+      # the TAD version line. NEVER hardcode a major literal here — the previous
+      # literal `2` silently went stale at the 3.x/4.x majors, blinding this sweep
+      # to exactly the drift it exists to catch (a file stuck at 3.2.0 under 4.x).
+      SWEEP_MAJOR_SET="${VER%%.*}"
+      for mf in "$REPO"/.tad/migrations/*-to-*.yaml; do
+        [ -f "$mf" ] || continue
+        mb="$(basename "$mf" .yaml)"
+        mfrom_major="${mb%%-to-*}"
+        mfrom_major="${mfrom_major%%.*}"
+        mto_major="${mb#*-to-}"
+        mto_major="${mto_major%%.*}"
+        case "$mfrom_major" in ''|*[!0-9]*) ;; *) SWEEP_MAJOR_SET="${SWEEP_MAJOR_SET} ${mfrom_major}" ;; esac
+        case "$mto_major" in ''|*[!0-9]*) ;; *) SWEEP_MAJOR_SET="${SWEEP_MAJOR_SET} ${mto_major}" ;; esac
+      done
+      SWEEP_MAJORS="$(printf '%s' "$SWEEP_MAJOR_SET" | tr ' ' '\n' | LC_ALL=C sort -un | paste -sd'|' -)"
+      SWEEP_RE="(^|[^0-9])(${SWEEP_MAJORS})\\.[0-9]+\\.[0-9]+"
+
+      # Get all tracked text files, grep for shipped-major X.Y.Z patterns
+      # (left-anchored: non-digit before the major)
       raw_hits="$(git -C "$REPO" ls-files -z 2>/dev/null \
-        | (cd "$REPO" && LC_ALL=C xargs -0 grep -InE '(^|[^0-9])2\.[0-9]+\.[0-9]+' 2>/dev/null))" || true
+        | (cd "$REPO" && LC_ALL=C xargs -0 grep -InE "$SWEEP_RE" 2>/dev/null))" || true
 
       if [ -n "$raw_hits" ]; then
         while IFS= read -r hit; do
@@ -749,8 +772,8 @@ MIG_REN_EOF
             continue
           fi
 
-          # Exclusion (d): IP address filtering (digit or dot adjacent to match)
-          if printf '%s' "$content" | LC_ALL=C grep -qE '[0-9]\.2\.[0-9]+\.[0-9]+|2\.[0-9]+\.[0-9]+\.[0-9]'; then
+          # Exclusion (d): IP address filtering (any 4-octet sequence on the line)
+          if printf '%s' "$content" | LC_ALL=C grep -qE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'; then
             continue
           fi
 

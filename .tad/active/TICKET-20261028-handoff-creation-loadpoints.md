@@ -1,6 +1,6 @@
 # TICKET — handoff-creation 装载点补完（tiering 规则正文入规程＋回放触发自查句）
 
-- **Status**: OPEN（待分诊执行）
+- **Status**: CLOSED（2026-10-31 Phase 1 小修批分诊销账：收口节与终局凭据已对盘；凭据根 .tad/evidence/yolo/distill-tickets/）
 - **Owner**: TAD PM（Muse 侧 TAD 席位，分诊属主）
 
 ## 1. 背景

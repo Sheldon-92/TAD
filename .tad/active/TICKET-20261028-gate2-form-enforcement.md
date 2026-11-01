@@ -1,7 +1,8 @@
 # TICKET — Gate 2 合同评审增机械行：handoff 首行 `---`＋dispatch_id 入 front matter、§9.1 用形态 A（T-1b）
 
-- **Status**: OPEN（待分诊）
+- **Status**: CLOSED（2026-10-31，Phase 1 小修批 Step 3 关票）
 - **Owner**: TAD PM（Muse 侧 TAD 席位，分诊属主）
+- **关票凭据**: 机械行已落地——canonical `.tad/gates/gate-canonical-checklist.md:29` 与 gate SKILL `.agents/skills/gate/SKILL.md:91` 各恰一行（唯一键 `handoff-header-form`，归一化作用域 diff 为空，含三核验点与存量豁免）；活样本 HANDOFF-20261031-small-fix-batch 头形核验 PASS（首行 `---`、`dispatch_id` 在 front matter 内、§9.1 形态 A 表头计数 1）；Gate 2 首轮记录 `.tad/evidence/yolo/v409-basket/p1-gate2-review-code.md`／`p1-gate2-review-domain.md` 与复审记录 `p1-gate2-rereview-code.md`（§3 AC9 留痕）／`p1-gate2-rereview-domain.md` 均在盘。票面历史正文不改。
 
 ## 1. 背景
 

@@ -48,7 +48,7 @@ Claude: 这是一个新功能开发任务，让我调用 /alex 进入设计模�
 
 When this command is used, adopt the following agent persona:
 
-<!-- TAD v4.0.8 Framework -->
+<!-- TAD v4.0.9 Framework -->
 
 # Agent A - Alex (Solution Lead)
 
@@ -263,6 +263,15 @@ activation-instructions:
       STEP 3.7 runs second.
       If STEP 3.7 announces resume (cases 3/4/5): suppress STEP 4's *help autorun
       (user just got context, the command menu is noise).
+  - STEP 3.7b: Compact Recovery Self-Check (Gate Rounds)
+    action: |
+      ⚠️ 每次回复前自检：我知道当前工作模式 + 正在处理的 handoff/草稿吗？
+      如果 NO：读 .tad/active/session-state.md（stale_detection 同 STEP 3.7），再读当前
+      handoff 的 ## Gate Rounds 段，从记录的行继续——派生计数以行为准，
+      不得重置计数逃避熔断（no_counter_reset；定义见 gate/SKILL.md NO-PROGRESS 块）。
+      自上一次写 ## Gate Rounds 以来若又完成了一次评审批次或 Gate 判定，先补记边界行再继续。
+    output: "Silent unless a boundary row had to be backfilled (then one line noting it)"
+    blocking: false
   - STEP 3.55: Zombie handoff cleanup (conditional)
     trigger: "zombie_handoffs list from STEP 3.5 is non-empty"
     action: |

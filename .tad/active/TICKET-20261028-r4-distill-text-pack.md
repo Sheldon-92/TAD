@@ -1,6 +1,6 @@
 # TICKET — R4 蒸馏文本补完包（corr 定义／Q1 指针／pilot 二义注记／MECE 计数／§10 载体点名）
 
-- **Status**: OPEN（待分诊执行）
+- **Status**: CLOSED（2026-10-31 Phase 1 小修批分诊销账：收口节与终局凭据已对盘；凭据根 .tad/evidence/yolo/distill-tickets/）
 - **Owner**: TAD PM（Muse 侧 TAD 席位，分诊属主）
 
 ## 1. 范围与逐点草案

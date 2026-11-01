@@ -67,6 +67,26 @@ Citation discipline (applies in parallel with the reference rule above; it renam
 - **fit** (Gate 2, only when `risk_triggers: [none]`): is this what the requirement asks (list the readings of the Result contract and which one the handoff builds), is the size proportionate, does the premise hold. It yields questions or P1, never P0: a question that would change the result or scope is written to the phase questions file as class 2 (Cora's run: she routes it by the Low-stakes test, cora SKILL.md Route and spend) or, in direct /alex, goes to the human through Alex; anything else is a P1.
 - **run** (Gate 3; always; writes the Gate 3 verdict file): re-runs every §9.1 row itself, by hand, in one throwaway copy of the project (a git worktree or clone in scratch, deleted after; no script executes handoff commands), and compares every row with Expected Evidence, into a `## AC runs` table `| row | command | exit | result |` (a row it does not run: `not-run` in the result cell and a `## Not run` line with the reason); runs every `real_path` (§6; simple tier: the verification on the journal line) as a real run, into a `## Real paths` table `| id | what was run | output pointer | result |` and a `## Not run` list (`- <id> not-run: <reason>`); before saving runs `bash .tad/hooks/lib/gate3-check.sh <handoff> <its own file>` (it executes nothing; it checks the AC table, the real paths and that every not-run has a reason) and pastes the output (simple tier: the journal-line verification, one row each: command, output, result; it also writes `## For the human`, a verdict line plus 3-5 evidence lines with pointers, for Cora to relay); runs the project's test suite when the handoff names one or the repo has one; states in one line whether the verification matches the request line it came from; checks the Gate 3 rows that need no design judgment (completion report present, Knowledge Assessment present, commit recorded); writes the completion report's `gate3_verdict:` marker. A rubric row is decided by the judge's file named in the prompt.
   It also spot-checks two citations in the completion report under review: for each, the cited original and its section number must appear in this chain's read list or Knowledge Usage record; a citation outside the read list is a finding, recorded in this reviewer's file and as one line in that report's Citation findings section (§4).
+
+#### Verdict skeleton (the run reviewer's file, byte form)
+
+```
+## AC runs
+| row | command | exit | result | output |
+|---|---|---|---|---|
+| AC1 | <command> | <exit> | <result> | <output pointer> |
+## Real paths
+| id | what was run | output pointer | result |
+|---|---|---|---|
+| RP1 | <what was run> | <output pointer> | <result> |
+## Not run
+- <id> not-run: <reason>
+## Blocked
+- <id>: <the friction that blocks it>
+```
+
+This skeleton is the contract surface that `gate3-check.sh` reads, and the two are maintained from one source: (1) the status column is recognised only under the name `result` or `status`; the evidence column is recognised when its name holds `output`, `pointer` or `evidence` (or the CJK term for evidence); with no evidence column, the checker falls back to the `exit` column. (2) Whoever changes this skeleton or the classifier changes the other in the same round, and each cites the other. (3) The run reviewer runs `gate3-check.sh` on its own file before saving it and pastes the output. (4) Existing four-column verdicts are not rewritten: the parser keeps reading them by header name — but in the four-column form the evidence falls back to the `exit` column, so `exit` there must carry the real value, never a `-` or an empty placeholder.
+
 - **domain** (Gate 3, only when `risk_triggers` lists security, data or money): one reviewer applies those lenses to the built change and runs what it needs.
 - **judge** (rubric ACs): the gate skill's Rubric Evaluation Protocol. **acceptor** (Gate 4): the gate skill and the acceptance protocol.
 

@@ -461,6 +461,49 @@ Track these metrics:
 - Gate pass rate improvement: +5% quarterly
 - Sub-agent usage optimization: +10% efficiency
 
+## Segmented Write Discipline （分段落盘纪律）
+
+Evidence, verdict, and answer files larger than about 8KB must be written to disk in segments (分段落盘）, never in one oversized write:
+
+1. **分段**: write the file in sequential segments (initial write plus appends), each small enough to survive tool transport intact.
+2. **每段验字节**: after each segment, verify the bytes on disk (byte count and tail content) before appending the next segment.
+3. **回执自报**: the completion receipt for the file must state its total byte count and its section list （章节清单）, so a reviewer can check completeness without opening it.
+4. **收尾自查**: before closeout, scan the file tail and body for truncation markers (e.g. a literal `...[truncated` remnant) — a file whose tail is a truncation marker is not written, however plausible its receipt sounds.
+
+A file above the ~8KB threshold that lacks any one of these four — segmented writing, per-segment byte verification, a receipt stating total bytes and section list, or a clean tail check — does not count as delivered at closeout.
+
+## Live-Run Copy Execution （真跑副本执行不变量）
+
+When a verification run executes an artifact that can write back to itself — the run's own outputs overlap the artifact's own path, or its deliverable set includes files the execution itself writes — never invoke the original. Execute a byte-identical copy, and reconcile the original's integrity before and after the run:
+
+1. **Copy first**: before invocation, copy the artifact byte-identically to an evidence-side path (a name carrying the run id). The copy's sha256 must equal the original's sha256 before invocation — on inequality, stop and report; do not invoke.
+2. **Invoke the copy**: point the invocation at the copy, with the run's arguments exactly as specified. The in-repo original is never a write target of any execution path.
+3. **Run record**: the run record MUST contain these five fields, under these names:
+   ```
+   copy_path: <path of the executed copy>
+   copy_sha256: <64-hex>
+   original_sha256_before: <64-hex>
+   original_sha256_after: <64-hex>
+   original-integrity: MATCH | MISMATCH
+   ```
+4. **On MISMATCH**: stop all further runs; preserve the mutated original under a `.mutated-<run-id>` name in the evidence directory; restore the original from the run copy (byte-identical to the pre-run original) and verify its sha256 equals the before-value; report before any further run.
+5. **Keep the copy**: after the run is accepted, the copy stays in the evidence directory — it is run evidence, not scratch; do not delete it.
+6. **Prospective only**: runs already completed against an original stand as recorded; this invariant governs every later run.
+
+This invariant is a procedural and evidence rule, carried by task text and run records. It is deliberately NOT implemented as code inside the artifacts under test: an artifact cannot reliably know its own canonical path across harnesses, and a heuristic self-check would misfire on legitimate maintenance runs against it.
+
+## Fixture Contract （夹具禁自引用）
+
+Replay and live-run fixtures for an artifact under test obey three rules:
+
+1. **No self-reference**: a fixture row's deliverable and target paths must never reference the artifact under test itself, its report outputs, or any file that executing the row would write as part of the row's own work.
+2. **Self-hit stop**: a fixture row whose deliverable, if executed, would write the artifact-under-test's own path is non-conforming and must be remodeled before any run; if such a row is nevertheless run, its only conforming expectation is needs_you, and any execution of it is a Gate FAIL.
+3. **Pre-run check**: before every replay or live run, grep the fixture set for the artifact's filename — any hit stops the run before invocation. Record the grep and its result in the run record.
+
+Enforcement is this contract text plus the conductor's pre-run grep — deliberately NOT a code check inside the artifact under test, for the same reason as the copy-execution invariant above: the artifact cannot reliably know its own canonical path across harnesses.
+
+<!-- Added 2026-10-31, Phase 1 small-fix batch (HANDOFF-20261031-small-fix-batch D10, from TICKET-20261031-process-suggestions): a long evidence file was once silently truncated at ~17KB with the truncation marker written into the file as its last line while the writer reported success. -->
+
 ## CRITICAL REMINDERS
 
 **❌ NEVER:**
