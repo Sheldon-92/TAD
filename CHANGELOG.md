@@ -5,7 +5,7 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.9] - Unreleased
+## [4.0.9] - 2026-11-01
 
 Basket patch release: one five-phase Epic (EPIC-20261031-v409-basket, every Gate 4 verdict CONDITIONAL with p0 = 0) plus the release-run items its tickets registered.
 
