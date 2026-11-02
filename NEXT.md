@@ -8,7 +8,7 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4；对账方法 2026-11-01 回写，release-recon-4.0.9 D16）：每轮自查以 yunpush status／盘面对读对账本文件（本文件夹禁 git），条目与盘面现实不符即当场纠偏。
 
-**当前版本**：4.0.9（已发布 2026-11-01，main = 94139e19，tag v4.0.9 = 1f93d947）（上一已发布版本 4.0.8，tag v4.0.8 = df18c462）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.10（prepared locally, not pushed or tagged）（上一已发布版本 4.0.9，tag v4.0.9 = 1f93d947）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
