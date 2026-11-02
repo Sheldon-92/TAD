@@ -314,6 +314,25 @@ publish_protocol:
         live-regression criterion, not this step's — this step judges only
         presence, completeness, and currency.
 
+        Installer atomicity surface (v4.0.10, TASK-20261101-HF1): one
+        additional required transcript, produced by running the aw cases
+        of the installer data-safety fixture against the candidate tree:
+          bash .tad/tests/installer-data-safety-fixture.sh --case aw.1
+          bash .tad/tests/installer-data-safety-fixture.sh --case aw.2
+          bash .tad/tests/installer-data-safety-fixture.sh --case aw.2b
+          bash .tad/tests/installer-data-safety-fixture.sh --case aw.3
+          bash .tad/tests/installer-data-safety-fixture.sh --case aw.4
+        (or the fixture's `all` case set, which includes the five aw
+        cases), filed at
+        `.tad/evidence/live-regression/installer-atomic-<YYYYMMDD>.md`
+        in the six-field form above, with field 1 (runtime) =
+        `none — installer fixture (no harness runtime)`, field 2
+        (harness name and version) = `tad.sh installer +
+        installer-data-safety-fixture.sh @ candidate tree version`, and
+        field 4 (chain type) = installer-atomic. A missing or FAIL
+        installer-atomic transcript is RED exactly like a missing HARD
+        runtime transcript.
+
         Interface with Epic Phase 3: this step defines only the checklist
         entry and its adjudication. Transcript production and the live
         execution surface belong to Epic Phase 3 item 3.3; at Phase 3

@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|caps|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|caps|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -80,6 +80,77 @@ new_sandbox() {
   if [ -n "${BASH_VERSION:-}" ]; then
     curl() { printf '%s\n' "FUNC-SHIM-CURL-INVOKED $*" >> "$CURL_FUNC_LOG"; return 1; }
     export -f curl
+    # cp shim (TASK-20261101-HF1, HANDOFF §4.6): transparent pass-through
+    # unless a case arms it (run_install_aw sets TAD_FIXTURE_SHIM_LOG and
+    # the FAIL_CP variables). An armed call writes a 16-byte partial
+    # fragment to the destination and returns 1 — the exact shape of the
+    # 2026-11-01 interrupted writes. A destination matches only when its
+    # TARGET-RELATIVE path, after stripping the atomic stage suffix
+    # (.tad-new.<pid>) or the rollback staging suffix
+    # (.rollback-staging), equals the armed path (AGENTS.md /
+    # .tad/version.txt for the sync phase, .tad/<entry> for the rollback
+    # phase) AND the effective path is inside TAD_FIXTURE_TARGET_ROOT —
+    # so backup/snapshot copies (destinations outside the target tree)
+    # can never be armed, and neither can same-basename files elsewhere
+    # in the tree (the framework ships .tad/tests/state-surface-fixture/
+    # AGENTS.md and .tad/version.txt — basename matching armed those
+    # copies instead of the named writes; found live in the first aw
+    # runs and recorded in the chain COMPLETION). The two suffix forms
+    # keep the sync phase and the rollback phase separately armable.
+    # Every call while the log is set is witnessed as
+    # dest=<destination as passed> armed=<0|1>.
+    cp() {
+      if [ -z "${TAD_FIXTURE_SHIM_LOG:-}" ]; then
+        command cp "$@"
+        return $?
+      fi
+      local _a _dest="" _first="" _file _base _dir _phase=sync _eff _rel="" _armed=0
+      for _a in "$@"; do
+        case "$_a" in -*) continue ;; esac
+        [ -n "$_first" ] || _first="$_a"
+        _dest="$_a"
+      done
+      if [ -z "$_dest" ]; then
+        command cp "$@"
+        return $?
+      fi
+      _file="$_dest"
+      if [ -d "$_dest" ]; then _file="$_dest/$(basename "$_first")"; fi
+      _eff="$_file"
+      case "$_eff" in /*) ;; *) _eff="${TAD_FIXTURE_TARGET_ROOT:-}/$_eff" ;; esac
+      if [ -n "${TAD_FIXTURE_TARGET_ROOT:-}" ]; then
+        case "$_eff" in
+          "$TAD_FIXTURE_TARGET_ROOT"/*) _rel="${_eff#"$TAD_FIXTURE_TARGET_ROOT"/}" ;;
+        esac
+      fi
+      if [ -n "$_rel" ]; then
+        _base="$(basename "$_rel")"
+        _dir="$(dirname "$_rel")"
+        case "$_base" in
+          *.rollback-staging)
+            _phase=staging
+            _rel="${_rel%.rollback-staging}"
+            if [ -n "${TAD_FIXTURE_FAIL_CP_STAGING:-}" ] && [ "$_rel" = "$TAD_FIXTURE_FAIL_CP_STAGING" ]; then _armed=1; fi
+            ;;
+          .*.tad-new.*)
+            _base="${_base#.}"
+            _base="${_base%%.tad-new.*}"
+            if [ "$_dir" = "." ]; then _rel="$_base"; else _rel="$_dir/$_base"; fi
+            if [ -n "${TAD_FIXTURE_FAIL_CP:-}" ] && [ "$_rel" = "$TAD_FIXTURE_FAIL_CP" ]; then _armed=1; fi
+            ;;
+          *)
+            if [ -n "${TAD_FIXTURE_FAIL_CP:-}" ] && [ "$_rel" = "$TAD_FIXTURE_FAIL_CP" ]; then _armed=1; fi
+            ;;
+        esac
+      fi
+      printf 'dest=%s armed=%s\n' "$_dest" "$_armed" >> "$TAD_FIXTURE_SHIM_LOG" 2>/dev/null || true
+      if [ "$_armed" = "1" ]; then
+        printf '0123456789ABCDEF' > "$_file"
+        return 1
+      fi
+      command cp "$@"
+    }
+    export -f cp
   fi
   preflight_target
 }
@@ -2690,6 +2761,398 @@ case_caps() {
   if grep -qE '^Holding area: ' "$log" && [ "$(fx_rv "$R" holding_items)" != "-" ] && [ "$(fx_rv "$R" holding_items)" -ge 5 ] 2>/dev/null && [ "$(fx_rv "$R" holding_path)" = "$H" ]; then pass "caps: report names the holding area"
   else fail "caps: report lacks the holding area (items=$(fx_rv "$R" holding_items) path=$(fx_rv "$R" holding_path)): $(grep -E 'Holding' "$log" | tr '\n' '|')"; fi
 }
+# ── aw.* installer atomicity cases (TASK-20261101-HF1, HANDOFF §4.6) ──
+# Shape: a clean codex install at the staged (repo) version builds the
+# target; the staged source's version.txt is then doctored to 4.0.11, so
+# the run under test is a genuine upgrade whose sync/stamp writes can be
+# armed through the exported cp shim (see new_sandbox). The shim is
+# bash-only (export -f); under zsh the aw cases report not-run.
+AW_SHIM_LOG=""
+
+run_install_aw() { # $1 = logfile; caller sets TAD_FIXTURE_FAIL_CP / _STAGING
+  local log="$1"
+  local rc=0
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  : > "$AW_SHIM_LOG"
+  local _troot
+  _troot="$(cd "$TARGET" && pwd -P)"
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" \
+      TAD_FIXTURE_SHIM_LOG="$AW_SHIM_LOG" \
+      TAD_FIXTURE_TARGET_ROOT="$_troot" \
+      TAD_FIXTURE_FAIL_CP="${TAD_FIXTURE_FAIL_CP:-}" \
+      TAD_FIXTURE_FAIL_CP_STAGING="${TAD_FIXTURE_FAIL_CP_STAGING:-}" \
+      bash "$TADSH" --source "$SOURCE" --platform codex --yes >"$log" 2>&1 ) || rc=$?
+  printf '%s' "$rc"
+}
+
+aw_require_bash() {
+  if [ -z "${BASH_VERSION:-}" ]; then
+    printf '  ⚠ %s: not-run — the exported cp shim requires bash (this fixture is running under a non-bash shell)\n' "$CURRENT_CASE"
+    return 1
+  fi
+  return 0
+}
+
+# Clean install at the staged version; rc!=0 aborts the case as setup failure.
+aw_build_target() {
+  stage_pruned_source
+  fx_stage_projected
+  local _rc
+  _rc="$(run_install codex "$SANDBOX/aw-install1.log")"
+  if [ "$_rc" != "0" ]; then
+    fail "$CURRENT_CASE: setup clean install failed (rc=$_rc; log $SANDBOX/aw-install1.log)"
+    return 1
+  fi
+  printf '4.0.11\n' > "$SOURCE/.tad/version.txt"
+  return 0
+}
+
+# Number of armed=1 witness lines in the shim log.
+aw_armed_count() { grep -c 'armed=1' "$AW_SHIM_LOG" 2>/dev/null || true; }
+
+# 0 when at least one armed=0 witness line naming an in-tree destination
+# (.tad/…) appears BEFORE the first armed=1 line — the phase-separation
+# proof that the armed call is the late one the case names.
+aw_earlier_intree_unarmed() {
+  awk '/armed=1/ { exit } /dest=\.tad\// { n++ } END { print n + 0 }' "$AW_SHIM_LOG"
+}
+
+aw_assert_tree_restored() { # $1 = pre-run snapshot dir
+  # Identity modulo the recovery copies a rollback deliberately
+  # preserves (fx_diff's documented convention): the signature streams
+  # are filtered BEFORE diffing — fx_diff itself filters after diffing,
+  # which leaks bare hunk headers when every differing line is a
+  # preserved copy (the run's .tad-backup deprecation copy did exactly
+  # that in the first aw.1 run).
+  local _d
+  _d="$(diff <(fx_tree_sig "$1" | grep -v -e '.tad-backup') <(fx_tree_sig "$TARGET" | grep -v -e '.tad-backup') | head -5 || true)"
+  if [ -z "$_d" ]; then
+    pass "$CURRENT_CASE: target tree identical to pre-run snapshot"
+  else
+    fail "$CURRENT_CASE: target tree differs from pre-run snapshot: $_d"
+  fi
+}
+
+# Named-set tree identity for aw.4 (ruling hf-design-4, D4): identity
+# holds modulo (a) the preserved-recovery-copy convention — the same
+# .tad-backup filter applied BEFORE diffing as aw_assert_tree_restored —
+# AND (b) the differing path set being a subset of the two named
+# surfaces. The differing set is printed either way; any THIRD differing
+# surface fails the case. aw.1/aw.2/aw.2b keep the strict form.
+aw_assert_tree_restored_named() { # $1 = pre-run snapshot dir; $2 = allowed differing paths, one per line, "./"-prefixed
+  local _diff_paths _bad
+  _diff_paths="$(diff <(fx_tree_sig "$1" | grep -v -e '.tad-backup') <(fx_tree_sig "$TARGET" | grep -v -e '.tad-backup') | grep -e '^[<>]' | sed -e 's/^[<>] \([^[:space:]]*\).*/\1/' | LC_ALL=C sort -u || true)"
+  _bad="$(printf '%s\n' "$_diff_paths" | grep -vxF -f <(printf '%s\n' "$2") || true)"
+  printf '  %s: differing-surface set vs pre-run snapshot: {%s}\n' "$CURRENT_CASE" "$(printf '%s' "$_diff_paths" | tr '\n' ' ')"
+  if [ -z "$_bad" ]; then
+    pass "$CURRENT_CASE: target tree identical to pre-run snapshot modulo preserved copies and the named differing surfaces"
+  else
+    fail "$CURRENT_CASE: differing surface(s) outside the named set: $_bad"
+  fi
+}
+
+aw_assert_no_stage_leftovers() {
+  local _n
+  _n="$(find "$TARGET" -name '*.tad-new.*' | wc -l | tr -d ' ')"
+  if [ "$_n" = "0" ]; then
+    pass "$CURRENT_CASE: zero .tad-new.* stage leftovers in target"
+  else
+    fail "$CURRENT_CASE: $_n .tad-new.* stage leftover(s) in target"
+  fi
+}
+
+aw_assert_shim_phase() { # $1 = regex the single armed line's dest must match
+  local _n
+  _n="$(aw_armed_count)"
+  if [ "$_n" != "1" ]; then
+    fail "$CURRENT_CASE: shim witness: want exactly 1 armed call, got $_n"
+    return 1
+  fi
+  if grep 'armed=1' "$AW_SHIM_LOG" | grep -q 'state-surface-fixture'; then
+    fail "$CURRENT_CASE: shim armed a nested same-basename copy, not the named write: $(grep 'armed=1' "$AW_SHIM_LOG")"
+    return 1
+  fi
+  if grep 'armed=1' "$AW_SHIM_LOG" | grep -q "$1"; then
+    pass "$CURRENT_CASE: shim armed exactly the named stage write"
+  else
+    fail "$CURRENT_CASE: shim armed line does not name the expected stage path: $(grep 'armed=1' "$AW_SHIM_LOG")"
+    return 1
+  fi
+  if [ "$(aw_earlier_intree_unarmed)" -ge 1 ]; then
+    pass "$CURRENT_CASE: earlier in-tree writes witnessed unarmed (phase separation)"
+  else
+    fail "$CURRENT_CASE: no earlier in-tree unarmed witness line before the armed call"
+    return 1
+  fi
+  return 0
+}
+
+case_aw1() {
+  CURRENT_CASE="aw.1"
+  local _f0="$FAIL"
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_build_target || return 0
+  snapshot_target "$SNAP/pre"
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING=""
+  local rc
+  rc="$(run_install_aw "$SANDBOX/aw1.log")"
+  if [ "$rc" = "0" ]; then fail "aw.1: armed upgrade unexpectedly succeeded"; return 0; fi
+  aw_assert_tree_restored "$SNAP/pre"
+  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "4.0.10" ]; then
+    pass "aw.1: version still the pre-run version"
+  else
+    fail "aw.1: version advanced despite the failed write"
+  fi
+  if [ "$(grep -cF 'Rollback coverage' "$SANDBOX/aw1.log")" = "1" ]; then
+    pass "aw.1: rollback coverage line printed exactly once"
+  else
+    fail "aw.1: rollback coverage line missing or duplicated"
+  fi
+  aw_assert_no_stage_leftovers
+  aw_assert_shim_phase '\.AGENTS\.md\.tad-new\.'
+  if [ "$FAIL" = "$_f0" ]; then
+    pass "aw.1: injected sync write failure left target tree byte-identical"
+  fi
+}
+
+# Shared setup for the two rollback-arming cases: a/b/c are top-level .tad
+# files whose manifest relative order is verified from the PRESERVED
+# backup's manifest (derive order is a claim until read back — §4.6).
+aw_setup_abc() {
+  stage_pruned_source
+  fx_stage_projected
+  printf 'aw NEW bytes a\n' > "$SOURCE/.tad/a.md"
+  printf 'aw NEW bytes b\n' > "$SOURCE/.tad/b.md"
+  printf 'aw NEW bytes c\n' > "$SOURCE/.tad/c.md"
+  printf 'aw NEW created\n' > "$SOURCE/.tad/aw-created.md"
+  local _rc
+  _rc="$(run_install codex "$SANDBOX/aw-install1.log")"
+  if [ "$_rc" != "0" ]; then
+    fail "$CURRENT_CASE: setup clean install failed (rc=$_rc; log $SANDBOX/aw-install1.log)"
+    return 1
+  fi
+  printf '4.0.11\n' > "$SOURCE/.tad/version.txt"
+  printf 'aw OLD bytes a\n' > "$TARGET/.tad/a.md"
+  printf 'aw OLD bytes b\n' > "$TARGET/.tad/b.md"
+  printf 'aw OLD bytes c\n' > "$TARGET/.tad/c.md"
+  return 0
+}
+
+aw_backup_manifest() { find "$SANDBOX/tad-backups" -name manifest.txt -print -quit 2>/dev/null; }
+
+# Fails LOUDLY (and returns 1) unless the preserved manifest lists
+# a.md, b.md, c.md in that relative order.
+aw_assert_manifest_order() { # $1 = manifest path
+  local _order
+  _order="$(grep -E '^[abc]\.md$' "$1" | tr '\n' ' ')"
+  if [ "$_order" = "a.md b.md c.md " ]; then
+    return 0
+  fi
+  fail "$CURRENT_CASE: manifest a/b/c relative order is NOT a,b,c (got: ${_order:-none}) — case premise broken, not a product failure"
+  return 1
+}
+
+aw_assert_manual_recovery_paths() { # $1 = install log
+  if grep -qF 'MANUAL-RECOVERY' "$1"; then
+    pass "$CURRENT_CASE: MANUAL-RECOVERY block printed"
+  else
+    fail "$CURRENT_CASE: MANUAL-RECOVERY block missing"
+    return 0
+  fi
+  local _bk _sn
+  _bk="$(sed -n 's/.*backup: \(\/[^ ]*\).*/\1/p' "$1" | head -1)"
+  _sn="$(sed -n 's/.*snapshot: \(\/[^ ]*\).*/\1/p' "$1" | head -1)"
+  if [ -n "$_bk" ] && [ -d "$_bk" ] && [ -f "$_bk/manifest.txt" ]; then
+    pass "$CURRENT_CASE: MANUAL-RECOVERY backup path exists with its manifest"
+  else
+    fail "$CURRENT_CASE: MANUAL-RECOVERY backup path unusable (${_bk:-none})"
+  fi
+  if [ -n "$_sn" ] && [ -d "$_sn" ]; then
+    pass "$CURRENT_CASE: MANUAL-RECOVERY snapshot path exists"
+  else
+    fail "$CURRENT_CASE: MANUAL-RECOVERY snapshot path unusable (${_sn:-none})"
+  fi
+}
+
+case_aw2() {
+  CURRENT_CASE="aw.2"
+  local _f0="$FAIL"
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_setup_abc || return 0
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING=".tad/b.md"
+  local rc
+  rc="$(run_install_aw "$SANDBOX/aw2.log")"
+  if [ "$rc" = "0" ]; then fail "aw.2: armed upgrade unexpectedly succeeded"; return 0; fi
+  local _mf
+  _mf="$(aw_backup_manifest)"
+  if [ -z "$_mf" ]; then fail "aw.2: backup was consumed or lost — no manifest found under the backup root"; return 0; fi
+  pass "aw.2: backup preserved (manifest still readable after the failed rollback)"
+  aw_assert_manifest_order "$_mf" || return 0
+  if grep -qF 'ROLLBACK-RESULT: partial' "$SANDBOX/aw2.log"; then
+    pass "aw.2: result line reports partial"
+  else
+    fail "aw.2: result line does not report partial"
+  fi
+  if grep -F 'failed entries:' "$SANDBOX/aw2.log" | grep -qF '.tad/b.md'; then
+    pass "aw.2: failed list names .tad/b.md"
+  else
+    fail "aw.2: failed list does not name .tad/b.md"
+  fi
+  if [ "$(cat "$TARGET/.tad/a.md")" = "aw OLD bytes a" ] && [ "$(cat "$TARGET/.tad/c.md")" = "aw OLD bytes c" ]; then
+    pass "aw.2: a.md and c.md restored to pre-run bytes"
+  else
+    fail "aw.2: a.md/c.md not at pre-run bytes after partial rollback"
+  fi
+  if [ "$(cat "$TARGET/.tad/b.md")" = "aw NEW bytes b" ]; then
+    pass "aw.2: b.md left at post-sync bytes (its restore was the armed failure)"
+  else
+    fail "aw.2: b.md unexpectedly restored"
+  fi
+  if [ -f "$TARGET/.tad/aw-created.md" ]; then
+    pass "aw.2: created-entry sweep did not run (aw-created.md survives)"
+  else
+    fail "aw.2: created-entry sweep ran despite the step-1 failure"
+  fi
+  aw_assert_manual_recovery_paths "$SANDBOX/aw2.log"
+  if [ "$FAIL" = "$_f0" ]; then
+    pass "aw.2: rollback partial failure accounted, recovery copies preserved"
+  fi
+}
+
+case_aw2b() {
+  CURRENT_CASE="aw.2b"
+  local _f0="$FAIL"
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_setup_abc || return 0
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING=".tad/a.md"
+  local rc
+  rc="$(run_install_aw "$SANDBOX/aw2b.log")"
+  if [ "$rc" = "0" ]; then fail "aw.2b: armed upgrade unexpectedly succeeded"; return 0; fi
+  local _mf
+  _mf="$(aw_backup_manifest)"
+  if [ -z "$_mf" ]; then fail "aw.2b: backup was consumed or lost — no manifest found under the backup root"; return 0; fi
+  pass "aw.2b: backup preserved (manifest still readable after the failed rollback)"
+  aw_assert_manifest_order "$_mf" || return 0
+  if grep -qF 'ROLLBACK-RESULT: partial' "$SANDBOX/aw2b.log"; then
+    pass "aw.2b: result line reports partial"
+  else
+    fail "aw.2b: result line does not report partial"
+  fi
+  local _fnames _fcount
+  _fnames="$(grep -F 'failed entries:' "$SANDBOX/aw2b.log" | head -1)"
+  if printf '%s' "$_fnames" | grep -qF '.tad/a.md' && ! printf '%s' "$_fnames" | grep -qF '.tad/b.md'; then
+    pass "aw.2b: failed list names .tad/a.md only"
+  else
+    fail "aw.2b: failed list wrong: $_fnames"
+  fi
+  _fcount="$(sed -n 's/.*ROLLBACK-RESULT: [a-z]* restored=[0-9]* failed=\([0-9]*\).*/\1/p' "$SANDBOX/aw2b.log" | head -1)"
+  if [ "$_fcount" = "1" ]; then
+    pass "aw.2b: failed count agrees with the failed list (1)"
+  else
+    fail "aw.2b: failed count disagrees with the failed list (got ${_fcount:-none})"
+  fi
+  if [ "$(cat "$TARGET/.tad/b.md")" = "aw OLD bytes b" ] && [ "$(cat "$TARGET/.tad/c.md")" = "aw OLD bytes c" ]; then
+    pass "aw.2b: later entries b.md and c.md restored despite the first-entry failure"
+  else
+    fail "aw.2b: later entries were NOT restored (break-on-first-failure shape)"
+  fi
+  if [ -f "$TARGET/.tad/aw-created.md" ]; then
+    pass "aw.2b: created-entry sweep held (aw-created.md survives)"
+  else
+    fail "aw.2b: created-entry sweep ran despite the step-1 failure"
+  fi
+  aw_assert_manual_recovery_paths "$SANDBOX/aw2b.log"
+  if [ "$FAIL" = "$_f0" ]; then
+    pass "aw.2b: first-entry rollback failure accounted, later entries restored, sweep held"
+  fi
+}
+
+case_aw3() {
+  CURRENT_CASE="aw.3"
+  local _f0="$FAIL"
+  new_sandbox
+  aw_build_target || return 0
+  local rc
+  rc="$(run_install codex "$SANDBOX/aw3.log")"
+  if [ "$rc" != "0" ]; then fail "aw.3: clean upgrade failed (rc=$rc; log $SANDBOX/aw3.log)"; return 0; fi
+  assert_version_proof "4.0.11" || return 0
+  local _f _bad=0
+  for _f in "$SOURCE"/.tad/*; do
+    [ -f "$_f" ] || continue
+    local _bn
+    _bn="$(basename "$_f")"
+    [ "$_bn" = "brain-index.md" ] && continue
+    if ! cmp -s "$_f" "$TARGET/.tad/$_bn"; then
+      fail "aw.3: top-level file .tad/$_bn does not byte-match the source"
+      _bad=1
+    fi
+  done
+  if [ "$_bad" = "0" ]; then
+    pass "aw.3: framework top-level surfaces byte-match the source"
+  fi
+  # Mode spot-check (AC3): two executable files that land through the
+  # atomic tree copy, source mode vs landed mode, printed as compared.
+  # (The AC text names tad.sh as one pair member; the installer never
+  # copies tad.sh itself into a target tree — disk-verified — so the
+  # pair uses .tad/scripts/evidence-freshness-check.sh, which lands via
+  # the same atomic path. Delta recorded in the chain COMPLETION.)
+  local _sm _tm _sh _th
+  _sm="$(stat -c %a "$SOURCE/.tad/scripts/evidence-freshness-check.sh" 2>/dev/null || stat -f %Lp "$SOURCE/.tad/scripts/evidence-freshness-check.sh")"
+  _tm="$(stat -c %a "$TARGET/.tad/scripts/evidence-freshness-check.sh" 2>/dev/null || stat -f %Lp "$TARGET/.tad/scripts/evidence-freshness-check.sh")"
+  _sh="$(stat -c %a "$SOURCE/.tad/hooks/startup-health.sh" 2>/dev/null || stat -f %Lp "$SOURCE/.tad/hooks/startup-health.sh")"
+  _th="$(stat -c %a "$TARGET/.tad/hooks/startup-health.sh" 2>/dev/null || stat -f %Lp "$TARGET/.tad/hooks/startup-health.sh")"
+  printf '  aw.3 mode check: .tad/scripts/evidence-freshness-check.sh source=%s target=%s; .tad/hooks/startup-health.sh source=%s target=%s\n' "$_sm" "$_tm" "$_sh" "$_th"
+  if [ "$_sm" = "$_tm" ] && [ "$_sh" = "$_th" ]; then
+    pass "aw.3: landed modes equal source modes (one script, one hook script)"
+  else
+    fail "aw.3: landed modes differ from source modes"
+  fi
+  aw_assert_no_stage_leftovers
+  if [ "$FAIL" = "$_f0" ]; then
+    pass "aw.3: clean upgrade lands atomically, stamp last"
+  fi
+}
+
+case_aw4() {
+  CURRENT_CASE="aw.4"
+  local _f0="$FAIL"
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_build_target || return 0
+  snapshot_target "$SNAP/pre"
+  TAD_FIXTURE_FAIL_CP=".tad/version.txt"
+  TAD_FIXTURE_FAIL_CP_STAGING=""
+  local rc
+  rc="$(run_install_aw "$SANDBOX/aw4.log")"
+  if [ "$rc" = "0" ]; then fail "aw.4: stamp-armed upgrade unexpectedly succeeded"; return 0; fi
+  if grep -qF 'ROLLBACK-RESULT:' "$SANDBOX/aw4.log"; then
+    pass "aw.4: result line present"
+  else
+    fail "aw.4: result line missing"
+  fi
+  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "4.0.10" ]; then
+    pass "aw.4: version still the pre-run version"
+  else
+    fail "aw.4: version advanced despite the failed stamp"
+  fi
+  aw_assert_tree_restored_named "$SNAP/pre" './.tad/brain-index.md
+./.codex/hooks.json'
+  aw_assert_shim_phase '\.tad/\.version\.txt\.tad-new\.'
+  if [ "$FAIL" = "$_f0" ]; then
+    pass "aw.4: stamp failure leaves version unadvanced, tree restored"
+  fi
+}
+
 run_case() {
   case "$1" in
     ac2.1) case_ac21 ;;
@@ -2736,6 +3199,11 @@ run_case() {
     fx.oc) case_fxoc ;;
     fx.own) case_fxown ;;
     fx.g) case_fxg ;;
+    aw.1) case_aw1 ;;
+    aw.2) case_aw2 ;;
+    aw.2b) case_aw2b ;;
+    aw.3) case_aw3 ;;
+    aw.4) case_aw4 ;;
     caps) case_caps ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
@@ -2758,6 +3226,7 @@ if [ "$CASE" = "all" ]; then
   run_case ac2.25; run_case ac2.26; run_case ac2.27; run_case ac2.28
   run_case fx.a; run_case fx.b1; run_case fx.b3; run_case fx.c; run_case fx.d; run_case fx.e
   run_case fx.p; run_case fx.f; run_case fx.k; run_case fx.rb; run_case fx.rep; run_case fx.agm; run_case fx.oc; run_case fx.own; run_case fx.g
+  run_case aw.1; run_case aw.2; run_case aw.2b; run_case aw.3; run_case aw.4
   run_case r1
 else
   run_case "$CASE"

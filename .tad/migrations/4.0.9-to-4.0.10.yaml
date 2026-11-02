@@ -1,0 +1,13 @@
+# Migration 4.0.9 -> 4.0.10: no path is deleted and no path is renamed.
+#
+# Derivation (release clone, 2026-11-01, rel-prep-1): the release surface was enumerated
+# for the v4.0.9 tag tree and for the overlay+bump candidate tree under the
+# gen-framework-provenance selection (regular files under .tad/ minus the
+# derive-sync-set zero-touch and transient dirs, minus .tad/brain-index.md and
+# .tad/sync-registry.yaml; plus .agents/skills/, .claude/, .codex/, .opencode/,
+# .cursor/, AGENTS.md, CLAUDE.md). Both sets hold 1567 paths and are identical;
+# same-blob pairing found no rename candidates. The 4.0.10 change set is content-only
+# (installer write path, rollback, version stamp, the installer-data-safety fixture,
+# release surfaces), so both sets below are empty by measurement, not by assumption.
+delete: []
+rename: []

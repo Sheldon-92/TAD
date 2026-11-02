@@ -5,6 +5,21 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.10] - 2026-11-01
+
+Hotfix release (EPIC-20261101-v4010-hotfix, from TICKET-20261101-installer-atomicity-rollback): two downstream upgrades to 4.0.9 were damaged by the installer's non-atomic writes and a rollback that restored nothing. This release fixes the write path, the rollback and the version stamp, and adds the injected-failure regression cases that prove them. Two named exclusions are recorded in the Epic and unchanged here: the migrate-path user-data rescue copies and one rollback coverage gap (`.codex/hooks.json`) are follow-up tickets.
+
+### Fixed
+
+- **Framework writes are atomic.** Every framework-surface write in the installer now stages in the same directory, byte-compares against the source, and renames into place; a write failure at any point leaves the previous file intact instead of truncated or half-copied. The project-knowledge seed copies are converted too, and the fresh-install seed copy no longer overwrites a project-owned README (it creates only when missing, like the upgrade and migrate branches already did).
+- **Rollback restores, verifies and reports honestly.** Rollback no longer stops at the first failed restore: it works through the whole set, byte-verifies each restored file, and ends with a `ROLLBACK-RESULT:` line (full / partial / none with counts). When the result is not full it prints a MANUAL-RECOVERY block naming the durable backup under `~/.tad-backups` — never a consumed or partial copy presented as complete.
+- **The version stamp is written last.** `version.txt` is stamped only after every surface verifies, so a failed install or upgrade never leaves the version face ahead of the files; any write error stops the run at the first failing point instead of running on and rolling back.
+- **Pack-meta generation no longer aborts installs on projects with their own skill directories.** A source-existence guard skips (with a named log line) skill directories that have no upstream counterpart, instead of failing the whole install — and instead of writing the header-only meta file the old error suppression used to produce.
+
+### Added
+
+- **Installer data-safety regression cases aw.1–aw.4 plus aw.2b** in `.tad/tests/installer-data-safety-fixture.sh`: injected write failures (a `cp` shim armed only inside the target tree, with per-phase witness logging) assert that originals stay intact, that rollback restores and accounts for every entry — including when the first manifest entry is the one that fails — and that the version face never advances on a failed run. The cases are wired into publish-protocol step3f as the required installer-atomic transcript.
+
 ## [4.0.9] - 2026-11-01
 
 Basket patch release: one five-phase Epic (EPIC-20261031-v409-basket, every Gate 4 verdict CONDITIONAL with p0 = 0) plus the release-run items its tickets registered.

@@ -6,102 +6,15 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
 > 规矩：**动手前先验一遍条目是否还成立**——2026-08-14 清账时发现
 > ②a/②d/②e 三条标着「最高优先级」的待办**早已修复**，清单挂了两周没人划掉，
 > 照它找活等于被误导。**清单不准 = 清单有害。**
-> 补充（2026-10-04，TASK-20261004 机制 4）：每轮自查以 `git log`/`git status` 对账本文件，条目与 git 现实不符即当场纠偏。
+> 补充（2026-10-04，TASK-20261004 机制 4；对账方法 2026-11-01 回写，release-recon-4.0.9 D16）：每轮自查以 yunpush status／盘面对读对账本文件（本文件夹禁 git），条目与盘面现实不符即当场纠偏。
 
-**当前版本**：4.0.9（prepared locally, not pushed or tagged）（上一已发布版本 4.0.8，tag v4.0.8 = df18c462）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.9（已发布 2026-11-01，main = 94139e19，tag v4.0.9 = 1f93d947）（上一已发布版本 4.0.8，tag v4.0.8 = df18c462）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
 
-### ✅ DONE 2026-10-24. EPIC-20261023 cora-route-judgement — accepted and archived, released in v4.0.7
-- Epic: `.tad/archive/epics/EPIC-20261023-cora-route-judgement.md`. Cora owns route and spend (result first); fixed floor; 2x checkpoint, 3x stop; condition (c) by class, checked by consistency. Paid run = billed separately in real money (rulings 2026-10-24).
-
-
-### ✅ DONE 2026-10-23. EPIC-20261022 tad-update-flow — accepted and archived, released in v4.0.7
-- Epic: `.tad/archive/epics/EPIC-20261022-tad-update-flow.md`. One-sentence TAD update (/tad-update or "升级 TAD"), all platforms in one run, changed-only backup, honest process-file report; then live use + daily reminder; then backup lifecycle.
-- [x] Phase 1 update flow — 32caf0c3..e21d3aca; Gate 4 PASS (real Claude Code session "升级 TAD": one yes, changed-only backup 946 KB, process files unchanged)
-- [x] Phase 2 live use and update reminder — 64efc9df, 87d44f79; Gate 4 PASS (real Claude Code session: after-update block honest; reminder only)
-- [x] Phase 3 backup lifecycle + full "files unchanged" guarantee — b6aa1706..c27a4625; Gate 4 PASS (real session: 升级 TAD → 看备份 → 收回 → 清掉; 14+9 backups → 3+2; project files unchanged 1181)
-
-
-### ✅ DONE 2026-10-21. EPIC-20261021 cora-loop-fixes — accepted and archived, released in v4.0.6
-- Epic: `.tad/archive/epics/EPIC-20261021-cora-loop-fixes.md`. Fixes from real use in 买卖 / 阿里 / TAD: design loop (look first, decisions not code, no rule-on-rule fixes, convergence stop), clarification check, disk-based dispatch count, no pushing work onto the human, Gate 4 real-run record and resume.
-- [x] Phase 1 design loop — 1aa6db58, fbd8d749; Gate 4 CONDITIONAL (阿里 replay: patch chain stopped at round 2 instead of a re-plan at dispatch 12)
-- [x] Phase 2 clarification, dispatch count, human work, acceptance and resume — 18d15b99, 9db6a6ef; Gate 4 CONDITIONAL; accepted 2026-10-21
-
-
-### ✅ DONE 2026-10-20. EPIC-20261020 installer fixes — released in v4.0.5
-
-- Epic: `.tad/archive/epics/EPIC-20261020-installer-fixes.md` (accepted and archived 2026-10-20). Skill-link check, backup naming and `changes.tsv`, retention keeps the pre-upgrade backup, non-ASCII backup dir, rulings file optional (8528b948, 951e71e3). Pushed and tagged v4.0.5; post-tag download install verified.
-
-### ✅ DONE 2026-10-19. EPIC-20261019 requirement clarification + review redesign — released in v4.0.4, archived
-
-- Epic: `.tad/archive/epics/EPIC-20261019-review-redesign.md`. Approved 2026-10-19. Estimate ~28 dispatches, no model runs. [x] Phase 1 Requirement clarification (d60a7b3c, 921a5619) [x] Phase 2 Reviewer contract and lenses (eaa98038) [x] Phase 3 Gates and alignment (fe797468 … 2a6bd347). Merged with origin/main's Full Layer 2 review brakes (312b3d51, merge note in the commit). Released as v4.0.4 (tagged, pushed).
-
-### ✅ FIXED 2026-10-16（v4.0.3）. **安装器 tar-slip 误杀官方包 — 下载更新路径断裂（TASK-20261016-INSTALLER-TARSLIP-FIX）**
-
-- **问题**：`tad.sh` 的 `validate_tar_members` 对软链目标只做字面判定（`../` 开头即拒），不按链接所在目录解析判逃逸；发布包内 `.claude/skills/*` 64 件相对软链（`../../.agents/skills/*`，实际指回包内）被整批误杀，官方下载安装/更新路径自 4.0.2 起谁走谁断（4.0.x 同病）。现行绕行 `--source` 离线路径只是应急。
-- **正本**：`.tad/active/TICKET-20261016-installer-tar-slip-download-path.md`（根因 PM 已亲验、验收判据在内：下载路端到端成功＋敌意 fixture 仍全拒＋`--source` 不回归）。
-- **排期口径（用户 2026-10-16 定）**：先立票待着，跟下一批本体工作一起排——**这是用户与 TAD PM 要一起修的东西，本地动本体时不要忘、不要顺手单独改掉**；修法走完整链（设计→实施→双审→验收），主线方向＝链接目标解析后判逃逸，不许改回「放行 ../」式假修复。
-- **✅ 已修复并关票（2026-10-16 晚）**：用户本地链 EPIC-20261016-release-archive-symlinks 随 v4.0.3 发布，实际走包侧路线——`/.claude` export-ignore（发布包不再带软链、安装器自 `.agents` 源生成）＋release-verify 增 archive-links 拦截；tar-slip 校验本体未动、防护未降格。验收三条全达（下载路实测打通、敌意拒收行为不变、`--source` 无回归），票已 CLOSED（关票节在票内，含残留登记：校验器字面判定未改，靠发布政策双拦补齐；未来若发布包需再带包内软链，另立票重开）。
-
-### ✅ ACCEPTED 2026-10-18. Full Layer 2 review brakes（TASK-20261017-FULL-LAYER2-REVIEW-BRAKES）
-
-- **Verdict**: Gate 4 `PASS_WITH_APPROVED_KNOWN_DEVIATION`. GM 14:35 approved `*accept` and archive. Committed 2026-10-19, not tagged, not released.
-- **Archive** (copy, sha256 match, then source removed): `.tad/archive/handoffs/HANDOFF-20261017-full-layer2-review-brakes.md` `0466d98191bf808b684f8777fab2daae5763f74f7b592f213ce8451ca9cf8dd4`; `.tad/archive/handoffs/COMPLETION-20261017-full-layer2-review-brakes.md` `ef81f41b998b442f80bc7b34632a71527352c754fa4278a2fb56fad00b41f81c`.
-- **Gate 4**: `.tad/evidence/acceptance-tests/TASK-20261017-FULL-LAYER2-REVIEW-BRAKES/gate4-acceptance-report.md`.
-- **Approved deviations**: timeout exception (this run); F1 exact skill patch; AC-07/AC-08 exact-path exemptions; unrecoverable 11:17 `now.md`; frozen-prompt file read; AC-08 E1 list exactly the Cursor pointer and `traces/2026-10-18.jsonl` (raw exit 1 kept); no commit.
-- **Not approved**: R2 chat-card `chat_sent: relayed` / `PM_CHAT_RELAY_OK=1` (GM 14:04).
-
-### ⏳ BACKLOG. AC-08 baseline design knife — GM named, ticket not opened
-
-- Ordinary PM, wrapper, and trace writes break an ignored-byte baseline, and AC-08 stops at the first mismatch so the first FAIL path is not the full set.
-- Next ticket designs the boundary among stable sources, task artifacts, external-owner state, and runtime output, and reports the complete diff. Do not widen this task's allowlist. GM 14:06 E1 known deviation belongs here.
-
-### ✅ DONE 2026-10-16. EPIC-20261016 release archive symlinks — released in v4.0.3, archived
-
-- Epic: `.tad/archive/epics/EPIC-20261016-release-archive-symlinks.md` (archive commit b52d0a2c). Fixed by export-ignore (da4e51b4).
-
-### ✅ DONE 2026-10-16. EPIC-20261016 Cora lighter flow — accepted and archived; not yet released (local commits on feat/cora-role)
-
-- Epic: `.tad/archive/epics/EPIC-20261016-cora-lighter-flow.md`. Budget ≤12 dispatches, no model runs. [x] Phase 1 Lighter flow (5bda83eb, c5d8d395, 1697ed39). Basis: `.tad/evidence/research/pstack-vs-tad-2026-10-16.md`.
-
-### ✅ DONE 2026-10-16. EPIC-20261016 installer skill nesting — released in v4.0.2, archived
-
-- Epic: `.tad/archive/epics/EPIC-20261016-installer-skill-nesting.md`. Approved 2026-10-16. Budget 10 dispatches, no model runs. [x] Phase 1 Investigate and fix (b3cfb28f; Gate 4 PASS). Release asked separately afterwards.
-
-### ✅ DONE 2026-10-16. EPIC-20261015 Cora reliability — Phase 2 released in v4.0.2 (Phases 1, 3 cut by the human), archived
-
-- Epic: `.tad/archive/epics/EPIC-20261015-cora-reliability.md` (Conductor: Cora; Approved: no). Phase details: `.tad/evidence/yolo/cora-reliability/intake-details.md`; open questions: `intake-questions.md`.
-- Approved 2026-10-15 ("继续"). [-] Phase 1 Measure (cut by the human 2026-10-16, no batch) [x] Phase 2 Fix (f43d5d7a; Gate 4 CONDITIONAL p0 0) [-] Phase 3 Re-measure (cut by the human 2026-10-16)
-
-### ✅ DONE 2026-10-14. EPIC-20261014 Cora carry-forward fixes (Cora's real run, parent Phase 3)
-
-- Epic: `.tad/archive/epics/EPIC-20261014-cora-carry-forward-fixes.md` (Conductor: Cora; 2 phases: Protocol gaps / Queue and run record)
-- Approved 2026-10-14 ("继续"). [x] Phase 1 Protocol gaps — Gate 4 PASS (`.tad/evidence/yolo/cora-carry-forward-fixes/phase1-gate-report.md`). [x] Phase 2 Queue and run record — closed as PARTIAL by the human ("选2"): Gate 4 PARTIAL p0 1 (`phase2-gate-report.md`; open P0 = acceptance and archiving asked as one question → parent Phase 4, CF-1). Completion: `.tad/evidence/yolo/cora-carry-forward-fixes/EPIC-COMPLETION.md`; distillation wrote 5 pattern entries (uncommitted). Accepted by the human 2026-10-14 ("继续我要把整个流程整个都完成啊"); archiving asked once at the parent Epic's end.
-
-### ✅ DONE 2026-10-14. EPIC-20261013 Cora — a third role: the human's entry point and the conductor (A-B-C)
-
-- Epic: `.tad/archive/epics/EPIC-20261013-cora-conductor-role.md`. All 4 phases closed; v4.0.0 and v4.0.1 published (main = tag v4.0.1 = acbdcf91). Summary: `.tad/evidence/yolo/cora-conductor-role/EPIC-COMPLETION.md`. Accepted and archived by the human 2026-10-14 (Epic now under `.tad/archive/epics/`).
-
-### ✅ DONE 2026-10-10. EPIC-20261008 multi-harness restore & cleanup (released as v3.3.0)
-
-- Epic: `.tad/archive/epics/EPIC-20261008-multi-harness-restore-and-cleanup.md` (6 phases; its closing sections list revised acceptance wording and what was measured)
-- Decision record: `.tad/decisions/DR-20261008-claude-code-runtime-restore.md`
-- Released: `main` and the annotated tag `v3.3.0` point at `a81ca299` (pushed 2026-10-10 after the maintainer's confirmation). Per-harness evidence and known limits: `CHANGELOG.md` and the status table in `docs/MULTI-PLATFORM.md`.
-- Open, needs a human:
-  - Codex: a run through a completed hook trust review (only default-trust and trust-bypassed `codex exec` runs were measured).
-  - Claude Code: interactive sessions (only headless runs were measured).
-  - The download install paths (`curl`, `npx github:`, `tad-update.sh`) for the Claude Code projection are untested; only `--source` installs were tested.
-  - Downstream version scan was waived for this release and not run.
-  - Design questions left open: `*save-skill` / `*save-workflow` write to `.claude/skills/local/`, which only Claude Code reads; whether replacing the root `AGENTS.md` (after a backup) is the intended long-term contract.
-
-### ✅ CLOSED 2026-10-12（原 OPEN 2026-09-16). Codex ledger 高波动面真实重验（Gate 3 R3/C-4 另单，不进 v3.0.0 移除批）
-
-- Task ID: `TASK-20260916-CODEX-LEDGER-REVERIFY` (owner Blake)
-- Ticket: `.tad/active/TICKET-20260916-codex-ledger-reverification.md`
-- 关票：2026-10-09 真实重验 12 条完成（Epic EPIC-20261008 链），2026-10-12 PM 验盘 freshness Total 42 全 PASS、exit 0，Gate 4 验收 PASS 关票；裁定 `.tad/evidence/pm/2026-10-12-p3-condition1-task20260916-closeout.md`。waiver 随验收失效。
+> ▶ **在飞主线（2026-11-01 补记，release-recon-4.0.9 D13）**：EPIC-20261031-v409-basket（v4.0.9 篮子，Phase 1–4 已收口、发版前程在跑）——篮子状态以 `.tad/active/BASKET-4.0.9.md` 为唯一正本，本文件不复记。
 
 ### 🟡 PENDING HUMAN CHECK 2026-09-15. TAD Research 机制 (RG1–RG4 wrapper) — Gate 2/3/4 PASS
 
@@ -130,6 +43,7 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
 - 待办: P1 version 门 exclusion 契约更新（另起设计单）；B-track 设计。-> archive: ✅ DONE 2026-09-04. Publish v2.44.0 bundle
 - Capability Builder Phase 2+3: 知识蒸馏 APPROVED 待应用（shell-portability，deferred 到 knowledge-maintain）；Dogfood（Voice Studio 边界）需人另起；剩余 P2：stale-lock 恢复、大树哈希开销、timeout 路径跨机验证、`awk --` 卫生。-> archive: ✅ DONE 2026-09-03. Capability Builder v1 — Phase 2 Evolve + Phase 3 Package
 - 0d-2 的 AC12 残留（跨仓库 trace 绝对路径）仍在下方 `0d-2` 小节；其前置已完成小节 `0d` 已迁档。-> archive: 0d. ✅ 隐私：trace hook 写绝对路径
+- EPIC-20261008 的未了结 human-check 行仍开：Codex 完成 hook trust review 的一跑未测；Claude Code 交互面未测；下载安装路径（`curl`、`npx github:`、`tad-update.sh`）的 Claude Code 投影未测；该版 downstream 版本扫描被豁免未跑；`*save-skill` / `*save-workflow` 写 `.claude/skills/local/` 的设计问题未裁。-> archive: ✅ DONE 2026-10-10. EPIC-20261008 multi-harness restore & cleanup（原小节 2026-11-01 迁 `.tad/archive/next/NEXT-completed-through-20261101.md`）
 
 
 ### ⏳ 0-WAIT. **yolo2-phase1 P2/LOW 加固尾巴** —— Gate 3 PASS 的非阻塞跟进
@@ -144,19 +58,6 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
   reconcile 对逃逸目标路径仍做哈希（LOW）；ledger 文件 symlink 守卫（LOW）；
   writeAtomic 无 fsync/mode（LOW）；parseArgs 边界（LOW）。
 - **安全修复已含**：post-verify 证据重验（`fc7a07fc`，原 P0 已关）。
-
-### ⭐ 0-NEW. **EPIC-20260816-framework-health-repair** —— 2026-08-16 全仓审计后立项
-
-- **Epic**: `.tad/archive/epics/EPIC-20260816-framework-health-repair.md`（Phase 1 = 🔄 Active）
-- **审计报告**: `.tad/active/designs/AUDIT-20260816-framework-health.md`（36 条发现 F-01~F-34 + S-01~S-04）
-- **🔴 Epic 级硬约束**：**Phase 2 过 Gate 4 之前，禁止发布 / 禁止建议任何人跑安装命令。**
-      （`*sync` 已于 2026-08-17 退休——本行原「禁止 *sync」约束随之失效，仅剩发布禁令。
-      安装器有三个会不可逆删除用户数据的 P0（`.codex/`、`.gemini/`、`AGENTS.md`、`GEMINI.md` 每次运行必删；
-      首装覆盖用户 `CLAUDE.md`），现在发布等于把缺陷推给下游安装者。）
-- **最尖锐的一条**：`upgrade-acceptance.sh` Check 3 把上述删除**断言为期望结果**（用户 `.codex/` 幸存 → 判 `stale dir` → FAIL）。
-      **修 F-01 必须同批修 F-34**，否则修好的正确行为会被自己的测试判失败。
-- **待人裁定（Phase 1 handoff 前）**：F-15 方向（补 SKILL 的 `config-cognitive` vs 删 `config.yaml` 绑定）；playground 退役的下游依赖确认。
-- **不在本 Epic**：恢复对 14 个项目的同步、激活成本削减（SC1 的下半场）、结果度量体系 —— 见报告 §10。
 
 ### 0b. ~~上游根本不写 Gate 3 判定标记~~ —— 🛑 **前提是错的，2026-08-16 重新测量后撤销**
 
@@ -314,9 +215,7 @@ TAD 自己的四笔账，源自 `EPIC-20260813-alex-blake-lightening` 收口。�
 ### 5. 杂活（不走 phase 那套机器）
 
 - [x] **brain-index 生成器 `set -e` 缺陷** — 已于 TASK-20260908-KNOWLEDGE-SEAM-ISOLATION 修复 (2026-09-09)。grep sites 均使用 `{ grep ... || true; }` 守卫，archive handoff 遍历 50 条满载无中断。
-- [ ] **`STEP 3.5b` 的 CVE 正则抓不到 GHSA** — Path 2 是 `/CVE-\d{4}-\d+/`，
-      而触发这条纪律的那次真实事故（停跑 28 天、漏 4 个漏洞、含明文 token 打印）
-      里的编号全是 **GHSA-**。**原正则本来就不可能命中。**
+- [x] **`STEP 3.5b` 的 CVE 正则抓不到 GHSA** — 【已修，2026-11-01 清账标结，release-recon-4.0.9 D11】Path 2 正则已于 2026-08-15 补 `GHSA-`（本文件第 2 节 [x] 记录 (c) 在盘；`.agents/skills/alex/SKILL.md` L196 实文本含 `GHSA-[0-9a-z]{4}-…`）。本行原为修后未划的残留。
 - [x] **Full 通道 Lite 触发词消音（2026-09-03，用户报噪音）** — mini-handoff
       `.tad/archive/handoffs/HANDOFF-20260903-bugfix-lite-mute.md`（P2，mute-only，显式调用保留）。
       Gate 4 PASS 2026-09-06 (commit `30aa5ea4`)，已归档。

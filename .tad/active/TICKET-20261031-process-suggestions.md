@@ -16,6 +16,16 @@
 4. **长证据文件分段落盘纪律**：采。升为通行证据纪律落字（>约 8KB 分段落盘＋每段验字节＋回执带总字节数与章节清单＋收尾自查无截断标记）；本席 AGENTS.md 已有同源教训条（2026-10-02），本条是把它落进框架证据规则——随小修批/蒸馏批次落字。
 5. **判据回放集第一套用现成 P4 卷**：采。不另立项——并入 R4 输入面（与 Osmani 采纳项①判者考题集同源），R4 开设计时把 P4 的 15 题＋四轮成绩件登记为第一套回放基线。
 
+## 逐条执行回写（2026-11-01，closeout-cleanup-1；release-recon-4.0.9 D8 处置）
+
+| 条 | 执行状态 | 凭据（`disk-read`） |
+|---|---|---|
+| 1 三查硬门 | ✅ 已执行毕 | 随 EPIC-20261031-v409-basket Phase 4（扫描面）落地，2026-11-01 收口、Gate 4 CONDITIONAL PASS（p0=0）；报告 `.tad/evidence/yolo/v409-basket/phase4-gate-report.md`，BASKET 第 4 行 ✅ |
+| 2 运行时需求声明＋零成本探针 | ✅ 已执行毕 | 随 Phase 1 小修批落地：`.tad/workflows/claude/surplus-execute.workflow.js` 头部 `runtime-requirements:` 声明与探针在盘；phase1-gate-report AC16／AC17 PASS |
+| 3 框架升级后项目自有产物对账 | ⬜ 未毕（属实） | 落法已定（发版规程升级收口步、独立核对），首次活用于 4.0.9 下游升级；发版递延中，待首用 |
+| 4 长证据分段落盘纪律 | ✅ 已执行毕 | `.tad/tasks/evidence-collection.md`「Segmented Write Discipline」节在盘（该节文末注记自述 Added 2026-10-31、Phase 1 small-fix batch、出自本票） |
+| 5 P4 判据回放集 | ⬜ 未毕（属实） | 已并入 R4 输入面，待 R4 开设计时登记为第一套回放基线 |
+
 ## 连带调整
 
 - pack 分诊补验窗口原锚「v4.0.10 发版收口」；用户 2026-10-31 令 4.0.9 递延、多攒升级再发版，分诊主体顺势并入 4.0.9 篮子，**窗口改锚 4.0.9 发版收口**（TICKET-20261031-pack-triage 已同步修订口径以本条为准）。
