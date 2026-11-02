@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-11-01 18:47
+Generated: 2026-11-02 03:12
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -72,6 +72,7 @@ Generated: 2026-11-01 18:47
 | HANDOFF-20261031-distill-batch.md | mixed#code|yaml|research|e2e|mixed——规程/知识文本落盘＋一处shell校验器小改 | 把上一条链（EPIC-20261031 surplus-execute 运行时兼容修复）蒸馏出的四条知识候选，从「候选」 |
 | HANDOFF-20261031-pack-triage.md | mixed#code|yaml|research|e2e|mixed——行为验证实跑（conductor派发洁净会话产出）＋台账/注册面落字＋证据记录 | 把 TICKET-20261031-pack-triage 的分诊裁定落成盘面事实：16 个待决 pack（14 个 pending 补验＋2 个 no |
 | HANDOFF-20261031-small-fix-batch.md | mixed#code|yaml|research|e2e|mixed | Phase 1「小修批」：把五张 2026-10-28 存量票、一件已评审的 AC-08 设计、三件框架落字与一件 |
+| HANDOFF-20261101-installer-atomicity.md | code |  |
 | HANDOFF-20261101-scan-surface.md | mixed#code|yaml|research|e2e|mixed——workflow/脚本改动（行为面）＋判据规则面落字（patterns/canonical）＋回放与diff夹具 |  |
 | HANDOFF-surplus-mini-marker-alpha.md | code | Create a single plain-text marker file for the surplus-execute mini-run: |
 | HANDOFF-surplus-mini-marker-beta.md | code |  |
@@ -82,6 +83,7 @@ Generated: 2026-11-01 18:47
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
 | EPIC-20261031-v409-basket.md | **Phase 4 收口（2026-11-01，conductor）**：Gate 4 CONDITIONAL PASS（p0=0）。Phase 1–3 判据面携带至此 |
+| EPIC-20261101-v4010-hotfix.md | **Conductor**: Cora |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -168,7 +170,7 @@ Generated: 2026-11-01 18:47
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 74 | journal |
+| evidence/journal/ | 75 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
 | evidence/live-regression/ | 17 | live-regression |
@@ -188,10 +190,10 @@ Generated: 2026-11-01 18:47
 | evidence/ralph-loops/ | 23 | ralph-loops |
 | evidence/regression-runs/ | 43 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 18 | releases |
+| evidence/releases/ | 20 | releases |
 | evidence/research/ | 194 | research |
 | evidence/reviews/ | 899 | reviews |
-| evidence/risk-cards/ | 10 | risk-cards |
+| evidence/risk-cards/ | 11 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
 | evidence/self-review-r3-20261006/ | 83 | self-review-r3-20261006 |
 | evidence/simple/ | 36 | simple |
@@ -202,7 +204,7 @@ Generated: 2026-11-01 18:47
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 10473 | yolo |
+| evidence/yolo/ | 10503 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
