@@ -1,4 +1,4 @@
-# schema=1 rows=2105
+# schema=1 rows=2110
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -16,6 +16,7 @@ agents-md	51620de8000d93efce96bf871f6a0664f6a96ac6	-
 agents-md	51aed07cbea3674ebb7079895c354e1736220525	-
 agents-md	52d30b5c26b28362f1ce6726ebd7dd13bad6feaa	-
 agents-md	55ca7c2b4268bf5b32e88672ee61214a4d827b82	-
+agents-md	6040b3f466a885107aba40d254319b5d99d1e688	-
 agents-md	6f9acfe5a815b41eb6ee7989520e422aefe36867	-
 agents-md	70a92d2a6a4afcc6edaa01858d465e790c1c3518	-
 agents-md	72706223128f66351e3151d54c346edd9c3a7e9e	-
@@ -658,6 +659,7 @@ skill	2890c9d1b4cf5741b90f61740abd823d76b7ab80	video-creation/references/visual-
 skill	28b6e4da8aee4e52c1d5713d93b30967044451bc	alex/references/acceptance-protocol.md
 skill	2927992478381b33fb601cc1079a8f74da9173ca	web-backend/examples/api-pagination-review.md
 skill	2928d840e17a262427d167bd9c3c4162d2417bc6	data-engineering/references/data-quality-rules.md
+skill	29aaa4f54b79b871a1fdeb80fdbbba425ed4e0fe	tad-help/SKILL.md
 skill	29e52d4ba5adb541b03f83a0940f7210c24784ef	_archived/git-worktrees.md
 skill	29e5dd7ce14a77db0aa984ead3d430c14fff608e	alex/references/next-md-rules.md
 skill	29fbe26c832b0b4fef1858db4bd1f37c96630c9d	synthetic-data/SKILL.md
@@ -1208,6 +1210,7 @@ skill	7bedd56a22312a01de5138e3f323e73f5c94057c	agent-orchestration/references/to
 skill	7bfdae4b9b7837dc6aea2153b0690e90562f14c2	tad-help/SKILL.md
 skill	7c352cba56eda2658c92c2721793f8af2168e5d8	gate/SKILL.md
 skill	7c5a2b103a5d08149d52181b9c4ba7ef5e77b212	alex/SKILL.md
+skill	7c5d6c4cf565ec64ee03e1ac1fa9cd1748893131	alex/SKILL.md
 skill	7c5f08a6350e45056edb24d22ca077dbf36154b9	academic-research/scripts/setup-cv.sh
 skill	7c8981b1af8d30dd11d4368dacf0a7e30cd2cc9b	alex/references/bug-path-protocol.md
 skill	7c8b1145b3ba2b4907449e5e3bbec5ea39818f85	blake/SKILL.md
@@ -1372,6 +1375,7 @@ skill	96ed9a248e8e9fbce705db74dc484c2d45766aed	tad-help/SKILL.md
 skill	9704ea7fdce27e4fd5dc12b7c3563b29bf27dcd0	academic-research/references/experiment-design.md
 skill	9720adad1ca934a5eade32104ec1cfe3898728d7	alex/SKILL.md
 skill	9736372814e19108fc75eb4a026a7749fa4f6e15	tad-help/SKILL.md
+skill	9738ca48eb8406a6d5e7b669235544f1dc80940f	alex/references/publish-protocol.md
 skill	9751a6b7fc13af782e5fdfabfa7c9783af0da674	blake/SKILL.md
 skill	9808bb2a103ddc146a6eb8f56f1c798b37c19dc1	alex/references/sync-protocol.md
 skill	9832282cd6d4c06ac0be4354db88550833ddc90c	knowledge-graph/references/kg-construction.md
@@ -1548,6 +1552,7 @@ skill	ad75bbe7365f4a4c2fec3b4590c860de568a699c	ai-podcast-production/examples/fu
 skill	ad9bbd6621e0cfb8106010ebf1bd94a3e63b7f44	tad-help/SKILL.md
 skill	ae252aff951fd687e76a28929eed1fe8bf474c45	alex/references/experiment-path-protocol.md
 skill	ae58048e7f1174557fa9c2af42dff0b8e27c4e5d	alex/SKILL.md
+skill	ae6ff2d4df850ece73634b11d553c5482eaf03c8	blake/SKILL.md
 skill	ae71641a8ac9a5bfff53234ed9f9b591206dd01d	cora/SKILL.md
 skill	ae7abc5f589af8189265eb45ff623ef7d5402a2c	tad-help/SKILL.md
 skill	ae88f800a1cee89dd982d50f08287f238b5eec55	_archived/verification.md
