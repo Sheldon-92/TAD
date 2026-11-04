@@ -8,11 +8,13 @@ trust: disk-verified 2026-10-27T22:06 UTC by Blake
 > 照它找活等于被误导。**清单不准 = 清单有害。**
 > 补充（2026-10-04，TASK-20261004 机制 4；对账方法 2026-11-01 回写，release-recon-4.0.9 D16）：每轮自查以 yunpush status／盘面对读对账本文件（本文件夹禁 git），条目与盘面现实不符即当场纠偏。
 
-**当前版本**：4.0.10（prepared locally, not pushed or tagged）（上一已发布版本 4.0.9，tag v4.0.9 = 1f93d947）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
+**当前版本**：4.0.11（prepared locally, not pushed or tagged）（上一已发布版本 4.0.10，tag v4.0.10 = 00ddb7f0，main = 3572217c）｜ **默认通道**：full（`/cora` `/alex` `/blake` `/gate`）｜ lite 🧊 冻结于 2026-08-13
 
 ---
 
 ## 🔴 优先队列
+
+> ▶ **在飞（2026-11-02，Mac Cora）**：EPIC-20261102-v4011-failure-naming（v4.0.11：安装器写失败点名＋回滚提示）。进度以该 Epic 的 `## Run` 为准。
 
 > ▶ **在飞主线（2026-11-01 补记，release-recon-4.0.9 D13）**：EPIC-20261031-v409-basket（v4.0.9 篮子，Phase 1–4 已收口、发版前程在跑）——篮子状态以 `.tad/active/BASKET-4.0.9.md` 为唯一正本，本文件不复记。
 

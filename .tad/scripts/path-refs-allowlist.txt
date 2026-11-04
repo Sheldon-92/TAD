@@ -65,10 +65,22 @@ tad.sh	.tad/.agents/root-file/.opencode	Hypothetical path in an installer commen
 tad.sh	.tad/codex/schemas/	Quoted as an example of a legitimate ledger entry in an installer comment; the directory does not exist
 tad.sh	.tad/migrations/genesis.yaml	Guarded by an existence test in tad.sh before use; the file is optional
 .agents/skills/cora/SKILL.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
-.agents/skills/cora/SKILL.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling
 .agents/skills/cora/references/conductor-protocol.md	.tad/active/session-state.md	Per-project session state written at run time; gitignored
-AGENTS.md	.tad/project-knowledge/rulings/human-rulings.md	Per-project file created by Cora on the human's first standing ruling; the Ingress line is conditional on it existing
 AGENTS.md	.tad/skillify-candidates/	Zero-touch dir named by the File Ownership section; created in a downstream project by the skillify flow, has no committed file in this repo
 .tad/hooks/lib/update-reminder.sh	.tad/active/update-reminder.off	Off switch the human creates in a project to silence the session-start update reminder; an update never writes it, so it has no committed copy
 AGENTS.md	.tad/active/update-reminder.off	Off switch the human creates in a project to silence the session-start update reminder; an update never writes it, so it has no committed copy
 docs/MULTI-PLATFORM.md	.tad/active/update-reminder.off	Off switch the human creates in a project to silence the session-start update reminder; an update never writes it, so it has no committed copy
+.agents/skills/alex/references/intent-router-protocol.md	.tad/intent-overrides.yaml	User-local override file named in prose as optional (read if present); created by the user in a downstream project, no committed copy
+.tad/active/INTAKE-20261101-sober-surplus-proposals.md	.tad/methodology-skeleton/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/INTAKE-20261101-sober-surplus-proposals.md	.tad/sandbox/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/config/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/domains/tools-registry.yaml	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/hooks/lib/staleness-check.sh	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/scripts/gate-roi.py	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/scripts/release-verify.sh	Historical planning record of 2026-10-31/11-01: names the script in the wrong directory (it is .tad/hooks/lib/release-verify.sh); the record is not rewritten
+.tad/active/SURPLUS-PLAN-2026-10-31.md	.tad/hooks/lib/staleness-check.sh	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/active/SURPLUS-REPORT-2026-10-31.md	.tad/config/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
+.tad/hooks/lib/intent-overrides.yaml	.tad/intent-overrides.yaml	User-local override file named in prose as optional (read if present); created by the user in a downstream project, no committed copy
+.tad/hooks/lib/state-surface-check.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/scripts/fixtures/surplus-scan-replay/corpus.json	.tad/active/epics/EPIC-20260927-radar-deep-research.md	Recorded replay corpus (fixture data): it quotes a path of the project that was scanned, not a path of this repo
+.tad/templates/session-state-template.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo

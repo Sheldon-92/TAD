@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|caps|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|caps|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|caps|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|caps|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -693,7 +693,7 @@ case_ac28() {
   CURRENT_CASE="ac2.8"
   new_sandbox
   stage_pruned_source
-  # Upgrade-shaped target (current=3.1.0, so the installer takes the plain
+  # Upgrade-shaped target (current=<source major>.0.0, so the installer takes the plain
   # upgrade path and the failure lands purely on the cp fault → rollback
   # coverage is isolated).
   #
@@ -707,12 +707,17 @@ case_ac28() {
   # faulted run, taken before sandbox cleanup) returned NO files and no
   # directories: the migrate skeleton dirs are swept by rollback, and the
   # migrate backup was the only drift. So this was a stale premise/filter, not
-  # an installer sweep defect. The case now uses an upgrade-shaped 3.1.0 target
+  # an installer sweep defect. The case now uses an upgrade-shaped <source major>.0.0 target
   # (what the case was written to cover: an in-place upgrade whose copy phase
   # fails). Rework R2/R3: the migrate-path variant now lives in its own
   # sub-case below, and only that sub-case tolerates .tad-migrate-backup.*.
   mkdir -p "$TARGET/.tad" "$TARGET/.tad/project-knowledge" "$TARGET/.claude/skills/custom" "$TARGET/.codex" "$TARGET/.codex/prompts" "$TARGET/.claude/commands"
-  printf '3.1.0\n' > "$TARGET/.tad/version.txt"
+  # The installed version must be in the SAME MAJOR as the source, or the installer takes the migrate path
+  # (a 3.x install under a 4.x source gets a .tad-migrate-backup.<ts>, which is the drift this case
+  # forbids). So derive "<source major>.0.0" instead of naming a literal major.
+  local _src_major
+  _src_major="$(head -1 "$SOURCE/.tad/version.txt" | tr -d '[:space:]' | cut -d. -f1)"
+  printf '%s.0.0\n' "$_src_major" > "$TARGET/.tad/version.txt"
   printf '# Project\n<!-- TAD:PROJECT-CONTENT-BELOW -->\nMY-PROJECT-BYTES\n' > "$TARGET/CLAUDE.md"
   printf 'CUSTOM-SKILL-BYTES\n' > "$TARGET/.claude/skills/custom/skill.md"
   printf 'USER-HOOKS\n' > "$TARGET/.codex/hooks.json"
@@ -2022,11 +2027,18 @@ case_fxc() {
     fail "fx.c: unqualified references: $(printf '%s' "$rest" | cut -c1-120 | tr '\n' '|')"
   fi
   local ok=1
-  for l in ".tad/templates/review-contract.md:54" ".agents/skills/cora/references/conductor-protocol.md:234" ".agents/skills/gate/SKILL.md:635"; do
-    local f="${l%%:*}" n="${l##*:}" line cnt
-    line="$(sed -n "${n}p" "$REPO/$f")"
-    cnt="$(printf '%s' "$line" | grep -oF '.tad/project-knowledge/rulings/human-rulings.md' | wc -l | tr -d ' ')"
-    if ! printf '%s' "$line" | grep -qF 'if it exists' || [ "$cnt" != "1" ]; then ok=0; fail "fx.c: $l lacks the qualifier or holds the full path $cnt times"; fi
+  # Find the lines by what they hold, not by line number: the line numbers moved with every edit of these
+  # files, and a count of zero made the pipeline below end the whole script silently under set -e.
+  for f in ".tad/templates/review-contract.md" ".agents/skills/cora/references/conductor-protocol.md" ".agents/skills/gate/SKILL.md"; do
+    local line cnt nlines
+    nlines="$(grep -cF '.tad/project-knowledge/rulings/human-rulings.md' "$REPO/$f" || true)"
+    if [ "${nlines:-0}" = "0" ]; then ok=0; fail "fx.c: $f no longer names the rulings file at all"; continue; fi
+    while IFS= read -r line; do
+      cnt="$(printf '%s' "$line" | grep -oF '.tad/project-knowledge/rulings/human-rulings.md' | wc -l | tr -d ' ' || true)"
+      if ! printf '%s' "$line" | grep -qF 'if it exists' || [ "$cnt" != "1" ]; then ok=0; fail "fx.c: $f has a line that lacks the qualifier or holds the full path $cnt times: $(printf '%s' "$line" | cut -c1-100)"; fi
+    done <<EOF
+$(grep -F '.tad/project-knowledge/rulings/human-rulings.md' "$REPO/$f")
+EOF
   done
   [ "$ok" = "1" ] && pass "fx.c: each edited line holds 'if it exists' and the full path once"
   new_sandbox; stage_pruned_source
@@ -2349,7 +2361,7 @@ case_fxk() {
   [ "$(fx_ndirs)" = "1" ] || { bad=1; fail "fx.k: k1 group holds $(fx_ndirs) backups (the full one was not retired)"; }
   if [ "$(head -1 "$B/manifest.txt")" = "layout=changed-only" ] && [ "$(tail -1 "$B/manifest.txt")" = "version=4.0.5" ]; then :; else bad=1; fail "fx.k: k1 manifest wrong: $(tr '\n' '|' < "$B/manifest.txt")"; fi
   [ ! -e "$B/not-backed-up.txt" ] || { bad=1; fail "fx.k: k1 not-backed-up.txt present"; }
-  if find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vqE '^([0-9]{8}_[0-9]{6}(\.[0-9]+)?|holding)$'; then bad=1; fail "fx.k: k1 a non-pattern name under the group (holding is the only other name)"; fi
+  if find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vqE '^([0-9]{8}_[0-9]{6}(\.[0-9]+)?|holding|claude-adopt)$'; then bad=1; fail "fx.k: k1 a non-pattern name under the group (holding and claude-adopt, the legacy Claude Code archive, are the only other names): $(find "$g" -mindepth 1 -maxdepth 1 | sed 's|.*/||' | grep -vE '^([0-9]{8}_[0-9]{6}(\.[0-9]+)?|holding|claude-adopt)$' | tr '\n' ' ')"; fi
   grep -qE 'Backup: .* KB, [0-9]+ files: only what this update changed or removed' "$log" || { bad=1; fail "fx.k: k1 size line missing"; }
   if [ "$bad" = "0" ]; then pass "fx.k: k1 changed-only backup == changed+removed rows, byte-equal pre-images, layout=changed-only, version trailer, pattern names"; fi
   # (k2) changes.tsv never appears: the full backup stays, every pre-image intact
@@ -2740,7 +2752,23 @@ case_caps() {
   if [ "$rc" != "0" ]; then fail "caps: the upgrade failed (rc=$rc): $(tail -4 "$log" | tr '\n' '|')"; return 0; fi
   B="$BR/$key/$(fx_bklist "$BR/$key" | tail -1)"; R="$B/update-report.tsv"
   n="$(ls -d "$TARGET"/.tad-backup/*/ | sed 's|/$||;s|.*/||' | sed -n 's/^.*-to-\([0-9.]*\)\(-deprecations\)\{0,1\}$/\1/p' | LC_ALL=C sort -u | wc -l | tr -d ' ')"
-  if [ "$n" -le 2 ] && [ -d "$TARGET/.tad-backup/3.14.0-to-3.15.0" ] && [ ! -e "$TARGET/.tad-backup/3.1.0-to-3.2.0" ]; then pass "caps: .tad-backup keeps the two newest target versions"
+  # The real upgrade adds hop directories of its own (one per hop that deletes or renames something), so
+  # which seeded directory survives depends on how many of those there are. The rule under test is "the two
+  # newest target versions among everything present before retention", so compare against that, not against
+  # one named seed. Version order is numeric per segment.
+  local kept_t want_t
+  kept_t="$(ls -d "$TARGET"/.tad-backup/*/ | sed 's|/$||;s|.*/||' | sed -n 's/^.*-to-\([0-9.]*\)\(-deprecations\)\{0,1\}$/\1/p' | LC_ALL=C sort -u -t. -k1,1n -k2,2n -k3,3n | tr '\n' ' ')"
+  want_t="$( { for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; do echo "3.$((i + 1)).0"; done; printf '%s\n' $kept_t; } | LC_ALL=C sort -u -t. -k1,1n -k2,2n -k3,3n | tail -2 | tr '\n' ' ')"
+  # The highest version the upgrade itself made a hop directory for must be kept. Without this, a retention
+  # that dropped the newest run-made directory would leave kept_t and want_t both equal to the two newest
+  # seeds, and the case would pass. The upgrade's own top hop is the source version, so it is read from there;
+  # the check applies only when the install log shows the upgrade did create that directory.
+  local src_ver run_ok=1
+  src_ver="$(head -1 "$SOURCE/.tad/version.txt" | tr -d '[:space:]')"
+  if grep -q -- "-to-$src_ver" "$log" 2>/dev/null; then
+    case " $kept_t " in *" $src_ver "*) ;; *) run_ok=0 ;; esac
+  fi
+  if [ "$n" -le 2 ] && [ "$run_ok" = "1" ] && [ "$kept_t" = "$want_t" ] && [ ! -e "$TARGET/.tad-backup/3.1.0-to-3.2.0" ]; then pass "caps: .tad-backup keeps the two newest target versions"
   else fail "caps: .tad-backup kept $n target versions: $(ls "$TARGET/.tad-backup" | tr '\n' ' ')"; fi
   if [ "$(ls "$TARGET"/AGENTS.md.pre-tad.* | wc -l | tr -d ' ')" = "2" ] && [ -e "$TARGET/AGENTS.md.pre-tad.20260109-000000" ] && [ -e "$TARGET/AGENTS.md.pre-tad.20260108-000000" ]; then pass "caps: AGENTS.md.pre-tad keeps the newest 2"
   else fail "caps: pre-tad copies: $(ls "$TARGET"/AGENTS.md.pre-tad.* | tr '\n' ' ')"; fi
@@ -2761,13 +2789,759 @@ case_caps() {
   if grep -qE '^Holding area: ' "$log" && [ "$(fx_rv "$R" holding_items)" != "-" ] && [ "$(fx_rv "$R" holding_items)" -ge 5 ] 2>/dev/null && [ "$(fx_rv "$R" holding_path)" = "$H" ]; then pass "caps: report names the holding area"
   else fail "caps: report lacks the holding area (items=$(fx_rv "$R" holding_items) path=$(fx_rv "$R" holding_path)): $(grep -E 'Holding' "$log" | tr '\n' '|')"; fi
 }
+# ── v4.0.11 failure-naming and rollback-conclusion cases (fn.*, rp.*) ──
+# Faults come from PATH shims or real system conditions; tad.sh has no test
+# branch. Every shim writes a witness file when its fault fires, and each case
+# asserts the witness plus a unique marker string in the installer log (so the
+# reason in the log provably came from the system command, not from fixed text).
+
+# fn_shim <tool> <tag> — a PATH shim for <tool>; the script body comes on stdin.
+# Placeholders: @REAL@ the real tool, @MARK@ the witness file (marker.<tag>),
+# @PIDF@ the file holding the installer pid.
+fn_shim() {
+  local real
+  real="$(type -P "$1")" || { echo "fixture: no real $1 on PATH" >&2; exit 2; }
+  { printf '#!/bin/sh\n'; cat; } | sed -e "s#@REAL@#$real#g" -e "s#@MARK@#$SANDBOX/marker.$2#g" -e "s#@PIDF@#$SANDBOX/tad.pid#g" > "$SHIMBIN/$1"
+  chmod +x "$SHIMBIN/$1"
+}
+
+# fn_witness <tag> — pass when the shim's witness file exists (the fault fired).
+fn_witness() {
+  if [ -s "$SANDBOX/marker.$1" ]; then
+    pass "$CURRENT_CASE: witness — the injected fault fired ($1)"
+    return 0
+  fi
+  fail "$CURRENT_CASE: no witness — the injected fault never fired ($1)"
+  return 1
+}
+
+# fn_line_before <log> <first> <second> — first fixed string appears on an earlier line than second.
+fn_line_before() {
+  local a b
+  a="$(grep -nF -e "$2" "$1" | head -1 | cut -d: -f1)"
+  b="$(grep -nF -e "$3" "$1" | head -1 | cut -d: -f1)"
+  [ -n "$a" ] && [ -n "$b" ] && [ "$a" -lt "$b" ]
+}
+
+# rp_lint_rules <log> — the mechanical rules of EAC7 over one installer log. Prints
+# "LINT-RULE-FAILED: <rule>" per broken rule and returns how many broke.
+rp_lint_rules() {
+  local L="$1" n=0 res v failed exc exlines hasmr state act p bk
+  res="$(grep -F 'ROLLBACK-RESULT: ' "$L" | tail -1 || true)"
+  v="$(printf '%s' "$res" | sed -n 's/.*ROLLBACK-RESULT: \([a-z]*\).*/\1/p')"
+  failed="$(printf '%s' "$res" | sed -n 's/.* failed=\([0-9]*\).*/\1/p')"; failed="${failed:-0}"
+  exc="$(printf '%s' "$res" | sed -n 's/.* exceptions=\([0-9]*\).*/\1/p')"; exc="${exc:-0}"
+  exlines="$(grep -c '^exception: ' "$L" || true)"
+  hasmr=0; if grep -qF 'MANUAL-RECOVERY' "$L"; then hasmr=1; fi
+  state="$(sed -n 's/^PROJECT-STATE: \([a-z-]*\).*/\1/p' "$L" | tail -1)"
+  act="$(sed -n 's/^ACTION-NEEDED: \([a-z]*\).*/\1/p' "$L" | tail -1)"
+  if [ "$v" = "full" ] && [ "$hasmr" = "1" ]; then echo "LINT-RULE-FAILED: full-has-no-manual-recovery"; n=$((n+1)); fi
+  if [ "$hasmr" = "1" ] && [ "$failed" = "0" ] && [ "$exlines" = "0" ]; then echo "LINT-RULE-FAILED: manual-recovery-needs-a-failure-or-exception"; n=$((n+1)); fi
+  if [ "$(grep -c 'Rollback FAILED for' "$L" || true)" -gt "$failed" ]; then echo "LINT-RULE-FAILED: failed-count-covers-every-failed-entry"; n=$((n+1)); fi
+  while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    if [ ! -e "$p" ] && [ ! -L "$p" ]; then echo "LINT-RULE-FAILED: recover-from-path-exists ($p)"; n=$((n+1)); fi
+  done <<< "$(sed -n 's/^RECOVER-FROM: \(\/.*\)$/\1/p' "$L")"
+  bk="$(sed -n 's/.*Restored from backup: \([^ ]*\) .*/\1/p' "$L" | head -1)"
+  if [ -n "$bk" ] && grep -qxF "RECOVER-FROM: $bk" "$L"; then echo "LINT-RULE-FAILED: consumed-backup-is-not-a-recovery-source"; n=$((n+1)); fi
+  if grep -qF 'failed entries: none' "$L"; then echo "LINT-RULE-FAILED: no-failed-entries-none-in-the-block"; n=$((n+1)); fi
+  if [ -z "$state" ] || [ -z "$act" ] || ! grep -q '^RECOVER-FROM: ' "$L"; then
+    echo "LINT-RULE-FAILED: conclusion-lines-present"; n=$((n+1))
+  elif fn_line_before "$L" 'Rollback complete.' 'PROJECT-STATE: ' && ! fn_line_before "$L" 'PROJECT-STATE: ' 'ROLLBACK-RESULT: '; then
+    :
+  else
+    echo "LINT-RULE-FAILED: conclusion-is-last"; n=$((n+1))
+  fi
+  if [ "$state" = "intact" ] && { [ "$failed" != "0" ] || [ "$exc" != "0" ]; }; then echo "LINT-RULE-FAILED: intact-means-no-failure-no-exception"; n=$((n+1)); fi
+  if [ "$state" = "not-intact" ] && [ "$failed" = "0" ]; then echo "LINT-RULE-FAILED: not-intact-needs-a-failed-entry"; n=$((n+1)); fi
+  if [ -n "$act" ] && { { [ "$act" = "yes" ] && [ "$hasmr" = "0" ]; } || { [ "$act" = "no" ] && [ "$hasmr" = "1" ]; }; }; then echo "LINT-RULE-FAILED: manual-recovery-iff-action-needed"; n=$((n+1)); fi
+  if [ "$exlines" != "$exc" ] && [ -n "$state" ]; then echo "LINT-RULE-FAILED: exception-lines-match-the-count"; n=$((n+1)); fi
+  if [ "$v" = "partial" ] && [ "$failed" = "0" ] && [ "$exc" = "0" ]; then echo "LINT-RULE-FAILED: partial-needs-a-failure-or-exception"; n=$((n+1)); fi
+  return "$n"
+}
+
+rp_lint() { # <log> — pass/fail wrapper over the rules
+  local out rc=0
+  out="$(rp_lint_rules "$1")" || rc=$?
+  if [ "$rc" = "0" ]; then
+    pass "$CURRENT_CASE: conclusion lint — all rules hold"
+  else
+    fail "$CURRENT_CASE: conclusion lint broke $rc rule(s): $(printf '%s' "$out" | tr '\n' ';')"
+  fi
+}
+
+# fn_expect <log> <fixed string> <label>
+fn_expect() {
+  if grep -qF -e "$2" "$1"; then pass "$CURRENT_CASE: $3"; else fail "$CURRENT_CASE: $3 (missing: $2)"; fi
+}
+
+fn_no_stage_leftovers() {
+  local n
+  n="$(find "$TARGET" -name '*.tad-new.*' | wc -l | tr -d ' ')"
+  if [ "$n" = "0" ]; then pass "$CURRENT_CASE: no .tad-new.* stage left in the project"; else fail "$CURRENT_CASE: $n .tad-new.* stage(s) left in the project"; fi
+}
+
+# fn_run <log> — one upgrade run from the built target; prints rc.
+fn_run() { run_install codex "$1"; }
+
+case_fncopy() {
+  CURRENT_CASE="fn.copy"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  mkdir -p "$SOURCE/.tad/templates/奇怪 目录"
+  printf 'fn odd bytes\n' > "$SOURCE/.tad/templates/奇怪 目录/file\\back.md"
+  fn_shim cp copy <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *back.md.tad-new.*) printf 'FNMARK-copy-1 cp: injected failure\nsecond line of the message\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-copy.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.copy: the armed upgrade failed (rc=$rc)"; else fail "fn.copy: the armed upgrade succeeded"; return 0; fi
+  fn_witness copy || return 0
+  fn_expect "$log" 'INSTALL-WRITE-FAILED step=copy file=.tad/templates/奇怪 目录/file\back.md reason=FNMARK-copy-1 cp: injected failure | second line of the message' "failure line names step, exact path (space, Chinese, backslash) and the joined system text"
+  if fn_line_before "$log" 'INSTALL-WRITE-FAILED' 'Installation failed'; then pass "fn.copy: the failure line comes before 'Installation failed'"; else fail "fn.copy: failure line not before 'Installation failed'"; fi
+  if grep -qF 'INSTALL-EXIT' "$log"; then fail "fn.copy: a named failure also printed the catch-all"; else pass "fn.copy: no catch-all line after a named failure"; fi
+  fn_no_stage_leftovers
+  rp_lint "$log"
+}
+
+case_fncopyreal() {
+  CURRENT_CASE="fn.copy-real"
+  local rc log
+  if [ "$(id -u)" = "0" ]; then
+    printf '  ⚠ fn.copy-real: not-run — uid 0 ignores directory permissions\n'
+    return 0
+  fi
+  new_sandbox
+  aw_build_target || return 0
+  mkdir -p "$SOURCE/.tad/templates/rodir" "$TARGET/.tad/templates/rodir"
+  printf 'fn ro new\n' > "$SOURCE/.tad/templates/rodir/x.md"
+  printf 'fn ro old\n' > "$TARGET/.tad/templates/rodir/x.md"
+  chmod 555 "$TARGET/.tad/templates/rodir"
+  log="$SANDBOX/fn-copyreal.log"
+  rc="$(fn_run "$log")"
+  chmod -R u+w "$SANDBOX" 2>/dev/null || true
+  if [ "$rc" != "0" ]; then pass "fn.copy-real: the upgrade failed on a real write fault (rc=$rc)"; else fail "fn.copy-real: the upgrade succeeded despite a read-only directory"; return 0; fi
+  if grep -F 'INSTALL-WRITE-FAILED step=copy file=.tad/templates/rodir/x.md reason=' "$log" | grep -qi 'permission denied'; then
+    pass "fn.copy-real: the line carries the system's own text (no shim)"
+  else
+    fail "fn.copy-real: no system text in the failure line: $(grep -F 'INSTALL-WRITE-FAILED' "$log" | head -1)"
+  fi
+  rp_lint "$log"
+}
+
+case_fnverify() {
+  CURRENT_CASE="fn.verify"
+  local rc log kept want
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'fn verify bytes\n' > "$SOURCE/.tad/templates/verifyme.md"
+  fn_shim cp verify <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *verifyme.md.tad-new.*) @REAL@ "$@" || exit $?; printf 'EXTRA' >> "$last"; echo hit >> @MARK@; exit 0 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-verify.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.verify: the armed upgrade failed (rc=$rc)"; else fail "fn.verify: the armed upgrade succeeded"; return 0; fi
+  fn_witness verify || return 0
+  fn_expect "$log" 'INSTALL-WRITE-FAILED step=verify file=.tad/templates/verifyme.md reason=' "failure line names the verify step and the path"
+  want="source-bytes=$(wc -c < "$SOURCE/.tad/templates/verifyme.md" | tr -d ' ') stage-bytes=$(( $(wc -c < "$SOURCE/.tad/templates/verifyme.md" | tr -d ' ') + 5 ))"
+  fn_expect "$log" "$want" "both byte counts are in the line"
+  if grep -F 'INSTALL-WRITE-FAILED step=verify' "$log" | grep -Eq 'differ|EOF|char|byte'; then pass "fn.verify: cmp's own text is in the line"; else fail "fn.verify: no cmp text in the line"; fi
+  kept="$(sed -n 's/^KEPT-STAGE: \(\/.*\)$/\1/p' "$log" | tail -1)"
+  if [ -n "$kept" ] && [ -f "$kept" ] && [ "$(wc -c < "$kept" | tr -d ' ')" = "$(( $(wc -c < "$SOURCE/.tad/templates/verifyme.md" | tr -d ' ') + 5 ))" ]; then
+    pass "fn.verify: the kept stage exists at the path the log ends with, with the failed bytes"
+  else
+    fail "fn.verify: kept stage missing or wrong (${kept:-none})"
+  fi
+  fn_no_stage_leftovers
+  rp_lint "$log"
+}
+
+case_fnswap() {
+  CURRENT_CASE="fn.swap"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'fn swap bytes\n' > "$SOURCE/.tad/templates/swapme.md"
+  fn_shim mv swap <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */swapme.md|swapme.md) printf 'FNMARK-swap-1 mv: injected failure\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-swap.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.swap: the armed upgrade failed (rc=$rc)"; else fail "fn.swap: the armed upgrade succeeded"; return 0; fi
+  fn_witness swap || return 0
+  fn_expect "$log" 'INSTALL-WRITE-FAILED step=swap file=.tad/templates/swapme.md reason=FNMARK-swap-1 mv: injected failure' "failure line names the swap step, the path and the marker"
+  fn_no_stage_leftovers
+  rp_lint "$log"
+}
+
+# fn_point_check <tag> <step> <file-fragment> <expect-kept 0|1> — one more write point, same sandbox.
+fn_point_check() {
+  local tag="$1" step="$2" frag="$3" kept="$4" log="$SANDBOX/fn-points-$1.log" rc
+  rc="$(fn_run "$log")"
+  if [ "$rc" = "0" ]; then fail "fn.points: $tag — the armed upgrade succeeded"; return 0; fi
+  fn_witness "$tag" || return 0
+  if grep -F "INSTALL-WRITE-FAILED step=$step file=" "$log" | grep -qF -e "$frag"; then
+    pass "fn.points: $tag — step=$step named with the file"
+  else
+    fail "fn.points: $tag — no 'step=$step' line naming $frag: $(grep -F 'INSTALL-WRITE-FAILED' "$log" | head -1)"
+  fi
+  if [ "$kept" = "1" ]; then fn_expect "$log" 'INSTALL-STAGE-KEPT' "$tag — the failed stage was kept"; fi
+  fn_no_stage_leftovers
+  CURRENT_CASE="fn.points($tag)"; rp_lint "$log"; CURRENT_CASE="fn.points"
+  rm -f "$SHIMBIN/mkdir" "$SHIMBIN/ln" "$SHIMBIN/mv" "$SHIMBIN/cmp"
+}
+
+case_fnpoints() {
+  CURRENT_CASE="fn.points"
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  mkdir -p "$SOURCE/.tad/templates/fnpoints-newdir"
+  printf 'p\n' > "$SOURCE/.tad/templates/fnpoints-newdir/f.md"
+  ln -s fnpoints-newdir/f.md "$SOURCE/.tad/templates/fnpoints-link"
+  fn_shim mkdir mkdir <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */fnpoints-newdir) printf 'FNMARK-mkdir-1 mkdir: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check mkdir mkdir '.tad/templates/fnpoints-newdir' 0
+  fn_shim ln lnstage <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *fnpoints-link.tad-new.*) printf 'FNMARK-ln-1 ln: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check lnstage link-stage '.tad/templates/fnpoints-link' 0
+  fn_shim mv lnswap <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */fnpoints-link) printf 'FNMARK-lnswap-1 mv: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check lnswap link-swap '.tad/templates/fnpoints-link' 0
+  fn_shim mv pmswap <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *.tad-pack-meta.yaml) printf 'FNMARK-pmswap-1 mv: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check pmswap swap '.tad-pack-meta.yaml' 1
+  fn_shim mv hkswap <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  .codex/hooks.json) printf 'FNMARK-hkswap-1 mv: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check hkswap swap '.codex/hooks.json' 1
+  fn_shim cmp stamp <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  .tad/version.txt) echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  fn_point_check stamp stamp-verify '.tad/version.txt' 0
+  CURRENT_CASE="fn.points"
+  # The two stage-WRITE points (pack-meta-stage, hooks-stage) fail only on a full or
+  # read-only disk; they use the same line and are read in the code (completion report).
+  local s
+  for s in hooks-stage pack-meta-stage; do
+    if [ "$(grep -v 'RM-OK:' "$TADSH" | grep -cF -e "install_fail_line $s")" -ge 1 ]; then
+      pass "fn.points: code-read — $s has its failure line"
+    else
+      fail "fn.points: code-read — no failure line for $s"
+    fi
+  done
+}
+
+case_fncatchall() {
+  CURRENT_CASE="fn.catchall"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  fn_shim mkdir catch <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  .codex) printf 'FNMARK-catch-1 mkdir: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-catch.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.catchall: the upgrade failed (rc=$rc)"; else fail "fn.catchall: the upgrade succeeded"; return 0; fi
+  fn_witness catch || return 0
+  if grep -qF 'INSTALL-WRITE-FAILED' "$log"; then fail "fn.catchall: a write point claimed the failure"; else pass "fn.catchall: no write point claimed the failure"; fi
+  fn_expect "$log" 'INSTALL-EXIT step=hooks status=1 last-command=mkdir -p .codex (unexpanded source text) reason=not captured' "catch-all names the last step, the status, the command, and says the reason was not captured"
+  if grep -F 'INSTALL-EXIT' "$log" | grep -q 'file='; then fail "fn.catchall: the catch-all names a file"; else pass "fn.catchall: the catch-all names no file"; fi
+  rp_lint "$log"
+}
+
+case_fnsignal() {
+  CURRENT_CASE="fn.signal"
+  local log pid wpid rc=0 i
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'fn sig\n' > "$SOURCE/.tad/templates/sigme.md"
+  fn_shim cp sig <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *sigme.md.tad-new.*) echo hit >> @MARK@; kill -TERM "$(cat @PIDF@)"; sleep 1; exit 0 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-signal.log"
+  ( cd "$TARGET" && exec env PATH="$SHIMBIN:$PATH" bash "$TADSH" --source "$SOURCE" --platform codex --yes >"$log" 2>&1 ) &
+  pid=$!
+  printf '%s' "$pid" > "$SANDBOX/tad.pid"
+  # A second TERM, sent once the rollback has announced itself: the conclusion must still print.
+  ( i=0; while [ "$i" -lt 2400 ]; do
+      if grep -qF 'Installation failed' "$log" 2>/dev/null; then kill -TERM "$pid" 2>/dev/null; echo hit >> "$SANDBOX/marker.second"; break; fi
+      sleep 0.05; i=$((i + 1)); done ) &
+  wpid=$!
+  wait "$pid" || rc=$?
+  wait "$wpid" 2>/dev/null || true
+  fn_witness sig || return 0
+  fn_witness second || return 0
+  fn_expect "$log" 'status=signal TERM (143)' "catch-all records the signal and its status"
+  fn_expect "$log" 'reason=not captured' "catch-all says the reason was not captured"
+  if grep -F 'INSTALL-EXIT' "$log" | grep -q 'file='; then fail "fn.signal: the catch-all names a file"; else pass "fn.signal: the catch-all names no file"; fi
+  fn_expect "$log" 'PROJECT-STATE: ' "the conclusion still printed after the second TERM"
+  rp_lint "$log"
+}
+
+case_fnkeep() {
+  CURRENT_CASE="fn.keep"
+  local rc log kept
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'fn keep bytes\n' > "$SOURCE/.tad/templates/keepme.md"
+  fn_shim mv keep <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */keepme.md) printf 'FNMARK-keep-1 mv: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-keep.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.keep: the armed upgrade failed (rc=$rc)"; else fail "fn.keep: the armed upgrade succeeded"; return 0; fi
+  fn_witness keep || return 0
+  kept="$(sed -n 's/^KEPT-STAGE: \(\/.*\)$/\1/p' "$log" | tail -1)"
+  if [ -n "$kept" ] && [ -f "$kept" ] && cmp -s "$kept" "$SOURCE/.tad/templates/keepme.md"; then
+    pass "fn.keep: the path the log ends with exists and holds the failed stage's bytes"
+  else
+    fail "fn.keep: kept path missing or its bytes differ (${kept:-none})"
+  fi
+  if [ ! -e "$TARGET/.tad/templates/keepme.md" ]; then pass "fn.keep: the failed file did not land"; else fail "fn.keep: the failed file landed"; fi
+  fn_no_stage_leftovers
+  rm -f "$SHIMBIN/mv"
+  rc="$(fn_run "$SANDBOX/fn-keep-rerun.log")"
+  if [ "$rc" = "0" ] && [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "$AW_TARGET" ] && cmp -s "$TARGET/.tad/templates/keepme.md" "$SOURCE/.tad/templates/keepme.md"; then
+    pass "fn.keep: with the fault removed the same install succeeds, and the kept stage is no framework file"
+  else
+    fail "fn.keep: the rerun failed (rc=$rc): $(tail -3 "$SANDBOX/fn-keep-rerun.log" | tr '\n' '|')"
+  fi
+}
+
+case_fnkeeplost() {
+  CURRENT_CASE="fn.keep-lost"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'fn lost bytes\n' > "$SOURCE/.tad/templates/keepme.md"
+  fn_shim cp lost <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */.failed-stage/*) printf 'FNMARK-lost-1 cp: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+  *keepme.md.tad-new.*) @REAL@ "$@" || exit $?; printf 'EXTRA' >> "$last"; exit 0 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/fn-lost.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "fn.keep-lost: the armed upgrade failed (rc=$rc)"; else fail "fn.keep-lost: the armed upgrade succeeded"; return 0; fi
+  fn_witness lost || return 0
+  fn_expect "$log" 'INSTALL-STAGE-LOST file=.tad/templates/keepme.md reason=FNMARK-lost-1 cp: injected; the failed stage bytes are gone' "the log says keeping failed and why"
+  fn_expect "$log" 'KEPT-STAGE: not kept — FNMARK-lost-1 cp: injected' "the last statement about the stage is true"
+  fn_no_stage_leftovers
+  rp_lint "$log"
+  # An empty snapshot path must never write at the filesystem root (extracted helper).
+  extract_fn keep_failed_stage "$SANDBOX/keep.fn.sh" "tad-rollback"
+  local out
+  out="$( cd "$SANDBOX" && ROLLBACK_SNAP="" bash -c 'source "$1"; printf x > stage1; keep_failed_stage ./stage1 dst.md; printf "path=[%s] note=[%s] stage=%s\n" "$KEPT_STAGE_PATH" "$KEPT_STAGE_NOTE" "$([ -e stage1 ] && echo present || echo removed)"' _ "$SANDBOX/keep.fn.sh" 2>&1 )"
+  if [ ! -e "/.failed-stage" ] && printf '%s' "$out" | grep -qF 'path=[] note=[no rollback snapshot exists to hold it] stage=removed'; then
+    pass "fn.keep-lost: an empty snapshot path keeps nothing, writes nothing at / and says so"
+  else
+    fail "fn.keep-lost: empty-snapshot guard wrong: $out"
+  fi
+}
+
+# ── rp.* : the rollback conclusion ──
+# rp_harness_run <log> — run the extracted rollback_on_failure with the caller's variables.
+rp_harness_run() {
+  local log="$1"
+  extract_rollback_harness "$SANDBOX/rollback.fn.sh"
+  printf 'log_error() { printf "%%s\\n" "$*"; }\nlog_info() { printf "%%s\\n" "$*"; }\nlog_warn() { printf "%%s\\n" "$*"; }\nrollback_opencode_projection() { :; }\ncleanup_source_tree() { :; }\n' > "$SANDBOX/stubs.sh"
+  ( cd "$TARGET" && bash -c 'source "'"$SANDBOX"'/stubs.sh"; source "'"$SANDBOX"'/rollback.fn.sh"; rollback_on_failure' >"$log" 2>&1 ) || true
+}
+
+rp_conclude() { # <log> <result-word> <state> <action> — the matrix row asserted on the log
+  local L="$1"
+  if grep -qF "ROLLBACK-RESULT: $2 " "$L"; then pass "$CURRENT_CASE: result line says $2"; else fail "$CURRENT_CASE: result line is not $2: $(grep -F 'ROLLBACK-RESULT:' "$L" | tail -1)"; fi
+  if grep -q "^PROJECT-STATE: $3 " "$L"; then pass "$CURRENT_CASE: PROJECT-STATE is $3"; else fail "$CURRENT_CASE: PROJECT-STATE is not $3: $(grep '^PROJECT-STATE:' "$L" | tail -1)"; fi
+  if grep -q "^ACTION-NEEDED: $4" "$L"; then pass "$CURRENT_CASE: ACTION-NEEDED is $4"; else fail "$CURRENT_CASE: ACTION-NEEDED is not $4: $(grep '^ACTION-NEEDED:' "$L" | tail -1)"; fi
+  rp_lint "$L"
+}
+
+rp_fault_cp_sync() { # build a shim failing cp for one stage write; $1 = tag, $2 = file fragment
+  fn_shim cp "$1" <<EOF
+for a in "\$@"; do last="\$a"; done
+case "\$last" in
+  *$2.tad-new.*) printf 'FNMARK-$1-1 cp: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "\$@"
+EOF
+}
+
+case_rpfield() {
+  CURRENT_CASE="rp.field"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  mkdir -p "$TARGET/.tad-backup/older-hop-a" "$TARGET/.tad-migrate-backup.20200101" "$TARGET/.tad-migrate-backup.20200102"
+  printf 'old\n' > "$TARGET/.tad-backup/older-hop-a/f"
+  printf 'rp field\n' > "$SOURCE/.tad/templates/rpfield.md"
+  rp_fault_cp_sync field rpfield.md
+  log="$SANDBOX/rp-field.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.field: the sync failed (rc=$rc)"; else fail "rp.field: the sync did not fail"; return 0; fi
+  fn_witness field || return 0
+  rp_conclude "$log" full intact no
+  fn_expect "$log" 'preserved=0 exceptions=0' "older recovery copies are not counted"
+  fn_expect "$log" 'RECOVER-FROM: not needed' "no recovery path is asked for"
+  if grep -qF 'MANUAL-RECOVERY' "$log"; then fail "rp.field: MANUAL-RECOVERY printed for a fully restored project"; else pass "rp.field: no MANUAL-RECOVERY block"; fi
+  fn_expect "$log" 'left-untouched: [' "older copies are listed as left-untouched"
+}
+
+case_rprunCopy() {
+  CURRENT_CASE="rp.run-copy"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_build_target || return 0
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING=""
+  log="$SANDBOX/rp-runcopy.log"
+  rc="$(run_install_aw "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.run-copy: the armed upgrade failed (rc=$rc)"; else fail "rp.run-copy: the armed upgrade succeeded"; return 0; fi
+  if [ "$(aw_armed_count)" = "1" ]; then pass "rp.run-copy: witness — the armed copy fired once"; else fail "rp.run-copy: the armed copy did not fire once"; return 0; fi
+  rp_conclude "$log" full intact-with-exceptions no
+  if grep -E 'ROLLBACK-RESULT: full ' "$log" | grep -qE 'failed=0 .*preserved=[1-9][0-9]* exceptions=0'; then pass "rp.run-copy: this run's copies are preserved, nothing failed, no exception"; else fail "rp.run-copy: counts wrong: $(grep -F ROLLBACK-RESULT: "$log" | tail -1)"; fi
+  fn_expect "$log" 'left-by-this-run: ' "each copy of this run is named"
+  if grep -qF 'MANUAL-RECOVERY' "$log"; then fail "rp.run-copy: MANUAL-RECOVERY printed"; else pass "rp.run-copy: no MANUAL-RECOVERY block"; fi
+}
+
+case_rpbackupentry() {
+  CURRENT_CASE="rp.backup-entry"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_setup_abc || return 0
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING=".tad/b.md"
+  log="$SANDBOX/rp-backupentry.log"
+  rc="$(run_install_aw "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.backup-entry: the armed upgrade failed (rc=$rc)"; else fail "rp.backup-entry: the armed upgrade succeeded"; return 0; fi
+  if [ "$(aw_armed_count)" -ge 1 ]; then pass "rp.backup-entry: witness — the arming fired"; else fail "rp.backup-entry: no armed call"; return 0; fi
+  rp_conclude "$log" partial not-intact yes
+  fn_expect "$log" 'MANUAL-RECOVERY' "MANUAL-RECOVERY printed"
+  if grep -q '^RECOVER-FROM: /.*tad-backups' "$log" && grep -q '^RECOVER-FROM: /.*tad-rollback' "$log"; then pass "rp.backup-entry: the backup path and the snapshot path are both named"; else fail "rp.backup-entry: recovery paths missing"; fi
+}
+
+case_rpsnapentry() {
+  CURRENT_CASE="rp.snap-entry"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_build_target || return 0
+  TAD_FIXTURE_FAIL_CP="AGENTS.md"
+  TAD_FIXTURE_FAIL_CP_STAGING="AGENTS.md"
+  log="$SANDBOX/rp-snapentry.log"
+  rc="$(run_install_aw "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.snap-entry: the armed upgrade failed (rc=$rc)"; else fail "rp.snap-entry: the armed upgrade succeeded"; return 0; fi
+  if grep -c 'armed=1' "$AW_SHIM_LOG" | grep -q '^[2-9]'; then pass "rp.snap-entry: witness — both the sync write and the snapshot restore were armed"; else fail "rp.snap-entry: arming did not fire twice"; return 0; fi
+  rp_conclude "$log" partial not-intact yes
+  fn_expect "$log" 'failed entries: snap-AGENTS.md' "the snapshot entry is in the failed list"
+  if grep -E 'ROLLBACK-RESULT: ' "$log" | grep -qE 'failed=[1-9]'; then pass "rp.snap-entry: failed= counts the snapshot entry"; else fail "rp.snap-entry: failed= is 0"; fi
+  if grep -q '^RECOVER-FROM: /.*tad-rollback' "$log"; then pass "rp.snap-entry: the snapshot path is named"; else fail "rp.snap-entry: snapshot path missing"; fi
+}
+
+case_rpunsafebackup() {
+  CURRENT_CASE="rp.unsafe-backup"
+  local log
+  new_sandbox
+  mkdir -p "$TARGET/.tad" "$TARGET/forged-backup" "$SANDBOX/bk-root"
+  printf 'x\n' > "$TARGET/forged-backup/manifest.txt"
+  log="$SANDBOX/rp-unsafebackup.log"
+  ( export TARGET_ROOT="$TARGET" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$TARGET/forged-backup" ROLLBACK_SNAP="" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0; rp_harness_run "$log" )
+  rp_conclude "$log" none not-intact yes
+  fn_expect "$log" 'failed entries: .tad/(refused)' "the refused backup path is a failed entry"
+  fn_expect "$log" "RECOVER-FROM: $TARGET/forged-backup" "the named path that exists is offered"
+  if [ -d "$TARGET/.tad" ]; then pass "rp.unsafe-backup: .tad was not touched"; else fail "rp.unsafe-backup: .tad was removed"; fi
+}
+
+case_rpunsaferoot() {
+  CURRENT_CASE="rp.unsafe-root"
+  local log
+  new_sandbox
+  mkdir -p "$SANDBOX/bk-copy" "$SANDBOX/snap-copy" "$TARGET/.tad"
+  log="$SANDBOX/rp-unsaferoot.log"
+  ( export TARGET_ROOT="/" TAD_BACKUP_ROOT_ABS="$SANDBOX/bk-root" BACKUP_PATH_ABS="$SANDBOX/bk-copy" ROLLBACK_SNAP="$SANDBOX/snap-copy" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0; rp_harness_run "$log" )
+  rp_conclude "$log" none not-intact yes
+  fn_expect "$log" 'failed entries: target-root(refused)' "the refused target root is a failed entry"
+  fn_expect "$log" "RECOVER-FROM: $SANDBOX/bk-copy" "the backup copy that exists is offered"
+  fn_expect "$log" "RECOVER-FROM: $SANDBOX/snap-copy" "the snapshot copy that exists is offered"
+  if [ -d "$TARGET/.tad" ]; then pass "rp.unsafe-root: nothing was removed"; else fail "rp.unsafe-root: .tad was removed"; fi
+}
+
+case_rpfresh() {
+  CURRENT_CASE="rp.fresh"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  stage_pruned_source
+  fx_stage_projected
+  printf 'rp fresh\n' > "$SOURCE/.tad/templates/rpfresh.md"
+  rp_fault_cp_sync fresh rpfresh.md
+  log="$SANDBOX/rp-fresh.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.fresh: the fresh install failed (rc=$rc)"; else fail "rp.fresh: the fresh install succeeded"; return 0; fi
+  fn_witness fresh || return 0
+  rp_conclude "$log" full intact no
+  if [ ! -e "$TARGET/.tad" ]; then pass "rp.fresh: the run-created .tad was removed"; else fail "rp.fresh: .tad is still there"; fi
+}
+
+case_rpstamp() {
+  CURRENT_CASE="rp.stamp"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  AW_SHIM_LOG="$SANDBOX/shim-cp.log"
+  aw_build_target || return 0
+  TAD_FIXTURE_FAIL_CP=".tad/version.txt"
+  TAD_FIXTURE_FAIL_CP_STAGING=""
+  log="$SANDBOX/rp-stamp.log"
+  rc="$(run_install_aw "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.stamp: the stamp-armed upgrade failed (rc=$rc)"; else fail "rp.stamp: the upgrade succeeded"; return 0; fi
+  if [ "$(aw_armed_count)" = "1" ]; then pass "rp.stamp: witness — the stamp write was armed once"; else fail "rp.stamp: arming did not fire once"; return 0; fi
+  rp_conclude "$log" partial intact-with-exceptions yes
+  if grep '^exception: ' "$log" | grep -q '\.codex/hooks\.json is missing after the rollback; its pre-run bytes are at /'; then pass "rp.stamp: the missing hooks.json is an exception that names where the bytes are"; else fail "rp.stamp: no hooks.json exception: $(grep '^exception: ' "$log" | head -3 | tr '\n' '|')"; fi
+  local hp
+  hp="$(sed -n 's/^exception: \.codex\/hooks\.json is missing after the rollback; its pre-run bytes are at \(\/.*\)$/\1/p' "$log" | head -1)"
+  if [ -n "$hp" ] && [ -f "$hp" ] && grep -qF 'TAD lifecycle hooks' "$hp"; then pass "rp.stamp: that path exists and holds the hooks.json bytes"; else fail "rp.stamp: the named bytes path is unusable (${hp:-none})"; fi
+  fn_expect "$log" "RECOVER-FROM: $hp" "RECOVER-FROM gives the same path"
+  fn_expect "$log" 'MANUAL-RECOVERY' "MANUAL-RECOVERY printed"
+}
+
+case_rpsnapincomplete() {
+  CURRENT_CASE="rp.snap-incomplete"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  mkdir -p "$TARGET/.codex" "$TARGET/.agents/skills/mine"
+  printf 'mine\n' > "$TARGET/.codex/config.toml"
+  printf 'mine skill\n' > "$TARGET/.agents/skills/mine/SKILL.md"
+  snapshot_target "$SNAP/pre"
+  fn_shim mktemp snap <<'EOF'
+case "$*" in
+  *tad-rollback*) printf 'FNMARK-snap-1 mktemp: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/rp-snapincomplete.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.snap-incomplete: the run failed at the snapshot (rc=$rc)"; else fail "rp.snap-incomplete: the run succeeded"; return 0; fi
+  fn_witness snap || return 0
+  if [ -f "$TARGET/.codex/config.toml" ] && [ -f "$TARGET/.agents/skills/mine/SKILL.md" ] && [ -d "$TARGET/.tad" ]; then
+    pass "rp.snap-incomplete: the user's .codex/config.toml, .agents/skills/mine and .tad survive"
+  else
+    fail "rp.snap-incomplete: user bytes were deleted by the rollback"
+  fi
+  local d
+  d="$(diff <(fx_tree_sig "$SNAP/pre" | grep -v -e '.tad-backup') <(fx_tree_sig "$TARGET" | grep -v -e '.tad-backup') | head -3 || true)"
+  if [ -z "$d" ]; then pass "rp.snap-incomplete: the project is byte-identical to before the run"; else fail "rp.snap-incomplete: the project changed: $d"; fi
+  rp_conclude "$log" none intact-with-exceptions no
+  fn_expect "$log" 'exception: rollback snapshot incomplete — nothing was restored, removed or verified' "the exception says nothing was verified"
+  fn_expect "$log" 'PROJECT-STATE: intact-with-exceptions — the run stopped before its first project write' "the state sentence is the D17 one"
+  fn_expect "$log" 'recovery-copies-from-this-run: [backup-outside-project ]' "the backup is labelled as outside the project, not under an in-project name"
+  fn_expect "$log" 'RECOVER-FROM: not needed' "no recovery path is asked for"
+  if grep -qF 'INSTALL-EXIT step=snapshot' "$log"; then pass "rp.snap-incomplete: the catch-all names the snapshot step"; else fail "rp.snap-incomplete: no catch-all at the snapshot step"; fi
+}
+
+case_rpsnappending() {
+  CURRENT_CASE="rp.snap-pending"
+  local log
+  new_sandbox
+  mkdir -p "$TARGET/.tad" "$TARGET/.codex"
+  printf 'keep\n' > "$TARGET/.tad/keep.txt"
+  printf 'mine\n' > "$TARGET/.codex/config.toml"
+  log="$SANDBOX/rp-snappending.log"
+  ( export TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="" BACKUP_PATH="" ROLLBACK_SNAP="" ROLLBACK_PRE_TOP="" ROLLBACK_SNAP_PENDING=1 MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0; rp_harness_run "$log" )
+  if [ -f "$TARGET/.tad/keep.txt" ] && [ -f "$TARGET/.codex/config.toml" ]; then pass "rp.snap-pending: .tad and .codex survive an empty BACKUP_PATH_ABS"; else fail "rp.snap-pending: the rollback deleted project bytes"; fi
+  rp_conclude "$log" none intact-with-exceptions no
+  fn_expect "$log" 'exception: rollback snapshot incomplete' "the exception is named"
+}
+
+case_rpleftover() {
+  CURRENT_CASE="rp.leftover"
+  # An exception that is neither a generated file nor a recovery copy (a stage
+  # file that could not be removed; a pre-run check that could not be made)
+  # gets its own ACTION-NEEDED sentence, true for that kind.
+  local log
+  new_sandbox
+  mkdir -p "$TARGET/.tad" "$TARGET/.codex"
+  printf 'keep\n' > "$TARGET/.tad/keep.txt"
+  printf 'mine\n' > "$TARGET/.codex/config.toml"
+  log="$SANDBOX/rp-leftover.log"
+  ( export TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="" BACKUP_PATH="" ROLLBACK_SNAP="" ROLLBACK_PRE_TOP=".tad .codex " ROLLBACK_SNAP_PENDING=0 MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 KEPT_STAGE_LEFTOVER="$TARGET/.tad/.keep.txt.tad-new.1"; rp_harness_run "$log" )
+  if [ -f "$TARGET/.codex/config.toml" ]; then pass "rp.leftover: the user's .codex/config.toml survives"; else fail "rp.leftover: the rollback deleted a user file"; fi
+  fn_expect "$log" 'exception: a failed stage file could not be removed and is left in the project: ' "the leftover stage file is a named exception"
+  fn_expect "$log" 'ACTION-NEEDED: no — nothing needs restoring; the leftover stage file named above was made by this run and is safe to delete' "the action sentence names the leftover stage file"
+  if grep -qF 'only generated files or recovery copies' "$log"; then fail "rp.leftover: the generated-files sentence is wrong for a leftover stage"; else pass "rp.leftover: the generated-files sentence is not used for a leftover stage"; fi
+  rp_lint "$log"
+  log="$SANDBOX/rp-gap.log"
+  ( export TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="" BACKUP_PATH="" ROLLBACK_SNAP="" ROLLBACK_PRE_TOP=".tad .codex " ROLLBACK_SNAP_PENDING=0 MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" OPCODE_CREATED_FILE=0 KEPT_STAGE_LEFTOVER="" ROLLBACK_AUDIT_GAPS="the pre-run copy of .tad/brain-index.md could not be made, so it was not compared"; rp_harness_run "$log" )
+  fn_expect "$log" 'ACTION-NEEDED: no — nothing needs restoring; the pre-run checks named above could not be made, so those items were not compared' "the action sentence names the unmade check"
+  rp_lint "$log"
+}
+
+case_rpprecopylost() {
+  CURRENT_CASE="rp.precopy-lost"
+  local rc log
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  printf 'rp pre\n' > "$SOURCE/.tad/templates/rppre.md"
+  fn_shim cp pre <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  *.pre-brain-index) printf 'FNMARK-pre-1 cp: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  # fail the sync after the snapshot, so a rollback runs
+  fn_shim mv pre2 <<'EOF'
+for a in "$@"; do last="$a"; done
+case "$last" in
+  */rppre.md) printf 'FNMARK-pre2-1 mv: injected\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "$@"
+EOF
+  log="$SANDBOX/rp-precopy.log"
+  rc="$(fn_run "$log")"
+  if [ "$rc" != "0" ]; then pass "rp.precopy-lost: the run failed after the snapshot (rc=$rc)"; else fail "rp.precopy-lost: the run succeeded"; return 0; fi
+  fn_witness pre || return 0
+  fn_witness pre2 || return 0
+  rp_conclude "$log" partial intact-with-exceptions no
+  fn_expect "$log" 'exception: the pre-run copy of .tad/brain-index.md could not be made, so it was not compared' "the gap is named as an exception"
+  if grep -qF 'MANUAL-RECOVERY' "$log"; then fail "rp.precopy-lost: MANUAL-RECOVERY printed for a generated file"; else pass "rp.precopy-lost: no MANUAL-RECOVERY"; fi
+}
+
+case_rplintcontrol() {
+  CURRENT_CASE="rp.lint-control"
+  local f out rc=0
+  new_sandbox
+  f="$SANDBOX/field.log"
+  # The shape of the 4.0.10 field log: partial, failed=0, a recovery block that
+  # says nothing remains, and no conclusion.
+  cat > "$f" <<'EOF'
+Rollback coverage — restored: [.tad/a ] removed-run-created: [.tad/b ] preserved-for-manual-recovery: [.tad-backup ]
+ROLLBACK-RESULT: partial restored=57 failed=0 removed=1 preserved=1
+✗ MANUAL-RECOVERY: this rollback did not fully restore the project — recover by hand from the preserved copies below.
+✗   backup: /x/y — already fully restored from and consumed by this rollback; nothing remains to recover from it.
+✗   failed entries: none
+✗ Rollback complete. Please check logs.
+EOF
+  out="$(rp_lint_rules "$f")" || rc=$?
+  printf '%s\n' "$out"
+  if [ "$rc" -ge 1 ] && printf '%s' "$out" | grep -q '^LINT-RULE-FAILED: '; then
+    pass "rp.lint-control: the lint fails the field-shaped log ($rc rule(s) broken)"
+  else
+    fail "rp.lint-control: the lint passed the field-shaped log"
+  fi
+}
+
 # ── aw.* installer atomicity cases (TASK-20261101-HF1, HANDOFF §4.6) ──
 # Shape: a clean codex install at the staged (repo) version builds the
-# target; the staged source's version.txt is then doctored to 4.0.11, so
-# the run under test is a genuine upgrade whose sync/stamp writes can be
+# target; the staged source's version.txt is then doctored to the next patch
+# version (aw_set_versions), so the run under test is a genuine upgrade
+# whose sync/stamp writes can be
 # armed through the exported cp shim (see new_sandbox). The shim is
 # bash-only (export -f); under zsh the aw cases report not-run.
 AW_SHIM_LOG=""
+AW_PRE=""
+AW_TARGET=""
+
+# aw_next_version <semver> — prints the patch number plus one; fails loudly
+# (message on stderr, status 1) on anything that is not MAJOR.MINOR.PATCH.
+aw_next_version() {
+  local v="$1" ma mi pa
+  if ! printf '%s' "$v" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    printf 'aw: version source is not SemVer: %s\n' "$v" >&2
+    return 1
+  fi
+  ma="${v%%.*}"; pa="${v##*.}"; mi="${v#*.}"; mi="${mi%.*}"
+  printf '%s.%s.%s' "$ma" "$mi" "$((pa + 1))"
+}
+
+# aw_require_distinct <pre> <target> — a same-version "upgrade" is a no-op, so
+# it fails loudly instead of letting a case pass without upgrading anything.
+aw_require_distinct() {
+  if [ "$1" = "$2" ]; then
+    printf 'aw: pre-run version equals target version (%s): not an upgrade\n' "$1" >&2
+    return 1
+  fi
+  return 0
+}
+
+# aw_set_versions — pre-run = the staged tree's own version, target = pre + 1.
+aw_set_versions() {
+  AW_PRE="$(source_version)"
+  AW_TARGET="$(aw_next_version "$AW_PRE")" || return 1
+  aw_require_distinct "$AW_PRE" "$AW_TARGET" || return 1
+  return 0
+}
 
 run_install_aw() { # $1 = logfile; caller sets TAD_FIXTURE_FAIL_CP / _STAGING
   local log="$1"
@@ -2798,12 +3572,13 @@ aw_build_target() {
   stage_pruned_source
   fx_stage_projected
   local _rc
+  aw_set_versions || { fail "$CURRENT_CASE: version source for the upgrade is unusable"; return 1; }
   _rc="$(run_install codex "$SANDBOX/aw-install1.log")"
   if [ "$_rc" != "0" ]; then
     fail "$CURRENT_CASE: setup clean install failed (rc=$_rc; log $SANDBOX/aw-install1.log)"
     return 1
   fi
-  printf '4.0.11\n' > "$SOURCE/.tad/version.txt"
+  printf '%s\n' "$AW_TARGET" > "$SOURCE/.tad/version.txt"
   return 0
 }
 
@@ -2901,7 +3676,7 @@ case_aw1() {
   rc="$(run_install_aw "$SANDBOX/aw1.log")"
   if [ "$rc" = "0" ]; then fail "aw.1: armed upgrade unexpectedly succeeded"; return 0; fi
   aw_assert_tree_restored "$SNAP/pre"
-  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "4.0.10" ]; then
+  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "$AW_PRE" ]; then
     pass "aw.1: version still the pre-run version"
   else
     fail "aw.1: version advanced despite the failed write"
@@ -2924,6 +3699,7 @@ case_aw1() {
 aw_setup_abc() {
   stage_pruned_source
   fx_stage_projected
+  aw_set_versions || { fail "$CURRENT_CASE: version source for the upgrade is unusable"; return 1; }
   printf 'aw NEW bytes a\n' > "$SOURCE/.tad/a.md"
   printf 'aw NEW bytes b\n' > "$SOURCE/.tad/b.md"
   printf 'aw NEW bytes c\n' > "$SOURCE/.tad/c.md"
@@ -2934,7 +3710,7 @@ aw_setup_abc() {
     fail "$CURRENT_CASE: setup clean install failed (rc=$_rc; log $SANDBOX/aw-install1.log)"
     return 1
   fi
-  printf '4.0.11\n' > "$SOURCE/.tad/version.txt"
+  printf '%s\n' "$AW_TARGET" > "$SOURCE/.tad/version.txt"
   printf 'aw OLD bytes a\n' > "$TARGET/.tad/a.md"
   printf 'aw OLD bytes b\n' > "$TARGET/.tad/b.md"
   printf 'aw OLD bytes c\n' > "$TARGET/.tad/c.md"
@@ -3084,7 +3860,15 @@ case_aw3() {
   local rc
   rc="$(run_install codex "$SANDBOX/aw3.log")"
   if [ "$rc" != "0" ]; then fail "aw.3: clean upgrade failed (rc=$rc; log $SANDBOX/aw3.log)"; return 0; fi
-  assert_version_proof "4.0.11" || return 0
+  assert_version_proof "$AW_TARGET" || return 0
+  # Witness that this is a real upgrade, not a same-version no-op.
+  printf '  aw.3: real upgrade %s -> %s\n' "$AW_PRE" "$AW_TARGET"
+  if [ "$AW_PRE" != "$AW_TARGET" ] && grep -qF -e "Current: v$AW_PRE" "$SANDBOX/aw3.log" && grep -qF -e "Target: v$AW_TARGET" "$SANDBOX/aw3.log"; then
+    pass "aw.3: the log shows the upgrade ($AW_PRE -> $AW_TARGET)"
+  else
+    fail "aw.3: the log does not show an upgrade from $AW_PRE to $AW_TARGET"
+    return 0
+  fi
   local _f _bad=0
   for _f in "$SOURCE"/.tad/*; do
     [ -f "$_f" ] || continue
@@ -3140,7 +3924,7 @@ case_aw4() {
   else
     fail "aw.4: result line missing"
   fi
-  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "4.0.10" ]; then
+  if [ "$(head -1 "$TARGET/.tad/version.txt" | tr -d '[:space:]')" = "$AW_PRE" ]; then
     pass "aw.4: version still the pre-run version"
   else
     fail "aw.4: version advanced despite the failed stamp"
@@ -3151,6 +3935,17 @@ case_aw4() {
   if [ "$FAIL" = "$_f0" ]; then
     pass "aw.4: stamp failure leaves version unadvanced, tree restored"
   fi
+}
+
+case_awguard() {
+  CURRENT_CASE="aw.guard"
+  local _o _rc
+  if [ "$(aw_next_version 7.8.9)" = "7.8.10" ]; then pass "aw.guard: the next version of 7.8.9 is 7.8.10"; else fail "aw.guard: wrong next version"; fi
+  _rc=0; _o="$(aw_next_version 'not-a-version' 2>&1 >/dev/null)" || _rc=$?
+  if [ "$_rc" != "0" ] && printf '%s' "$_o" | grep -qF 'not SemVer'; then pass "aw.guard: a non-SemVer value fails loudly"; else fail "aw.guard: a non-SemVer value did not fail loudly (rc=$_rc)"; fi
+  _rc=0; _o="$(aw_require_distinct 3.3.3 3.3.3 2>&1 >/dev/null)" || _rc=$?
+  if [ "$_rc" != "0" ] && printf '%s' "$_o" | grep -qF 'not an upgrade'; then pass "aw.guard: equal pre-run and target versions fail loudly"; else fail "aw.guard: equal versions did not fail loudly (rc=$_rc)"; fi
+  if aw_require_distinct 3.3.3 3.3.4 2>/dev/null; then pass "aw.guard: different versions pass"; else fail "aw.guard: different versions were refused"; fi
 }
 
 run_case() {
@@ -3204,6 +3999,29 @@ run_case() {
     aw.2b) case_aw2b ;;
     aw.3) case_aw3 ;;
     aw.4) case_aw4 ;;
+    aw.guard) case_awguard ;;
+    fn.copy) case_fncopy ;;
+    fn.copy-real) case_fncopyreal ;;
+    fn.verify) case_fnverify ;;
+    fn.swap) case_fnswap ;;
+    fn.points) case_fnpoints ;;
+    fn.catchall) case_fncatchall ;;
+    fn.signal) case_fnsignal ;;
+    fn.keep) case_fnkeep ;;
+    fn.keep-lost) case_fnkeeplost ;;
+    rp.field) case_rpfield ;;
+    rp.run-copy) case_rprunCopy ;;
+    rp.backup-entry) case_rpbackupentry ;;
+    rp.snap-entry) case_rpsnapentry ;;
+    rp.unsafe-backup) case_rpunsafebackup ;;
+    rp.unsafe-root) case_rpunsaferoot ;;
+    rp.fresh) case_rpfresh ;;
+    rp.stamp) case_rpstamp ;;
+    rp.snap-incomplete) case_rpsnapincomplete ;;
+    rp.snap-pending) case_rpsnappending ;;
+    rp.precopy-lost) case_rpprecopylost ;;
+    rp.leftover) case_rpleftover ;;
+    rp.lint-control) case_rplintcontrol ;;
     caps) case_caps ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac

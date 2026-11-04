@@ -1,0 +1,20 @@
+schema_version: 1
+from: "4.0.10"
+to: "4.0.11"
+generated_by: "manual"
+note: |
+  Patch v4.0.11 - installer failure naming (EPIC-20261102-v4011-failure-naming,
+  phase 1): a failed framework write names the step, the file and the system's
+  own reason; the rollback prints a measured conclusion (what was restored,
+  what is left, whether the project is intact, what to do next); a rollback
+  whose snapshot never completed restores and removes nothing. The aw.*
+  regression cases take their version from the tree instead of a literal.
+  Derivation (rework 1 of phase 1, 2026-11-03): baseline is the GitHub v4.0.10
+  tag tree against the overlay+bump candidate tree, both listed as git
+  tracked-or-untracked paths. baseline-minus-candidate is empty (comm -23 of
+  the two sorted path lists printed nothing), so there are no deletes and no
+  renames; the change set is content edits plus new files outside the
+  release surface (docs/releases/v4.0.11-release.md). Both lists are by
+  measurement, not by assumption.
+delete: []
+rename: []

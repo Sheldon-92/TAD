@@ -1591,7 +1591,10 @@ pu_mutate_source() {
         printf -- '- **Gamma\033[31m lead three.** Carries a control character.\n'
         local _i; for _i in 4 5 6 7 8 9 10 11 12 13; do printf -- '- **Lead number %s.** Detail.\n' "$_i"; done
         printf '\n\n' 
-        printf '## [%s] - 2025-01-01\n\n- **Old lead.** must not show.\n' "$OLD_VERSION"
+        # The old-lead section is stamped with the version the project is upgraded FROM (the v4.0.5
+        # install built by mp_project), not $OLD_VERSION: the latter moves up with every release and
+        # once it is above 4.0.5 the section falls inside the (from, to] range and counts as a lead.
+        printf '## [4.0.5] - 2025-01-01\n\n- **Old lead.** must not show.\n'
     } > "$s/CHANGELOG.md"
 }
 case_post_update() {

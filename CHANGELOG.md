@@ -5,6 +5,28 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.11] - 2026-11-04
+
+Installer diagnostics patch (EPIC-20261102-v4011-failure-naming).
+
+### Added
+
+- Failed framework writes are named: `INSTALL-WRITE-FAILED step=<step> file=<path> reason=<system text>` before the rollback; other exits print `INSTALL-EXIT ... reason=not captured`.
+- A stage that failed verification or the swap is kept in the rollback snapshot (`KEPT-STAGE:`).
+- The rollback ends with `PROJECT-STATE`, `ACTION-NEEDED`, `RECOVER-FROM`, built from a read-only audit of the restore.
+
+### Fixed
+
+- Recovery copies that existed before the run no longer make a fully restored project `partial`; snapshot-entry failures count in `failed=`; `MANUAL-RECOVERY` prints only when action is needed.
+- A rollback whose snapshot never completed no longer deletes project files.
+- `aw.*` installer cases are version-independent real upgrades and run by name in `run-all.sh`.
+- Six entries that were red on 4.0.10 (`check-path-refs`, `installer-data-safety-fixture` `ac2.8` and `fx.k`, `backup-lifecycle-fixture:caps`, `tad-update-fixture:post-update` and `release-gates`) were stale tests or stale references. Five are fixed in the tests and pass by name. `release-gates` is not fixed: it can only pass at release time, so `run-all.sh` names it as excluded and runs it only with `TAD_TEST_RELEASE=1` in the release dispatch. No full run has ended `RUN-ALL: PASS` yet: the one full run was red on three entries (`archive-shape`, `multi-platform`, `first-hop`) that need a committed tree and passed on one. Three stale tests stay excluded and named by `run-all.sh`: `gate-exercise`, `yolo-recovery.test`, `yolo-round.test`. The full mode runs once on the release tree before the tag. Details in `docs/releases/v4.0.11-release.md`.
+- `bash .tad/tests/run-all.sh --quick` (about 20 minutes) runs the default entries plus a subset of installer cases for the write and rollback paths, `tad-update-fixture:states` and the backup retention case; every entry prints its time.
+
+### Known
+
+- The cause of the 4.0.10 downstream failures is not yet known. Open: `TICKET-20261102-migrate-rescue-atomicity`, `TICKET-20261102-hooks-json-rollback-gap`.
+
 ## [4.0.10] - 2026-11-01
 
 Hotfix release (EPIC-20261101-v4010-hotfix, from TICKET-20261101-installer-atomicity-rollback): two downstream upgrades to 4.0.9 were damaged by the installer's non-atomic writes and a rollback that restored nothing. This release fixes the write path, the rollback and the version stamp, and adds the injected-failure regression cases that prove them. Two named exclusions are recorded in the Epic and unchanged here: the migrate-path user-data rescue copies and one rollback coverage gap (`.codex/hooks.json`) are follow-up tickets.

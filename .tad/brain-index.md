@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-11-02 03:12
+Generated: 2026-10-24 11:51
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -24,18 +24,16 @@ Generated: 2026-11-02 03:12
 ## Patterns
 | File | Keywords | Summary |
 |------|----------|---------|
-| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template, format-line gates advisory, destructive action re-proves from payload at act time, reviewer set by risk_triggers script, multi-lens review any-refute validate-then-fix, findings to disk, verdict normalization layer, substitute recognition |
-| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references, stage-split shared steps, format change replace old shape in every copy, disk count is a floor, enumerated safety list vs default-deny proof, family-level re-plan check, anchor before mutation, class-fix axis grid + idiom grep, no file content in conversation, final paths only, budget guard = checkpoint 2x + stop 3x carried across re-triage, delegated-decision rule keyed to action effect, floor must define resource and plan grant, assent is not cross-role authorization, subagent model tier not name, cross-project work item belongs to its repo, subagent background-run waits, baseline premise recheck, oracle reachability |
+| Gate Design | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review | Gate responsibility, honest_partial, verification integrity, claims-need-carriers, expert review, YOLO mode, rubric gates, consumer tolerance = producer bug, multi-producer sum-check unit, gate script never executes checked-doc commands, closed-world status classifier, quality gate, Gate 3, Gate 4, blocking, PASS/FAIL, machine-read table id format pinned in template, format-line gates advisory, destructive action re-proves from payload at act time, reviewer set by risk_triggers script, multi-lens review any-refute validate-then-fix, findings to disk |
+| Handoff Design | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state | Protocol state machines, lifecycle, scope estimation, worktree grounding, registry state, handoff creation, Epic phase, express, archive, completion report, patch vs re-plan, new_p0, verification cost/budget, budget as estimate + runaway guard, move/archive must repoint references, stage-split shared steps, format change replace old shape in every copy, disk count is a floor, enumerated safety list vs default-deny proof, family-level re-plan check, anchor before mutation, class-fix axis grid + idiom grep, no file content in conversation, final paths only, budget guard = checkpoint 2x + stop 3x carried across re-triage, delegated-decision rule keyed to action effect, floor must define resource and plan grant, assent is not cross-role authorization, subagent model tier not name, cross-project work item belongs to its repo, subagent background-run waits |
 | Shell Portability | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention | macOS/BSD compat, grep/awk/jq patterns, heredoc security, CJK locale, env-var convention, bash script, sed, comm, sort, diff, md5, zsh $var: modifiers, IFS tab drops empty fields (use \037), waiting loops/pgrep self-match, cp -r trailing slash GNU vs BSD, git stash index loss, globstar absent on bash 3.2, $? after pipe, overwrite running script in place exit 127 (temp+mv), failed cd in scratch script, find -newer not ls digest |
-| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault, replay recorded case through protocol change, run new check on old-shape input, real-path setup mock first + check stamped version, fixture needs a witness the behaviour ran, lead-in over list replayed against each item's recorded case, count AC fixes draft shape, fixture self-reference |
+| AC Verification | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention | AC design, dry-run, extraction-boundary invariants, behavioral fixtures, self-leak prevention, verification commands, AC realism, vacuous AC, before/after baseline by sha not HEAD, moving failures + alone-pass = disk/env fault, replay recorded case through protocol change, run new check on old-shape input, real-path setup mock first + check stamped version, fixture needs a witness the behaviour ran, lead-in over list replayed against each item's recorded case, count AC fixes draft shape |
 | Process Tax Cut | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) | AC realism; Layer2 dirty-tree prior-knife adjudicate; process Gate2 = dual disk reviews (ban wait-for-human /gate 2) |
 | Capability Ownership | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof | Internalized capability vs hidden runtime dependency; require positive behavior plus absence proof |
-| Judgment Surface | No automatic evaluator + about to ask the human's opinion → build a judgment surface instead: candidates in native medium, structured verdict/scores, Feedback JSON v1.0 export as the fossil, judgment interface, A/B player | No automatic evaluator + about to ask the human's opinion → build a judgment surface instead: candidates in native medium, structured verdict/scores, Feedback JSON v1.0 export as the fossil, judgment interface, A/B player, playground, taste |
 | Hook Contracts | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse | Hook events, sub-agent safety classifier, array membership, router.log output contract, PreToolUse, PostToolUse, SessionStart, settings.json |
 | Pack Build Rules | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env | Pack architecture, pointer/freeze/escalate, invocation-split, hard-vs-soft setup, docs-cache-env, skill-vs-MCP |
 | Pack Evaluation | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B | Anti-slop, cross-model, discriminative gates, dogfood, blind A/B, 噪声地板, held-out, 一轮一改, judge verbatim quotes/全角标点, green eval + same-model review still ships factual errors, blind dogfood per-claim first-party check, cross-platform unified-standard claims |
 | Research Methodology | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research | Local Wiki primary, WebSearch fallback, cross-model orchestration, source quality, deep research, *research |
-| Production Observation | Lifecycle loop after delivery: Traces Hour human trace review, failure taxonomy, routing findings back to *bug/handoff/eval-case, routes not fixes, new failure class discovery | Lifecycle loop after delivery: Traces Hour human trace review, failure taxonomy, routing findings back to *bug/handoff/eval-case, routes not fixes, new failure class discovery, silent wrongness, production, deployed agent, 上线后观测 |
 | Memory and Learning | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment | Staleness detection, compact recovery, trace emission, parser value propagation, knowledge assessment, journal, distillation, reflexion |
 | Release & Sync | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak | Mirror/parity hazards, gitignore semantics don't survive mirroring, --fix exclusion sets, deny-list at every granularity, privacy leak, parity, rsync, download-path install proof, export-ignore/symlink archive members, deprecation vs shipped, count retention evicts sole pre-upgrade backup, post-upgrade text lives in installer output (session caches skill/AGENTS), stamp every version carrier, git repo in file-sync folder stale copies show as modified, sync-conflict files |
 | Runtime Adapter Checklist | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU | New-runtime onboarding declaration: six dimensions (entry/auth/extensions/permissions/status/evidence), instance-before-wiring rule, residual register R-OC/R-CU |
@@ -69,21 +67,11 @@ Generated: 2026-11-02 03:12
 ## Active Handoffs
 | File | Task Type | Summary |
 |------|-----------|---------|
-| HANDOFF-20261031-distill-batch.md | mixed#code|yaml|research|e2e|mixed——规程/知识文本落盘＋一处shell校验器小改 | 把上一条链（EPIC-20261031 surplus-execute 运行时兼容修复）蒸馏出的四条知识候选，从「候选」 |
-| HANDOFF-20261031-pack-triage.md | mixed#code|yaml|research|e2e|mixed——行为验证实跑（conductor派发洁净会话产出）＋台账/注册面落字＋证据记录 | 把 TICKET-20261031-pack-triage 的分诊裁定落成盘面事实：16 个待决 pack（14 个 pending 补验＋2 个 no |
-| HANDOFF-20261031-small-fix-batch.md | mixed#code|yaml|research|e2e|mixed | Phase 1「小修批」：把五张 2026-10-28 存量票、一件已评审的 AC-08 设计、三件框架落字与一件 |
-| HANDOFF-20261101-installer-atomicity.md | code |  |
-| HANDOFF-20261101-scan-surface.md | mixed#code|yaml|research|e2e|mixed——workflow/脚本改动（行为面）＋判据规则面落字（patterns/canonical）＋回放与diff夹具 |  |
-| HANDOFF-surplus-mini-marker-alpha.md | code | Create a single plain-text marker file for the surplus-execute mini-run: |
-| HANDOFF-surplus-mini-marker-beta.md | code |  |
-| HANDOFF-surplus-replay-already-landed.md | code | The script already records exactly two mode axes, both surfaced in the |
 
 ## Active Epics
 | File | Summary |
 |------|---------|
 | EPIC-20260831-capability-builder-v1.md |  |
-| EPIC-20261031-v409-basket.md | **Phase 4 收口（2026-11-01，conductor）**：Gate 4 CONDITIONAL PASS（p0=0）。Phase 1–3 判据面携带至此 |
-| EPIC-20261101-v4010-hotfix.md | **Conductor**: Cora |
 
 ## Archived Handoffs (recent 50)
 | File | Task Type | Summary |
@@ -109,11 +97,6 @@ Generated: 2026-11-02 03:12
 | HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
 | HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261031-surplus-execute-runtime-compat.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase5-borrow4.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase4-jiayi.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase3-metrics.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase2-measurement.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
 | HANDOFF-20261017-full-layer2-review-brakes.md | yaml | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid.md | docs | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid |
 | HANDOFF-20260914-ocr-review-habits.md | doc-only | HANDOFF-20260914-ocr-review-habits |
@@ -138,15 +121,19 @@ Generated: 2026-11-02 03:12
 | HANDOFF-20260904-pm-bridge-completion-optional.md | mixed | Handoff Document for Agent B (Blake) |
 | HANDOFF-20260903-framework-health-phase2-remainder.md | unknown | Handoff: Framework-Health Close-out A — Installer Data-Safety Remainder |
 | HANDOFF-20260903-capability-builder-phase23-evolve-package.md | unknown | Handoff: Capability Builder v1 — Merged Phase 2 Evolve + Phase 3 Package |
+| HANDOFF-20260903-bugfix-lite-mute.md | doc-only | Mini-Handoff: Bugfix — Full 通道 Lite 触发词消音（保留显式可用） |
+| HANDOFF-20260902-tad-update-v2431.md | mixed | Handoff Document for Agent B (Blake) |
+| HANDOFF-20260902-local-wiki-phase3r-native-capture.md | mixed | Handoff — Local Wiki Phase 3R Native Browser Capture |
+| HANDOFF-20260902-local-wiki-phase3-browser-ingest.md | mixed | Handoff — Local Wiki Phase 3 Browser Ingest Bridge |
+| HANDOFF-20260901-yolo2-phase3-cross-harness-memory.md | code | Handoff — YOLO2 Phase 3 Cross-Harness Progress and Memory |
 
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
-| evidence/acceptance-tests/ | 685 | acceptance-tests |
+| evidence/acceptance-tests/ | 690 | acceptance-tests |
 | evidence/activation-packages/ | 25 | activation-packages |
 | evidence/audits/ | 3 | audits |
 | evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
-| evidence/code-metrics/ | 7 | code-metrics |
 | evidence/codex-regression/ | 10 | codex-regression |
 | evidence/codex-validation/ | 4 | codex-validation |
 | evidence/completions/ | 121 | completions |
@@ -155,7 +142,6 @@ Generated: 2026-11-02 03:12
 | evidence/discuss/ | 4 | discuss |
 | evidence/discussions/ | 1 | discussions |
 | evidence/dogfood/ | 3 | dogfood |
-| evidence/domain-traces/ | 0 | domain-traces |
 | evidence/dual-platform-regression/ | 4 | dual-platform-regression |
 | evidence/e2e/ | 3 | e2e |
 | evidence/epic-p1-clearance-20261006/ | 2 | epic-p1-clearance-20261006 |
@@ -170,10 +156,10 @@ Generated: 2026-11-02 03:12
 | evidence/handoffs/ | 5 | handoffs |
 | evidence/hooks/ | 5 | hooks |
 | evidence/impl/ | 2 | impl |
-| evidence/journal/ | 75 | journal |
+| evidence/journal/ | 71 | journal |
 | evidence/knowledge-migration/ | 2 | knowledge-migration |
 | evidence/learnings/ | 3 | learnings |
-| evidence/live-regression/ | 17 | live-regression |
+| evidence/live-regression/ | 13 | live-regression |
 | evidence/maintenance/ | 1 | maintenance |
 | evidence/metrics/ | 1 | metrics |
 | evidence/overrides/ | 0 | overrides |
@@ -184,27 +170,25 @@ Generated: 2026-11-02 03:12
 | evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
 | evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
 | evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 207 | pm |
+| evidence/pm/ | 204 | pm |
 | evidence/poc/ | 11 | poc |
 | evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 23 | ralph-loops |
-| evidence/regression-runs/ | 43 | regression-runs |
+| evidence/ralph-loops/ | 18 | ralph-loops |
+| evidence/regression-runs/ | 22 | regression-runs |
 | evidence/release/ | 1 | release |
-| evidence/releases/ | 20 | releases |
+| evidence/releases/ | 17 | releases |
 | evidence/research/ | 194 | research |
-| evidence/reviews/ | 899 | reviews |
-| evidence/risk-cards/ | 11 | risk-cards |
+| evidence/reviews/ | 905 | reviews |
+| evidence/risk-cards/ | 9 | risk-cards |
 | evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
-| evidence/self-review-r3-20261006/ | 83 | self-review-r3-20261006 |
-| evidence/simple/ | 36 | simple |
+| evidence/self-review-r3-20261006/ | 88 | self-review-r3-20261006 |
+| evidence/simple/ | 31 | simple |
 | evidence/spikes/ | 54 | spikes |
 | evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
-| evidence/surplus-execute-fix-20261031/ | 29 | surplus-execute-fix-20261031 |
-| evidence/surplus-phase2-20261031/ | 49 | surplus-phase2-20261031 |
 | evidence/surplus-plans/ | 4 | surplus-plans |
 | evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
 | evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 10503 | yolo |
+| evidence/yolo/ | 10167 | yolo |
 | evidence/yolo2-baseline/ | 3 | yolo2-baseline |
 
 ## Decision Records
@@ -241,6 +225,7 @@ Generated: 2026-11-02 03:12
 | config-cognitive.yaml | "Framework or library selection (e.g., React vs Vue, Redis vs Memcached)",      - "Architecture pattern choice (e.g., mo |
 | config-execution.yaml | Layer 1: Self-Check (handoff §9.1 technical check rows),    - Layer 2: Gate 3 reviewers per review contract (run, consi |
 | config-platform.yaml | "Next.js",          - "React",          - "Vue",          - "Tailwind",          - "TypeScript" |
+| config-quality.sync-conflict-20261019-191119-7JSDFCH.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-quality.yaml | pre_task: "检查是否需要sub-agent",      - during_task: "确认sub-agent被调用",      - post_task: "验证sub-ag |
 | config-workflow.yaml | tasks         # 任务追踪,      - designs       # 设计文档,      - handoffs      # 交接文档,      - epics     |
 | config.yaml | activation_protocol,      - triangle (terminal_isolation, agent_a, agent_b, agent_c, human),      - interaction_protocol |
@@ -284,7 +269,6 @@ Generated: 2026-11-02 03:12
 | mobile-testing | name: mobile-testing |
 | mobile-ui-design | name: mobile-ui-design |
 | product-thinking | name: product-thinking |
-| production-observation | name: production-observation |
 | rag-retrieval | name: rag-retrieval |
 | reading-companion | name: reading-companion |
 | release-runbook | name: release-runbook |

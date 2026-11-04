@@ -40,3 +40,7 @@
 - tad-hooks.ts 预算镜像增量上游（2026-11-01 TAD PM 裁定够格）：Sober 本地 fork 的 HOOK_BUDGETS_MS＋超时落记录（Surplus #12 落）属通用面、有在跑证据（其回归锁依赖此行为），上游进框架后 Sober fork 退休；实施时以 Sober 回归锁为判别 fixture 走正常链。GM 转交询问、Sober 放行批走 fork 保留不阻塞。
 - state-surface check5 适用面修正（2026-11-01 发版裁断携带）：check5 应区分项目工作树与发布验真面（session-state 缺失在发布树属设计内）。
 - Phase 4 携带：回放单向对账 P2、批准面同码 P2（见 Epic 收口条目）。
+
+## 下一篮子候选·2026-11-02 增补（v4.0.10 放行第 1 波阿里席事件定性，本席裁定登记）
+- atomic_install_file 验真失败点名：cmp 失败返回 1 时 log_error 点名目标条目（现行静默，失败文件不可复原——2026-11-02 阿里席首跑定性受限于此）。
+- rollback 第 1b 清扫性能与进度：逐条目 grep 子进程比对改为批量集合比对，清扫期加进度心跳（大 .tad 树实测约 6 分钟无产出，外观与挂死无异）。
