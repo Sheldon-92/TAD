@@ -1127,9 +1127,20 @@ case_release_gates() {
         bad "gate 1: structural FAIL"
     fi
 
-    # 2. derive-sync-set report + version zero-stale
-    if bash "$REPO_ROOT/.tad/hooks/lib/derive-sync-set.sh" --report "$REPO_ROOT" >> "$log" 2>&1 \
-       && bash "$RV" version "$REPO_ROOT" "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log" 2>&1; then
+    # 2. derive-sync-set report + version zero-stale.
+    # A patch bump may leave history mentions of the old version: version exits 1
+    # and the protocol treats that as an advisory when a triage record exists
+    # (publish-ops step3c). Accept exactly that case; any other non-zero fails.
+    local g2_rc=0 g2_triage="$REPO_ROOT/.tad/evidence/releases/${FIXTURE_VERSION}-version-triage.md"
+    bash "$REPO_ROOT/.tad/hooks/lib/derive-sync-set.sh" --report "$REPO_ROOT" >> "$log" 2>&1 || g2_rc=9
+    if [ "$g2_rc" -eq 0 ]; then
+        bash "$RV" version "$REPO_ROOT" "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log" 2>&1 || g2_rc=$?
+        if [ "$g2_rc" -eq 1 ] && [ "${FIXTURE_VERSION%.*}" = "${OLD_VERSION%.*}" ] && [ -s "$g2_triage" ]; then
+            echo "gate 2: version exit 1 accepted as patch advisory (triage: $g2_triage)" >> "$log"
+            g2_rc=0
+        fi
+    fi
+    if [ "$g2_rc" -eq 0 ]; then
         printf '2 derive-sync-set + version %s/%s PASS\n' "$FIXTURE_VERSION" "$OLD_VERSION" >> "$log"
         ok "gate 2: derive-sync-set report + version PASS"
     else
