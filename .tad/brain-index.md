@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-11-04 06:43
+Generated: 2026-11-17 14:46
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -85,127 +85,13 @@ Generated: 2026-11-04 06:43
 | EPIC-20261031-v409-basket.md | **Phase 4 收口（2026-11-01，conductor）**：Gate 4 CONDITIONAL PASS（p0=0）。Phase 1–3 判据面携带至此 |
 | EPIC-20261102-v4011-failure-naming.md | **Epic ID**: EPIC-20261102-v4011-failure-naming |
 
-## Archived Handoffs (recent 50)
-| File | Task Type | Summary |
-|------|-----------|---------|
-| HANDOFF-20260804-lite-pricing-gate.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260804-full-reviewer-tier-rule.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-surplus-tad-self-test-agent.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-tad-methodology-skeleton.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-session-health-check.md | code | Handoff: session-health.sh — Framework Component Integrity Check |
-| HANDOFF-surplus-pack-behavioral-examples-scaffold.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-o1-landscape-refresh-2026q3.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-codex-adapter-yaml.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260816-phase2-installer-data-safety.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260816-phase1b-retire-frontmatter.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260816-privacy-scanner-and-trace-relpath.md | code | Quality Chain Metadata (Alex 必填) |
-| HANDOFF-20260815-english-unification.md | unknown | HANDOFF: 先修被中文字面量绑架的纪律，再谈英文化 |
-| HANDOFF-20260804-gate-loop-circuit-breaker.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-surplus-saveable-skills-from-conversation.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-repositioning-capability-acquisition.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-o3-kr3-deep-ask-rounds-4-5.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-local-skill-capture.md | mixed | Identity (carried over from surplus-scan stub — replaced in place by Alex design step) |
-| HANDOFF-surplus-gate-roi-measurement.md | research | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-detect-state-glob-arm-hazard.md | code | Handoff Document for Agent B (Blake) |
-| HANDOFF-surplus-detect-state-glob-arm-hazard-fixture-20260705.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-surplus-deprecate-domain-pack-yaml.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261101-installer-atomicity.md | code | Quality Chain Metadata |
-| HANDOFF-20261031-surplus-execute-runtime-compat.md | code | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase5-borrow4.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase4-jiayi.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase3-metrics.md | doc-only | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261027-r4-batch-phase2-measurement.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20261017-full-layer2-review-brakes.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid.md | docs | HANDOFF-20260929-agent-eval-hillclimb-l2-hybrid |
-| HANDOFF-20260914-ocr-review-habits.md | doc-only | HANDOFF-20260914-ocr-review-habits |
-| HANDOFF-20260913-skill-authoring-habits.md | doc-only | HANDOFF-20260913-skill-authoring-habits |
-| HANDOFF-20260912-p2-sc4-process-tax-cut-wire.md | doc-only | HANDOFF-20260912-p2-sc4-process-tax-cut-wire |
-| HANDOFF-20260911-release-v2445.md | release | HANDOFF-20260911-release-v2445 — Publish v2.44.5 (Verify-Delta + Pack Loader/Freeze + KEEP11 Knife 1) |
-| HANDOFF-20260911-keep11-knife1-cli-refresh.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260910-verify-delta.md | mixed | HANDOFF-20260910-verify-delta — Runnable Verification Method fail-close |
-| HANDOFF-20260910-pack-loader-thin-ondemand.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260910-pack-freeze-inventory.md | yaml | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260909-release-v2444.md | release | HANDOFF-20260909-release-v2444 — Publish v2.44.4 (Knowledge-Seam Isolation + Opt-in PK Quarantine) |
-| HANDOFF-20260908-thin-tad-harness-adapter.md | mixed | Handoff: thin-tad 评测适配器设计与 OpenCode 二进制契约对齐 (TASK-20260908-thin-tad-harness-adapter) |
-| HANDOFF-20260908-thin-tad-evaluation-p3.md | mixed | Handoff: TAD 精简实验 P3 — 离线分析、ADAPTER_INELIGIBLE 审计与有界决策报告 |
-| HANDOFF-20260908-research-route-local-wiki.md | mixed | Handoff: Clean TAD Upstream Research-Routing Entry Pointers (Local Wiki Primary, NotebookLM Fallback) |
-| HANDOFF-20260908-release-v2443.md | release | HANDOFF-20260908-release-v2443 — Publish v2.44.3 (Local Wiki Research Route + Experimental Thin-TAD Pilot Tooling) |
-| HANDOFF-20260908-knowledge-seam-isolation.md | feature | HANDOFF-20260908-knowledge-seam-isolation — Upstream Knowledge Seam & Downstream Isolation |
-| HANDOFF-20260907-publish-v2442.md | release | HANDOFF-20260907-publish-v2442 — Publish v2.44.2 (Framework-Health B + Lite Mute) |
-| HANDOFF-20260906-framework-health-closeout-b.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260904-workspace-hygiene-and-scan.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260904-publish-v2440-bundle.md | unknown | HANDOFF-20260904-publish-v2440-bundle — Publish v2.44.0 (3 accepted tracks) |
-| HANDOFF-20260904-public-facade-cleanup.md | mixed | Quality Chain Metadata (Alex 必填 - Phase 4 Hook 将基于此阻塞 Gate 3) |
-| HANDOFF-20260904-pm-bridge-completion-optional.md | mixed | Handoff Document for Agent B (Blake) |
-| HANDOFF-20260903-framework-health-phase2-remainder.md | unknown | Handoff: Framework-Health Close-out A — Installer Data-Safety Remainder |
-
 ## Evidence Directories
 | Directory | Files | Topic |
 |-----------|-------|-------|
-| evidence/acceptance-tests/ | 689 | acceptance-tests |
-| evidence/activation-packages/ | 25 | activation-packages |
-| evidence/audits/ | 3 | audits |
-| evidence/closeout-batch-20261005/ | 0 | closeout-batch-20261005 |
-| evidence/code-metrics/ | 7 | code-metrics |
-| evidence/codex-regression/ | 10 | codex-regression |
-| evidence/codex-validation/ | 4 | codex-validation |
-| evidence/completions/ | 121 | completions |
-| evidence/decisions/ | 0 | decisions |
-| evidence/designs/ | 56 | designs |
-| evidence/discuss/ | 4 | discuss |
-| evidence/discussions/ | 1 | discussions |
-| evidence/dogfood/ | 3 | dogfood |
-| evidence/domain-traces/ | 0 | domain-traces |
-| evidence/dual-platform-regression/ | 4 | dual-platform-regression |
-| evidence/e2e/ | 3 | e2e |
-| evidence/epic-p1-clearance-20261006/ | 2 | epic-p1-clearance-20261006 |
-| evidence/epic-p2-measurement-20261006/ | 12 | epic-p2-measurement-20261006 |
-| evidence/epic-p4-scale-20261006/ | 6 | epic-p4-scale-20261006 |
-| evidence/eval/ | 2 | eval |
-| evidence/experiments/ | 23 | experiments |
-| evidence/fixtures/ | 10 | fixtures |
-| evidence/gate4/ | 1 | gate4 |
-| evidence/gates/ | 2 | gates |
-| evidence/handoff-reviews/ | 6 | handoff-reviews |
-| evidence/handoffs/ | 5 | handoffs |
-| evidence/hooks/ | 5 | hooks |
-| evidence/impl/ | 2 | impl |
-| evidence/journal/ | 79 | journal |
-| evidence/knowledge-migration/ | 2 | knowledge-migration |
-| evidence/learnings/ | 3 | learnings |
-| evidence/live-regression/ | 18 | live-regression |
-| evidence/maintenance/ | 1 | maintenance |
-| evidence/metrics/ | 1 | metrics |
-| evidence/overrides/ | 0 | overrides |
-| evidence/pack-dogfood/ | 11 | pack-dogfood |
-| evidence/pack-eval/ | 56 | pack-eval |
-| evidence/pack-quality/ | 4 | pack-quality |
-| evidence/pack-system-unification-phase1/ | 0 | pack-system-unification-phase1 |
-| evidence/pack-system-unification-phase2/ | 0 | pack-system-unification-phase2 |
-| evidence/pack-system-unification-phase3/ | 1 | pack-system-unification-phase3 |
-| evidence/patterns/ | 2 | patterns |
-| evidence/pm/ | 206 | pm |
-| evidence/poc/ | 11 | poc |
-| evidence/project-logs/ | 0 | project-logs |
-| evidence/ralph-loops/ | 23 | ralph-loops |
-| evidence/regression-runs/ | 43 | regression-runs |
-| evidence/release/ | 1 | release |
-| evidence/releases/ | 22 | releases |
-| evidence/research/ | 194 | research |
-| evidence/reviews/ | 905 | reviews |
-| evidence/risk-cards/ | 11 | risk-cards |
-| evidence/self-review-r2-20261006/ | 19 | self-review-r2-20261006 |
-| evidence/self-review-r3-20261006/ | 83 | self-review-r3-20261006 |
-| evidence/simple/ | 36 | simple |
-| evidence/spikes/ | 54 | spikes |
-| evidence/surplus-burn-20260705/ | 4 | surplus-burn-20260705 |
-| evidence/surplus-execute-fix-20261031/ | 29 | surplus-execute-fix-20261031 |
-| evidence/surplus-phase2-20261031/ | 49 | surplus-phase2-20261031 |
-| evidence/surplus-plans/ | 4 | surplus-plans |
-| evidence/tadsh-backup-fix-20261006/ | 0 | tadsh-backup-fix-20261006 |
-| evidence/traces/ | 0 | traces |
-| evidence/yolo/ | 10574 | yolo |
-| evidence/yolo2-baseline/ | 3 | yolo2-baseline |
+| evidence/pm/ | 1 | pm |
+| evidence/releases/ | 2 | releases |
+| evidence/reviews/ | 1 | reviews |
+| evidence/yolo/ | 4 | yolo |
 
 ## Decision Records
 | File | Summary |
@@ -270,6 +156,7 @@ Generated: 2026-11-04 06:43
 | cora | name: cora |
 | data-engineering | name: data-engineering |
 | dependency-ops | name: dependency-ops |
+| design-foundation | name: design-foundation |
 | gate | name: gate |
 | hw-circuit-design | name: hw-circuit-design |
 | hw-enclosure | name: hw-enclosure |
