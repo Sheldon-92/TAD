@@ -1,4 +1,4 @@
-# schema=1 rows=2114
+# schema=1 rows=2141
 agents-md	0a3cb65892584600445f33c5ba7bd364e0cd20d1	-
 agents-md	14712afefb0ffb07c08f0ad917cfd3810806ec95	-
 agents-md	1d1cd72bbea0b974bce534b868e8cc4ba35c6a1d	-
@@ -46,6 +46,7 @@ agents-md	b71b6ba70b551abe577f851248fba586e1d84ba6	-
 agents-md	bf02e97d42efff61eb66fd264677e8f1a4d35550	-
 agents-md	c5cbb83e8bc14f4a3eb5583696bc9af1f1722eef	-
 agents-md	c89094c2e2c47816edd400acf84941853d898ada	-
+agents-md	cb4a4a0002d84c911ba235dad4894c2f706bd5e3	-
 agents-md	d65b198acf96474eaf0ba966453e9f5647698c78	-
 agents-md	d887cfd0277ec220cb4f4ec5c6b7ce3039cf4014	-
 agents-md	db727cb372143d9379a75a90ce2dd2713ddee2ad	-
@@ -367,6 +368,7 @@ md-whole	cf48e0456f01bd11c2475927fd3669aa6ac2e43d	-
 md-whole	dfa3de6402c69d0d296910c52de71da6a2af4524	-
 md-whole	f8fb0532673056a5a9101ac4af7761c22897b201	-
 projected	0ee05bf4896fc91db72dbb1d7f1e7186f1493618	.cursor/hooks.json
+projected	17c4e7be222a29f7533b99b719033860bdcc9a5e	.cursor/hooks.json
 projected	3a95dc7e6f4d4fe5383692a57bdb64d6494ae5a1	.opencode/commands/tad-update.md
 projected	6848f23ce4179142dff986418424d93aeda6c20e	.opencode/commands/tad-update.md
 projected	747d607842fab1ad0cc6396ed08355d2b7f7f87e	.opencode/commands/tad-update.md
@@ -472,6 +474,7 @@ skill	0b8db4fc2dd46d9a4a0dca000c48e2ce92dcf300	agent-skill-evolution/references/
 skill	0b979988638122fca07bf16d504f2f6846450bda	alex/SKILL.md
 skill	0ba12525320937f10b8f71a81ca92cd86bd6e149	blake/SKILL.md
 skill	0bad83d9b65b82940750888a1936025c4df8ee45	alex/SKILL.md
+skill	0bcaf8d22827b34f45e0003bbc61fbf4c2984757	web-frontend/examples/design-md-hidden-location.md
 skill	0bcffd3417f9e86a20365ea06c191ec71ad7c5be	academic-research/references/scholar-eval.md
 skill	0c48d2e95e76334bcfacaadc17dd99467f92cb10	alex/SKILL.md
 skill	0c6f5f83862e50450f2dc7e25d6febdd9a389bdd	blake/SKILL.md
@@ -564,6 +567,7 @@ skill	188351c20abd29963857fcd65cec93afe2655ab5	ai-podcast-production/SKILL.md
 skill	1885afcdfb8465bb155d270f1c047d44b38a0acf	alex/references/acceptance-protocol.md
 skill	1892e12efd0a45837b0ab291a312ae6386abba4b	academic-research/references/visualization.md
 skill	18c00a226930890f46df100678bdc02f88ad0587	agent-computer-interface/references/browser-engine-rules.md
+skill	18cf6fadf3b0ca438a7f2d48a1568fd04c98f78e	release-runbook/references/publish-ops.md
 skill	18dadef082865c371adc4bc8f625b480ae5f2bc6	ai-agent-architecture/references/coordination-and-state.md
 skill	18f1641d8f1677fa84e23d4f456ee6ac06c88469	release-runbook/references/publish-ops.md
 skill	191cad08ebd9a97e56063d90410a93c007da1125	blake/SKILL.md
@@ -606,6 +610,7 @@ skill	1e494fbfa5ddfe59ae6cd80d3682952c2bb79a2e	tad-help/SKILL.md
 skill	1e66f9924484a62ed25018cb17812017910c3d23	tad-help/SKILL.md
 skill	1e8d2a036b05262737357dd95bf7663bd4e4cb76	cora/references/conductor-protocol.md
 skill	1f439e655baced01836e27cd7bc1c2d0d465f479	knowledge-graph/SKILL.md
+skill	1fbabec30a251f284b45235c8aa72b85bf290bc7	web-ui-design/references/brand-tokens.md
 skill	200e01e86c8359613165c3748c453cf25d3e1879	video-creation/references/ai-asset-generation.md
 skill	2036a690c1be3f021818e923658672061922bcd3	hw-firmware/references/firmware-architecture.md
 skill	206985b74ec7a5f31c9031b6186f409ca3d1dfdf	agent-memory/SKILL.md
@@ -662,6 +667,7 @@ skill	28b6e4da8aee4e52c1d5713d93b30967044451bc	alex/references/acceptance-protoc
 skill	2927992478381b33fb601cc1079a8f74da9173ca	web-backend/examples/api-pagination-review.md
 skill	2928d840e17a262427d167bd9c3c4162d2417bc6	data-engineering/references/data-quality-rules.md
 skill	29aaa4f54b79b871a1fdeb80fdbbba425ed4e0fe	tad-help/SKILL.md
+skill	29b8479cc4686eb2ccc81b57236bb2075b624367	cora/SKILL.md
 skill	29e52d4ba5adb541b03f83a0940f7210c24784ef	_archived/git-worktrees.md
 skill	29e5dd7ce14a77db0aa984ead3d430c14fff608e	alex/references/next-md-rules.md
 skill	29fbe26c832b0b4fef1858db4bd1f37c96630c9d	synthetic-data/SKILL.md
@@ -816,6 +822,7 @@ skill	3f934eb1eb6e393859c3fda26d077c1c27ced083	product-thinking/SKILL.md
 skill	3f97b9f1c9767e3d92a1f1f9a0ca45c9bbd7fe85	cora/SKILL.md
 skill	3ff141fb763e4b5d5520edef128a8602071f1572	ai-tool-integration/references/tool-permission-rules.md
 skill	4007c5ee18ac7b816b310dc4e45b8512baaba2fc	gate/SKILL.md
+skill	403323883a5f8f4553155556647bb71044b65bc8	design-foundation/references/pattern-recipes-space.md
 skill	4053e036bfa00b7980940bc47dc9f51ee343688f	agent-memory/references/memgpt-letta-mem0.md
 skill	405bd7ad9707bb42c383fc1a9d4176fdfa81b31d	tad-status/SKILL.md
 skill	4098548ae3df0caa30585c2ff5ce3522bb25345e	ai-guardrails/references/pii-deidentification.md
@@ -894,6 +901,7 @@ skill	483a8d032267cdb08c1a3335e4fc2b82f6c3ba9b	alex/references/adaptive-complexi
 skill	484dd7297b1ec0fb1c1c4e8832e7ab4f3ac9055f	research-methodology/LICENSE
 skill	48b9d0a7477fb27341dc6783a229f8e6b5021f2f	product-thinking/SKILL.md
 skill	48bd81e5867d956cddf4cfc56b21bb18990df097	web-ui-design/checklists/accessibility.md
+skill	48f0a723b70191eaa60d4e3af78ec5cb20178266	web-ui-design/SKILL.md
 skill	4912a2aefa95b8ec1c80b20ab883439a2341af87	blake/SKILL.md
 skill	494b390ddb30b47d3123a9682ccdd8a6cc6b9690	release-runbook/references/publish-ops.md
 skill	4964b83e8f1aa1c6db88570d5edaa4c847ac807f	knowledge-graph/references/graph-database.md
@@ -944,6 +952,7 @@ skill	506af159e5d5f89b7affedc9b0bce77847449815	alex/references/adaptive-complexi
 skill	5095c6a1b9a82973048d4bc64b0678a5c242574e	_archived/systematic-debugging.md
 skill	50afa3f3fdb236e24aa7c8a8b0c025f6b11cc59e	cora/SKILL.md
 skill	50f674692518e69c1c5e1e08c7efd9fc77f9b110	alex/SKILL.md
+skill	511960f8249ccfe8b434ea65de31b4f4cda0f24b	design-foundation/references/interface-index.md
 skill	512818383fa02fcb3f14f3f64a4fe5e12dd5cf57	video-creation/references/audio-design.md
 skill	514544f4361a5e38e111d8baa17bd8f3cba49751	alex/SKILL.md
 skill	514b3079b6b088ca590f0050542ef6060e632141	ai-podcast-production/references/tts-production.md
@@ -1091,6 +1100,7 @@ skill	6754ccf904a261caa2af224078e187f294c1edd1	ai-agent-architecture/references/
 skill	67651343d173f62fa57d9b973ac1c15f181cd72a	blake/SKILL.md
 skill	67bf954ad993986704019db6a5ffd18c1e5d8862	ai-podcast-production/SKILL.md
 skill	685129d9076ab82d4b1c733ac354ac18e28b0c72	alex/SKILL.md
+skill	6869de286a89e916e2cd92e706b379fa25769c8d	web-ui-design/DESIGN-TEMPLATE.md
 skill	68c049d28d1b0e62a0f298898579e7ffb7eb911a	llm-observability/references/cost-attribution-rules.md
 skill	69038e3a50381bed1aaac3e38f0527bb45eaef01	alex/SKILL.md
 skill	695e74a7db9421c91e584ee26800331ad503e7f6	alex/references/intent-router-protocol.md
@@ -1111,6 +1121,7 @@ skill	6b5db8e3ad65c12e62c54b77a83e15b04a598ddb	alex/references/deps-protocol.md
 skill	6bc0f52ddd2af4ebe3dbbe5bc50c4d3d1645b873	web-deployment/references/security-hardening-rules.md
 skill	6bff801aeaaaa068b0ddd95b5ae59381ea2ee1b5	cora/SKILL.md
 skill	6c45da4835cd92be2618f55c90360418a0ed0518	alex/SKILL.md
+skill	6c5179b4b23e428c9bdf45b9ec415551802caec8	design-foundation/references/token-architecture-rules.md
 skill	6c57b63af17fccb75187e1476998781e9ad0963f	alex-lite/SKILL.md
 skill	6cae00e4c725b9c3aaf9de512cbd4c4b3bc7e0c6	video-creation/examples/photo-to-beat-sync.md
 skill	6cd74c5d86fb10a3a95a4a26b312d7f814b75f0d	_archived/interview-prep.md
@@ -1182,6 +1193,8 @@ skill	75b449627fdd6c8e23d40fec44f1507d819fda49	ai-agent-architecture/references/
 skill	75b84ba509ef3ddff3d52bf18769dd071c2ae589	tad-maintain/SKILL.md
 skill	75d5ba6fc216fdbe476b196fd24bfcfb16553b65	alex/references/evolve-protocol.md
 skill	75e16a4aa26f9626716fe5c262ce6d6a5e247e67	alex/references/workflow-completion-trigger.md
+skill	7600256dd8f0e68bedecdc4b3597c36cb01df95d	design-foundation/tokens/tokens.css
+skill	7634179e5badeea36b81ab2c0ad9d2ecea99c3a1	cora/references/conductor-protocol.md
 skill	764816b9dda9081a1590c55fcf109c0dad1a63a3	blake-lite/SKILL.md
 skill	765fd36a4ba2020c87e7e2340469d5a095bb4408	gate/SKILL.md
 skill	767eebaab43f3c16a94e45f185b60e9e07652bcb	cora/SKILL.md
@@ -1202,6 +1215,7 @@ skill	7973941725314cb5796ad1c7dc9cb9119098235a	blake/SKILL.md
 skill	7a37923c1b13ad52d1bc2353996e521453d7e76d	alex/SKILL.md
 skill	7a7753628a0aa95923b33efd8c64c1eb099f6838	agent-skill-evolution/scripts/gate-check.sh
 skill	7ab3a7e864d4517a88c6a6e32a7be2b990839705	hw-testing/references/functional-test.md
+skill	7b1433f38dac68ad4d54c59c8720cf298bf6445f	design-foundation/tokens/tokens.json
 skill	7b1435f095aad76b5d556fdadd1bf73a1a0c159d	tad-init/SKILL.md
 skill	7b3c1bf38797929ee2bf826b9a067d458d96b8d5	tad-help/SKILL.md
 skill	7b57d81da2031fc36842bdd6cf56be95924e54c6	release-runbook/references/sync-ops.md
@@ -1220,6 +1234,7 @@ skill	7cc426679920904763f44031b5d3a41e8bd48123	_archived/database-patterns.md
 skill	7cc5e3dc2ff07f8452da5550c1ed218c703bf37f	code-security/scripts/verify-pipeline-gates.sh
 skill	7ccf62c53649b4c0c8a16a2e0e8a2b63b30b5c14	video-creation/references/quality.md
 skill	7d1fdd00fb56d5b7d84f0315241ef925d6b8e5ff	alex/SKILL.md
+skill	7d7847d67264b68ff30a94f966acc67a20fd5978	design-foundation/install.sh
 skill	7ddf930a9a54230d73daf6ca904675e2c81ca8f7	knowledge-graph/references/query-translation.md
 skill	7de25eb335d230514f93aea5d272cec281fb92c6	ai-prompt-engineering/references/ci-cd-templates.md
 skill	7de2ffa1d7aa755cd97073d29bc81bff6f2b0274	academic-research/references/database-apis-general.md
@@ -1365,6 +1380,7 @@ skill	959c66846ec4014235a476d05fe6f034d4139cd7	ai-guardrails/references/defense-
 skill	95b7e0fe97ae872e1cbc13d06b7951fd5b843560	ml-training/scripts/vram-fit.sh
 skill	95e6f37b2e1b4d6d8cce4e0e3d01b9cb30b0d19a	_archived/performance-optimization.md
 skill	95ea04814a8f6e64e956004f65293ce0a4e22e8c	alex/SKILL.md
+skill	960e40e140256aca8f63e7995f191b090962bca8	design-foundation/tools/check-token-parity.sh
 skill	961358e40e298258995c477f4f6f14e63b8edd81	alex/SKILL.md
 skill	961bb0638708c9df55088cae44bb75ef39eb054e	alex/SKILL.md
 skill	9637754aa43cbd96f75bd7a25dd04674467483bc	mobile-release/references/post-release-monitoring.md
@@ -1593,6 +1609,8 @@ skill	b32bcc22c49aff3a52577e785645d903a70d3a9a	blake-lite/SKILL.md
 skill	b33d8a9b778890d8142d6f8428377c9b23578151	mobile-testing/references/e2e-testing.md
 skill	b3491003555321b0a9cf91c214469a0952aa5704	alex/references/idea-promote-protocol.md
 skill	b36661ddf84eca61fc3b7cc4aeeacdf276a42405	code-security/SKILL.md
+skill	b37378a8b194817c8dd4c2c7a67ef617d5aaa5a4	alex/references/conductor-dispatch-mode.md
+skill	b39bf3760f17f11a4a2c95990a2af86deed78e2d	gate/SKILL.md
 skill	b3a8a7ba17a6c660dc9324216d9a93cf96076006	alex/references/yolo-execution-protocol.md
 skill	b3ec4a5559470cc8d7163090f62830e744975510	alex/SKILL.md
 skill	b3fbd2ce01b16cf8274e3a7266badddbbd32ccf0	reading-companion/tools/epub-ingest.py
@@ -1609,6 +1627,7 @@ skill	b4b0f187861d350e3b9cf72ac447c098c61fdae6	llm-observability/SKILL.md
 skill	b4eb3f154059e23e8532cdeca442c3185ab159f4	ml-training/SKILL.md
 skill	b53de7a6bc3d7379fdf49b32dbd6b5e5f07ce91b	blake-lite/SKILL.md
 skill	b54008c27f76199982f90effc97efc1e5ee434c5	mobile-release/references/release-automation.md
+skill	b5651ede2d2ee0800eab93123bad0502ff569c6e	tad-help/SKILL.md
 skill	b56dffca5a7f9b291fda3f57db23f66db6c299d3	mobile-testing/SKILL.md
 skill	b5830ccc9816dab2c6d43a4ed97a9f9b8fb86116	video-creation/references/audio-design.md
 skill	b58497d2ed56cfd4a22c1c1288d609f6ff052b4b	ai-guardrails/references/prompt-injection-defense.md
@@ -1632,8 +1651,10 @@ skill	b8aba35677915dd0e8ed0a02de335fa6d98b8b15	tad-help/SKILL.md
 skill	b8afa35b54cc7662b548cd8e989be4c7c3f82dda	release-runbook/SKILL.md
 skill	b8b8cb9a8853f66d2c766ed6c6e4736ba151da92	academic-research/references/domain-biomedical.md
 skill	b8bd429e5ff616f1bb5e2e6fc50b71ea2b9a9ec8	alex/references/acceptance-protocol.md
+skill	b8e64f7cfc8571a175473e814ed74edc06cca8d2	blake/SKILL.md
 skill	b92854338a12ee4493cd12eaaa52ed5ef60530b1	video-creation/SKILL.md
 skill	b93c4e5d15782313be97bf297decf9be310a5031	ai-podcast-production/references/show-notes.md
+skill	b9571ec59a77245dc350857c3b87423c42e893a9	alex/SKILL.md
 skill	b99677a65f4fc03bfd81dac58aa7cb360b795ca4	web-frontend/scripts/lighthouse-check.sh
 skill	b9c9731cf471cdbd6902318edb0937eae16c32a3	web-ui-design/checklists/anti-slop.md
 skill	ba2cb984a0a93826b6f4df30d9c58b744f3ae18f	_archived/scientific-writing.md
@@ -1753,6 +1774,7 @@ skill	cda41214da1fe44a5f244ccd671a57f7a4ff1991	mobile-testing/references/perform
 skill	ce08b9011e949a04a17bd8797be1da2ec9f49d6f	alex/SKILL.md
 skill	ce22f766c2933c32230d94772fb2fa99d9667cfc	mobile-ui-design/references/visual-design.md
 skill	ce275582dc2e8e436052eda70d6e876b8f6f8d09	tad-help/SKILL.md
+skill	ce426432d4d1f79d095beda62aefa85b3ecc8c8c	design-foundation/references/token-values-space.md
 skill	ce5a1795d8bc1568db327dcff2c356fb52524230	tad-parallel/SKILL.md
 skill	ce7040e137d74efd0fe64da14970423dd5161b3c	mobile-ui-design/references/platform-guidelines.md
 skill	ce83d84c4e02f3e69ada6bdc64146c8ca65efc5b	alex/SKILL.md
@@ -1858,6 +1880,7 @@ skill	de9b2da34fd1caf8b3c15f344e7a16c8a8eaabf4	web-backend/examples/api-paginati
 skill	def3ccfa7ddc6f84f9a17bc1f6a48fb12f21eadd	academic-research/references/research-protocol.md
 skill	df15ca67e75d215f576c69fdf0590121e4c9740f	blake-lite/SKILL.md
 skill	df83585b1f4a14ee903aa15b6711a5465ca2fb23	llm-observability/references/tracing-platform-rules.md
+skill	df9d13fb720d9e8f3dfc2c02ea999e627e65462a	design-foundation/examples/panel-status-build.md
 skill	dfa524b93e9d679811ae33b37ef0cbfd26271f92	web-deployment/references/monitoring-rules.md
 skill	dfc948e3514d7f27f022212976a5c0013ef264cd	web-testing/scripts/check-test-config.sh
 skill	e04ab64a73427fabf6e8bd4bdbcad239a5bce044	web-frontend/references/state-management.md
@@ -1964,6 +1987,7 @@ skill	f03b04c5062e93934f087eeb3418942feb9f1e9f	ai-evaluation/references/ab-testi
 skill	f06e3cc7dfdef56a173e08011edb45101d6b4c5e	video-creation/examples/photo-to-beat-sync.md
 skill	f0a3497cc99609814a6f0d6cf9e7ad9d1701ccb4	tad-test-brief/SKILL.md
 skill	f0a821e3de39f5baf59d9d141d473102ee95423c	video-creation/references/quality.md
+skill	f0b82eb54196f385370f816bf4c49e622928081b	alex/references/handoff-creation-protocol.md
 skill	f0ba84893474da994eaca16b99743e8860a27596	alex/references/acceptance-protocol.md
 skill	f0be7158b93dbd8b7679abc9773975bb5117bf2c	alex/SKILL.md
 skill	f113d23191a8fa3253d684d91179dc9b506c4157	gate/SKILL.md
@@ -1981,6 +2005,7 @@ skill	f29f907b9ca299585be2da9ea2aa7722085a700a	data-engineering/references/inges
 skill	f2e7fcf96b78bc54680f5b54ae09cc41f8ba9064	blake-lite/SKILL.md
 skill	f2fff349aaba22a1b2fc79c8ebb50d7bcae9efc9	cora/SKILL.md
 skill	f36811046c7dada6c9002afd414cd90b561b1ef8	alex/references/intent-router-protocol.md
+skill	f36f9bbba72a0198d1c5b3d577b7db044281bd63	design-foundation/LICENSE
 skill	f3a656335e3c749eb56745dabea13cef4dff5ff4	ai-prompt-engineering/checklists/pre-deploy.md
 skill	f3ee317b040c3cae3ae1e1fbc124440616f3c156	production-observation/references/watch-list.md
 skill	f3eff341daa12235c1ef1cb3ace8f7fcc604e9e0	web-backend/examples/api-pagination-review.md
@@ -1989,6 +2014,7 @@ skill	f44499ba7ba41d2d18fd3f93c3dbfa2c2da7859d	alex/SKILL.md
 skill	f44c5e9b0e6afc6a95e656b2b5d7eeae431979d6	blake-lite/SKILL.md
 skill	f4ff9b053c32616523b4075ee0e040fa97d1d7ff	cora/references/conductor-protocol.md
 skill	f508bd412328ba40d3376d51a3fdcf3a59239677	alex/SKILL.md
+skill	f516e971d365171e24b2949b1ff9e781f8b8f722	design-foundation/references/component-conventions-rules.md
 skill	f537537926f4340fb2be8a785e866b7e0bf05017	alex/references/experiment-path-protocol.md
 skill	f55e6a2aa994583c29dc150688757618734b44c2	cora/SKILL.md
 skill	f57020b6969a2060faa066258fe60886d50c7881	data-engineering/scripts/scd2-bloat-check.sql
@@ -2057,6 +2083,7 @@ skill	fbe5136e7a2c1d682df04831996fac884392dbe9	mobile-development/SKILL.md
 skill	fbf81a31aaee281e77b174172d67f036a8a7c48d	data-engineering/scripts/dlt-load-audit.sh
 skill	fbfa9f1bdda1f4158d040794c3be50d471ad0951	alex/references/deps-protocol.md
 skill	fc19150221939fe95b1cd0f5e2e3d0c960753739	rag-retrieval/references/embedding-rules.md
+skill	fc30b7d366616a12d0076e01522406eaa5343859	design-foundation/SKILL.md
 skill	fc4c9729f574b0a744623f894958e1d1bd16697f	gate/SKILL.md
 skill	fc7ff3c8c3e4cdf1da26d90ac9c7cd7548e66dcc	web-frontend/references/design-tokens.md
 skill	fcb431fee8acd315a4ca92c3096627381c8a5576	tad-help/SKILL.md
