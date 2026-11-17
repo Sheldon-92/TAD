@@ -710,12 +710,145 @@ MIG_REN_EOF
       echo "  Layer 1 verdict: FAIL ($l1_fails stale, $l1_pass passed, $l1_warn warnings)"
     fi
 
+    # ── Layer 1b: Version-Marker Sweep (blocking) ────────────────────────────
+    # Class rule (not a per-file registry): every git-tracked carrier of the
+    # framework marker must carry the EXPECTED marker. Domain acquisition is
+    # gated: a failed rev-parse / ls-files is a skip state, never an empty
+    # domain — "PASS (0 carriers)" is only reachable after a successful
+    # ls-files whose screened carrier set is genuinely empty.
+    echo ""
+    echo "  ── Layer 1b: Version-Marker Sweep (blocking) ──"
+
+    l1b_fails=0
+    l1b_pass=0
+    if ! git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      if [ -e "$REPO/.git" ]; then
+        echo "  (git error — Layer 1b skipped)"
+        echo "  Layer 1b verdict: SKIPPED (git error — domain not acquired)"
+      else
+        echo "  (not a git repo — Layer 1b skipped)"
+        echo "  Layer 1b verdict: SKIPPED (not a git repo)"
+      fi
+    else
+      l1b_rc=0
+      l1b_domain="$(git -C "$REPO" ls-files 2>/dev/null)" || l1b_rc=$?
+      if [ "$l1b_rc" -ne 0 ]; then
+        echo "  (git error — Layer 1b skipped)"
+        echo "  Layer 1b verdict: SKIPPED (git error — domain not acquired)"
+      else
+        # Carrier screen: ONE batch grep over the tracked domain (same shape
+        # as Layer 2; no per-file process loop). No match is a legitimate
+        # empty set, not an error.
+        l1b_carriers=""
+        if [ -n "$l1b_domain" ]; then
+          l1b_carriers="$(git -C "$REPO" ls-files -z 2>/dev/null \
+            | (cd "$REPO" && LC_ALL=C xargs -0 grep -lF '<!-- TAD v' 2>/dev/null))" || true
+        fi
+        if [ -n "$l1b_carriers" ]; then
+          while IFS= read -r cfile; do
+            [ -n "$cfile" ] || continue
+            # Exclusions: historical / snapshot / in-flight material — the
+            # marker text there is quoted history, not a live carrier.
+            case "$cfile" in
+              archive/*|*/archive/*) continue ;;
+              evidence/*|*/evidence/*) continue ;;
+              .tad/active/*) continue ;;
+              */references/*) continue ;;
+              *_archived/*|*/_archived/*) continue ;;
+              .worktrees/*|*/.worktrees/*) continue ;;
+              CHANGELOG.md|*/CHANGELOG.md) continue ;;
+              .tad/hooks/lib/release-verify.sh) continue ;;
+            esac
+            if grep -qF "<!-- TAD v${VER} Framework -->" "$REPO/$cfile" 2>/dev/null; then
+              printf '  ✅ %-45s %s\n' "$cfile" "$VER"
+              l1b_pass=$((l1b_pass + 1))
+            else
+              found="$(LC_ALL=C grep -oE '<!-- TAD v[0-9]+\.[0-9]+\.[0-9]+' "$REPO/$cfile" 2>/dev/null | head -n 1)" || true
+              found="${found##*TAD v}"
+              [ -n "$found" ] || found="unparseable"
+              printf '  ❌ %s  STALE marker %s, expected %s\n' "$cfile" "$found" "$VER"
+              l1b_fails=$((l1b_fails + 1))
+            fi
+          done <<VERSION_SWEEP_L1B_EOF
+$l1b_carriers
+VERSION_SWEEP_L1B_EOF
+        fi
+        if [ "$l1b_fails" -gt 0 ]; then
+          echo "  Layer 1b verdict: FAIL ($l1b_fails stale, $l1b_pass passed)"
+        elif [ "$l1b_pass" -eq 0 ]; then
+          echo "  Layer 1b verdict: PASS (0 carriers — none in scope)"
+        else
+          echo "  Layer 1b verdict: PASS ($l1b_pass carriers verified)"
+        fi
+      fi
+    fi
+
+    # ── What's New Freshness (advisory) ──────────────────────────────────────
+    # Conditional check: only files that HAVE a What's New section are
+    # verified; absence is reported, never failed. Never affects exit code.
+    echo ""
+    echo "  ── What's New Freshness (advisory) ──"
+
+    for wn_file in README.md INSTALLATION_GUIDE.md; do
+      wn_path="$REPO/$wn_file"
+      if [ ! -f "$wn_path" ]; then
+        echo "  ℹ️ $wn_file not present — not checked"
+        continue
+      fi
+      wn_head="$(LC_ALL=C grep -nE "^#{1,6}[[:space:]]+What's New" "$wn_path" 2>/dev/null | head -n 1)" || true
+      if [ -z "$wn_head" ]; then
+        echo "  ℹ️ $wn_file What's New absent — not checked"
+        continue
+      fi
+      wn_start="${wn_head%%:*}"
+      wn_hashes="${wn_head#*:}"
+      wn_hashes="${wn_hashes%%[!#]*}"
+      wn_level="${#wn_hashes}"
+      # Section body: lines after the heading until the next heading of
+      # level <= this section's level (or EOF).
+      wn_body="$(awk -v s="$wn_start" -v lvl="$wn_level" '
+        NR <= s { next }
+        {
+          h = 0
+          while (substr($0, h + 1, 1) == "#") h++
+          if (h > 0 && h <= lvl && substr($0, h + 1, 1) ~ /[[:space:]]/) exit
+          print
+        }' "$wn_path")" || true
+      # Version candidates: X.Y.Z triples; a candidate that heads a 4-part
+      # dotted sequence (IP-like, e.g. 10.1.2.3) is discarded.
+      wn_cands="$(printf '%s\n' "$wn_body" | LC_ALL=C grep -oE '[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?' | awk -F. 'NF == 3')" || true
+      if [ -z "$wn_cands" ]; then
+        echo "  ⚠️ $wn_file What's New names no version"
+        continue
+      fi
+      # Highest version by numeric triple comparison (no sort -V).
+      wn_max="$(printf '%s\n' "$wn_cands" | awk -F. '
+        {
+          a = $1 + 0; b = $2 + 0; c = $3 + 0
+          if (!seen || a > m1 || (a == m1 && (b > m2 || (b == m2 && c > m3)))) {
+            m1 = a; m2 = b; m3 = c; seen = 1
+          }
+        }
+        END { if (seen) printf "%d.%d.%d", m1, m2, m3 }')" || true
+      if [ "$wn_max" = "$VER" ]; then
+        echo "  ✅ $wn_file What's New current ($wn_max)"
+      else
+        echo "  ⚠️ $wn_file What's New stale: highest $wn_max, expected $VER"
+      fi
+    done
+
     # ── Layer 2: Narrow Drift Sweep (advisory) ─────────────────────────────────
     echo ""
     echo "  ── Layer 2: Drift Sweep (advisory) ──"
 
     l2_hits=0
     l2_output=""
+    l2_skipped=0
+    # Print cap for hit lines; TAD_SWEEP_FULL=1 lifts it (counting unchanged).
+    l2_cap=20
+    if [ "${TAD_SWEEP_FULL:-}" = "1" ]; then
+      l2_cap=999999999
+    fi
 
     if git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       # Derive the shipped-major set live: every .tad/migrations/<from>-to-<to>.yaml
@@ -782,9 +915,10 @@ MIG_REN_EOF
             continue
           fi
 
-          # This is a Layer 2 hit (cap output at 20 for bounded memory)
+          # This is a Layer 2 hit (printed output capped at $l2_cap lines
+          # for bounded memory; TAD_SWEEP_FULL=1 lifts the cap)
           l2_hits=$((l2_hits + 1))
-          if [ "$l2_hits" -le 20 ]; then
+          if [ "$l2_hits" -le "$l2_cap" ]; then
             l2_output="${l2_output}  ⚠️  ${file}:${lineno}: $(printf '%s' "$content" | head -c 100)"$'\n'
           fi
         done <<VERSION_SWEEP_EOF
@@ -792,15 +926,18 @@ $raw_hits
 VERSION_SWEEP_EOF
       fi
     else
+      l2_skipped=1
       echo "  (not a git repo — Layer 2 skipped)"
     fi
 
-    if [ "$l2_hits" -eq 0 ]; then
+    if [ "$l2_skipped" -eq 1 ]; then
+      echo "  Layer 2 hits: n/a (skipped — drift not measured)"
+    elif [ "$l2_hits" -eq 0 ]; then
       echo "  Layer 2 hits: 0 (clean)"
     else
       printf '%s' "$l2_output"
-      if [ "$l2_hits" -gt 20 ]; then
-        echo "  ... and $((l2_hits - 20)) more (truncated)"
+      if [ "$l2_hits" -gt "$l2_cap" ]; then
+        echo "  … and $((l2_hits - l2_cap)) more hits (full list: TAD_SWEEP_FULL=1)"
       fi
       echo "  Layer 2 hits: $l2_hits (advisory only, not blocking)"
     fi
@@ -808,11 +945,17 @@ VERSION_SWEEP_EOF
     # ── Final verdict ──────────────────────────────────────────────────────────
     echo ""
     echo "-----------------------------------------"
-    if [ "$l1_fails" -eq 0 ]; then
+    if [ "$l1_fails" -eq 0 ] && [ "$l1b_fails" -eq 0 ]; then
       echo "VERDICT: version-sweep PASS (exit 0)"
       exit 0
-    else
+    elif [ "$l1b_fails" -eq 0 ]; then
       echo "VERDICT: version-sweep FAIL — $l1_fails Layer 1 stale ref(s) (exit 1)"
+      exit 1
+    elif [ "$l1_fails" -eq 0 ]; then
+      echo "VERDICT: version-sweep FAIL — $l1b_fails Layer 1b stale marker(s) (exit 1)"
+      exit 1
+    else
+      echo "VERDICT: version-sweep FAIL — $l1_fails Layer 1 stale ref(s), $l1b_fails Layer 1b stale marker(s) (exit 1)"
       exit 1
     fi
     ;;

@@ -43,7 +43,7 @@
 |--------|---------|------------|
 | `gate3-git-tracked-check.sh` | Verify git-tracked dirs in handoff | `bash .tad/hooks/lib/gate3-git-tracked-check.sh` |
 | `layer2-audit.sh` | Self-check: do my review artifacts exist? | `bash .tad/hooks/lib/layer2-audit.sh <slug>` |
-| `trace-step.sh` | Record Domain Pack step execution trace | `bash .tad/hooks/trace-step.sh <event_type> <capability> <step> <pack>` |
+| `trace-step.sh` | Record Domain Pack step execution trace | `bash .tad/hooks/trace-step.sh <start|end> <domain> <capability> <step> [status] [tool]` |
 
 ## TAD Templates (Blake uses during completion)
 

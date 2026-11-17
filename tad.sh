@@ -76,7 +76,7 @@ fi
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="4.0.11"
+TARGET_VERSION="4.0.12"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -2182,7 +2182,7 @@ generate_pack_meta() {
     local existing_baseline="fresh_install"
     if [ -f "$meta_file" ]; then
         local ep
-        ep="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+        ep="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"' || true)"
         [ -n "$ep" ] && existing_policy="$ep"
     else
         existing_baseline="migrated"
@@ -2325,9 +2325,15 @@ fork_pack() {
     fi
 
     local current
-    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"' || true)"
     if [ "$current" = "forked" ]; then
         echo "'$name' is already forked"; exit 0
+    fi
+    # A meta with no sync_policy line (0 bytes or damaged): the sed below would
+    # change nothing, so refuse instead of reporting a false success.
+    if ! grep -q '^sync_policy:' "$meta_file" 2>/dev/null; then
+        echo "tad.sh: cannot fork '$name': .agents/skills/$name/.tad-pack-meta.yaml has no sync_policy line (the file is empty or damaged); nothing was changed. Restore it from a backup made before it was damaged, or run the update with --force to write a new one, then run --fork-pack again." >&2
+        exit 1
     fi
 
     sed -i.bak "s/^sync_policy:.*/sync_policy: forked/" "$meta_file" && rm -f "$meta_file.bak" # RM-OK:fork-sed-bak
@@ -2350,7 +2356,7 @@ unfork_pack() {
     fi
 
     local current
-    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+    current="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"' || true)"
     if [ "$current" != "forked" ]; then
         echo "'$name' is not forked (current: ${current:-upstream})"; exit 0
     fi
@@ -2384,9 +2390,9 @@ list_packs() {
         total=$((total + 1))
         local policy="—" baseline="—" file_count="—"
         if [ -f "$meta" ]; then
-            policy="$(grep '^sync_policy:' "$meta" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
+            policy="$(grep '^sync_policy:' "$meta" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"' || true)"
             [ -z "$policy" ] && policy="upstream"
-            baseline="$(grep '^baseline_source:' "$meta" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"')"
+            baseline="$(grep '^baseline_source:' "$meta" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"' || true)"
             [ -z "$baseline" ] && baseline="—"
             file_count="$(grep -c '^  - path:' "$meta" 2>/dev/null)" || file_count=0
             [ "$policy" = "forked" ] && forked_count=$((forked_count + 1))
@@ -2399,6 +2405,48 @@ list_packs() {
     printf '%.0s─' {1..60}; echo
     local upstream_count=$((total - forked_count))
     echo "$total packs ($upstream_count upstream, $forked_count forked)"
+}
+
+# pack_meta_empty_precheck <src> — read-only: before the first project write, name the
+# pack metas in the target skill dir that are 0 bytes (count and names), then go on.
+# Reads names and sizes only: opens no meta, writes nothing, never stops the run.
+pack_meta_empty_precheck() {
+    local src="$1"
+    local skill_base="${TARGET_SKILL_DIR:-}"
+    [ -n "$skill_base" ] || return 0
+    [ -d "$skill_base" ] || return 0
+    local m d name found=""
+    for m in "$skill_base"/*/.tad-pack-meta.yaml; do
+        if [ -f "$m" ] && [ ! -s "$m" ]; then
+            d="${m%/.tad-pack-meta.yaml}"
+            name="${d##*/}"
+            if is_pack_skill "$name" "$src"; then
+                found="${found}${name}
+"
+            fi
+        fi
+    done
+    [ -n "$found" ] || return 0
+    # Sort in the C locale; count and join in this shell (no paste, no pipe into while).
+    local sorted k=0 list="" n old_ifs="$IFS"
+    sorted="$(printf '%s' "$found" | LC_ALL=C sort)"
+    IFS='
+'
+    for n in $sorted; do
+        [ -n "$n" ] || continue
+        k=$((k + 1))
+        if [ -z "$list" ]; then
+            list="$n"
+        else
+            list="$list, $n"
+        fi
+    done
+    IFS="$old_ifs"
+    if [ "$k" -gt 0 ]; then
+        log_warn "PACK-META-EMPTY: $k pack meta file(s) in .agents/skills are empty (0 bytes): $list"
+        log_warn "PACK-META-EMPTY: an empty meta records no hashes and no fork setting, so this update keeps the files these packs already have and writes them a new meta with sync_policy: upstream (a pack you had forked is no longer marked forked: run --fork-pack <name> again for it); to have them updated instead, restore each .agents/skills/<name>/.tad-pack-meta.yaml from a backup made before it was emptied, then run the update again with --force"
+    fi
+    return 0
 }
 
 # copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
@@ -2424,8 +2472,8 @@ copy_pack_skill_smart() {
     fi
 
     local policy baseline
-    policy="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"')"
-    baseline="$(grep '^baseline_source:' "$meta_file" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"')"
+    policy="$(grep '^sync_policy:' "$meta_file" 2>/dev/null | sed 's/sync_policy:[[:space:]]*//' | tr -d '[:space:]"' || true)"
+    baseline="$(grep '^baseline_source:' "$meta_file" 2>/dev/null | sed 's/baseline_source:[[:space:]]*//' | tr -d '[:space:]"' || true)"
 
     # Case 2: Forked → skip entirely
     if [ "$policy" = "forked" ]; then
@@ -3080,7 +3128,7 @@ copy_framework_files() {
           {
             "type": "command",
             "command": "bash .tad/hooks/post-write-sync.sh",
-            "timeout": 10
+            "timeout": 30
           }
         ]
       },
@@ -3090,7 +3138,7 @@ copy_framework_files() {
           {
             "type": "command",
             "command": "bash .tad/hooks/lib/askuser-capture.sh",
-            "timeout": 10
+            "timeout": 30
           }
         ]
       }
@@ -4420,7 +4468,7 @@ rollback_on_failure() {
             log_error "  backup: none was taken this run."
         fi
         if [ -n "${ROLLBACK_SNAP:-}" ] && [ -d "$ROLLBACK_SNAP" ]; then
-            log_error "  snapshot: $ROLLBACK_SNAP — holds the mutation-start state of the snapshot surfaces (root files and projection surfaces recorded by take_rollback_snapshot); it lives in /tmp and is NOT reboot-safe."
+            log_error "  snapshot: $ROLLBACK_SNAP — holds the mutation-start state of the snapshot surfaces (root files and projection surfaces recorded by take_rollback_snapshot); it is in the temp directory, not a durable place: the system or a reboot may remove it, so copy what you need first."
         else
             log_error "  snapshot: none was taken this run."
         fi
@@ -4429,6 +4477,28 @@ rollback_on_failure() {
         fi
     fi
     log_error "Rollback complete."
+
+    # Snapshot disposal (report-upgrades Phase 5, D8): the snapshot stays exactly when a printed
+    # line may send someone to it (a failed entry, an exception that names a path in it, a kept
+    # stage); otherwise it is removed here, silently. Only ${VAR:-} reads: the fixture runs this
+    # function alone. A removal that fails prints one line naming the path (and no command).
+    local _snap_keep=0 _snap_rc=0
+    if [ "$_rb_n_failed" != "0" ]; then _snap_keep=1; fi # P5-KEEP-FAILED
+    if [ -n "${ROLLBACK_SNAP:-}" ]; then case "$_ex_text" in *"${ROLLBACK_SNAP}"*) _snap_keep=1 ;; esac; fi # P5-KEEP-NAMED
+    if [ -n "${KEPT_STAGE_PATH:-}" ] || { [ -n "${ROLLBACK_SNAP:-}" ] && [ -e "${ROLLBACK_SNAP}/.failed-stage" ]; }; then _snap_keep=1; fi # P5-KEEP-STAGE
+    if [ "$_snap_keep" = "0" ] && [ -n "${ROLLBACK_SNAP:-}" ] && [ -d "${ROLLBACK_SNAP}" ] && [ ! -L "${ROLLBACK_SNAP}" ]; then # P5-SNAP-GUARD
+        case "$(basename "${ROLLBACK_SNAP}")" in
+            tad-rollback.*) # P5-SNAP-GUARD
+                chmod -R u+w "${ROLLBACK_SNAP}" 2>/dev/null || true
+                rm -rf "${ROLLBACK_SNAP}" 2>/dev/null || _snap_rc=$? # RM-OK:rollback-snap-unneeded
+                if [ "$_snap_rc" = "0" ] && [ ! -e "${ROLLBACK_SNAP}" ]; then
+                    ROLLBACK_SNAP=""
+                else
+                    if [ "$_snap_rc" = "0" ]; then _snap_rc=1; fi
+                    printf '%s\n' "ROLLBACK-SNAPSHOT-LEFT: ${ROLLBACK_SNAP} — could not be deleted (exit ${_snap_rc}); nothing below sends you to it and nothing in it is needed; it holds copies of this project's configuration files; delete that directory yourself when convenient" # P5-LEFT-LINE
+                fi ;;
+        esac
+    fi
 
     # The conclusion (D11): always the last output. printf %s, never echo -e.
     local _state _sentence _action _rp _rp_shown=0
@@ -7173,8 +7243,17 @@ main() {
             echo -e "${GREEN}✅ Nothing to do. TAD v${TARGET_VERSION} is already installed.${NC}"
             echo ""
             echo "Available commands:"
-            echo "  /cora, /alex, /blake, /gate - Default (Cora: entry point and Epic conductor)"
-            echo "  /alex-lite, /blake-lite  - Frozen experiment (still usable if invoked explicitly)"
+            if [ "${PLATFORM_LIST:-}" = "codex" ]; then
+                echo '  $cora, $alex, $blake, $gate - Default (Cora: entry point and Epic conductor)'
+                echo '  $alex-lite, $blake-lite  - Frozen experiment (still usable if invoked explicitly)'
+            elif platform_has codex; then
+                echo '  Codex: $cora, $alex, $blake, $gate (default) · $alex-lite, $blake-lite (frozen)'
+                echo "  Other platforms: /cora, /alex, /blake, /gate - Default (Cora: entry point and Epic conductor)"
+                echo "  /alex-lite, /blake-lite  - Frozen experiment (still usable if invoked explicitly)"
+            else
+                echo "  /cora, /alex, /blake, /gate - Default (Cora: entry point and Epic conductor)"
+                echo "  /alex-lite, /blake-lite  - Frozen experiment (still usable if invoked explicitly)"
+            fi
             echo ""
             exit 0
         fi
@@ -7268,6 +7347,8 @@ main() {
     claude_sticky_eval
     # Legacy Claude Code adoption: read-only classification (plan mode prints and exits here).
     claude_adopt_preflight "$TAD_SRC"
+    # Read-only: name the 0-byte pack metas before the first project write (never stops the run).
+    pack_meta_empty_precheck "$TAD_SRC"
 
     # FR-1: the normal project backup occurs immediately before the first
     # project mutation — AFTER download, immutable-version validation, platform
@@ -7660,7 +7741,14 @@ NEXTEOF
     echo ""
     echo "Quick start:"
     echo "  1. Restart your terminal (or open a new one)"
-    echo -e "  2. ${CYAN}/cora${NC}, ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
+    if [ "${PLATFORM_LIST:-}" = "codex" ]; then
+        echo -e "  2. ${CYAN}\$cora${NC}, ${CYAN}\$alex${NC}, ${CYAN}\$blake${NC}, ${CYAN}\$gate${NC} (default) · ${CYAN}\$alex-lite${NC}, ${CYAN}\$blake-lite${NC} (frozen)"
+    elif platform_has codex; then
+        echo -e "  2. Codex: ${CYAN}\$cora${NC}, ${CYAN}\$alex${NC}, ${CYAN}\$blake${NC}, ${CYAN}\$gate${NC} (default) · ${CYAN}\$alex-lite${NC}, ${CYAN}\$blake-lite${NC} (frozen)"
+        echo -e "     Other platforms: ${CYAN}/cora${NC}, ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
+    else
+        echo -e "  2. ${CYAN}/cora${NC}, ${CYAN}/alex${NC}, ${CYAN}/blake${NC}, ${CYAN}/gate${NC} (default) · ${CYAN}/alex-lite${NC}, ${CYAN}/blake-lite${NC} (frozen)"
+    fi
 
     echo ""
     echo -e "Learn more: ${BLUE}${REPO_URL}${NC}"

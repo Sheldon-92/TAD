@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|caps|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|caps|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -24,10 +24,60 @@
 # `for x in $VAR` word-splitting (while-read instead). Smoke-runs under
 # `bash` AND `zsh` (no arrays, no `export -f` unguarded, no bash-only
 # builtins outside explicit `bash` invocations of tad.sh itself).
+if [ -n "${BASH_VERSION:-}" ]; then
+# --- environment sanitising (report-upgrades Phase 5, rework 2; ENV-SANITISE) -----------------------------
+# This script trusts nothing it inherits; this block runs before any other command (under bash; under zsh,
+# which this fixture also supports, only the variables are cleared). Two inputs act before
+# its first line and no script can close them, so they are named here instead: BASH_ENV (the file runs
+# before line 1) and SHELLOPTS=xtrace with a PS4 that runs a command (the trace of line 1). Both are the
+# caller running code of their own. Signals ignored when the script starts stay ignored (bash cannot reset
+# them). The assignment below puts bash in posix mode, where `unset`, `set` and `exec` are found before any
+# function of that name, so every inherited (exported) function can be removed; then posix mode is left.
+# A third such input: SHELLOPTS=noexec or SHELLOPTS=onecmd (bash then runs no command, or only one): the script prints nothing; read an empty output as not run, never as a result.
+POSIXLY_CORRECT=1
+\set +e +a +k +x +v -f  # ENV-SET
+\unset -f unset set builtin command declare read enable shopt unalias exec eval trap kill wait cd pwd printf echo test type local return exit export source true false 2>/dev/null
+for _sz in $(\declare -F); do case "$_sz" in declare|-f|-fx|-fr|-frx) ;; *) \unset -f -- "$_sz" 2>/dev/null ;; esac; done  # ENV-NO-FUNCS
+\unalias -a 2>/dev/null
+\enable cd pwd printf echo read test '[' kill wait type command builtin local declare shopt unalias trap eval exec set unset export source true false 2>/dev/null
+IFS=' 	
+'
+\unset CDPATH GLOBIGNORE GREP_OPTIONS GREP_COLOR GREP_COLORS CLICOLOR CLICOLOR_FORCE LSCOLORS ENV BASH_XTRACEFD FUNCNEST BASH_COMPAT EXECIGNORE  # ENV-UNSET
+\set +o pipefail +C +b +E +T
+for _sz in nullglob failglob nocaseglob nocasematch dotglob extglob expand_aliases xpg_echo; do \shopt -u "$_sz" 2>/dev/null; done
+\unset POSIXLY_CORRECT _sz
+\set +o posix
+for _sz in $(\declare -F); do case "$_sz" in declare|-f|-fx|-fr|-frx) ;; *) \unset -f -- "$_sz" 2>/dev/null ;; esac; done  # ENV-NO-FUNCS-2
+\set +f  # ENV-GLOB
+\unset _sz
+\exec 0</dev/null
+{ \exec 3>&1; } 2>/dev/null || { printf '%s\n' "${0##*/}: stdout is closed; nothing done" >&2; exit 2; }
+\exec 3>&-
+# --- end of the sanitising block ---------------------------------------------------------------------------
+else
+  unset CDPATH GREP_OPTIONS GREP_COLOR GREP_COLORS CLICOLOR CLICOLOR_FORCE LSCOLORS 2>/dev/null
+fi
+# rework 2, run P1-1: this script's own tools run from the system directories (each name below becomes a
+# function that calls the tool by its absolute path), while every child it starts keeps the caller's PATH
+# unchanged: the git shim, python3, node and bash the runner chose (the reason the PATH itself is not pinned:
+# a pinned PATH would send the children's git calls to /usr/bin/git). Functions are not exported, so no child
+# sees them. A tool missing from the system directories keeps the PATH lookup.
+for _t in rm rmdir cp mv mkdir chmod chflags ln touch grep egrep sed awk find sort uniq comm cut tr wc head tail cat ls diff cmp tar shasum mktemp readlink dirname basename date sleep od stat du tee iconv; do  # FX-OWN-TOOLS
+  for _d in /usr/bin /bin /usr/sbin /sbin; do
+    if [ -x "$_d/$_t" ]; then eval "$_t() { $_d/$_t \"\$@\"; }"; break; fi
+  done
+done
+unset _t _d
 set -euo pipefail
 
 FIXTURE_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 REPO="$(cd "$FIXTURE_DIR/../.." && pwd -P)"
+# rework 2: each resolved directory is one absolute line (CDPATH is cleared above), else nothing runs
+for _x in "$FIXTURE_DIR" "$REPO"; do
+  case "$_x" in /*) ;; *) echo "fixture: cannot resolve a directory to one absolute path" >&2; exit 2 ;; esac
+  case "$_x" in *"
+"*) echo "fixture: a resolved directory holds a newline" >&2; exit 2 ;; esac
+done
 FIXTURES="$FIXTURE_DIR/fixtures"
 TADSH="$REPO/tad.sh"
 GUARD="$REPO/.tad/hooks/lib/release-verify.sh"
@@ -39,7 +89,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|caps|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|caps|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -65,6 +115,11 @@ new_sandbox() {
   CURL_FUNC_LOG="$SANDBOX/curl-func.log"
   CURL_PATH_LOG="$SANDBOX/curl-path.log"
   mkdir -p "$TARGET" "$SNAP" "$SHIMBIN"
+  # report-upgrades Phase 5 (D10): every installer run of this sandbox gets a TMPDIR inside it, so a
+  # snapshot it leaves is removed with the sandbox; the root above stays /tmp (chosen before this).
+  mkdir "$SANDBOX/tmp" || { echo "fixture: cannot make $SANDBOX/tmp (the per-sandbox TMPDIR)" >&2; exit 2; }
+  TMPDIR="$SANDBOX/tmp"
+  export TMPDIR
   # Phase 5b rework R1: pin the backup root inside the sandbox (outside TARGET)
   # for every case, whatever the caller exported, so no installer run can write
   # to $HOME/.tad-backups. run_install_cc still overrides it per call.
@@ -948,6 +1003,35 @@ case_ac28() {
   else
     fail "ac2.8: truncating-cp fault → file dst LOST (in-place cp-over)"
   fi
+
+  # (e) report-upgrades Phase 5 (risk r4 P1-5): the snapshot removal's guard. A full-verdict rollback
+  # with ROLLBACK_SNAP set to (1) a link named tad-rollback.* to a sandbox dir and (2) a dir not named
+  # tad-rollback.* must leave both in place; the same function with the guard lines (# P5-SNAP-GUARD)
+  # loosened must not (the negative shows these two assertions see the guard).
+  if grep -q '# P5-SNAP-GUARD$' "$SANDBOX/rb.fn.sh"; then
+    rm -f "$SHIMBIN/cp"
+    sed -e '/# P5-SNAP-GUARD$/s/ \&\& \[ ! -L "\${ROLLBACK_SNAP}" \]//' -e '/# P5-SNAP-GUARD$/s/tad-rollback\.\*)/*)/' "$SANDBOX/rb.fn.sh" > "$SANDBOX/rb-noguard.fn.sh"
+    local _g _gfn _gsn _gl _gok
+    for _g in real noguard; do
+      _gfn="$SANDBOX/rb.fn.sh"; [ "$_g" = "noguard" ] && _gfn="$SANDBOX/rb-noguard.fn.sh"
+      mkdir -p "$SANDBOX/g-$_g/linked" "$SANDBOX/g-$_g/notsnap"; : > "$SANDBOX/g-$_g/linked/.manifest"; : > "$SANDBOX/g-$_g/notsnap/.manifest"
+      ln -s "$SANDBOX/g-$_g/linked" "$SANDBOX/g-$_g/tad-rollback.lnk"
+      _gok=1
+      for _gsn in "$SANDBOX/g-$_g/tad-rollback.lnk" "$SANDBOX/g-$_g/notsnap"; do
+        ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" TARGET_ROOT="$TARGET" BACKUP_PATH_ABS="" ROLLBACK_SNAP="$_gsn" MERGE_CREATED_BACKUP="" ROLLBACK_CREATED_TOP="" ROLLBACK_PRE_TOP="" OPCODE_CREATED_FILE=0 bash -c 'source "'"$SANDBOX"'/stubs3.sh"; source "'"$_gfn"'"; rollback_on_failure' >"$SANDBOX/g-$_g.log" 2>&1 ) || true
+        grep -q 'ROLLBACK-RESULT: full ' "$SANDBOX/rb3.log" "$SANDBOX/g-$_g.log" 2>/dev/null || _gok=0
+        if [ ! -e "$_gsn" ] && [ ! -L "$_gsn" ]; then _gok=0; fi
+      done
+      [ -d "$SANDBOX/g-$_g/linked" ] || _gok=0
+      if [ "$_g" = "real" ]; then
+        if [ "$_gok" = "1" ]; then pass "ac2.8: snapshot removal guard: a link named tad-rollback.* and a dir not named tad-rollback.* are left in place"; else fail "ac2.8: snapshot removal guard: a guarded path was removed or the rollback was not full"; fi
+      else
+        if [ "$_gok" = "0" ]; then pass "ac2.8: snapshot removal guard negative: with the guard loosened the same runs remove them"; else fail "ac2.8: snapshot removal guard negative: the loosened guard still leaves them (the assertion does not see the guard)"; fi
+      fi
+    done
+  else
+    fail "ac2.8: no '# P5-SNAP-GUARD' line in the extracted rollback_on_failure"
+  fi
 }
 
 # ════════════════════════ AC2.9 (F-05 user .bak) ════════════════════════
@@ -1566,7 +1650,7 @@ case_ac220() {
   local rc t real
   # Shims in front of PATH: SHA-1 requests fail, everything else reaches the real tool.
   for t in shasum sha1sum openssl; do
-    real="$(command -v "$t" 2>/dev/null || true)"
+    real="$(type -P "$t" 2>/dev/null || true)"  # type -P: the real binary even when FX-OWN-TOOLS shadows $t with a function
     [ -n "$real" ] || continue
     case "$t" in
       shasum) printf '#!/bin/sh\ncase " $* " in *" -a 1 "*|*" -a1 "*) exit 1 ;; esac\nexec "%s" "$@"\n' "$real" > "$SHIMBIN/$t" ;;
@@ -3133,6 +3217,24 @@ EOF
   rp_lint "$log"
 }
 
+# fx_armed_run <log> (Phase 5, D10): fn_run with TMPDIR at a fresh empty $SANDBOX/tmp.armed for this
+# one run; set inside the command substitution's subshell, so nothing can leave it set.
+fx_armed_run() {
+  rm -rf "$SANDBOX/tmp.armed" 2>/dev/null
+  mkdir "$SANDBOX/tmp.armed" || { echo "fixture: cannot make $SANDBOX/tmp.armed" >&2; exit 2; }
+  ( TMPDIR="$SANDBOX/tmp.armed"; export TMPDIR; fn_run "$1" )
+}
+# fx_snap_count <dir> <expected n> (Phase 5, D10): how many tad-rollback.* the run's own temp dir holds
+fx_snap_count() {
+  local d="$1" n
+  echo "  ${CURRENT_CASE}: temp dir read: ${d:-unset}"
+  if [ -z "$d" ] || [ ! -d "$d" ]; then fail "${CURRENT_CASE}: the run's temp dir is unset or missing (${d:-unset})"; return 1; fi
+  case "$d/" in "$SANDBOX/"*) ;; *) fail "${CURRENT_CASE}: the run's temp dir is not under the sandbox ($d)"; return 1 ;; esac
+  n="$(ls -A "$d" | grep -c '^tad-rollback\.' || true)"
+  if [ "$n" = "$2" ]; then pass "${CURRENT_CASE}: the run's temp dir holds $n tad-rollback.*"; return 0; fi
+  fail "${CURRENT_CASE}: the run's temp dir holds $n tad-rollback.*, expected $2"; return 1
+}
+
 case_fnkeep() {
   CURRENT_CASE="fn.keep"
   local rc log kept
@@ -3148,7 +3250,7 @@ esac
 exec @REAL@ "$@"
 EOF
   log="$SANDBOX/fn-keep.log"
-  rc="$(fn_run "$log")"
+  rc="$(fx_armed_run "$log")"
   if [ "$rc" != "0" ]; then pass "fn.keep: the armed upgrade failed (rc=$rc)"; else fail "fn.keep: the armed upgrade succeeded"; return 0; fi
   fn_witness keep || return 0
   kept="$(sed -n 's/^KEPT-STAGE: \(\/.*\)$/\1/p' "$log" | tail -1)"
@@ -3156,6 +3258,9 @@ EOF
     pass "fn.keep: the path the log ends with exists and holds the failed stage's bytes"
   else
     fail "fn.keep: kept path missing or its bytes differ (${kept:-none})"
+  fi
+  if fx_snap_count "$SANDBOX/tmp.armed" 1; then
+    case "$kept" in "$(cd "$SANDBOX/tmp.armed" && pwd -P)"/tad-rollback.*/*|"$SANDBOX/tmp.armed"/tad-rollback.*/*) pass "fn.keep: the KEPT-STAGE path lies under that tad-rollback.*" ;; *) fail "fn.keep: the KEPT-STAGE path is not under the run's tad-rollback.* (${kept:-none})" ;; esac
   fi
   if [ ! -e "$TARGET/.tad/templates/keepme.md" ]; then pass "fn.keep: the failed file did not land"; else fail "fn.keep: the failed file landed"; fi
   fn_no_stage_leftovers
@@ -3390,9 +3495,10 @@ esac
 exec @REAL@ "$@"
 EOF
   log="$SANDBOX/rp-snapincomplete.log"
-  rc="$(fn_run "$log")"
+  rc="$(fx_armed_run "$log")"
   if [ "$rc" != "0" ]; then pass "rp.snap-incomplete: the run failed at the snapshot (rc=$rc)"; else fail "rp.snap-incomplete: the run succeeded"; return 0; fi
   fn_witness snap || return 0
+  fx_snap_count "$SANDBOX/tmp.armed" 0
   if [ -f "$TARGET/.codex/config.toml" ] && [ -f "$TARGET/.agents/skills/mine/SKILL.md" ] && [ -d "$TARGET/.tad" ]; then
     pass "rp.snap-incomplete: the user's .codex/config.toml, .agents/skills/mine and .tad survive"
   else
@@ -3948,6 +4054,333 @@ case_awguard() {
   if aw_require_distinct 3.3.3 3.3.4 2>/dev/null; then pass "aw.guard: different versions pass"; else fail "aw.guard: different versions were refused"; fi
 }
 
+# ── pm.*: damaged pack metas (pack-meta-read-guards Phase 1, D2/D5/D6) ──
+# Label rule: no line these cases print themselves (labels, pass/fail text, fail
+# reasons) holds the installer's pre-check token or its stop-line token; only
+# the "  log: <line>" lines carry installer text.
+
+# pm_files <pack dir> — regular files other than the top SKILL.md, the meta and
+# anything under local/, as relative paths in LC_ALL=C order.
+pm_files() {
+  ( cd "$1" && find . -type f -not -path './SKILL.md' -not -name '.tad-pack-meta.yaml' -not -path '*/local/*' | sed 's|^\./||' | LC_ALL=C sort )
+}
+
+# pm_pick_packs <n> — the first <n> packs of $TARGET (LC_ALL=C order) with a meta
+# and at least three pm_files; sets PM_PACKS (newline list) and PM_COUNT.
+pm_pick_packs() {
+  local want="$1" names n cnt picked="" k=0 old_ifs="$IFS"
+  names="$(find "$TARGET/.agents/skills" -mindepth 1 -maxdepth 1 -type d | sed 's|.*/||' | LC_ALL=C sort)"
+  IFS='
+'
+  for n in $names; do
+    if [ ! -f "$TARGET/.agents/skills/$n/.tad-pack-meta.yaml" ]; then continue; fi
+    cnt="$(pm_files "$TARGET/.agents/skills/$n" | wc -l | tr -d ' ')"
+    if [ "$cnt" -lt 3 ]; then continue; fi
+    picked="${picked}${n}
+"
+    k=$((k + 1))
+    if [ "$k" -ge "$want" ]; then break; fi
+  done
+  IFS="$old_ifs"
+  PM_PACKS="$picked"
+  PM_COUNT="$k"
+}
+
+pm_nth() { printf '%s' "$1" | sed -n "${2}p"; }
+
+# pm_uc <pack> — PM_U / PM_C: the first two pm_files of the pack's snapshot.
+pm_uc() {
+  local list
+  list="$(pm_files "$SNAP/pm/$1")"
+  PM_U="$(pm_nth "$list" 1)"
+  PM_C="$(pm_nth "$list" 2)"
+}
+
+# pm_meta_write <pack> <mode> — rewrite the target meta from its clean-install
+# form (baseline_source: migrated → fresh_install first): empty | ctl-empty |
+# nopolicy | nobaseline | keep. Returns 1 when the result is not the intended shape.
+pm_meta_write() {
+  local m="$TARGET/.agents/skills/$1/.tad-pack-meta.yaml" t
+  t="$TARGET/.agents/skills/$1/.pm-meta-tmp"
+  if [ "$2" = "empty" ]; then
+    : > "$m"
+    if [ -s "$m" ]; then return 1; fi
+    return 0
+  fi
+  if [ "$2" = "ctl-empty" ]; then
+    sed -e 's/^baseline_source: migrated$/baseline_source: fresh_install/' -e '/^files:$/q' "$m" > "$t"
+  elif [ "$2" = "nopolicy" ]; then
+    sed -e 's/^baseline_source: migrated$/baseline_source: fresh_install/' -e '/^sync_policy:/d' "$m" > "$t"
+  elif [ "$2" = "nobaseline" ]; then
+    sed -e '/^baseline_source:/d' "$m" > "$t"
+  else
+    sed -e 's/^baseline_source: migrated$/baseline_source: fresh_install/' "$m" > "$t"
+  fi
+  mv -f -- "$t" "$m"
+  if [ "$2" = "nopolicy" ]; then
+    if grep -q '^sync_policy:' "$m"; then return 1; fi
+  else
+    if ! grep -qx 'sync_policy: upstream' "$m"; then return 1; fi
+  fi
+  if [ "$2" = "nobaseline" ]; then
+    if grep -q '^baseline_source:' "$m"; then return 1; fi
+  else
+    if ! grep -qx 'baseline_source: fresh_install' "$m"; then return 1; fi
+  fi
+  if [ "$2" = "ctl-empty" ]; then
+    if [ "$(tail -1 "$m")" != "files:" ] || grep -q '^  - path:' "$m"; then return 1; fi
+    if [ "$(wc -l < "$m" | tr -d ' ')" != "6" ]; then return 1; fi
+  fi
+  return 0
+}
+
+# pm_state <target file> <snapshot file> <source file> — kept | updated | other
+pm_state() {
+  if cmp -s "$1" "$2"; then echo kept
+  elif cmp -s "$1" "$3"; then echo updated
+  else echo other; fi
+}
+
+# pm_outcome <pack> <log> — "U=<state> C=<state> line=<0|1>" (D2 (a) and (d)).
+pm_outcome() {
+  local p="$1" log="$2" u c line=0
+  pm_uc "$p"
+  u="$(pm_state "$TARGET/.agents/skills/$p/$PM_U" "$SNAP/pm/$p/$PM_U" "$SOURCE/.agents/skills/$p/$PM_U")"
+  c="$(pm_state "$TARGET/.agents/skills/$p/$PM_C" "$SNAP/pm/$p/$PM_C" "$SOURCE/.agents/skills/$p/$PM_C")"
+  if grep -qF -e "$p/$PM_C: customized (preserved)" "$log"; then line=1; fi
+  printf 'U=%s C=%s line=%s' "$u" "$c" "$line"
+}
+
+# pm_others_same <pack> — D2 (b): every file of the pack's snapshot except the
+# meta and U is byte-equal in the target, and the target has the same file count.
+pm_others_same() {
+  local p="$1" list f ns nt old_ifs="$IFS"
+  pm_uc "$p"
+  list="$(cd "$SNAP/pm/$p" && find . -type f -not -name '.tad-pack-meta.yaml' | sed 's|^\./||' | LC_ALL=C sort)"
+  ns="$(printf '%s\n' "$list" | grep -c . || true)"
+  nt="$(cd "$TARGET/.agents/skills/$p" && find . -type f -not -name '.tad-pack-meta.yaml' | grep -c . || true)"
+  if [ "$ns" != "$nt" ]; then echo "file count $ns before, $nt after"; return 1; fi
+  IFS='
+'
+  for f in $list; do
+    if [ "$f" = "$PM_U" ]; then continue; fi
+    if ! cmp -s "$SNAP/pm/$p/$f" "$TARGET/.agents/skills/$p/$f"; then
+      IFS="$old_ifs"
+      echo "changed: $f"
+      return 1
+    fi
+  done
+  IFS="$old_ifs"
+  return 0
+}
+
+# pm_meta_after_ok <pack> — D2 (c): non-empty, policy upstream, baseline
+# fresh_install, one path entry per source file (meta and local/ left out).
+pm_meta_after_ok() {
+  local p="$1" m="$TARGET/.agents/skills/$1/.tad-pack-meta.yaml" np ns
+  if [ ! -s "$m" ]; then echo "meta empty or missing"; return 1; fi
+  if ! grep -qx 'sync_policy: upstream' "$m"; then echo "no 'sync_policy: upstream' line"; return 1; fi
+  if ! grep -qx 'baseline_source: fresh_install' "$m"; then echo "no 'baseline_source: fresh_install' line"; return 1; fi
+  np="$(grep -c '^  - path:' "$m" || true)"
+  ns="$(find "$SOURCE/.agents/skills/$p" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*' | grep -c . || true)"
+  if [ "$np" != "$ns" ]; then echo "path entries $np, source files $ns"; return 1; fi
+  return 0
+}
+
+# pm_upgrade_case <shape> — empty | nopolicy | nobaseline (D5).
+pm_upgrade_case() {
+  local shape="$1" tag="pm.$1" npk ndmg i p q mode log rc nstop want got exp qout pout bad line1 line2 n want1 want2 d1 d2 d3 rs
+  CURRENT_CASE="$tag"
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  if [ "$shape" = "empty" ]; then npk=4; ndmg=3; exp="U=kept C=kept line=0"; else npk=2; ndmg=1; exp="U=updated C=kept line=1"; fi
+  pm_pick_packs "$npk"
+  if [ "$PM_COUNT" -lt "$npk" ]; then
+    fail "$tag: setup found $PM_COUNT pack(s) with a meta and three plain files, needs $npk"
+    return 0
+  fi
+  q="$(pm_nth "$PM_PACKS" "$npk")"
+  mkdir -p "$SNAP/pm"
+  i=1
+  while [ "$i" -le "$npk" ]; do
+    p="$(pm_nth "$PM_PACKS" "$i")"
+    pm_files "$TARGET/.agents/skills/$p" > "$SANDBOX/pm-files-$i.txt"
+    PM_U="$(sed -n 1p "$SANDBOX/pm-files-$i.txt")"
+    PM_C="$(sed -n 2p "$SANDBOX/pm-files-$i.txt")"
+    if [ ! -f "$SOURCE/.agents/skills/$p/$PM_U" ] || [ ! -f "$TARGET/.agents/skills/$p/$PM_C" ]; then
+      fail "$tag: setup marked files missing in $p"
+      return 0
+    fi
+    printf '%s\n' 'pm-fixture upstream change' >> "$SOURCE/.agents/skills/$p/$PM_U"
+    printf '%s\n' 'pm-fixture local change' >> "$TARGET/.agents/skills/$p/$PM_C"
+    if [ "$i" -le "$ndmg" ]; then mode="$shape"; elif [ "$shape" = "empty" ]; then mode="ctl-empty"; else mode="keep"; fi
+    if ! pm_meta_write "$p" "$mode"; then
+      fail "$tag: setup could not write the $mode meta of $p"
+      return 0
+    fi
+    cp -R "$TARGET/.agents/skills/$p" "$SNAP/pm/$p"
+    i=$((i + 1))
+  done
+  log="$SANDBOX/pm-$shape.log"
+  rc="$(fn_run "$log")"
+  # For the reader: the installer's pre-check lines and its last three lines.
+  grep -F 'PACK-META-EMPTY' "$log" | sed 's/^/  log: /' || true
+  tail -3 "$log" | sed 's/^/  log: /' || true
+  if [ "$rc" != "0" ]; then
+    grep -F 'INSTALL-EXIT' "$log" | sed 's/^/  log: /' || true
+    fail "$tag: [U1] upgrade rc=$rc (want 0; the installer stop line is shown above)"
+    return 0
+  fi
+  nstop="$(grep -c 'INSTALL-EXIT' "$log" || true)"
+  got="$(head -1 "$TARGET/.tad/version.txt" 2>/dev/null | tr -d '[:space:]' || true)"
+  if [ "$nstop" = "0" ] && [ "$got" = "$AW_TARGET" ]; then
+    pass "$tag: [U1] upgrade rc=0, no installer stop line, version.txt = $AW_TARGET"
+  else
+    fail "$tag: [U1] rc=0 but installer stop lines=$nstop, version.txt=${got:-<missing>} (want $AW_TARGET)"
+  fi
+  # [U2] D2 (a)(b)(d): each damaged pack equals its control and the expected outcome.
+  bad=""
+  qout="$(pm_outcome "$q" "$log")"
+  if [ "$qout" != "$exp" ]; then bad="${bad} control $q: $qout (want $exp);"; fi
+  rs="$(pm_others_same "$q")" || bad="${bad} control $q other files: $rs;"
+  i=1
+  while [ "$i" -le "$ndmg" ]; do
+    p="$(pm_nth "$PM_PACKS" "$i")"
+    pout="$(pm_outcome "$p" "$log")"
+    if [ "$pout" != "$qout" ] || [ "$pout" != "$exp" ]; then bad="${bad} $p: $pout (control $qout, want $exp);"; fi
+    rs="$(pm_others_same "$p")" || bad="${bad} $p other files: $rs;"
+    i=$((i + 1))
+  done
+  if [ -z "$bad" ]; then
+    pass "$tag: [U2] $ndmg damaged pack(s) match control $q and the expected outcome ($exp), other files unchanged"
+  else
+    fail "$tag: [U2] outcome differs:$bad"
+  fi
+  # [U3] D2 (c): the meta after the run.
+  bad=""
+  i=1
+  while [ "$i" -le "$ndmg" ]; do
+    p="$(pm_nth "$PM_PACKS" "$i")"
+    rs="$(pm_meta_after_ok "$p")" || bad="${bad} $p: $rs;"
+    i=$((i + 1))
+  done
+  if [ -z "$bad" ]; then
+    pass "$tag: [U3] new meta of each damaged pack: non-empty, upstream, fresh_install, one entry per source file"
+  else
+    fail "$tag: [U3] new meta wrong:$bad"
+  fi
+  if [ "$shape" = "empty" ]; then
+    # [U4] the two pre-check lines, exact text, before the backup line.
+    d1="$(pm_nth "$PM_PACKS" 1)"; d2="$(pm_nth "$PM_PACKS" 2)"; d3="$(pm_nth "$PM_PACKS" 3)"
+    want1="PACK-META-EMPTY: 3 pack meta file(s) in .agents/skills are empty (0 bytes): $d1, $d2, $d3"
+    want2="PACK-META-EMPTY: an empty meta records no hashes and no fork setting, so this update keeps the files these packs already have and writes them a new meta with sync_policy: upstream (a pack you had forked is no longer marked forked: run --fork-pack <name> again for it); to have them updated instead, restore each .agents/skills/<name>/.tad-pack-meta.yaml from a backup made before it was emptied, then run the update again with --force"
+    n="$(grep -c 'PACK-META-EMPTY:' "$log" || true)"
+    line1="$(grep -F 'PACK-META-EMPTY:' "$log" | sed -n 1p || true)"
+    line2="$(grep -F 'PACK-META-EMPTY:' "$log" | sed -n 2p || true)"
+    bad=""
+    if [ "$n" != "2" ]; then bad="${bad} $n pre-check lines (want 2);"; fi
+    if [ "PACK-META-EMPTY:${line1#*PACK-META-EMPTY:}" != "$want1" ]; then bad="${bad} first pre-check line is not the count-and-names text for $d1, $d2, $d3;"; fi
+    if [ "PACK-META-EMPTY:${line2#*PACK-META-EMPTY:}" != "$want2" ]; then bad="${bad} second pre-check line is not the D3 text;"; fi
+    if ! fn_line_before "$log" 'PACK-META-EMPTY: 3 pack meta' 'Backing up existing .tad/'; then bad="${bad} first pre-check line not before the backup line;"; fi
+    if [ -z "$bad" ]; then
+      pass "$tag: [U4] two pre-check lines, count 3 and names $d1, $d2, $d3 (control $q not named), before the backup line"
+    else
+      fail "$tag: [U4] pre-check lines wrong:$bad"
+    fi
+  else
+    n="$(grep -c 'PACK-META-EMPTY' "$log" || true)"
+    if [ "$n" = "0" ]; then
+      pass "$tag: [U5] no pre-check line (no meta is 0 bytes)"
+    else
+      fail "$tag: [U5] $n pre-check line(s) printed for a target with no 0-byte meta"
+    fi
+  fi
+  assert_no_network || true
+}
+
+case_pmempty() { pm_upgrade_case empty; }
+case_pmnopolicy() { pm_upgrade_case nopolicy; }
+case_pmnobaseline() { pm_upgrade_case nobaseline; }
+
+# pm_maint_run <out> <args...> — the folder's tad.sh with cwd $TARGET; prints rc.
+pm_maint_run() {
+  local out="$1" rc=0; shift
+  ( cd "$TARGET" && PATH="$SHIMBIN:$PATH" bash "$TADSH" "$@" > "$out" 2>&1 ) || rc=$?
+  printf '%s' "$rc"
+}
+
+# pm_row_fields <out> <name> — the --list-packs row of <name> as "policy|baseline|files".
+pm_row_fields() {
+  local row
+  row="$(grep -E "^$2[[:space:]]" "$1" | head -1 || true)"
+  if [ -z "$row" ]; then printf 'no-row'; return 0; fi
+  set -- $row
+  printf '%s|%s|%s' "${2:-}" "${3:-}" "${4:-}"
+}
+
+case_pmmaint() {
+  CURRENT_CASE="pm.maint"
+  local sk rc o pa pb pc mtag
+  new_sandbox
+  sk="$TARGET/.agents/skills"
+  mkdir -p "$sk/pa" "$sk/pb" "$sk/pc" "$SNAP/pm-maint"
+  : > "$sk/pa/.tad-pack-meta.yaml"
+  printf '%s\n' '# Auto-generated by tad.sh — do not edit manually' 'installed_version: "0.0.1"' 'baseline_source: fresh_install' 'files:' > "$sk/pb/.tad-pack-meta.yaml"
+  printf '%s\n' '# Auto-generated by tad.sh — do not edit manually' 'installed_version: "0.0.1"' 'sync_policy: upstream' 'baseline_source: fresh_install' 'files:' > "$sk/pc/.tad-pack-meta.yaml"
+  cp "$sk/pa/.tad-pack-meta.yaml" "$SNAP/pm-maint/pa"
+  cp "$sk/pb/.tad-pack-meta.yaml" "$SNAP/pm-maint/pb"
+  # [M1] --list-packs
+  o="$SANDBOX/pm-list.out"
+  rc="$(pm_maint_run "$o" --list-packs)"
+  sed 's/^/  log: /' "$o" || true
+  pa="$(pm_row_fields "$o" pa)"; pb="$(pm_row_fields "$o" pb)"
+  if [ "$rc" = "0" ] && [ "$pa" = "upstream|—|0" ] && [ "$pb" = "upstream|fresh_install|0" ] && [ "$(tail -1 "$o")" = "3 packs (3 upstream, 0 forked)" ]; then
+    pass "pm.maint: [M1] --list-packs rc=0, pa and pb listed as upstream, last line '3 packs (3 upstream, 0 forked)'"
+  else
+    fail "pm.maint: [M1] --list-packs rc=$rc pa=[$pa] pb=[$pb] last=[$(tail -1 "$o")]"
+  fi
+  # [M2] [M3] --fork-pack on a meta with no sync_policy line refuses, changes nothing.
+  for pc in pa pb; do
+    o="$SANDBOX/pm-fork-$pc.out"
+    rc="$(pm_maint_run "$o" --fork-pack "$pc")"
+    sed 's/^/  log: /' "$o" || true
+    if [ "$pc" = "pa" ]; then mtag="[M2]"; else mtag="[M3]"; fi
+    if [ "$rc" = "1" ] && grep -qF -e "cannot fork '$pc'" "$o" && grep -qF -e 'has no sync_policy line' "$o" \
+       && cmp -s "$TARGET/.agents/skills/$pc/.tad-pack-meta.yaml" "$SNAP/pm-maint/$pc"; then
+      pass "pm.maint: $mtag --fork-pack $pc rc=1 with the refusal text, meta byte-identical"
+    else
+      fail "pm.maint: $mtag --fork-pack $pc rc=$rc (want 1, the refusal text and an unchanged meta)"
+    fi
+  done
+  # [M4] --unfork-pack on a 0-byte meta: not forked, nothing written.
+  o="$SANDBOX/pm-unfork-pa.out"
+  rc="$(pm_maint_run "$o" --unfork-pack pa)"
+  sed 's/^/  log: /' "$o" || true
+  if [ "$rc" = "0" ] && grep -qxF -e "'pa' is not forked (current: upstream)" "$o" && cmp -s "$sk/pa/.tad-pack-meta.yaml" "$SNAP/pm-maint/pa"; then
+    pass "pm.maint: [M4] --unfork-pack pa rc=0, 'not forked (current: upstream)', meta byte-identical"
+  else
+    fail "pm.maint: [M4] --unfork-pack pa rc=$rc (want 0, the not-forked text and an unchanged meta)"
+  fi
+  # [M5] control: a healthy meta forks and unforks.
+  o="$SANDBOX/pm-fork-pc.out"
+  rc="$(pm_maint_run "$o" --fork-pack pc)"
+  sed 's/^/  log: /' "$o" || true
+  if [ "$rc" = "0" ] && grep -qx 'sync_policy: forked' "$sk/pc/.tad-pack-meta.yaml"; then
+    o="$SANDBOX/pm-unfork-pc.out"
+    rc="$(pm_maint_run "$o" --unfork-pack pc)"
+    sed 's/^/  log: /' "$o" || true
+    if [ "$rc" = "0" ] && grep -qx 'sync_policy: upstream' "$sk/pc/.tad-pack-meta.yaml"; then
+      pass "pm.maint: [M5] control pc forks (rc=0, sync_policy: forked) and unforks (rc=0, sync_policy: upstream)"
+    else
+      fail "pm.maint: [M5] control pc --unfork-pack rc=$rc or the meta does not say upstream"
+    fi
+  else
+    fail "pm.maint: [M5] control pc --fork-pack rc=$rc or the meta does not say forked"
+  fi
+  assert_no_network || true
+}
+
 run_case() {
   case "$1" in
     ac2.1) case_ac21 ;;
@@ -4022,6 +4455,10 @@ run_case() {
     rp.precopy-lost) case_rpprecopylost ;;
     rp.leftover) case_rpleftover ;;
     rp.lint-control) case_rplintcontrol ;;
+    pm.empty) case_pmempty ;;
+    pm.nopolicy) case_pmnopolicy ;;
+    pm.nobaseline) case_pmnobaseline ;;
+    pm.maint) case_pmmaint ;;
     caps) case_caps ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac

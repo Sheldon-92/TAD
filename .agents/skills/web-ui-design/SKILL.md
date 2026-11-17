@@ -369,12 +369,16 @@ every token value you set.
 
 **Step 1: Build token architecture (3 levels)**
 
+> **Token value canon pointer**: 令牌值正本＝design-foundation 包 `tokens/`（`.agents/skills/design-foundation/tokens/tokens.css` 及其镜像 tokens.json）；本包保留三层架构的流程知识，不另定令牌值。
+
 > **Token file structure note**: `examples/starter-tokens.json` uses a flat `primitive`
 > layer (`"gray-50": "#f9fafb"`) rather than sub-grouped categories
 > (`"color": {"gray-50": ...}`). This is intentional for the Level 0 bash+jq compiler
 > simplicity. If you use Level 1 Style Dictionary, you may want to sub-group by category
 > (`color`, `size`, `font`, `radius`) and update the compiler accordingly. See
 > `references/design-system-patterns.md` for production design system patterns.
+>
+> **示例值注**: starter-tokens.json 是示例值，非令牌来源（令牌值正本见上指针）。
 
 Level 0 — No npm required (bash+jq):
 ```bash
@@ -382,7 +386,11 @@ Level 0 — No npm required (bash+jq):
 bash tools/tokens-to-css.sh examples/starter-tokens.json > tokens.css
 ```
 
+> **Compiler input note**: 对 Space 呈现面，编译器输入改用 design-foundation 包的 tokens.json（正本镜像）；上方 starter 输入仅作示例演示。
+
 Level 1 — Node available:
+
+> **Level 1 管线正本指针**: Level 1 Style Dictionary 管线对 Space 呈现面的 source 须派生自 design-foundation 正本（tokens.css／其镜像 tokens.json），不许以项目自著的 tokens/**/*.json 独立起源规范值；其产物 dist/tokens.css 是构建产物、永不作令牌来源。
 
 Install:
 ```bash

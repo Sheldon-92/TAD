@@ -8,7 +8,7 @@ TAD (Triangle Agent Development) uses three roles:
 All three roles operate under the TAD quality framework (Gates 1-4, Ralph Loop, knowledge assessment).
 Independence of judgment is the rule: no one judges their own work. Separate terminals with the human as the bridge are one way; a fresh subagent dispatched by Cora is another.
 
-> **Runtime status (v4.0.11)**: TAD supports **Claude Code**, **Codex**, **OpenCode**, and **Cursor**
+> **Runtime status (v4.0.12)**: TAD supports **Claude Code**, **Codex**, **OpenCode**, and **Cursor**
 > (install targets `claude-code|codex|opencode|cursor`, default `codex`). `AGENTS.md` is read natively
 > by Codex, OpenCode, and Cursor, and `.agents/skills/` is their discovery path, so roles, gates, and
 > capability packs load open-box. Claude Code reads skills from `.claude/skills/` (the installer links
@@ -174,6 +174,7 @@ When a user's task matches a capability pack's keywords, announce a pointer — 
 | ai-podcast-production | AI podcast production judgment for coding agents. Covers script writin | `.agents/skills/ai-podcast-production/SKILL.md` |
 | ai-voice-production | AI voice production judgment for coding agents. Covers TTS tool select | `.agents/skills/ai-voice-production/SKILL.md` |
 | data-engineering | Data engineering for AI capability pack. Gives AI agents the judgment  | `.agents/skills/data-engineering/SKILL.md` |
+| design-foundation | 设计规范, 令牌, design tokens, 呈现面, Space 视觉, 底子 | `.agents/skills/design-foundation/SKILL.md` |
 | knowledge-graph | Knowledge Graph & GraphRAG capability pack. Gives AI agents the judgme | `.agents/skills/knowledge-graph/SKILL.md` |
 | llm-observability | LLM observability & LLMOps capability pack. Gives AI agents the judgme | `.agents/skills/llm-observability/SKILL.md` |
 | ml-training | ML model training on cloud GPU capability pack. Covers platform select | `.agents/skills/ml-training/SKILL.md` |

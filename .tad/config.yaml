@@ -1,6 +1,6 @@
-# TAD Configuration v4.0.11 - Full is the Default Channel (lite frozen 2026-08-13)
+# TAD Configuration v4.0.12 - Full is the Default Channel (lite frozen 2026-08-13)
 method: TAD
-version: 4.0.11
+version: 4.0.12
 description: Triangle Agent Development - Cora conducts, Alex designs, Blake builds; independent gates check the work + Knowledge Search (brain-native) + 25 Capability Packs + Cross-Platform + Research Engine
 last_updated: 2026-08-02
 
@@ -282,6 +282,10 @@ rollout_plan:
 
 # ==================== 版本控制 ====================
 version_history:
+  v4.0.12:
+    date: "2026-11-17"
+    changes:
+      - "Patch release: framework changes from the private source since the previous patch release (pack-meta read guards, report upgrades, design-foundation pack, Surplus Phase 2 tickets); see CHANGELOG [4.0.12] and docs/releases/v4.0.12-release.md"
   v2.29.0:
     date: "2026-06-10"
     changes:

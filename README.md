@@ -1,6 +1,7 @@
 # TAD - Triangle Agent Development
 
-**Version 4.0.11 — Claude Code · Codex · OpenCode · Cursor**
+**Version 4.0.12 — Claude Code · Codex · OpenCode · Cursor**
+[![tests (no-git subset)](https://github.com/Sheldon-92/TAD/actions/workflows/tad-tests.yml/badge.svg)](https://github.com/Sheldon-92/TAD/actions/workflows/tad-tests.yml)
 
 **You talk to Cora. She gets the work done and shows you the result.**
 
@@ -31,15 +32,53 @@ Not every job needs the whole flow: Cora first clarifies the request (you confir
 **Start**
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --platform claude-code --yes   # or codex | opencode | cursor
+curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s -- --yes
 /cora        # Codex: $cora
 ```
+
+Without `--platform` the installer sets up Codex (its default), where you start with `$cora`; for Claude Code, OpenCode or Cursor add `--platform claude-code` (or `opencode`, `cursor`) before `--yes`, and start with `/cora`.
 
 `/alex` and `/blake` still work directly for a single handoff, a bug or a technical discussion.
 
 Cora has been run on Claude Code and Codex, to the extent listed in [What has been run on each harness](#what-has-been-run-on-each-harness). She has not been run on Cursor or OpenCode yet.
 
 > **[Changelog](CHANGELOG.md)** | **[Installation](INSTALLATION_GUIDE.md)** | **[Multi-Platform Guide](docs/MULTI-PLATFORM.md)** | **[Ralph Loop Guide](docs/RALPH-LOOP.md)**
+
+---
+
+## First thing: a real run
+
+This is an excerpt from the records of one real run. It was a small task that Cora proposed, fixing stale capability-pack numbers in `PROJECT_CONTEXT.md`; the human chose it, and it also serves as the source of this example.
+
+The two lines below are the options he picked, as recorded; the "(Recommended)" label on each is the proposer's, not his:
+
+> **The human:** 先跑一个小任务当示例 (Recommended)
+
+*(translation: Run a small task first, as the example (Recommended))*
+
+The record's question field for the task's blocks reads "none asked": Cora had looked the file up first and found three stale places, not one, and showed them in her playback. She restated the task in three blocks: what to change, what not to touch, and how to check it.
+
+> **The human:** 确认，开始 (Recommended)
+
+*(translation: Confirmed, start (Recommended))*
+
+The plan she recorded: a simple task; Blake makes the change; a run reviewer and a consistency reviewer check it; an estimate of 6 dispatches (about 4).
+
+Blake saved a byte-for-byte copy of the file first, changed three lines, and listed the file's sha256 before and after. One of his change entries:
+
+> Line 19: "11 auto-match-active / 14 frozen" -> "12 auto-match-active / 13 frozen"
+
+The run reviewer recounted the registry and compared the file with the saved copy; the first line of its note for the human:
+
+> PASS. The three stale pack numbers in PROJECT_CONTEXT.md now agree with the registry, and nothing else changed.
+
+The consistency reviewer found no P0. It noted that one line outside the request (line 129) was already stale; as asked, that line was left alone, and the finding was offered to the human as a follow-up. The route was simple, no rework, 3 dispatches against the estimate of 6.
+
+| TAD version | Harness | Date | Records |
+|---|---|---|---|
+| 4.0.11 | Claude Code (Cora's own session and every subagent) | 2026-11-09 | `.tad/evidence/journal/conductor-simple-2026-11-09.md` (section project-context-pack-counts); `.tad/evidence/simple/2026-11-09-project-context-pack-counts-completion.md`; `.tad/evidence/simple/2026-11-09-project-context-pack-counts-review-run.md`; `.tad/evidence/simple/2026-11-09-project-context-pack-counts-review-consistency.md`; `.tad/evidence/simple/2026-11-09-project-context-pack-counts-before.md` |
+
+The harness, version and date are what the conductor's journal records for this run. The five records are the maintainer's local run records (the evidence folder is gitignored); `PROJECT_CONTEXT.md` is the file the run changed.
 
 ---
 
@@ -85,8 +124,8 @@ Facts only. Nothing unrun is described as verified. Fixtures are scripted headle
 |---------|-----|---------|
 | **Claude Code** | Cora headless smoke fixtures (6/6) and queue fixtures (5/5), no P0; one live conducted run (a real Claude Code session conducting a real Epic in this repository), which closed PARTIAL; its open P0 was fixed afterwards and re-checked on the scripted fixtures only. | No interactive live session is on disk. Several paths were checked by text only; they are listed under known limits in the [4.0.0 changelog entry](CHANGELOG.md). |
 | **Codex** | The same fixtures, 6/6 and 5/5, no P0; in the live run, Steps Y1 to Y5 only. | Gates, acceptance and distillation were not run on Codex; conducting a run whose fixtures need `claude -p` was blocked. |
-| **Cursor** | Nothing. | Cora was not run on Cursor. |
-| **OpenCode** | Nothing. | Cora was not run on OpenCode. |
+| **Cursor** | Nothing. | Cora was not run on Cursor. On 2026-11-10 one headless session ran a fixed three-command prompt, not a Cora scenario, inside a trial sandbox profile written for that test and never shipped. A design review then found that this profile left Cursor's state folder in the home directory (~/.cursor, whose contents Cursor may later load and run) writable, most of the home directory readable and the network open, so it would not have stopped a session from changing files Cursor may later run or from sending out what it read. After that review the maintainer decided not to run the Cora fixtures. |
+| **OpenCode** | Nothing. | Cora was not run on OpenCode. On 2026-11-10 one headless session with a fixed prompt, not a Cora scenario, inside a trial sandbox profile of the same kind, was refused by the vendor's server before any model turn because the stored API key had expired. After the review named in the Cursor row the maintainer decided not to run the Cora fixtures here either. |
 
 The roles `/alex` and `/blake`, the gates and the lifecycle hooks have their own status per harness in the [status table](docs/MULTI-PLATFORM.md#current-status).
 
@@ -109,7 +148,7 @@ Details: [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md). Claude Code loads `AGEN
 To check an install:
 
 ```bash
-cat .tad/version.txt     # 4.0.11
+cat .tad/version.txt     # 4.0.12
 ```
 
 Installed projects update with one sentence ("升级 TAD" to Cora, `/tad-update`, or `$tad-update`): the check is read-only and prints the exact line to run, `/bin/bash .tad/scripts/tad-update.sh --yes --platform <platforms>`; after your one yes it updates every platform listed in one run, keeps a backup of only the files it changes or removes, and ends with a report (version, project files unchanged or the paths that changed, your edits in TAD files, backup path, holding area). Older backups move to a holding area and are deleted only with your yes ("清掉" clears them; the next update's check also offers it); before each deletion the held item is measured again from its files and kept if anything changed since it was listed. "看备份" lists the TAD files you edited: each diff is written to a local file you open yourself (no file content is printed in the conversation), and one yes absorbs a file into the salvage folder under the project knowledge directory, never into `AGENTS.md`. `AGENTS.md` has a File Ownership section that says which files are TAD's and which are yours.
@@ -157,6 +196,6 @@ TAD evolves through direct improvement in the [TAD repository](https://github.co
 
 ---
 
-**TAD v4.0.11 — Claude Code · Codex · OpenCode · Cursor**
+**TAD v4.0.12 — Claude Code · Codex · OpenCode · Cursor**
 
 *AI does the work. Humans guard the value.*

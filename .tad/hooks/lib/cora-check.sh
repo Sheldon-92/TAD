@@ -9,6 +9,9 @@
 #   cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-....md>
 #   cora-check.sh gate4-record <gate report .md>
 #   cora-check.sh gate3-files <.tad/{active,archive}/epics/EPIC-....md> <phase N>
+#   cora-check.sh judge-first <.tad/{active,archive}/epics/EPIC-....md> <phase N> <.tad/{active,archive}/handoffs/HANDOFF-....md>
+#   cora-check.sh rounds <.tad/{active,archive}/epics/EPIC-....md> <phase N>
+#   (judge-first and rounds take the slug by the same rule; rounds never exits 1.)
 # Slug source (both epic-taking subcommands): the Epic's **Epic ID** line;
 # when that line is absent, the slug falls back to the EPIC-<date>-<slug>
 # filename. An ID line, when present, always wins over the filename.
@@ -37,9 +40,34 @@
 # gate4-record: the `## For the human` section of a Gate 4 report holds a
 #   `light acceptance: <reason>` line, or at least one `real use: <path> ...` line and
 #   every such path exists (paths from the current directory).
+# judge-first: run by Cora before every dispatch of the Gate 3 run reviewer (conductor
+#   protocol step_Y6 1b). The handoff is the argument (Cora's {handoff_path}); it reads
+#   the handoff's front matter (the lines before the first line starting `## `), keys
+#   matched at line start only, so a `# rubric_ac: ...` comment line is not the key;
+#   the first matching line wins. First match decides: (1) `task_type: deliverable`
+#   or a non-empty `rubric_ref:` (not null/~) -> rubric AC (front matter); (2) a
+#   `rubric_ac:` line: `none` (any case) -> no rubric AC, any other non-empty value ->
+#   rubric AC (declared); (3) no such line or an empty value: the word rubric or judge
+#   anywhere in the file -> rubric AC (inferred), neither -> no rubric AC. Then the
+#   judge file phase<N>-rubric-verdict.md (latest -r<k>) in .tad/evidence/yolo/<slug>/.
+#   Prints one line: `no rubric AC (...)` or `OK <judge file>` (exit 0), or
+#   `MISSING <path> (rubric AC in <handoff>, <source>: ...)` (exit 1). Nothing else from
+#   the handoff is printed. No exit is a stop: any non-zero exit costs at most one judge.
+# rounds: run by Cora at step_Y7 1a only, into her journal (conductor protocol
+#   rounds_record). Derives G2, G3, G4 and TOTAL_ROUNDS from the round-numbered review
+#   files of phase N in .tad/evidence/yolo/<slug>/ (maxdepth 1): Gate 2
+#   design-review-consistency|risk|fit, Gate 3 gate3-verdict|impl-review-consistency|
+#   impl-review-domain, Gate 4 gate-report; `<base>.md` is round 1, `<base>-r<k>.md`
+#   round k, other names are not rounds. A file's label is the first `verdict:` line of
+#   its first 15 lines whose first word is PASS, CONDITIONAL, FAIL or PARTIAL, else
+#   UNREADABLE; a round is the worst of its files (FAIL > PARTIAL > UNREADABLE >
+#   CONDITIONAL > PASS) and counts unless PASS. Prints the four count lines and one
+#   `unreadable: <path>` line per unreadable file; it compares no threshold and stops
+#   nothing (review contract §7). Exit 0, usage 2.
+# Both read only: no file or temp file written, no git, no network.
 
 usage() {
-  echo "Usage: cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-*.md> | gate4-record <report.md> | gate3-files <.tad/{active,archive}/epics/EPIC-*.md> <phase N>" >&2
+  echo "Usage: cora-check.sh dispatches <.tad/{active,archive}/epics/EPIC-*.md> | gate4-record <report.md> | gate3-files <.tad/{active,archive}/epics/EPIC-*.md> <phase N> | judge-first <.tad/{active,archive}/epics/EPIC-*.md> <phase N> <.tad/{active,archive}/handoffs/HANDOFF-*.md> | rounds <.tad/{active,archive}/epics/EPIC-*.md> <phase N>" >&2
   exit 2
 }
 
@@ -255,9 +283,155 @@ cmd_gate3files() {
   exit 1
 }
 
+# epicslug EPIC : the slug of an Epic path checked as in gate3-files; prints it or calls usage
+epicslug() {
+  local epic="$1" slug
+  case "$epic" in
+    .tad/active/epics/*|.tad/archive/epics/*) ;;
+    *) usage ;;
+  esac
+  case "$epic" in *..*) usage ;; esac
+  [ -f "$epic" ] && [ -r "$epic" ] || usage
+  slug=$(sed -nE 's/^\*\*Epic ID\*\*:[[:space:]]*EPIC-[0-9]{8}-([A-Za-z0-9_-]+).*/\1/p' "$epic" | head -1)
+  # Filename fallback: only when the ID line above yields no slug.
+  if [ -z "$slug" ]; then
+    slug=$(basename "$epic" | sed -n 's/^EPIC-[0-9]\{8\}-\([A-Za-z0-9_-]*\)\.md$/\1/p')
+  fi
+  [ -n "$slug" ] || usage
+  printf '%s\n' "$slug"
+}
+
+# fmval FRONTMATTER KEY : the value of the first line that starts with KEY: (the key at
+# line start only, so a `# KEY: ...` comment line is not the key), with a ` #` comment,
+# spaces, quotes and [ ] removed. Prints nothing when there is no such line.
+fmval() {
+  printf '%s\n' "$1" | sed -n "s/^$2:\(.*\)\$/\1/p" | head -1 |
+    sed -E 's/[[:space:]]#.*$//' | sed -E "s/[][[:space:]\"']//g"
+}
+
+cmd_judgefirst() {
+  local epic="$1" n="$2" h="$3" slug dir fm v tt rr src j
+  [ -n "$epic" ] && [ -n "$n" ] && [ -n "$h" ] && [ -d .tad ] || usage
+  case "$n" in ''|*[!0-9]*) usage ;; esac
+  case "$h" in
+    .tad/active/handoffs/*|.tad/archive/handoffs/*) ;;
+    *) usage ;;
+  esac
+  case "$h" in *..*) usage ;; esac
+  [ -f "$h" ] && [ -r "$h" ] || usage
+  slug=$(epicslug "$epic") || exit 2
+  [ -n "$slug" ] || usage
+  dir=".tad/evidence/yolo/$slug"
+  # front matter: the lines before the first line starting "## " (with or without ---)
+  fm=$(awk '/^## /{exit} {print}' "$h")
+  src=""
+  # (1) front matter backstop (gate skill rubric_ac_trigger (b))
+  tt=$(fmval "$fm" task_type | tr '[:upper:]' '[:lower:]')
+  rr=$(fmval "$fm" rubric_ref)
+  if [ "$tt" = "deliverable" ]; then src="front matter"
+  else
+    case "$rr" in ''|null|NULL|Null|'~') ;; *) src="front matter" ;; esac
+  fi
+  # (2) declared: a rubric_ac: line at line start with a non-empty value
+  if [ -z "$src" ]; then
+    v=$(fmval "$fm" rubric_ac)
+    if [ -n "$v" ]; then
+      case "$(printf '%s' "$v" | tr '[:upper:]' '[:lower:]')" in
+        none) echo "no rubric AC (declared): $h"; exit 0 ;;
+        *) src="declared" ;;
+      esac
+    fi
+  fi
+  # (3) inferred: no rubric_ac: line or an empty value; the whole file, case-insensitive
+  if [ -z "$src" ]; then
+    if command grep -Eiq 'rubric|judge' "$h"; then src="inferred"
+    else echo "no rubric AC (inferred: neither word in the file): $h"; exit 0; fi
+  fi
+  j=$(latestof "$dir" "phase$n-rubric-verdict")
+  if [ -n "$j" ]; then echo "OK $j"; exit 0; fi
+  echo "MISSING $dir/phase$n-rubric-verdict.md (rubric AC in $h, $src: dispatch the judge before the run reviewer)"
+  exit 1
+}
+
+# labelof FILE : the first `verdict:` line in the first 15 lines whose value's first word is
+# PASS, CONDITIONAL, FAIL or PARTIAL; else UNREADABLE
+labelof() {
+  local w
+  while IFS= read -r w; do
+    case "$w" in PASS|CONDITIONAL|FAIL|PARTIAL) echo "$w"; return 0 ;; esac
+  done <<EOF_L
+$(first15 "$1" | sed -nE 's/^verdict:[[:space:]]*([A-Za-z]+).*/\1/p')
+EOF_L
+  echo UNREADABLE
+}
+
+cmd_rounds() {
+  local epic="$1" n="$2" slug dir f b rest g bl base k t lab rk recs unr
+  [ -n "$epic" ] && [ -n "$n" ] && [ -d .tad ] || usage
+  case "$n" in ''|*[!0-9]*) usage ;; esac
+  slug=$(epicslug "$epic") || exit 2
+  [ -n "$slug" ] || usage
+  dir=".tad/evidence/yolo/$slug"
+  recs=""; unr=""
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    b=${f##*/}; b=${b%.md}; rest=${b#phase$n-}
+    for g in 2 3 4; do
+      case "$g" in
+        2) bl="design-review-consistency design-review-risk design-review-fit" ;;
+        3) bl="gate3-verdict impl-review-consistency impl-review-domain" ;;
+        4) bl="gate-report" ;;
+      esac
+      for base in $bl; do
+        k=""
+        if [ "$rest" = "$base" ]; then k=1
+        else
+          case "$rest" in
+            "$base"-r*) t=${rest#"$base"-r}
+              case "$t" in ''|*[!0-9]*) ;; *) k=$((10#$t)) ;; esac ;;
+          esac
+        fi
+        [ -n "$k" ] || continue
+        lab=$(labelof "$f")
+        case "$lab" in FAIL) rk=5 ;; PARTIAL) rk=4 ;; UNREADABLE) rk=3 ;; CONDITIONAL) rk=2 ;; *) rk=1 ;; esac
+        [ "$lab" = UNREADABLE ] && unr="$unr
+unreadable: $f"
+        recs="$recs
+$g $k $rk"
+      done
+    done
+  done <<EOF_F
+$(find "$dir" -maxdepth 1 -type f -name "phase$n-*.md" 2>/dev/null | LC_ALL=C sort)
+EOF_F
+  # numeric fields only in awk (labels are printed from a fixed table, never compared)
+  printf '%s\n' "$recs" | sed '/^$/d' | awk '
+    { g = $1 + 0; k = $2 + 0; r = $3 + 0
+      if (!((g, k) in w) || r > w[g, k]) w[g, k] = r
+      if (k > mx[g]) mx[g] = k }
+    END {
+      nm[1] = "PASS"; nm[2] = "CONDITIONAL"; nm[3] = "UNREADABLE"; nm[4] = "PARTIAL"; nm[5] = "FAIL"
+      tot = 0
+      for (g = 2; g <= 4; g++) {
+        c = 0; l = ""
+        for (k = 1; k <= mx[g]; k++) {
+          if (!((g, k) in w)) continue
+          if (w[g, k] > 1) c++
+          l = l (l == "" ? "" : ", ") "r" k " " nm[w[g, k]]
+        }
+        if (l == "") l = "none"
+        print "G" g ": " c " (" l ")"
+        tot += c
+      }
+      print "TOTAL_ROUNDS: " tot }'
+  printf '%s\n' "$unr" | sed '/^$/d' | LC_ALL=C sort
+  exit 0
+}
+
 case "$1" in
   dispatches) cmd_dispatches "$2" ;;
   gate4-record) cmd_gate4 "$2" ;;
   gate3-files) cmd_gate3files "$2" "$3" ;;
+  judge-first) cmd_judgefirst "$2" "$3" "$4" ;;
+  rounds) cmd_rounds "$2" "$3" ;;
   *) usage ;;
 esac

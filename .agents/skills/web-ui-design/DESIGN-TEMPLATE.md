@@ -29,6 +29,7 @@
 
 <!-- Use semantic names + hex values + functional roles. -->
 <!-- Follow 60-30-10 rule: 60% dominant, 30% secondary, 10% accent. -->
+<!-- 令牌值正本指针：呈现面令牌值正本＝design-foundation 包 tokens/（.agents/skills/design-foundation/tokens/tokens.css）；本模板只记录逐项目取值，不另立正本。 -->
 
 ### Primary Palette
 

@@ -61,9 +61,13 @@ List each `real_paths` id from the handoff and any path you expect to end `not-r
 
 事实性自报逐条入表：每条 claim 附产生该数字的只读命令与输出指针；无指针的 claim 不成立，转述不算指针。证据强度取 `.tad/tasks/evidence-collection.md` 的强度词表（`recomputed`／`disk-read`／`reported`），不在此重定义。
 
-| claim | 只读命令 | 输出指针 | 证据强度 |
-|---|---|---|---|
-| [一条事实性自报] | [产生该数字的只读命令] | [输出文件或日志指针] | [recomputed / disk-read / reported] |
+| claim | 只读命令 | 输出指针 | 证据强度 | 签认档位 |
+|---|---|---|---|---|---|
+| [一条事实性自报] | [产生该数字的只读命令] | [输出文件或日志指针] | [recomputed / disk-read / reported] | T3 |
+
+签认档位按 `.tad/templates/review-contract.md` §1 档位定义由本表行导出：证据强度为 `recomputed` 且命令由非本件作者复跑并落盘者标 T1；由独立评审人亲跑/亲读留痕者标 T2；其余标 T3。本件作者不得把自跑结果标为 T1/T2。Gate 3 run 评审人的既有抽核职责含档位抽核：所标档位与载体不符＝该行 claim 不成立（同证据否决口径）。
+分界（与 VA1 价值自述）：本表的档位只标**证据主张的核验强度**。COMPLETION 的「价值自述」节（声称的收益／实际结果／不做会怎样）是席位自述面——不标档位、不得引本表档位为其背书；档位也不对价值作任何判断。两节同居一文，对象不同、互不替代。
+存量豁免：本节落地前所产的 COMPLETION 无『签认档位』列者不判、不回改；读取时其主张按未标注处理（T3 上限，口径见 review-contract §1）。
 
 ### Knowledge Assessment
 

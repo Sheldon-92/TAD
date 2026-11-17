@@ -26,7 +26,7 @@ Checklist items:
 - [ ] All P0 resolved. Why ME: 质量检查（问题是否修复）
 - [ ] §9.1 Methods legal — command | path-check | fixture | rubric-spawn | light-tier N/A; prose-only illegal (Gate 3 row FAIL), empty §9.1 still BLOCKS (consistency lens baseline run). AC 字面 dry-run 常设化：consistency 评审文件须含 `## AC dry-run (baseline)` 表（逐 §9.1 行：字面命令｜baseline 实跑结果｜预期形态（该失败且失败理由对／该通过）｜match y/n）；§9.1 有行而表中无对应行＝该轮 Gate 2 不完整（既有门的完备性规则，不新设门）。命令文本的常设预检 linter 点名 `.tad/hooks/lib/verify-ac-commands.sh`：严格按其头部纪律——advisory、exit 恒 0、不注册任何 hook、不作拦截；字面实跑仍由评审人做，不造自动执行器. Why ME: 只检查"验证方法合法"
 - [ ] Decisions with acceptance; code bound kept — every decision names how it is accepted (a §9.1 row or a real_path id); no fenced block over 15 lines and at most 80 fenced lines in all (handoff-creation-protocol step1 `code_bound`). Why ME: 只检查"决策可验收、代码量不越界"
-- [ ] Handoff header form [handoff-header-form] — 新合同机械核验三点：① 首行须为 `---`；② `dispatch_id` 位于 front matter 块内（首行 `---` 与其闭合 `---` 之间）；③ §9.1 表头须为形态 A（`| # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |`）；④ §9.1 各行 Expected Evidence 非空（表区逐行机械可判；输出形预设的判断面由 AC dry-run 表承接，不在本点）。三点全为盘面事实、评审人机械可判；不合规时合同退回改形，不靠检查器容忍过门。存量豁免：本行只约束本行落地后进入 Gate 2 的新合同，已在野的存量 handoff 与评审件不回改，gate3-check.sh 的定位层容忍不撤销、只服务存量件。 Why ME: 只检查"新合同头形三点是否合规"
+- [ ] Handoff header form [handoff-header-form] — 新合同机械核验四点：① 首行须为 `---`；② `dispatch_id` 位于 front matter 块内（首行 `---` 与其闭合 `---` 之间）；③ §9.1 表头须为形态 A（`| # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output (Alex step1d) |`）；④ §9.1 各行 Expected Evidence 非空（表区逐行机械可判；输出形预设的判断面由 AC dry-run 表承接，不在本点）。四点全为盘面事实、评审人机械可判；不合规时合同退回改形，不靠检查器容忍过门。存量豁免：本行只约束本行落地后进入 Gate 2 的新合同，已在野的存量 handoff 与评审件不回改，gate3-check.sh 的定位层容忍不撤销、只服务存量件。 Why ME: 只检查"新合同头形四点是否合规"
 - [ ] Architecture complete. Why ME: 高层设计存在性
 - [ ] Components specified. Why ME: 组件级规格存在性
 - [ ] Functions verified. Why ME: 代码级引用正确性（grep 可验证）
@@ -52,6 +52,7 @@ Checklist items:
   不得以其他行结果抵消；不符属口径未注明者，须先注明口径再重算，仍不符按上行处理。
   Load-point claims: 声称某文件/条文构成装载或约束的 AC 行，Verification Method
   必须含位置断言（目标内容行号 ≤ 该载体单次可达范围）；只有 grep 在场不算装载成立。
+  签认/证据资格运行不变量：被验对象的运行与测量须在副本上执行并以哈希对账锚定原件（真跑不得改写被测本体）；fixture 与测试脚本不得自引用其预期输出作为通过依据（fixture 禁自引用）——违反者其证据按资格不成立处理（见 patterns/gate-design.md 签认层条目）。
 - [ ] Evidence files exist — per handoff manifest. Preserve original findings/severity and independent disposition ledger (checker, checked input, reason/proof): fixed / pre-existing / dismissed count as addressed only after relevant independent reviewer recognition. pre-existing requires baseline proof, no task introduction/aggravation/new exposure, no AC violation or unresolved serious safety/delivery risk; dismissed requires counterevidence. Blake proposals alone remain open; only valid unresolved task findings count toward unchanged thresholds. Pure out-of-scope serious risk goes to Alex/human, never self-waived. Missing evidence and evidence veto still block. Why ME: 证据存在性
 - [ ] Evidence replayable (advisory) — 证据采集命令重跑两次应 0 diff。若每次重跑都产生
       全量改动（随机 ID / 时间戳 / commit SHA 入了证据体），则任何一处改动都触发全量重采，
@@ -74,5 +75,6 @@ Checklist items:
 - [ ] Gate 3 evidence complete — every contract §8 lens file, gate3-check.sh exit 0 on the run file (FAIL enumerates missing). Why ME: 只检查 Gate 3 证据存在性
 - [ ] Issues — every P0 resolved; a finding keeps its original severity and closes only when a reviewer of that lens (never the builder) recognizes it as fixed / pre-existing / dismissed with proof (不是强迫有效免卡项全修); reopening needs explicit new evidence; open P1, Assumptions, not-run items and human-only items (real device, payment, own account login, with reason) listed for the human. Why ME: 只检查问题修复状态
 - [ ] Knowledge Assessment complete — distillation loop 或 "no new discovery". Why ME: 只检查知识记录
+- [ ] Closeout reconciliation filed — 收口前机械对账已按 conductor-protocol epic_completion 第 0 步走完并留痕（`closeout-reconciliation.md`：R1 子席数／R2 派发文书出处／R3 签认行出处／R4 档位与引用合规／R5 引用出处逐项有结果）；任一项不过而仍收口者，收口无效。Why ME: 只检查"签认面在收口步被机械核过且留痕"。适用范围：本行只在 Epic/单链收口验收时判，逐 Phase 的 Gate 4 不判（对账留痕只在收口第 0 步产生）。
 
 Why CE: 真跑 + 证据 + 修复 + 知识 — 四个独立维度。无遗漏。

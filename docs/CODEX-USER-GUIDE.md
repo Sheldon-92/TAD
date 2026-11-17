@@ -37,7 +37,7 @@ curl -sSL https://raw.githubusercontent.com/Sheldon-92/TAD/main/tad.sh | bash -s
 
 这会安装：
 - `.tad/` — 框架核心（配置、模板、钩子、migration 引擎、12 个历史 manifest）
-- `.agents/skills/` — Alex/Blake 角色 + 26 个 capability packs
+- `.agents/skills/` — Alex/Blake 角色 + 25 个 capability packs
 - `.codex/hooks.json` — 生命周期钩子（Codex 要等你完成它的 hook 信任审查后才会执行这些钩子；2026-10-09 在 codex-cli 0.159.3 上，默认信任的一次运行没有收到会话启动摘要，绕过信任审查的一次收到了，走完真实信任审查的情形没有测过）
 - `AGENTS.md` — 角色路由文件
 - `tad.sh` — 升级脚本（以后升级也用它）
@@ -55,7 +55,7 @@ npx github:Sheldon-92/TAD
 ### 验证安装
 
 ```bash
-cat .tad/version.txt                    # 应显示 4.0.11
+cat .tad/version.txt                    # 应显示 4.0.12
 ls .agents/skills/ | head -5            # 应看到 alex/ blake/ 等目录
 test -f .codex/hooks.json && echo OK    # 应显示 OK
 test -f .tad/hooks/lib/migration-engine.sh && echo OK  # Migration 引擎
@@ -188,7 +188,7 @@ Gate 4: 真实使用验收了吗？   ← acceptor 做（没参与；人类只�
 
 ## Capability Packs（能力包）
 
-TAD 内置 26 个 capability pack，为不同领域提供专业知识：
+TAD 内置 25 个 capability pack，为不同领域提供专业知识：
 
 ### Web 开发
 - `web-frontend` — React/Vue 前端工程

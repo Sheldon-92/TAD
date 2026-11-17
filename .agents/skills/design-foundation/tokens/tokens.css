@@ -1,0 +1,86 @@
+/* design-foundation tokens · pack-version: 0.1.0 */
+/*
+ * design-foundation 令牌唯一规范正本（v0，Space 视觉层）。
+ * 值状态：值草案 — 待 Gate 4 用户亲验，未亲验前不称定版（见 references/token-values-space.md）。
+ * 维护纪律：改本文件任何令牌值，须同批重生成 tokens.json 并跑 tools/check-token-parity.sh 至 PARITY-OK。
+ *
+ * 第 1 层 色板原语（来源说明，仅供语义层映射，组件不得直引）：
+ *   中性带（色相 250，OKLCH 明度阶）：n-985 / n-955 / n-92 / n-88 / n-72 / n-65 / n-52 / n-45 / n-32 / n-30 / n-26 / n-24 / n-20 / n-16
+ *   强调带（色相 235）：a-76 / a-75 / a-70 / a-60 / a-55 / a-48
+ *   状态带：在做=绿（色相 150）、卡住=红（色相 25）、等你=琥珀（色相 75）、做完=中性灰（低彩度 250）
+ * 第 2 层 语义令牌（下方 :root，组件实际消费）；
+ * 第 3 层 组件靶点由组件名机械派生、逐词 kebab，命名规则见 references/token-architecture-rules.md，不在本文件枚举。
+ */
+
+:root {
+  /* color — 全部以 light-dark(浅值, 深值) 成对 */
+  --color-bg-page: light-dark(oklch(0.985 0.002 250), oklch(0.16 0.008 250));
+  --color-bg-container: light-dark(oklch(1 0 0), oklch(0.20 0.008 250));
+  --color-fill-control: light-dark(oklch(0.955 0.004 250), oklch(0.26 0.010 250));
+  --color-track-subtle: light-dark(oklch(0.92 0.005 250), oklch(0.30 0.010 250));
+  --color-overlay-interactive: light-dark(oklch(0.30 0.02 250 / 0.08), oklch(0.90 0.01 250 / 0.12));
+  --color-text-primary: light-dark(oklch(0.24 0.01 250), oklch(0.93 0.005 250));
+  --color-text-secondary: light-dark(oklch(0.45 0.012 250), oklch(0.72 0.008 250));
+  --color-text-disabled: light-dark(oklch(0.65 0.008 250), oklch(0.50 0.008 250));
+  --color-border-default: light-dark(oklch(0.88 0.005 250), oklch(0.32 0.010 250));
+  --color-border-strong: light-dark(oklch(0.72 0.008 250), oklch(0.45 0.012 250));
+  --color-accent-primary: light-dark(oklch(0.55 0.14 235), oklch(0.70 0.12 235));
+  --color-accent-hover: light-dark(oklch(0.48 0.15 235), oklch(0.76 0.11 235));
+  --color-focus-ring: light-dark(oklch(0.60 0.16 235), oklch(0.75 0.13 235));
+  --color-status-active: light-dark(oklch(0.60 0.15 150), oklch(0.72 0.13 150));
+  --color-status-blocked: light-dark(oklch(0.55 0.19 25), oklch(0.68 0.16 25));
+  --color-status-waiting: light-dark(oklch(0.68 0.15 75), oklch(0.76 0.13 75));
+  --color-status-done: light-dark(oklch(0.52 0.015 250), oklch(0.68 0.012 250));
+
+  /* spacing — 4px 网格（2px 半步只许光学微调），随分组层级单调增大 */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+
+  /* size — 固定高元素三档，与 spacing 协同至同一垂直韵律 */
+  --size-element-sm: 28px;
+  --size-element-md: 36px;
+  --size-element-lg: 44px;
+
+  /* radius — 按角色分档；inner 由同心公式 r_inner = r_outer - gap 经 calc() 派生 */
+  --radius-inner: calc(var(--radius-element) - 4px);
+  --radius-element: 10px;
+  --radius-container: 14px;
+  --radius-page: 20px;
+  --radius-full: 999px;
+
+  /* shadow — 外阴影三档，与堆叠序绑定（base < dropdown < sticky < overlay/modal < toast < tooltip） */
+  --shadow-low: 0 1px 2px oklch(0.24 0.01 250 / 0.08);
+  --shadow-med: 0 4px 12px oklch(0.24 0.01 250 / 0.12);
+  --shadow-high: 0 12px 32px oklch(0.24 0.01 250 / 0.16);
+
+  /* duration — 按视觉分量三带；prefers-reduced-motion 时塌缩为 0s（消费方规则，见架构规则件） */
+  --duration-fast: 120ms;
+  --duration-medium: 220ms;
+  --duration-slow: 360ms;
+
+  /* ease — 全包统一单一缓动 */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* font — 三栈显式写全：Latin 具名选定 + 具名后备 → CJK 按平台具名列全 → 通用族名殿后；禁止未具名回退充当中文方案 */
+  --font-family-body: "Fira Sans", "Liberation Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --font-family-display: "Space Grotesk", "Fira Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --font-family-mono: "JetBrains Mono", "IBM Plex Mono", "Noto Sans Mono CJK SC", "PingFang SC", "Microsoft YaHei", monospace;
+
+  /* text — 字阶几何级数（base 14，ratio 1.2）；字重四档分工；正文行高吸附 4px 网格 */
+  --text-supporting-size: 12px;
+  --text-body-size: 14px;
+  --text-body-large-size: 17px;
+  --text-heading-size: 20px;
+  --text-title-size: 24px;
+  --text-display-size: 35px;
+  --text-body-line-height: 24px;
+  --text-weight-regular: 400;
+  --text-weight-medium: 500;
+  --text-weight-semibold: 600;
+  --text-weight-bold: 700;
+}

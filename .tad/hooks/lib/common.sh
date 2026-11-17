@@ -112,7 +112,26 @@ record_trace() {
 
   # 输出用仓库相对路径（size 已在上面用原始路径取得，故必须在 stat 之后）
   local _repo_root=""
+  # Ask git only when a repository can be there: GIT_DIR is set, or a .git entry (directory, or the file
+  # of a linked worktree) exists in the physical working directory or above it (git discovers from the
+  # physical directory, hence pwd -P). Outside a repository the path stays as given, which is what the
+  # failing git call left before; so a run in a folder without git calls git zero times. Pure bash 3.2:
+  # one subshell for pwd -P, no fork per directory level.
+  local _git_here="" _gd=""
   if [ -n "$file_path" ]; then
+    if [ -n "${GIT_DIR:-}" ]; then
+      _git_here=1
+    else
+      _gd=$(pwd -P 2>/dev/null) || _gd=""
+      while [ -n "$_gd" ]; do
+        if [ -e "$_gd/.git" ] || [ -L "$_gd/.git" ]; then _git_here=1; break; fi
+        [ "$_gd" = "/" ] && break
+        _gd="${_gd%/*}"
+        [ -n "$_gd" ] || _gd="/"
+      done
+    fi
+  fi
+  if [ -n "$_git_here" ]; then
     _repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
   fi
   if [ -n "$_repo_root" ]; then

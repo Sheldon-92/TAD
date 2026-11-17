@@ -201,6 +201,7 @@ After user selection, Alex exports two files to the playground output directory:
 
 ## 4. Usage Notes for Blake
 
+- **Canon alignment**: Space 呈现面的导出值须与 design-foundation 正本对齐核验（正本＝`.agents/skills/design-foundation/tokens/tokens.css`，镜像 parity 净）；导出件是逐项目实例、非正本
 - **Import**: Link or import `design-tokens.css` in the project's global styles
 - **Reference**: Use `var(--token-name)` throughout component styles
 - **Dark mode**: Toggle via `data-theme="dark"` on `<html>` element

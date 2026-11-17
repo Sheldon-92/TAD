@@ -3,6 +3,8 @@
 Real design system token values from production brands.
 Use as **reference only** — these are not defaults for your project.
 
+> **正本指针**: 品牌令牌是项目输入；其产出须以 design-foundation 令牌名与组结构表达，才成为规范（正本＝`.agents/skills/design-foundation/tokens/`）。
+
 > Tokens sourced from public design systems and open-source documentation.
 
 ---

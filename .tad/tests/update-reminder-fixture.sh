@@ -71,14 +71,33 @@ mkdir -p "$HOME"
 MOCK="$SANDBOX/mockbin"
 write_mock_curl "$MOCK" "9.9.9"
 
-# new_project <local version> — a scratch git project holding only .tad/version.txt; prints its dir
-# (mktemp, not a counter: the function runs inside $(...) so a counter would not advance)
+# snapshot <dir> — one line per entry below <dir> (a .git/ is ignored if present): `<path>\t<hash>`, sorted
+# with LC_ALL=C; <hash> is the content sha256 of a file, `link:<target>` of a symlink, `dir` of a directory.
+# "Project unchanged" compares the snapshot taken when the project was made with one taken later; it
+# replaces the `git status --porcelain` checks, which passed by construction when git was missing.
+snapshot() {
+    ( cd "$1" && find . -path "./.git" -prune -o -print | LC_ALL=C sort | while IFS= read -r f; do
+        [ "$f" = "." ] && continue
+        if [ -L "$f" ]; then printf '%s\tlink:%s\n' "$f" "$(readlink "$f")"
+        elif [ -f "$f" ]; then printf '%s\t%s\n' "$f" "$(shasum -a 256 < "$f" | cut -d' ' -f1)"
+        elif [ -d "$f" ]; then printf '%s\tdir\n' "$f"
+        else printf '%s\tother\n' "$f"; fi
+    done )
+}
+snap_file() { printf '%s/snap.%s' "$SANDBOX" "$(basename "$1")"; }
+# project_unchanged <project> — true when its snapshot equals the one new_project took
+project_unchanged() { [ -f "$(snap_file "$1")" ] && [ "$(snapshot "$1")" = "$(cat "$(snap_file "$1")")" ]; }
+# project_diff <project> — the changed entries, one line, for a failure message
+project_diff() { diff <(cat "$(snap_file "$1")") <(snapshot "$1") | grep '^[<>]' | tr '\n' '|'; }
+
+# new_project <local version> — a scratch project holding only .tad/version.txt; prints its dir and keeps
+# its snapshot in the sandbox (mktemp, not a counter: the function runs inside $(...) so a counter would not advance)
 new_project() {
     local d
     d="$(mktemp -d "$SANDBOX/proj.XXXXXX")"
     mkdir -p "$d/.tad/active"
     printf '%s\n' "$1" > "$d/.tad/version.txt"
-    ( cd "$d" && git init -q . && git add -A && git -c user.name=t -c user.email=t@example.invalid commit -q -m init ) >/dev/null 2>&1
+    snapshot "$d" > "$(snap_file "$d")"
     printf '%s' "$d"
 }
 new_cache() { mktemp -d "$SANDBOX/cache.XXXXXX" | tr -d '\n'; }
@@ -101,6 +120,27 @@ lines_with() { printf '%s\n' "$1" | grep -c 'TAD update:' || true; }
 now_ms() { perl -MTime::HiRes=time -e 'printf "%d", time * 1000'; }
 
 command -v jq >/dev/null 2>&1 || { echo "update-reminder-fixture: jq is required"; exit 2; }
+
+# The snapshot helper proves it sees a change before any case relies on it (a helper that saw nothing
+# would make every "project unchanged" check pass by construction).
+snapshot_self_check() {
+    local d before
+    d="$(new_project 0.0.0)"
+    before="$(cat "$(snap_file "$d")")"
+    if [ -z "$before" ] || ! project_unchanged "$d"; then
+        FAIL=$((FAIL + 1)); echo "FAIL: snapshot helper: an untouched project does not compare equal"; return
+    fi
+    printf 'x\n' > "$d/planted"
+    if project_unchanged "$d"; then
+        FAIL=$((FAIL + 1)); echo "FAIL: snapshot helper does not see a planted file"; return
+    fi
+    rm -f "$d/planted"; printf '9.9.9\n' > "$d/.tad/version.txt"
+    if project_unchanged "$d"; then
+        FAIL=$((FAIL + 1)); echo "FAIL: snapshot helper does not see a changed file"; return
+    fi
+    PASS=$((PASS + 1)); echo "PASS: snapshot helper sees a planted file"
+}
+snapshot_self_check
 
 case_versions() {
     echo "== versions: newer shows one line; equal, older, malformed show none =="
@@ -205,10 +245,10 @@ case_once_a_day() {
     else
         bad "backdated: count=$(count_of "$cnt") ctx=[$ctx1]"
     fi
-    if [ -z "$(cd "$p" && git status --porcelain)" ] && [ -z "$(cd "$p2" && git status --porcelain)" ]; then
+    if project_unchanged "$p" && project_unchanged "$p2"; then
         ok "the project trees gained no file"
     else
-        bad "project tree changed: $(cd "$p" && git status --porcelain | tr '\n' '|')"
+        bad "project tree changed: $(project_diff "$p") $(project_diff "$p2")"
     fi
     if [ -f "$c/update-check.tsv" ] && [ -d "$c/reminded" ]; then ok "stamps are in the cache dir"; else bad "cache stamps missing"; fi
 }
@@ -335,10 +375,10 @@ case_cache_path() {
     p="$(new_project 4.0.6)"; cnt="$SANDBOX/cnt.c1"
     printf '%s\n' 4.0.7 > "$MOCK/remote-version"
     out="$( cd "$p" && printf '%s' "$ENV_SESSION" | PATH="$MOCK:$PATH" TAD_CACHE_DIR="rel/cache" MOCK_COUNT_FILE="$cnt" bash "$HOOK" 2>/dev/null )"; ctx="$(ctx_of "$out")"
-    if [ ! -e "$p/rel" ] && [ -z "$(cd "$p" && git status --porcelain)" ]; then
+    if [ ! -e "$p/rel" ] && project_unchanged "$p"; then
         ok "relative TAD_CACHE_DIR: nothing written into the project"
     else
-        bad "relative TAD_CACHE_DIR wrote into the project: $(cd "$p" && git status --porcelain | tr '\n' '|')"
+        bad "relative TAD_CACHE_DIR wrote into the project: $(project_diff "$p")"
     fi
     if [ -d "$HOME/.cache/tad/reminded" ] && [ "$(lines_with "$ctx")" = "1" ]; then
         ok "relative TAD_CACHE_DIR: fell back to the default location and still reminded"
@@ -348,10 +388,10 @@ case_cache_path() {
     rm -rf "$HOME/.cache"
     p="$(new_project 4.0.6)"; cnt="$SANDBOX/cnt.c2"
     out="$( cd "$p" && printf '%s' "$ENV_SESSION" | env -u TAD_CACHE_DIR PATH="$MOCK:$PATH" XDG_CACHE_HOME="xdg-rel" MOCK_COUNT_FILE="$cnt" bash "$HOOK" 2>/dev/null )"
-    if [ ! -e "$p/xdg-rel" ] && [ -z "$(cd "$p" && git status --porcelain)" ] && [ -d "$HOME/.cache/tad" ]; then
+    if [ ! -e "$p/xdg-rel" ] && project_unchanged "$p" && [ -d "$HOME/.cache/tad" ]; then
         ok "relative XDG_CACHE_HOME: nothing written into the project, default used"
     else
-        bad "relative XDG_CACHE_HOME: $(cd "$p" && git status --porcelain | tr '\n' '|')"
+        bad "relative XDG_CACHE_HOME: $(project_diff "$p")"
     fi
     # temp files come from mktemp: after a fetch only the two stamps (and no pid-named file) remain
     local c; c="$(new_cache)"; p="$(new_project 4.0.6)"

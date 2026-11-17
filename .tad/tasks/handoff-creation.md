@@ -258,7 +258,9 @@ Ready to send to Blake? (Type 'CONFIRM' to proceed):
 
 ## Output
 
-**File:** `.tad/docs/handoffs/handoff_[timestamp].md`
+**File:** `.tad/active/handoffs/HANDOFF-{date}-{name}.md`
+
+> Deprecated (do not use): `.tad/docs/handoffs/handoff_[timestamp].md` — superseded by the form above; canonical source: `.agents/skills/alex/references/handoff-creation-protocol.md`.
 
 After confirmation, instruct user:
 ```

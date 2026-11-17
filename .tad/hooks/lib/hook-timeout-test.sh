@@ -31,13 +31,24 @@
 #
 # Usage:
 #   bash hook-timeout-test.sh [settings-file]
+#   bash hook-timeout-test.sh --conformance [settings-file]   (suite mode: Part A only,
+#             exit 0 = Part A passed, 1 = Part A failed, 2 = fixture/tool error)
 # Exit codes: 0 = every part that ran passed; 1 = a check failed;
 #             2 = fixture/tool error; 3 = PARTIAL (Part B not run).
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/../../.."
-SETTINGS_FILE="${1:-$REPO_ROOT/.tad/templates/claude/settings.json}"
+# Mode dispatch (front of argument parsing): --conformance runs Part A only
+# so a suite can consume its 0/1 result without Part B's PARTIAL (exit 3)
+# semantics; anything else keeps the original default-mode argument shape.
+MODE="default"
+if [ "${1:-}" = "--conformance" ]; then
+    MODE="conformance"
+    SETTINGS_FILE="${2:-$REPO_ROOT/.tad/templates/claude/settings.json}"
+else
+    SETTINGS_FILE="${1:-$REPO_ROOT/.tad/templates/claude/settings.json}"
+fi
 
 fail_count=0
 note() { printf '%s\n' "$*"; }
@@ -87,6 +98,16 @@ else
 $rows
 EOF_ROWS
     note "Part A: $handler_count handler(s) checked"
+fi
+
+# ------------------------------------- suite mode verdict (Part A only) ----
+if [ "$MODE" = "conformance" ]; then
+    if [ "$fail_count" -gt 0 ]; then
+        note "RESULT: FAIL (conformance)"
+        exit 1
+    fi
+    note "RESULT: PASS (conformance)"
+    exit 0
 fi
 
 # ---------------------------------------------------------------- Part B ----

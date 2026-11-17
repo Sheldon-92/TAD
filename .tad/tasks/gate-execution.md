@@ -110,6 +110,9 @@ Escalation Required:
 4. Get human approval to proceed
 ```
 
+### 签认层违规（程序错／诚信错）
+签认层违规按行为分两类：**程序错**（越界连跑、超射程执行、未授权派发、跳步）与**诚信错**（冒名签认、伪造文书、不实自报、覆写他人成件）。分类表、事实锚与处置定式正本在 `.tad/project-knowledge/patterns/gate-design.md` 签认层条目（2026-11-08）；本节只作词表装载点：Gate 评审与收口文本引用签认层违规时必须用此两类名并按定式处置，诚信错不得淡化表述。收口前的机械对账卡点在 conductor-protocol epic_completion 第 0 步（本节不另设卡点）。
+
 ## Success Patterns Integration
 
 When gates pass smoothly, record patterns:

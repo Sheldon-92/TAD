@@ -1,0 +1,27 @@
+# pack-categories.tsv - pack name <TAB> category (category order = table order in INSTALLATION_GUIDE.md)
+# Read by .tad/scripts/pack-counts.sh. Edit when a pack is added to or removed from pack-registry.yaml.
+web-frontend	Web 开发
+web-backend	Web 开发
+web-ui-design	Web 开发
+web-testing	Web 开发
+web-deployment	Web 开发
+ai-agent-architecture	AI/Agent
+ai-prompt-engineering	AI/Agent
+ai-evaluation	AI/Agent
+ai-tool-integration	AI/Agent
+ai-guardrails	AI/Agent
+agent-memory	AI/Agent
+agent-orchestration	AI/Agent
+agent-computer-interface	AI/Agent
+ai-voice-production	内容制作
+ai-podcast-production	内容制作
+video-creation	内容制作
+data-engineering	数据/检索
+rag-retrieval	数据/检索
+knowledge-graph	数据/检索
+synthetic-data	数据/检索
+code-security	安全
+llm-observability	可观测性
+product-thinking	产品/研究
+research-methodology	产品/研究
+academic-research	产品/研究

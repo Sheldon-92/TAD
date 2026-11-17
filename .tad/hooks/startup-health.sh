@@ -132,8 +132,24 @@ if [ -n "$COMPONENT_BROKEN" ]; then
   COMPONENT_WARN=" | ⚠ BROKEN components: ${COMPONENT_BROKEN}"
 fi
 
+# Component health line (TASK-20261106-004, HANDOFF-20261106-sp2-row4 §4.2 C3):
+# consume the --line form of .tad/hooks/lib/component-health-check.sh, whose
+# header contract names startup-health.sh as its consumer. Fail-soft: only
+# when the checker file exists and is executable; its one line is merged
+# into the SessionStart text verbatim below. Checker absent, not executable
+# or non-zero -> no line, and this hook's existing output and exit semantics
+# are unchanged (|| true guard; this hook never blocks startup).
+COMPONENTS_LINE=""
+if [ -x ".tad/hooks/lib/component-health-check.sh" ]; then
+  COMPONENTS_LINE="$(bash .tad/hooks/lib/component-health-check.sh --line 2>/dev/null || true)"
+fi
+
 # Build summary
 SUMMARY="TAD v${VERSION} | ${HANDOFF_COUNT} handoffs | ${EPIC_COUNT} epics | ${IDEA_COUNT} ideas${HAS_BLOCKED} | Hooks: active${CLAUDE_MD_WARN}${COMPONENT_WARN}"
+if [ -n "$COMPONENTS_LINE" ]; then
+  SUMMARY="${SUMMARY}
+${COMPONENTS_LINE}"
+fi
 
 # Update reminder (EPIC-20261022-tad-update-flow Phase 2): at most one extra line per day per project,
 # only when a newer TAD exists and the envelope names a session. Reminder only: it starts nothing.

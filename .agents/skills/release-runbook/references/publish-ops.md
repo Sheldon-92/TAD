@@ -67,9 +67,26 @@ bash "$repo_root/.tad/hooks/lib/release-verify.sh" version-sweep "$repo_root" "$
 ```
 
 - `0`: Layer 1 identity markers are current.
-- `1`: Layer 1 is blocking for patch/minor/major. Layer 2 findings printed by the verifier are
+- `1`: Layer 1 or Layer 1b (version-marker sweep) is blocking for patch/minor/major. Layer 2 findings printed by the verifier are
   advisory and must be reported, not converted into blockers without a separate rule.
 - `2`: hard block.
+
+### 2.3b Repository description (advisory)
+
+Run this check from the release clone root, after `$NEW` is fixed and before
+tagging:
+
+```bash
+gh repo view --json description
+```
+
+- If the description does not contain `$NEW`, update it manually — either
+  `gh repo edit --description "…"` or GitHub Settings → Description — so the
+  public description names the current release.
+- Tooling never edits the description: this step only reads and reports; the
+  wording change is a human, outward-facing edit.
+- If `gh` is unavailable or unauthenticated, record `description: not checked`
+  in the release log and continue. This step never blocks a release.
 
 ### 2.4 Migration-manifest gate
 

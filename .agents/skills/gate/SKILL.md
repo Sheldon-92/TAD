@@ -106,6 +106,31 @@ Output Format:
   | Data Flow | ✅ Pass | ... |
 ```
 
+# ⚠️ FAILURE-PATH TABLE CHECK — Gate 2 (handoff §8.7; levels in .tad/templates/review-contract.md §5 "Failure-path table")
+```yaml
+failure_path_table_check:
+  applies_when: "The failure-path table (handoff §8.7) is required when the change alters code that writes, copies, syncs, installs, upgrades or rolls back files in a user project or a downstream repo (tad.sh, tad-update.sh, any installer, sync or rollback script); a change that only adds or edits tests or fixtures that run such code inside a throw-away sandbox does not by itself make it required."
+  who: "The consistency lens checks it on every handoff, whatever its risk_triggers (review-contract.md §5). The risk lens data section, when it runs, reads the rows again with the same levels: a second reader, never the only one."
+  applicability: "The sentence above holds but §8.7 is missing or says `not applicable` → P0. It does not hold and §8.7 is missing altogether → P1. It holds and risk_triggers lacks `data` → P1 (a wrong trigger, review-contract.md §5)."
+  rows: "A class (write, sync, rollback) with no row, or a row without the verbatim output or the exit code → P0; the one exception is a per-class `not applicable: <reason>` row (`| n/a | <class> | not applicable: <reason> | | | | |`), which holds the class and a reason instead of the output and the exit. A paraphrased output where the code prints a fixed line → P1."
+  rows_per_failure_point: "The table has one row per failure point the change adds or alters (for example a new snapshot, cleanup, staging or stamp step), in the nearest class, and at least one row per class that applies; a row copied from an existing fixture case for code the change does not touch does not cover a new failure point: a failure point the change adds with no row of its own → P0 (review-contract.md §5 'per failure point')."
+  class_not_applicable: "A class that this change does not touch gets one row `| n/a | <class> | not applicable: <reason> | | | | |` in place of its FP rows; such a class is neither missing nor run, and the id_check line lists it after `not applicable:`. The consistency lens judges the reason: an n/a row with no reason, or a reason that does not hold (the change does alter that class's path) → P0. An `n/a` row with an empty reason (an empty third cell, or nothing after `not applicable:`) is not accepted: the id_check line does not flag it, so the reviewer reports it (P0). Such a row is not the whole-section `not applicable` line of the applicability rule above. The reason is checked again at Gate 3, see the Gate 3 FAILURE-PATH RUN block."
+  ac_reading: "For review-contract.md §3 a §8.7 row counts as an acceptance criterion, so a missing or incomplete row blocks an AC."
+  scope: "Applies to handoffs entering Gate 2 after this block lands; handoffs already past Gate 2 are not re-reviewed. No item is added to the Gate 2 checklist above or to gate-canonical-checklist.md."
+```
+
+# ⚠️ RESEARCH TRUTH CHECK — Gate 2 (handoff §8.8; levels in .tad/templates/review-contract.md §5 "Research truth check")
+```yaml
+research_truth_check:
+  applies_when: "The research truth check (handoff §8.8) is required when the deliverable states facts about sources outside this repo that its reader will rely on (a report, review, benchmark, survey or comparison, usually task_type research or deliverable); a deliverable whose every claim is about files of this repo, each checked by a §9.1 command, does not by itself make it required."
+  who: "The consistency lens checks it on every handoff, whatever its risk_triggers (review-contract.md §5). The risk lens domain section, when it runs, reads §8.8 again with the same levels: a second reader, never the only one."
+  applicability: "The sentence above clearly holds (a report, review, benchmark, survey or comparison about outside sources) and §8.8 is missing or says `not applicable` → P0. The sentence is arguable and §8.8 gives a `not applicable:` reason saying why → at most P1, judged on that reason. Arguable and §8.8 missing → at most P1. The sentence does not hold → no finding."
+  rows: "A live third-party claim class with no TC row; a TC row lacking its claim class, read method, population or ledger column; a read method that reads part of a source where the whole is readable (one API field, the body only, an excerpt); a sample for a class with no low-risk reason → P0."
+  load_bearing: "A TC row that cites no §9.1 row, or cites one whose command does not read `$V` (the run lens's verdict file of the current round, Gate 3 RESEARCH TRUTH READ order) → P0."
+  ac_reading: "For review-contract.md §3 a TC row counts as an acceptance criterion, so a missing or not load-bearing TC row blocks an AC."
+  scope: "Applies to handoffs entering Gate 2 after this block lands; handoffs already past Gate 2 are not re-reviewed. No item is added to the Gate 2 checklist above or to gate-canonical-checklist.md."
+```
+
 # ⚠️ NO-PROGRESS COUNTER — Gate 2 (BLOCKING; shared definitions in the NO-PROGRESS block after Gate 4)
 ```yaml
 no_progress_counter_gate2:
@@ -115,6 +140,7 @@ no_progress_counter_gate2:
   4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
   5_reviewer_invisibility: "Reviewers spawned for this gate MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
 ```
+> On the conductor path (Cora's runs) rules 1 and 2 of this block are not run: nobody appends rows to the handoff's `## Gate Rounds` table and the derived count stops nothing; the round record is `cora-check.sh rounds` (gate_rounds_carrier `conductor_path`). Rules 1 and 2 are the direct-mode path.
 
 ## Gate 3: Implementation Quality (run reviewer, not the builder) - **MANDATORY** 🔴
 > Gate 3 is UNIVERSAL across all task_types. Its checks come from the active handoff's
@@ -130,6 +156,7 @@ no_progress_counter_gate3:
   4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
   5_reviewer_invisibility: "Gate 3's fresh reviewers MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
 ```
+> On the conductor path (Cora's runs) rules 1 and 2 of this block are not run: nobody appends rows to the handoff's `## Gate Rounds` table and the derived count stops nothing; the round record is `cora-check.sh rounds` (gate_rounds_carrier `conductor_path`). Rules 1 and 2 are the direct-mode path.
 ```yaml
 When: After implementation (BLOCKING)
 Owner: the Gate 3 run reviewer (not the builder; Blake prepares)
@@ -223,6 +250,31 @@ Spec_Compliance_Empty_Guard:
       从 hardcoded 切换到 AC-driven 后，空 §9.1 不能 silent pass —— 否则 Gate 失去全部检查内容。
       Alex 必须在 §9.1 填写至少一行可执行的 Verification Method，然后重新执行 Gate 3。
     rationale: "empty §9.1 → BLOCK 是 AC-driven 架构的必需安全网（VIOLATION：空 §9.1 当作 pass = Gate 形同虚设）。"
+
+# ⚠️ FAILURE-PATH RUN (BLOCKING when handoff §8.7 has rows)
+Failure_Path_Run:
+  applies_when: "The handoff's §8.7 Failure Paths table has rows (Gate 2 FAILURE-PATH TABLE CHECK; review-contract.md §5 'Failure-path table')."
+  run: "The run reviewer runs each §8.7 row's fixture case by hand in its throwaway copy (reading the fixture first), never in the project folder; the fixture's own sandbox under the system temp directory is allowed."
+  record: "In its verdict file it writes a section headed '## Failure paths' with one row per §8.7 id, same ids: | id | fixture case | expected exit | actual exit | expected output | actual output | result |"
+  fail_row: "A row whose actual output lacks an expected line (variable parts excepted) or whose exit differs is a FAIL row and a P0 (it blocks that acceptance item)."
+  not_run: "A row it cannot run (only for the reasons review-contract.md §6 allows): `not-run` in the result cell plus `- FP<n> not-run: <reason>` under ## Not run (gate3-check.sh accepts any id with a reason)."
+  not_applicable: "§8.7 says `not applicable` → one line `failure paths: not applicable — <the handoff's reason>` in the verdict file."
+  class_not_applicable: "A class that this change does not touch gets one row `| n/a | <class> | not applicable: <reason> | | | | |` in place of its FP rows; such a class is neither missing nor run, and the id_check line lists it after `not applicable:`. The run reviewer writes no row for such a class in ## Failure paths. At Gate 3 the consistency lens reads each `not applicable` reason (the whole-section line and every per-class row) against the change as built, the files the completion report lists; a built change that touches a class whose reason says it does not → P0. This is checked at Gate 3 as well as at Gate 2; the Gate 4 acceptor reads the Gate 3 consistency file for it. An `n/a` row with an empty reason (an empty third cell, or nothing after `not applicable:`) is not accepted: the id_check line does not flag it, so the reviewer reports it (P0)."
+  n_a_reasons_record: "When §8.7 holds any `not applicable` reason (the whole-section line or a per-class row), the Gate 3 consistency file states one line per reason it read, `n/a-reasons: <class, or all> holds | contradicted by <file>` (what the reason was read against: the change as built, the files the completion report lists); the Gate 4 acceptor reads these lines (Gate 4 FAILURE-PATH COUNT n_a_reasons_missing)."
+  id_check_other_lines: "The id_check line finds §8.7 by a heading of any ## level numbered 8.7 or starting 'Failure Paths'. It prints `failure-paths: NO-SECTION …` when there is no such heading and `failure-paths: EMPTY-SECTION …` when the section has no FP row and is not marked not applicable as a whole or for all three classes. Neither is a match (exit 1): the reviewer reads the handoff's §8.7 by eye, and FP rows under another heading, or a change the Gate 2 applies_when sentence covers, → the run lens is FAIL (P0). `ids match (0 rows)` is printed only when §8.7 says not applicable."
+  id_check_usage: "Run the line below as /bin/bash -c \"<that line>\" _ <handoff> <own verdict file> and paste its output line under the table. MISMATCH (an id missing, extra, or the section absent while §8.7 has rows) → the run lens is FAIL (P0). The Gate 4 acceptor runs the same line (FAILURE-PATH COUNT). The verdict skeleton and gate3-check.sh are not changed."
+  id_check: |
+    [ -f "$1" ] && [ -f "$2" ] || { echo "failure-paths: usage: <handoff> <verdict file>"; exit 2; }; ids() { awk -v s="$2" '$0==s{on=1;next} on&&/^## /{exit} on&&/^\| FP[0-9]+ \|/{print $2}' "$1" | LC_ALL=C sort -u; }; h=$(awk '/^##+ /{match($0,/^#+/); if(on&&RLENGTH<=lv) exit; t=tolower($0); if(!on&&(t~/^##+ +8\.7([^0-9]|$)/||t~/^##+ +([0-9.]+ +)?failure[ -]paths?([^a-z]|$)/)){on=1; lv=RLENGTH; print "S"; next}} !on{next} /^\| *FP[0-9]+ *\|/{split($0,c,"|"); gsub(/ /,"",c[2]); print "I " c[2]; next} /^\| *n\/a *\|/{split($0,c,"|"); gsub(/ /,"",c[3]); if(c[4]~/^ *not applicable: /) print "N " tolower(c[3]); next} /^`?not applicable: /{print "A"}' "$1"); a=$(printf '%s\n' "$h" | sed -n 's/^I //p' | LC_ALL=C sort -u); n=$(printf '%s\n' "$h" | sed -n 's/^N //p' | LC_ALL=C sort -u | tr '\n' ' ' | sed 's/ $//'); b=$(ids "$2" '## Failure paths'); x=; [ -n "$n" ] && x="; not applicable: $n"; printf '%s\n' "$h" | grep -qx S || { echo "failure-paths: NO-SECTION the handoff has no §8.7 Failure Paths heading"; exit 1; }; if [ -z "$a" ] && [ -z "$b" ] && ! { printf '%s\n' "$h" | grep -qx A || [ "$n" = "rollback sync write" ]; }; then echo "failure-paths: EMPTY-SECTION §8.7 has no FP row and is not marked not applicable as a whole or for all three classes$x"; exit 1; fi; if [ "$a" = "$b" ]; then echo "failure-paths: ids match ($(printf '%s' "$a" | grep -c .) rows$x)"; else echo "failure-paths: MISMATCH handoff=[$(echo $a)] verdict=[$(echo $b)]$x"; exit 1; fi
+
+# ⚠️ RESEARCH TRUTH READ (BLOCKING when handoff §8.8 has rows)
+Research_Truth_Read:
+  applies_when: "The handoff's §8.8 Research Truth Check has TC rows (Gate 2 RESEARCH TRUTH CHECK; review-contract.md §5 'Research truth check')."
+  read: "The run reviewer reads every claim of each TC population from the source itself, whole, by that row's read method, as of its own run; the ledger says where to look, it is not the reading. A sample only where §8.8 writes `sample <n>` with a reason, read the same way."
+  record: "In its verdict file it writes a section headed '## Truth read': | id | claim | TC | source read whole (what, as of) | rests on (quote or event: who, role, date) | holds |. `id` is one token, the ledger's row id or `TC<n>-<m>`, the claim text in its own column; holds is `yes`, `no` or `not-run`."
+  order: "The run lens writes ## Truth read into its verdict file of this round (`-r<k>` from round 2) before it runs the truth row, then copies that file into its throwaway copy at the same relative path and runs the row there with V set to that path: never a copy made before the write, never an earlier round's file."
+  fail_row: "`no` (the claim is stronger than or contrary to the source) → a P0 blocking the Result-contract deliverable; that TC's §9.1 row FAILs."
+  unreachable_source: "A claim whose live source the run reviewer cannot reach read-only is one P0 and the verdict is FAIL (it blocks the Result-contract deliverable, which would carry a claim nobody checked): its holds cell is `not-run`, that TC's §9.1 row FAILs, no `## Not run` or `## Blocked` line and no PARTIAL is written for it, and the existing routing sends it to rework, which removes the claim from the deliverable (a claim left in place, even marked unverified, is read again next round and fails again). The read itself is review work, not a §9.1 command, so review-contract.md §6's outward rule does not make it not-run. This covers a public live source that does not answer or has gone; a source that needs the human's own account or a capability the reviewer lacks stays under review-contract.md §6's not-run rule."
+  unchanged: "The verdict skeleton and gate3-check.sh are not changed for this."
 
 # ⚠️ DEV REGRESSION FLOOR (smoke alarm, WARN-not-BLOCK) — FR6 zero-regression backstop
 # The empty guard only catches a FULLY empty §9.1. It does NOT catch a present-but-thin §9.1
@@ -497,6 +549,7 @@ Required_Judge:
     - "deliverable_paths — artifact file path(s) to evaluate (judge reads them)"
     - "rubric_ref — rubric file path (judge reads + applies it)"
     - "pass_threshold — numeric threshold (resolved per Rubric_Resolution)"
+  conductor_path_handoff: "On the conductor path (Cora, conductor-protocol step_Y6 1b) the judge prompt may name the handoff path, only to locate the rubric AC rows, their rubric and pass threshold; the three inputs above stay the only content, and no producer reasoning is passed."
   judge_prompt_constraint: |
     Blue-team framing: "You are an independent reviewer. Score the artifact at {deliverable_paths}
     against the rubric at {rubric_ref}. Report per the resolved verdict_shape (see judge_prompt_by_shape) + the machine-readable verdict line."
@@ -531,6 +584,7 @@ Required_Judge:
       ⚠️ Gate 3 无法通过 - 缺少独立 judge 的 rubric-eval 审查
       必须 spawn 一个 fresh 独立 judge sub-agent，输出到
       .tad/evidence/reviews/{date}-rubric-eval-{task}.md，然后重新执行 Gate 3。
+  conductor_path_judge_unusable_gate3: "On the conductor path the case 'judge unusable twice' is governed by the `conductor_path_judge_unusable` key (Rubric_Gate4_Prerequisite): the run file marks the rubric AC not-run and this BLOCK does not apply to that case."
 
 # ⚠️ VERDICT MAPPING — contract §B.5
 Verdict_Mapping:
@@ -615,6 +669,7 @@ no_progress_counter_gate4:
   4_path: "The path always resolves to the MAIN-WORKTREE absolute path — .tad/active/handoffs/ is not git-tracked and does not exist inside a worktree."
   5_reviewer_invisibility: "The Gate 4 acceptor MUST skip the ## Gate Rounds section when reading the handoff (the GATE-ROUNDS-BEGIN/END block and the table after it): it is breaker bookkeeping, not requirements; reading it creates preview anchoring and contaminates the breaker report's same-root-cause diagnosis."
 ```
+> On the conductor path (Cora's runs) rules 1 and 2 of this block are not run: nobody appends rows to the handoff's `## Gate Rounds` table and the derived count stops nothing; the round record is `cora-check.sh rounds` (gate_rounds_carrier `conductor_path`). Rules 1 and 2 are the direct-mode path.
 ```yaml
 When: After Gate 3 (BLOCKING)
 Owner: an Alex acceptor that took no part — dispatched by Cora in her runs, by the designing Alex at *accept in direct mode; never Blake, never the designer
@@ -634,6 +689,7 @@ Prerequisite:
 
       必须先完成 Gate 3（§9.1 全行 pass，rubric AC 须 verdict: PASS）。
     result: "BLOCKED - 等待 Gate 3 完成"
+    conductor_path_judge_unusable_note: "On the conductor path the case 'judge unusable twice' is governed by the `conductor_path_judge_unusable` key (Rubric_Gate4_Prerequisite): that case does not block here."
 
 # ⚠️ FRICTION STATUS REVIEW — Gate 4 (TAD Friction Protocol (2026-06-10))
 Gate4_Friction_Review:
@@ -669,6 +725,14 @@ Acceptance_By_Real_Use:
 
 Gate3_Evidence_Check:
   rule: "Gate 3 files present for every lens of contract §8 — run, consistency, and domain when risk_triggers lists security/data/money; `gate3-check.sh <handoff> <run file>` exit 0 (AC table complete, every real_path run or not-run with a reason); FAIL enumerates what is missing."
+
+# ⚠️ FAILURE-PATH COUNT — Gate 4 (BLOCKING when handoff §8.7 has rows)
+Gate4_Failure_Path_Count:
+  rule: "The acceptor runs the id_check line of the Gate 3 FAILURE-PATH RUN block on the handoff and the Gate 3 run file (/bin/bash -c \"<that line>\" _ <handoff> <Gate 3 run file>) and puts its output line in the report."
+  fail: "MISMATCH, or a FAIL row in the run file's ## Failure paths table, → that acceptance item FAIL (P0)."
+  not_applicable: "§8.7 says `not applicable` → the run file carries `failure paths: not applicable — <reason>`; the id_check line then prints `ids match (0 rows)`."
+  class_not_applicable: "A class that this change does not touch gets one row `| n/a | <class> | not applicable: <reason> | | | | |` in place of its FP rows; such a class is neither missing nor run, and the id_check line lists it after `not applicable:`. NO-SECTION or EMPTY-SECTION from the id_check line is never a match: the acceptor reads §8.7 by eye, as the run lens does (FAILURE-PATH RUN id_check_other_lines). The Gate 3 consistency lens has read each `not applicable` reason against the change as built (FAILURE-PATH RUN class_not_applicable): the acceptor reads the Gate 3 consistency file for it and a P0 there is a P0 here."
+  n_a_reasons_missing: "When §8.7 holds a `not applicable` reason and the Gate 3 consistency file has no `n/a-reasons:` line for it (Gate 3 FAILURE-PATH RUN n_a_reasons_record), the acceptor treats that reason as not checked and reports it. An `n/a` row with an empty reason (an empty third cell, or nothing after `not applicable:`) is not accepted here either: the id_check line does not flag it, so the acceptor reports it (P0)."
 
 # Feedback Collection Check (BLOCKING — Phase 3, 2026-06-10)
 # Conditional: only applies when handoff §8.5 feedback_required: true.
@@ -891,6 +955,7 @@ gate_rounds_carrier:
     Counts are DERIVED from the rows on every read. There is no stored counter anywhere;
     a stored number that disagrees with the derivation loses to the derivation.
   thresholds: "Breaker fires when any G{n} >= 3 OR TOTAL_ROUNDS >= 6, checked on entering a gate and whenever a boundary row's verdict is set. PASS never resets any count."
+  conductor_path: "On the conductor path (Cora runs the gates by dispatching reviewers) nobody appends rows to this table and Cora edits no handoff: the round-numbered review files are the record. /bin/bash .tad/hooks/lib/cora-check.sh rounds <the Epic> <phase N> (repo root) derives G2, G3, G4 and TOTAL_ROUNDS from them by the derivation above (a round of a gate counts when any of its files has a verdict that is not PASS, so a CONDITIONAL round counts; no GRANT row exists on this path) and prints those counts only. Cora is its only reader, each time conductor-protocol step_Y7 item 1 runs (so again after a Gate 4 rework), before the Gate 4 dispatch, into her journal (conductor-protocol rounds_record); reviewers and the Gate 4 acceptor neither run nor read it, and the derived count stops nothing on this path (review contract §7: a round count alone never stops a Cora run). The gate4 row on this path is the gate report file itself: the Gate 4 acceptor appends no row and skips the table (rule 5). In direct mode the gate4 row is appended by the Alex who dispatches the acceptor (acceptance-protocol step2b, step3b), never by the acceptor. The handoff's table keeps the design row its designer appends at creation."
 ```
 
 ### NO-PROGRESS CIRCUIT BREAKER report (the one template, shared by Gate 2/3/4)
@@ -941,6 +1006,8 @@ Rubric_Gate4_Prerequisite:
   evidence: ".tad/evidence/reviews/*-rubric-eval-*.md exists with the exact machine-readable line `verdict: PASS`"
   verify_command: "grep -E '^verdict: PASS' .tad/evidence/reviews/*-rubric-eval-*.md"
   verify_note: "Greps the EXACT lowercase-key/uppercase-value token the judge writes (Rubric Evaluation Protocol Required_Judge.output_format). The bold/emoji human form `**Verdict**: ✅ PASS` is NOT matched by this anchor — the machine-readable line is required."
+  conductor_path_evidence: "On the conductor path the judge's file is .tad/evidence/yolo/<epic-slug>/phase<N>-rubric-verdict.md (the latest -r<k>; conductor-protocol per_phase_files, step_Y6 1b): a `verdict: PASS` line there satisfies this prerequisite as the reviews/*-rubric-eval-*.md file does; either path satisfies it."
+  conductor_path_judge_unusable: "On the conductor path, when the judge was unusable twice and the Gate 3 run file marks the rubric AC not-run for that reason, the Gate 4 prerequisite does not block; the acceptor lists the rubric AC as not judged in its section for the human, and the verdict cannot be a plain PASS on that AC."
   shape_agnostic_note: "The `^verdict: PASS` token is shape-agnostic — weighted/categorical/checklist all emit it. Gate 4 needs no per-shape branch."
   if_missing:
     action: "BLOCK Gate 4"

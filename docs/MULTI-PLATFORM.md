@@ -1,6 +1,6 @@
 # TAD Multi-Platform Runtime Guide
 
-**Version**: 4.0.11 (Claude Code, Codex, OpenCode and Cursor are install targets)
+**Version**: 4.0.12 (Claude Code, Codex, OpenCode and Cursor are install targets)
 
 TAD runs on **Claude Code, Codex, OpenCode, and Cursor as supported install targets**, with a shared protocol.
 On each of them you can start with Cora (`/cora`, or `$cora` on Codex; not yet run on Cursor and OpenCode): she is the conductor you talk to, and she dispatches Alex, Blake and reviewers as subagents; `/alex` and `/blake` still work directly. What has been run for Cora on each harness is in the section "Cora on each harness" below; the table below covers the hooks and the rest of the framework.
@@ -29,8 +29,8 @@ What was run for the Cora conductor role, and what was not. Facts only; nothing 
 |---|---|---|---|
 | **Claude Code** | Headless smoke fixtures (6 scenarios) and queue fixtures (5 scenarios), after the 4a rework: 6/6 and 5/5 pass, no P0. One live conducted run (a real Claude Code session conducting a real Epic in this repository): the carry-forward Epic, its phases conducted through subagents and gates. It closed PARTIAL; its open P0 was fixed afterwards and re-checked on the scripted fixtures only. | No interactive live session is on disk. Several paths were checked by text only; they are listed under known limits in the 4.0.0 entry of `CHANGELOG.md`. | `.tad/evidence/yolo/cora-conductor-role/phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`; `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md`; `.tad/evidence/yolo/cora-carry-forward-fixes/run-record.md` |
 | **Codex** | The same headless smoke and queue fixtures: 6/6 and 5/5 pass, no P0. In the live run, the journal records that Codex resumed an Epic from its pointer (the words given to it are not on disk) and it conducted steps Y1 to Y5 only. | Gates, acceptance and distillation were not run on Codex. Conducting a run whose fixtures need `claude -p` was blocked (R-CC-9), so the human moved conducting back to Claude Code. | `.tad/evidence/yolo/cora-conductor-role/phase4a-smoke-judge-r2.md`, `phase4a-queue-judge-r2.md`; `.tad/evidence/yolo/cora-conductor-role/phase3-gate-report.md` (G-2); `.tad/project-knowledge/patterns/runtime-adapter-instance-claude-code.md` (R-CC-9) |
-| **Cursor** | Nothing. | Cora was not run on Cursor. | none |
-| **OpenCode** | Nothing. | Cora was not run on OpenCode. | none |
+| **Cursor** | Nothing. | Cora was not run on Cursor. On 2026-11-10 one headless session ran a fixed three-command prompt, not a Cora scenario, inside a trial sandbox profile written for that test and never shipped. A design review then found that this profile left Cursor's state folder in the home directory (~/.cursor, whose contents Cursor may later load and run) writable, most of the home directory readable and the network open, so it would not have stopped a session from changing files Cursor may later run or from sending out what it read. After that review the maintainer decided not to run the Cora fixtures. | `.tad/evidence/yolo/report-upgrades/phase6-spike-1.md` (the session); `.tad/evidence/yolo/report-upgrades/phase6-design-review-risk-r2.md` (P0-1, P0-2: why the fixtures were not run) |
+| **OpenCode** | Nothing. | Cora was not run on OpenCode. On 2026-11-10 one headless session with a fixed prompt, not a Cora scenario, inside a trial sandbox profile of the same kind, was refused by the vendor's server before any model turn because the stored API key had expired. After the review named in the Cursor row the maintainer decided not to run the Cora fixtures here either. | `.tad/evidence/yolo/report-upgrades/phase6-spike-1.md` (section opencode) |
 
 The live-run record has open residuals (see `.tad/evidence/yolo/cora-carry-forward-fixes/phase2-record-check.md`); this section does not rely on the points it lists as unconfirmed.
 
@@ -259,6 +259,34 @@ Update reminder limits: one network call per 24 h per user (a failed or slow che
 
 ---
 
+## Hook timeouts
+
+Every lifecycle hook TAD ships carries a timeout, so a hung hook cannot block a session indefinitely. The rule is set once and carried by each harness in its own native field; this section is the one place the per-harness state is recorded.
+
+The TAD rule (from `.tad/hooks/lib/hook-timeout-test.sh`): handler type `command` / `http` / `prompt` → 30 seconds; type `agent` → 60 seconds; other types have no TAD rule and are skipped by the test.
+
+| Harness | Field | Current values | Executor | Measured status |
+|---|---|---|---|---|
+| Claude Code | `timeout` (integer seconds) in `.tad/templates/claude/settings.json`, projected to a project's `.claude/settings.json` | all 4 command handlers = 30 | the harness itself, natively | Part A consistency verified (test script, 2026-10-31 and re-run 2026-11-06); Part B behavioral cutoff NOT-RUN on the machine that ran the alignment (no `claude` binary there) — the cutoff claim rests on Part A plus the script's Part B, which runs only on a machine with Claude Code installed |
+| Codex | `timeout` in `.codex/hooks.json` (canonical copy in the repo root; the `tad.sh` heredoc generates the same file — edit both together) | SessionStart = 30, PostToolUse ×2 = 30 (aligned 10 → 30, 2026-11-06) | the Codex harness, subject to the hook trust review: under default trust the hooks did not run in the one run measured; a run through a completed trust review is untested | values aligned and verified by `jq` extraction from both copies; execution and cutoff behavior not measured |
+| Cursor | `timeout` in `.cursor/hooks.json` (repo-root original, projected by `tad.sh`) | sessionStart = 30, postToolUse = 30, preCompact = 30 (aligned 10 → 30, 2026-11-06) | the Cursor harness | hook triggering and context injection measured in live regression (2026-10-09 / 2026-10-14); the timeout cutoff itself is not measured |
+| OpenCode | no configuration field — the plugin races each hook call itself: `CALL_TIMEOUT_MS = 5000` in `.opencode/plugins/tad-hooks.ts` | 5 s, hard-coded | the plugin's own `Promise.race`; on timeout it fails open and returns an empty string | named divergence: no configurable field exists, so the 30 s rule does not apply to this harness; not aligned and not claimed as aligned |
+
+Ruling notes for the 2026-11-06 alignment of the Codex and Cursor values:
+
+- This alignment is a rule-consistency ruling, not a measured conclusion: no run on either harness showed that 10 s was wrong or that 30 s is needed there.
+- The supporting evidence is in-repo: the multi-harness phase5b review (`.tad/evidence/yolo/multi-harness-restore-and-cleanup/phase5b-impl-review-C.md`, P1-1) recorded a legitimate hook doing 14 s of work being killed by a 10 s limit, losing its trace output.
+- Direction of the change, per hook: for the post-write hooks (Codex PostToolUse, Cursor postToolUse) aligning to 30 triples the worst-case blocking exposure of a genuinely hung hook — live on Cursor, inert on Codex until a trust review is completed; for the snapshot hooks (Cursor preCompact; SessionStart was already 30 on every harness) it lowers the risk of truncating slow-but-legitimate work.
+- Field semantics follow each harness's own native documentation; this repository verifies values only.
+
+Boundary notes:
+
+- The warning a user sees when a hook is cut off varies with the harness and the mode (headless `-p` vs interactive); TAD asserts the cutoff and the session continuing, and only captures and reports warning text — it does not assert a uniform warning presentation.
+- Codex execution stays gated by the trust review above: an aligned value in `hooks.json` is not evidence that Codex ran the hook.
+- OpenCode's 5 s race is a deliberate fail-open contract of the plugin (a timed-out hook loses its injected output, never the session); it is documented here as a divergence, not fixed by inventing a configuration surface.
+
+---
+
 ## Current Limitations
 
 | Limitation | Impact | Resolution |
@@ -282,4 +310,4 @@ Update reminder limits: one network call per 24 h per user (a failed or slow che
 
 ---
 
-*TAD v4.0.11 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*
+*TAD v4.0.12 — one skill tree (`.agents/skills/`), four install targets, per-harness evidence in the status table.*

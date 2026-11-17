@@ -1,0 +1,17 @@
+schema_version: 1
+from: "4.0.11"
+to: "4.0.12"
+generated_by: "manual"
+note: |
+  Patch v4.0.12 - framework changes since the previous patch release, shipped
+  as the public base plus an allow-list of framework files (pack-meta read
+  guards, report upgrades, design-foundation pack, smaller tickets).
+  Derivation: the framework selection paths (the gen-framework-provenance.sh
+  selection with the derive-sync-set.sh deny dirs) of the v4.0.11 tag tree
+  and of the release candidate tree (tracked-or-untracked paths), each sorted
+  with LC_ALL=C, saved as hop-paths-4011.txt and hop-paths-k.txt in the
+  release evidence. comm -23 of the two lists printed nothing, so there are no
+  framework deletes and no renames; paths the base tracks and the source lacks
+  keep the base copy. Both lists are by measurement, not by assumption.
+delete: []
+rename: []

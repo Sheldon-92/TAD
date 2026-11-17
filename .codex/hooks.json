@@ -20,7 +20,7 @@
           {
             "type": "command",
             "command": "bash .tad/hooks/post-write-sync.sh",
-            "timeout": 10
+            "timeout": 30
           }
         ]
       },
@@ -30,7 +30,7 @@
           {
             "type": "command",
             "command": "bash .tad/hooks/lib/askuser-capture.sh",
-            "timeout": 10
+            "timeout": 30
           }
         ]
       }

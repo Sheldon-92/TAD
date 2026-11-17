@@ -35,12 +35,39 @@ function expectExit(res,code,msg){
   expect(res.status===code, `${msg}: exit=${res.status} want=${code} out=${(res.stdout||'').slice(-800)} err=${(res.stderr||'').slice(-400)}`);
 }
 const TMP_DIRS=[];
+// report-upgrades Phase 5 (D12): the temp root is TMPDIR only when it is absolute and not the repo or
+// inside it; else /tmp. TMP_DIRS holds only directories tmpDir() made in this process (never a given
+// --evidence-dir), and cleanup() runs on every exit, process.exit included.
+function tmpRoot(){
+  const t=process.env.TMPDIR||'';
+  let r='/tmp';
+  if(t && path.isAbsolute(t)){
+    try{
+      const rr=fs.realpathSync(t), repo=fs.realpathSync(REPO_ROOT);
+      if(!(rr===repo || rr.startsWith(repo+path.sep))) r=rr;
+    }catch{}
+  }
+  return fs.realpathSync(r);
+}
 function tmpDir(prefix){
-  const d=fs.realpathSync(fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), prefix)));
+  const d=fs.realpathSync(fs.mkdtempSync(path.join(tmpRoot(), prefix)));
   TMP_DIRS.push(d);
   return d;
 }
-function cleanup(){ for(const d of TMP_DIRS){ try{ fs.rmSync(d,{recursive:true,force:true}); }catch{} } }
+function cleanup(){ while(TMP_DIRS.length){ const d=TMP_DIRS.pop(); try{ fs.rmSync(d,{recursive:true,force:true}); }catch{} } }
+process.on('exit', cleanup);
+// report-upgrades Phase 5 (D12, carried G4-3): without --evidence-dir, live-evidence and release-threshold
+// work on a copy of the phase-3 capabilities directory in a temp dir (one copy per process), never in the tree.
+let P3_EVIDENCE_COPY=null;
+function phase3EvidenceDir(opts){
+  if(opts && opts.evidenceDir) return opts.evidenceDir;
+  if(P3_EVIDENCE_COPY) return P3_EVIDENCE_COPY;
+  const d=tmpDir('yolo-h3-ev-');
+  const src=path.join(REPO_ROOT,'.tad/evidence/yolo/yolo2-verified-orchestration/phase3/capabilities');
+  if(fs.existsSync(src)) fs.cpSync(src, path.join(d,'capabilities'), {recursive:true});
+  P3_EVIDENCE_COPY=d;
+  return d;
+}
 function git(args,cwd){ return execFileSync('git',args,{cwd, encoding:'utf8'}).trim(); }
 function makeRepo(){
   const dir=tmpDir('yolo-h3-repo-');
@@ -514,7 +541,7 @@ function caseCompatibility(opts){
 
 // ─────────────── AC8 live-evidence (P3-R1) ───────────────
 function caseLiveEvidence(opts){
-  const evidenceDir=opts.evidenceDir||path.join(REPO_ROOT,'.tad/evidence/yolo/yolo2-verified-orchestration/phase3');
+  const evidenceDir=phase3EvidenceDir(opts);
   // P3-R1: Codex is core; other two are experimental adapters. Exactly three records still required,
   // but classification rule is Codex=strict is core PASS; others may be experimental_unverified|degraded|blocked.
   const capsDir=path.join(evidenceDir,'capabilities');
@@ -606,7 +633,7 @@ function caseUsability(){
 
 // ─────────────── AC11 release-threshold (P3-R1) ───────────────
 function caseReleaseThreshold(opts){
-  const evidenceDir=opts.evidenceDir||path.join(REPO_ROOT,'.tad/evidence/yolo/yolo2-verified-orchestration/phase3');
+  const evidenceDir=phase3EvidenceDir(opts);
   const aggPath=path.join(evidenceDir,'capabilities/aggregate.json');
   if(!fs.existsSync(aggPath)){
     caseLiveEvidence(opts);
@@ -774,6 +801,7 @@ async function main(){
     }
   }
   console.log(`RESULT=${overallPass?'PASS':'FAIL'}`);
+  cleanup();
   process.exit(overallPass?0:1);
 }
 main().finally(cleanup);

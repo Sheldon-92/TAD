@@ -5,6 +5,36 @@ All notable changes to the TAD Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.12] - 2026-11-17
+
+Patch release: the framework changes made on two machines since the previous release (the Mac and a second machine), shipped as the public base plus an allow-list of framework files. Working notes and process records are not part of this release.
+
+### Fixed
+
+- (Mac, EPIC-20261116-pack-meta-read-guards) `tad.sh` pack-meta reads: a 0-byte `.tad-pack-meta.yaml`, or one without `sync_policy` or `baseline_source`, no longer aborts an install or an upgrade. A `PACK-META-EMPTY` pre-check names 0-byte metas before the backup is taken; `--fork-pack` refuses a meta without `sync_policy` (exit 1, nothing changed); `--list-packs` and `--unfork-pack` no longer abort. New installer cases `pm.empty`, `pm.nopolicy`, `pm.nobaseline` and `pm.maint` in `.tad/tests/installer-data-safety-fixture.sh`.
+
+### Added
+
+- (Mac, EPIC-20261109-report-upgrades) The README install line no longer needs `--platform`, and the README has a "First thing: a real run" section. Pack counts come from the registry through `.tad/scripts/pack-counts.sh` and `.tad/scripts/pack-categories.tsv` (`.tad/tests/pack-counts-fixture.sh`).
+- (Mac) `bash .tad/tests/run-all.sh --no-git` runs the no-git subset; `.tad/scripts/check-path-refs.mjs` walks the tree without git (`.tad/tests/check-path-refs-nogit-fixture.sh`), with its allow-list in `.tad/scripts/path-refs-allowlist.txt`.
+- (Mac) Handoff template §8.7 failure paths with gate checks, `.tad/templates/review-contract.md` and `.tad/tests/failure-path-fixture.sh`; §8.8 research truth check; `cora-check.sh judge-first` with `rubric_ac:`, and `cora-check.sh rounds` (`.tad/hooks/lib/cora-check.sh`, `.tad/tests/cora-check-judge-rounds-fixture.sh`).
+- (Mac) `.tad/scripts/harness-precheck.sh` and `.tad/scripts/tad-tmp.sh` (temporary copies named per dispatch and removed by name), with `.tad/tests/harness-precheck-fixture.sh` and `.tad/tests/tad-tmp-fixture.sh`.
+- (second machine) The `design-foundation` pack: `.agents/skills/design-foundation/` with design tokens and `.agents/skills/design-foundation/tools/check-token-parity.sh`; listed in `AGENTS.md`, not in `.tad/capability-packs/pack-registry.yaml`. Web UI design template and brand-token changes (`.agents/skills/web-ui-design/references/brand-tokens.md`), `.tad/templates/design-tokens-template.md`, and a web-frontend example.
+- (second machine) `.tad/hooks/lib/component-health-check.sh` (its project-owned baseline file is not shipped; each project makes its own); `.tad/tests/intent-route-test.sh` with `.tad/tests/fixtures/intent-route-samples.json`, wired into `.tad/tests/run-all.sh`.
+
+### Changed
+
+- (Mac) Installer snapshot keep rule; environment-sanitising blocks; Cora, Blake and gate skill and protocol text (`.agents/skills/cora/references/conductor-protocol.md`, `.agents/skills/gate/SKILL.md`).
+- (second machine) Hook-timeout consistency across `.tad/hooks/lib/hook-timeout-test.sh`, `.codex/hooks.json` and `.cursor/hooks.json`; version-sweep gaps closed in `.tad/hooks/lib/release-verify.sh` with `.agents/skills/release-runbook/references/publish-ops.md`; `.tad/hooks/startup-health.sh`; step-gate checker lens naming and conductor-protocol text; sign-off layer text.
+
+### Not in this release
+
+- Working notes and process records (`docs/pm/`, `.tad/active/` and other project-owned directories) keep their public copies; thirteen moves of working notes into the archive are not shipped as deletions; project-knowledge pattern updates stay out; two files outside both sources (a CI workflow file and a review benchmark record) are held. See the release note.
+
+### Known
+
+- Shipped unfinished, as they are: the skill-availability chain; the row-4 self-test chain (`.tad/tests/self-test.sh`, frozen); the session-state split (design only, no code).
+
 ## [4.0.11] - 2026-11-04
 
 Installer diagnostics patch (EPIC-20261102-v4011-failure-naming).

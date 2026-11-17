@@ -36,6 +36,8 @@
 .tad/gates/gate-execution-guide.md	.tad/working/gates/	Gate working directory created at run time in a downstream project; only .tad/working/ has committed content, not gates/
 .tad/gates/quality-gate-checklist.md	.tad/working/gates/	Gate working directory created at run time in a downstream project; only .tad/working/ has committed content, not gates/
 .tad/guides/yolo-recovery.md	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
+.tad/hooks/lib/component-health-check.sh	.tad/project-knowledge/component-health-baseline.txt	Project-owned baseline (path + sha256) the check reads at run time; created in a working project, never shipped in this repo, and the script reports it UNVERIFIABLE when absent
+.tad/hooks/lib/component-health-check.sh	.tad/templates/local/chain-manifest-template.md	Named inside an exclusion filter on purpose (a grep -v -F -x pattern list of paths to leave out), not a reference to a file that should exist
 .tad/hooks/post-write-sync.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
 .tad/hooks/startup-health.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo
 .tad/mcp-registry.yaml	.tad/mcp-config.json	User-created MCP config; the registry tells users to create it, so it is absent by design
@@ -73,12 +75,6 @@ docs/MULTI-PLATFORM.md	.tad/active/update-reminder.off	Off switch the human crea
 .agents/skills/alex/references/intent-router-protocol.md	.tad/intent-overrides.yaml	User-local override file named in prose as optional (read if present); created by the user in a downstream project, no committed copy
 .tad/active/INTAKE-20261101-sober-surplus-proposals.md	.tad/methodology-skeleton/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
 .tad/active/INTAKE-20261101-sober-surplus-proposals.md	.tad/sandbox/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/config/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/domains/tools-registry.yaml	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/hooks/lib/staleness-check.sh	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/scripts/gate-roi.py	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.json	.tad/scripts/release-verify.sh	Historical planning record of 2026-10-31/11-01: names the script in the wrong directory (it is .tad/hooks/lib/release-verify.sh); the record is not rewritten
-.tad/active/SURPLUS-PLAN-2026-10-31.md	.tad/hooks/lib/staleness-check.sh	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
 .tad/active/SURPLUS-REPORT-2026-10-31.md	.tad/config/	Historical planning record of 2026-10-31/11-01: names a file or directory that was proposed and never built; the record is not rewritten
 .tad/hooks/lib/intent-overrides.yaml	.tad/intent-overrides.yaml	User-local override file named in prose as optional (read if present); created by the user in a downstream project, no committed copy
 .tad/hooks/lib/state-surface-check.sh	.tad/active/session-state.md	Per-project session state written at run time by the role skills; gitignored (.gitignore:35), so it exists only in a working project, never in this repo

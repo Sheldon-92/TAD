@@ -27,6 +27,8 @@ gate4_delta: []
 
 # risk_triggers: closed list — security | data | money | ui | platform | domain, or [none] (review contract §5; Gate 2 risk or fit, Gate 3 domain for security/data/money)
 risk_triggers: [none]
+# rubric_ac: the §9.1 rows graded by an independent judge against a rubric (gate skill Rubric Evaluation Protocol), e.g. [AC14], or none; cora-check.sh judge-first reads this line; the Gate 2 consistency lens checks it against §9.1 (review contract §5)
+rubric_ac: none
 # look_first: a read-only look first when the result acts on a system outside this repo or on real user or project data: the record path (Cora run .tad/evidence/yolo/{epic-slug}/phase{N}-look.md; direct /alex .tad/evidence/reviews/alex/<slug>/look.md), or "not-needed: <reason>" (design-protocol step1_2_look_first)
 look_first: "not-needed: <reason>"
 # real_paths: each path the change takes in the real environment, run once by the Gate 3 run reviewer (the Gate 4 acceptor also does what the human will do); protocol text = a named scenario walk; impossible → not-run: <reason> (a paid run, i.e. billed separately in real money, a plan session is not one; the human's own account or device, production/outward, a capability this harness lacks)
@@ -44,7 +46,7 @@ real_paths:
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 4.0.11
+**Handoff Version:** 4.0.12
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md — cite previous handoff if this one supersedes. Enables /tad-maintain drift check (Phase 1 P1.2.c) to propose archiving the superseded one. -->
 
@@ -545,6 +547,45 @@ Blake必须提供：
 - [ ] 覆盖率报告（目标：>80%）
 - [ ] Edge case测试日志
 
+## 8.7 Failure Paths (write / sync / rollback)
+
+When required:
+The failure-path table (handoff §8.7) is required when the change alters code that writes, copies, syncs, installs, upgrades or rolls back files in a user project or a downstream repo (tad.sh, tad-update.sh, any installer, sync or rollback script); a change that only adds or edits tests or fixtures that run such code inside a throw-away sandbox does not by itself make it required.
+
+When it is not required, this section holds one line instead of the table: `not applicable: <reason>` (the reason says why the sentence above does not hold for this change).
+
+Classes (at least one row per class):
+- **write** — a file write at a write point fails (stage, copy, verify, swap, stamp).
+- **sync** — a sync step fails outside a named write point (for example a mkdir or a list step).
+- **rollback** — the rollback itself cannot restore an entry.
+
+A class that this change does not touch gets one row `| n/a | <class> | not applicable: <reason> | | | | |` in place of its FP rows; such a class is neither missing nor run, and the id_check line lists it after `not applicable:`. The consistency lens at Gate 2 judges the reason (gate skill `FAILURE-PATH TABLE CHECK`). An `n/a` row with an empty reason (an empty third cell, or nothing after `not applicable:`) is not accepted: the id_check line does not flag it, so the reviewer reports it (P0). At Gate 3 the consistency lens reads each `not applicable` reason (the whole-section line and every per-class row) against the change as built, the files the completion report lists; a built change that touches a class whose reason says it does not → P0. This is checked at Gate 3 as well as at Gate 2; the Gate 4 acceptor reads the Gate 3 consistency file for it.
+
+| id | class | trigger | fixture case | target state | output the user must see (verbatim) | exit |
+|---|---|---|---|---|---|---|
+| FP1 | write | <the injected fault> | <the command that runs this row> | <what the target holds afterwards> | <the printed lines, exactly; variable parts written `<…>`> | <n> |
+
+Row ids are `FP<n>` (never `AC<n>`); an `n/a` row carries `n/a` in the id cell instead. Output cells quote the printed lines exactly; only the variable parts are written `<…>`.
+
+Each row is an acceptance item: Gate 3 runs it with its fixture case and records expected against actual output (gate skill `FAILURE-PATH RUN`), and Gate 2 checks that the table is present and complete (gate skill `FAILURE-PATH TABLE CHECK`).
+
+Rows per failure point: the table has one row per failure point the change adds or alters (for example a new snapshot, cleanup, staging or stamp step), in the nearest class, and at least one row per class that applies; a row copied from an existing fixture case for code the change does not touch does not cover a new failure point (a failure point the change adds with no row of its own → P0 at Gate 2).
+
+## 8.8 Research Truth Check (research deliverables)
+
+When required:
+The research truth check (handoff §8.8) is required when the deliverable states facts about sources outside this repo that its reader will rely on (a report, review, benchmark, survey or comparison, usually task_type research or deliverable); a deliverable whose every claim is about files of this repo, each checked by a §9.1 command, does not by itself make it required.
+
+When it is not required, this section holds one line instead of the table: `not applicable: <reason>` (the reason says why the sentence above does not hold for this deliverable).
+
+Fill one row per claim class the reader relies on, high-risk first (live third-party sources: threads, live counts, changing pages).
+
+| id | claim class | read method (whole current source) | population | ledger column (rests on) | §9.1 row |
+|---|---|---|---|---|---|
+| TC1 | <a claim class, e.g. a thread paraphrase: who said what, state, how closed> | <body, every comment to the newest, full timeline, linked PRs; for a count, the query that counts exactly the noun; with the as-of time> | <every claim of the class, n from the ledger; `sample <n>` only for a low-risk class, with the reason> | <the ledger path and its rests-on column: quote or event, who, role, date> | AC<n> |
+
+Row ids are `TC<n>` (never `AC<n>`). The cited §9.1 row is the load-bearing truth AC: its command reads `$V`, the run lens's verdict file of the current round (gate skill `RESEARCH TRUTH READ`, key `order`), and passes only when every claim of the population has a `## Truth read` row holding `yes` (a `no` fails it, and so does a `not-run`: a claim whose live source the run reviewer cannot reach read-only is one P0 and the verdict is FAIL and the rework removes the claim, gate skill `RESEARCH TRUTH READ` key `unreachable_source`; a source that needs the human's own account or a capability the reviewer lacks stays under review-contract.md §6's not-run rule). Format rows (counts, headings, links present) are preconditions, never evidence of truth. Gate 2 checks this section (gate skill `RESEARCH TRUTH CHECK`); the Gate 3 run lens reads the whole population (gate skill `RESEARCH TRUTH READ`). Sources: `patterns/ac-verification.md` and `patterns/research-methodology.md`, 2026-11-09 entries.
+
 ---
 
 ## 9. Acceptance Criteria
@@ -723,4 +764,4 @@ Blake完成后填写：
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 4.0.11
+**Version**: 4.0.12

@@ -44,7 +44,7 @@ gate4_delta: []
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 4.0.11
+**Handoff Version:** 4.0.12
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md -->
 
@@ -212,6 +212,14 @@ Producer 在开始产出前，请确认：
 ### 4.3 Source / Evidence Requirements
 [引用、来源、provenance 要求 — 例如 zero-hallucination, source quality tier]
 
+The research truth check (handoff §8.8) is required when the deliverable states facts about sources outside this repo that its reader will rely on (a report, review, benchmark, survey or comparison, usually task_type research or deliverable); a deliverable whose every claim is about files of this repo, each checked by a §9.1 command, does not by itself make it required.
+
+Fill the same slot as `handoff-a-to-b.md` §8.8 (gate skill `RESEARCH TRUTH CHECK`, `RESEARCH TRUTH READ`):
+
+| id | claim class | read method (whole current source) | population | ledger column (rests on) | §9.1 row |
+|---|---|---|---|---|---|
+| TC1 | <a claim class, e.g. a thread paraphrase: who said what, state, how closed> | <body, every comment to the newest, full timeline, linked PRs; for a count, the query that counts exactly the noun; with the as-of time> | <every claim of the class, n from the ledger; `sample <n>` only for a low-risk class, with the reason> | <the ledger path and its rests-on column: quote or event, who, role, date> | AC<n> |
+
 ---
 
 ## 5. Deliverables to Produce
@@ -311,4 +319,4 @@ Producer 在开始产出前，请确认：
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 4.0.11
+**Version**: 4.0.12
