@@ -1,5 +1,5 @@
 # TAD Brain Index
-Generated: 2026-11-17 14:46
+Generated: 2026-11-23 09:01
 
 ## Principles
 | Entry | Keywords | Summary |
@@ -89,7 +89,7 @@ Generated: 2026-11-17 14:46
 | Directory | Files | Topic |
 |-----------|-------|-------|
 | evidence/pm/ | 1 | pm |
-| evidence/releases/ | 2 | releases |
+| evidence/releases/ | 3 | releases |
 | evidence/reviews/ | 1 | reviews |
 | evidence/yolo/ | 4 | yolo |
 
