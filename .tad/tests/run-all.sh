@@ -199,6 +199,16 @@ if [ -n "$NOGIT" ]; then
   ng_run check-path-refs ng_rerun_139 node .tad/scripts/check-path-refs.mjs --no-git
   ng_run check-path-refs-nogit-fixture ng_rerun_139 /bin/bash .tad/tests/check-path-refs-nogit-fixture.sh
   ng_run hook-envelope-fixture /bin/bash .tad/tests/hook-envelope-fixture.sh
+  if [ -f .tad/tests/release-verify-fixture.sh ]; then
+    ng_run release-verify-fixture /bin/bash .tad/tests/release-verify-fixture.sh --case all
+  else
+    ng_excl release-verify-fixture "file does not exist"
+  fi
+  if [ -f .tad/tests/gate3-check-fixture.sh ]; then
+    ng_run gate3-check-fixture /bin/bash .tad/tests/gate3-check-fixture.sh
+  else
+    ng_excl gate3-check-fixture "file does not exist"
+  fi
   ng_run hook-timeout-conformance /bin/bash .tad/hooks/lib/hook-timeout-test.sh --conformance
   ng_run intent-route-test /bin/bash .tad/tests/intent-route-test.sh
   for c in versions silent-bounded hard-bounded cache-path once-a-day delivery no-tad reminder-only; do
@@ -337,6 +347,18 @@ if [ -f .tad/tests/intent-route-test.sh ]; then
   run_test intent-route-test /bin/bash .tad/tests/intent-route-test.sh
 else
   excluded intent-route-test "file does not exist"
+fi
+
+if [ -f .tad/tests/release-verify-fixture.sh ]; then
+  run_test release-verify-fixture /bin/bash .tad/tests/release-verify-fixture.sh --case all
+else
+  excluded release-verify-fixture "file does not exist"
+fi
+
+if [ -f .tad/tests/gate3-check-fixture.sh ]; then
+  run_test gate3-check-fixture /bin/bash .tad/tests/gate3-check-fixture.sh
+else
+  excluded gate3-check-fixture "file does not exist"
 fi
 
 if [ -f .tad/tests/update-reminder-fixture.sh ]; then

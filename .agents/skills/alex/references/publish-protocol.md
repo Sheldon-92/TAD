@@ -221,6 +221,7 @@ publish_protocol:
           bash .tad/hooks/lib/release-verify.sh freshness "$PWD"
           bash .tad/hooks/lib/release-verify.sh provenance "$PWD"
           bash .tad/hooks/lib/release-verify.sh framework-provenance "$PWD"
+          bash .tad/hooks/lib/release-verify.sh release-notes "$PWD" "$NEW"   # exit 1 blocks every release type: the upgrade reader sees no line of the new CHANGELOG section
         Order constraints:
         1. After the version-bump commit exists, also run `.tad/scripts/gen-framework-provenance.sh`
            and commit .tad/provenance/framework-released.tsv and .sha1 (the release-file ledger;

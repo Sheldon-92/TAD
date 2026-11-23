@@ -2,7 +2,7 @@
 # installer-data-safety-fixture.sh — sandbox acceptance suite for the installer
 # data-safety remainder (FR-1 + FR-5 + F-05/F-06/F-07/F-08 + F-34 + AC2.5).
 #
-# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|caps|all
+# Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|pm.released|pm.released-fail|pm.released-fail4|pm.released-noledger|caps|all
 #
 # Contract (handoff §4.3 + §9.1):
 #   - EVERY sandbox installer invocation carries --yes (bare runs exit 0 with
@@ -89,7 +89,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --case) CASE="${2:-}"; shift 2 ;;
     --case=*) CASE="${1#--case=}"; shift ;;
-    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|caps|all" >&2; exit 0 ;;
+    --help|-h) echo "Usage: bash installer-data-safety-fixture.sh --case ac2.1|...|ac2.28|r1|fx.a|fx.b1|fx.b3|fx.c|fx.d|fx.e|fx.p|fx.f|fx.k|fx.rb|fx.rep|fx.agm|fx.oc|fx.own|fx.g|aw.1|aw.2|aw.2b|aw.3|aw.4|aw.guard|fn.copy|fn.copy-real|fn.verify|fn.swap|fn.points|fn.catchall|fn.signal|fn.keep|fn.keep-lost|rp.field|rp.run-copy|rp.backup-entry|rp.snap-entry|rp.unsafe-backup|rp.unsafe-root|rp.fresh|rp.stamp|rp.snap-incomplete|rp.snap-pending|rp.precopy-lost|rp.leftover|rp.lint-control|pm.empty|pm.nopolicy|pm.nobaseline|pm.maint|pm.released|pm.released-fail|pm.released-fail4|pm.released-noledger|caps|all" >&2; exit 0 ;;
     *) echo "fixture: unknown option '$1' (use --help)" >&2; exit 2 ;;
   esac
 done
@@ -4299,6 +4299,125 @@ pm_upgrade_case() {
   assert_no_network || true
 }
 
+# ── pm.released*: the released-copy rule of copy_pack_skill_smart (4.0.13, D4/D10) ──
+# A pack file whose git blob id is a row of the SOURCE release ledger
+# (.tad/provenance/framework-released.tsv) is replaced from upstream in Case 3 (migrated)
+# and Case 4 (fresh_install); a user-edited file and an emptied file are kept.
+# Shape: packs p (meta migrated, the first-install state) and q (meta fresh_install with
+# u's recorded sha already the new upstream sha, the 4.0.12-upgrade state); u = a file
+# unchanged since a release, changed upstream; c = a user edit; p/e = emptied by the user.
+pm_blob() { local _s; _s="$(LC_ALL=C wc -c < "$1" | tr -d ' ')"; { printf 'blob %s\0' "$_s"; cat -- "$1"; } | shasum -a 1 | cut -c1-40; }
+pm_in_ledger() { PB="$1" awk -F'\t' 'BEGIN { b = ENVIRON["PB"] } !/^#/ && $1 == b { f = 1; exit } END { exit !f }' "$SOURCE/.tad/provenance/framework-released.tsv"; }
+pm_released_case() { # $1 = released | released-fail | released-fail4 | released-noledger
+  # released-fail fails the write of p/u (Case 3, migrated); released-fail4 that of q/u (Case 4, fresh_install)
+  local shape="$1" tag="pm.$1" p q pu pc pe qu qc log rc nw ns lf bad udir ubase newsha fp fu
+  CURRENT_CASE="$tag"
+  aw_require_bash || return 0
+  new_sandbox
+  aw_build_target || return 0
+  stage_provenance
+  pm_pick_packs 2
+  if [ "$PM_COUNT" -lt 2 ]; then fail "$tag: setup found $PM_COUNT pack(s) with a meta and three plain files, needs 2"; return 0; fi
+  p="$(pm_nth "$PM_PACKS" 1)"; q="$(pm_nth "$PM_PACKS" 2)"
+  pm_files "$TARGET/.agents/skills/$p" > "$SANDBOX/pmr-p.txt"; pm_files "$TARGET/.agents/skills/$q" > "$SANDBOX/pmr-q.txt"
+  pu="$(sed -n 1p "$SANDBOX/pmr-p.txt")"; pc="$(sed -n 2p "$SANDBOX/pmr-p.txt")"; pe="$(sed -n 3p "$SANDBOX/pmr-p.txt")"
+  qu="$(sed -n 1p "$SANDBOX/pmr-q.txt")"; qc="$(sed -n 2p "$SANDBOX/pmr-q.txt")"
+  if ! pm_in_ledger "$(pm_blob "$TARGET/.agents/skills/$p/$pu")" || ! pm_in_ledger "$(pm_blob "$TARGET/.agents/skills/$q/$qu")"; then
+    fail "$tag: setup: $p/$pu or $q/$qu is not a row of the source release ledger"; return 0
+  fi
+  if ! grep -qx 'baseline_source: migrated' "$TARGET/.agents/skills/$p/.tad-pack-meta.yaml"; then
+    fail "$tag: setup: the clean-install meta of $p is not baseline_source: migrated"; return 0
+  fi
+  # upstream change of u in both packs
+  printf '%s\n' 'pm-released upstream change' >> "$SOURCE/.agents/skills/$p/$pu"
+  printf '%s\n' 'pm-released upstream change' >> "$SOURCE/.agents/skills/$q/$qu"
+  # q: fresh_install meta whose u entry records the NEW upstream sha (L8 state)
+  if ! pm_meta_write "$q" keep; then fail "$tag: setup could not write the fresh_install meta of $q"; return 0; fi
+  newsha="$(shasum -a 256 "$SOURCE/.agents/skills/$q/$qu" | cut -c1-64)"
+  P="$qu" N="$newsha" awk 'BEGIN { p = ENVIRON["P"]; n = ENVIRON["N"] } index($0, "path: \"" p "\"") > 0 { print; f = 1; next } f && /sha256:/ { sub(/sha256:.*/, "sha256: \"" n "\""); f = 0 } { print }' \
+    "$TARGET/.agents/skills/$q/.tad-pack-meta.yaml" > "$SANDBOX/pmr-meta.tmp" && mv -f "$SANDBOX/pmr-meta.tmp" "$TARGET/.agents/skills/$q/.tad-pack-meta.yaml"
+  grep -qF "sha256: \"$newsha\"" "$TARGET/.agents/skills/$q/.tad-pack-meta.yaml" || { fail "$tag: setup: q meta does not record the new upstream sha of $qu"; return 0; }
+  # user edits and the user's emptied file
+  printf '%s\n' 'pm-released local change' >> "$TARGET/.agents/skills/$p/$pc"
+  printf '%s\n' 'pm-released local change' >> "$TARGET/.agents/skills/$q/$qc"
+  : > "$TARGET/.agents/skills/$p/$pe"
+  mkdir -p "$SNAP/pmr"
+  cp -R "$TARGET/.agents/skills/$p" "$SNAP/pmr/p"; cp -R "$TARGET/.agents/skills/$q" "$SNAP/pmr/q"
+  if [ "$shape" = "released-noledger" ]; then
+    printf '%s\n' '0000000000000000000000000000000000000000' > "$SOURCE/.tad/provenance/framework-released.sha1"
+  fi
+  if [ "$shape" = "released-fail" ] || [ "$shape" = "released-fail4" ]; then
+    if [ "$shape" = "released-fail" ]; then fp="$p"; fu="$pu"; else fp="$q"; fu="$qu"; fi
+    snapshot_target "$SNAP/pre"
+    udir="$(dirname "$fu")"; ubase="$(basename "$fu")"
+    if [ "$udir" = "." ]; then udir=""; else udir="$udir/"; fi
+    fn_shim cp relfail <<EOF
+for a in "\$@"; do last="\$a"; done
+case "\$last" in
+  *.agents/skills/$fp/$udir.$ubase.tad-new.*) printf 'FNMARK-released cp: injected failure\n' >&2; echo hit >> @MARK@; exit 1 ;;
+esac
+exec @REAL@ "\$@"
+EOF
+  fi
+  log="$SANDBOX/pm-$shape.log"
+  rc="$(fn_run "$log")"
+  grep -F 'released copy updated' "$log" | sed 's/^/  log: /' || true
+  grep -F 'release ledger not usable' "$log" | sed 's/^/  log: /' || true
+  if [ "$shape" = "released-fail" ] || [ "$shape" = "released-fail4" ]; then
+    if [ "$rc" != "0" ]; then pass "$tag: the armed upgrade failed (rc=$rc)"; else fail "$tag: the armed upgrade succeeded"; return 0; fi
+    fn_witness relfail || return 0
+    # the write point names its failure kind (copy), as fn.copy shows; the run step is sync-skills
+    fn_expect "$log" "INSTALL-WRITE-FAILED step=copy file=.agents/skills/$fp/$fu reason=FNMARK-released cp: injected failure" "failure line names the copy step, .agents/skills/$fp/$fu and the system text"
+    if fn_line_before "$log" 'INSTALL-WRITE-FAILED' 'Installation failed'; then pass "$tag: the failure line comes before 'Installation failed'"; else fail "$tag: failure line not before 'Installation failed'"; fi
+    aw_assert_tree_restored "$SNAP/pre"
+    return 0
+  fi
+  # [R1]
+  if [ "$rc" = "0" ] && ! grep -qF 'INSTALL-EXIT' "$log"; then pass "$tag: [R1] upgrade rc=0, no installer stop line"
+  else fail "$tag: [R1] upgrade rc=$rc (want 0, no stop line)"; return 0; fi
+  if [ "$shape" = "released" ]; then
+    # [R2] released copies replaced from upstream, each logged
+    if cmp -s "$SOURCE/.agents/skills/$p/$pu" "$TARGET/.agents/skills/$p/$pu" && cmp -s "$SOURCE/.agents/skills/$q/$qu" "$TARGET/.agents/skills/$q/$qu" \
+       && grep -qF "$p/$pu: released copy updated" "$log" && grep -qF "$q/$qu: released copy updated" "$log"; then
+      pass "$tag: [R2] $p/$pu (migrated) and $q/$qu (fresh_install) equal the new upstream bytes and are logged 'released copy updated'"
+    else
+      fail "$tag: [R2] a released copy was kept or not logged ($p/$pu, $q/$qu)"
+    fi
+  else
+    # noledger: both kept, the warn line once
+    nw="$(grep -c 'pack files: release ledger not usable' "$log" || true)"
+    if cmp -s "$SNAP/pmr/p/$pu" "$TARGET/.agents/skills/$p/$pu" && cmp -s "$SNAP/pmr/q/$qu" "$TARGET/.agents/skills/$q/$qu" && [ "$nw" = "1" ] \
+       && ! grep -qF 'released copy updated' "$log"; then
+      pass "$tag: [R2] ledger not usable: $p/$pu and $q/$qu keep the old bytes, the warn line printed once"
+    else
+      fail "$tag: [R2] ledger not usable but a file changed or warn count=$nw (want 1)"
+    fi
+  fi
+  # [R3] user edits kept
+  if cmp -s "$SNAP/pmr/p/$pc" "$TARGET/.agents/skills/$p/$pc" && cmp -s "$SNAP/pmr/q/$qc" "$TARGET/.agents/skills/$q/$qc"; then
+    pass "$tag: [R3] user-edited $p/$pc and $q/$qc kept"
+  else fail "$tag: [R3] a user-edited file was overwritten"; fi
+  # [R4] every other file of p and q unchanged
+  bad=""
+  for lf in p q; do
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      case "$lf/$f" in "p/$pu"|"q/$qu") continue ;; esac
+      if [ "$lf" = p ]; then d="$TARGET/.agents/skills/$p"; else d="$TARGET/.agents/skills/$q"; fi
+      cmp -s "$SNAP/pmr/$lf/$f" "$d/$f" || bad="$bad $lf/$f"
+    done <<< "$(cd "$SNAP/pmr/$lf" && find . -type f -not -name '.tad-pack-meta.yaml' | sed 's|^\./||')"
+  done
+  if [ -z "$bad" ]; then pass "$tag: [R4] every other file of $p and $q unchanged"; else fail "$tag: [R4] changed:$bad"; fi
+  # [R5] the emptied file stays empty
+  if [ -f "$TARGET/.agents/skills/$p/$pe" ] && [ ! -s "$TARGET/.agents/skills/$p/$pe" ]; then pass "$tag: [R5] emptied $p/$pe still size 0"
+  else fail "$tag: [R5] emptied $p/$pe was refilled or removed"; fi
+  assert_no_network || true
+}
+case_pmreleased() { pm_released_case released; }
+case_pmreleasedfail() { pm_released_case released-fail; }
+case_pmreleasedfail4() { pm_released_case released-fail4; }
+case_pmreleasednoledger() { pm_released_case released-noledger; }
+
 case_pmempty() { pm_upgrade_case empty; }
 case_pmnopolicy() { pm_upgrade_case nopolicy; }
 case_pmnobaseline() { pm_upgrade_case nobaseline; }
@@ -4459,6 +4578,10 @@ run_case() {
     pm.nopolicy) case_pmnopolicy ;;
     pm.nobaseline) case_pmnobaseline ;;
     pm.maint) case_pmmaint ;;
+    pm.released) case_pmreleased ;;
+    pm.released-fail) case_pmreleasedfail ;;
+    pm.released-fail4) case_pmreleasedfail4 ;;
+    pm.released-noledger) case_pmreleasednoledger ;;
     caps) case_caps ;;
     *) echo "fixture: unknown case '$1'" >&2; exit 2 ;;
   esac
@@ -4482,6 +4605,7 @@ if [ "$CASE" = "all" ]; then
   run_case fx.a; run_case fx.b1; run_case fx.b3; run_case fx.c; run_case fx.d; run_case fx.e
   run_case fx.p; run_case fx.f; run_case fx.k; run_case fx.rb; run_case fx.rep; run_case fx.agm; run_case fx.oc; run_case fx.own; run_case fx.g
   run_case aw.1; run_case aw.2; run_case aw.2b; run_case aw.3; run_case aw.4
+  run_case pm.released; run_case pm.released-fail; run_case pm.released-fail4; run_case pm.released-noledger
   run_case r1
 else
   run_case "$CASE"

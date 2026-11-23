@@ -1,0 +1,16 @@
+schema_version: 1
+from: "4.0.12"
+to: "4.0.13"
+generated_by: "manual"
+note: |
+  Patch v4.0.13 - upgrade release notes, the pack released-copy rule, the
+  structural genesis anchor and the gate3-check bug evidence, shipped as the
+  public base plus an allow-list of framework files.
+  Derivation: the framework selection paths (the gen-framework-provenance.sh
+  selection with the derive-sync-set.sh deny dirs) of the v4.0.12 tag tree
+  and of the release candidate tree (tracked-or-untracked paths), each sorted
+  with LC_ALL=C, saved as hop-paths-4012.txt and hop-paths-k.txt in the
+  release evidence. comm -23 of the two lists printed nothing, so there are no
+  framework deletes and no renames. Both lists are by measurement.
+delete: []
+rename: []

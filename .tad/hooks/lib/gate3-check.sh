@@ -41,10 +41,61 @@
 #   `## Not run` line) => `AC <id> not-run` / `COVERED <id> not-run`; else blocked
 #   (row or `## Blocked` listing) => `BLOCKED <id>`; else `MISSING <id>`.
 #
+# Two modes, chosen by the first argument (the usage stays two arguments):
+#   handoff mode  every path whose basename does not match `conductor-simple-*.md`
+#                 (or `conductor-simple-*.md:*`): every check above, unchanged.
+#   journal mode  the simple tier (cora SKILL.md Triage). The run reviewer passes the
+#                 task's address `<journal file>:<n>` as <handoff>: the journal
+#                 `.tad/evidence/journal/conductor-simple-<date>.md` and n = the line
+#                 number of the task's `request:` line, named by Cora in the dispatch.
+#                 In order: no `:<n>` part, or n not all digits, or n = 0 =>
+#                 `MISSING task line: pass <journal>:<n>, n = the line number of the
+#                 task's request: line` (the literal `<n>`), exit 1; the journal not a
+#                 readable file => usage, exit 2; the verdict-file check as above; line n
+#                 must match, ignoring case, `^[[:space:]]*(- )?request:`, else (n past
+#                 the end included) `MISSING request line at <journal>:<n>`, exit 1;
+#                 then `SIMPLE task <journal>:<n>`. The AC-table, `## AC runs`,
+#                 real_paths, `## Real paths` and `## Not run` checks and the m1/m3
+#                 marks do not run (a journal has none of them); no `Dispatched:` line,
+#                 no dispatch_id and no section is read: only line n. An unmarked task
+#                 prints the SIMPLE line alone and exits 0.
+#
+# Bug evidence (review-contract.md §10, 4.0.13). The script decides itself whether
+# the matter is a bug fix, from these marks (a source that cannot be read is no
+# mark and prints nothing):
+#   m1 (handoff mode) the handoff has a `## Reproduction` section holding a `repro:`
+#      line (*bug);
+#   m2 (journal mode) line n of the journal holds `bug_fix:` anywhere on it (fail
+#      closed: `"...";bug_fix:` counts); source `journal:<journal>:<n>`. A `request:`
+#      line inside a handoff is no mark;
+#   m3 (handoff mode) its `**Epic:** <name> (Phase <N>/...)` line names an Epic under
+#      <root>/.tad/active/epics/ or else <root>/.tad/archive/epics/ (<root> = the
+#      handoff path made absolute, cut at its last `/.tad/`) whose `## Requirement`
+#      has a line starting `- **Bug fix**:` or `- **Bug fix (phase <N>)**:`;
+#   m4 (both modes) the verdict front matter's `judged:` line names (first token) a readable
+#      completion report holding a whole line `bug_repro: <value>`.
+# No mark => output and exit code exactly as without this block. A marked matter
+# prints `BUGFIX marked by <source>[,<source>]`, then reads the `## Bug evidence`
+# table by header name (id = first column, status = column `result`):
+#   before-file, after-file: `pass` => `BUG <item> pass`;
+#   rerun-unfixed, rerun-fixed: `pass` => `BUG <item> pass`; `not-run: <reason>`
+#      (rerun-unfixed also `not-rebuildable: <reason>`), or a `## Not run` line
+#      `- <item> not-run: <reason>` => `BUG <item> not-run` (valid; Gate 4, never a pass);
+#   no section => `MISSING section ## Bug evidence`; no row => `MISSING bug-evidence
+#   <item>`; any other cell => `UNEXPLAINED bug-evidence <item> result '<cell>'`;
+#   completion `bug_repro: not-reproduced` => `MISSING bug-evidence fix (...)`;
+#   each of these sets exit 1.
+# gate3-check.sh (bug evidence): for a handoff, a matter is checked as a bug fix when the handoff has a `## Reproduction` section with a `repro:` line, or its `**Epic:**` line names an Epic (active or archived) whose `## Requirement` has a `- **Bug fix**:` line or a `- **Bug fix (phase N)**:` line for this phase, or the completion report named by the verdict's `judged:` line has a `bug_repro:` line; on the simple tier the run reviewer passes `<journal>:<n>` as the handoff, the journal `conductor-simple-<date>.md` and n the line number of the task's `request:` line, the script reads that one line, checks no AC table, real paths or not-run lines, and checks the task as a bug fix when that line has a `bug_fix:` field or the `judged:` completion report has a `bug_repro:` line, and a journal passed without `:<n>` or a line n that is not a `request:` line fails with exit 1; then `## Bug evidence` must have the rows `before-file` and `after-file` with result `pass`, and `rerun-unfixed` and `rerun-fixed` with `pass` or `not-run: <reason>` (`not-rebuildable: <reason>` also for `rerun-unfixed`), which go to Gate 4 and are never a pass, while anything else, a missing row, a missing section or `bug_repro: not-reproduced` fails with exit 1.
+#
 # Usage:
 #   gate3-check.sh <handoff> <verdict-file>
+#   gate3-check.sh <journal file>:<n> <verdict-file>      (simple tier, journal mode)
 #       prints AC <ID> run | AC <ID> not-run | COVERED <ID> run | COVERED <ID> not-run |
-#              BLOCKED <ID> | MISSING <what> | UNEXPLAINED <ID> [invalid: <why>]
+#              BLOCKED <ID> | MISSING <what> | UNEXPLAINED <ID> [invalid: <why>] |
+#              SIMPLE task <journal>:<n> |
+#              MISSING task line: pass <journal>:<n>, n = the line number of the task's request: line |
+#              MISSING request line at <journal>:<n> |
+#              BUGFIX marked by <source>[,<source>] | BUG <item> pass | BUG <item> not-run
 #       exit 0 when nothing is MISSING or UNEXPLAINED (BLOCKED lines allowed: the
 #       verdict rule caps them), 1 otherwise (a missing verdict file included),
 #       2 on usage.
@@ -57,7 +108,28 @@ usage() {
 [ $# -eq 2 ] || usage
 handoff="$1"
 vf="$2"
-[ -f "$handoff" ] && [ -r "$handoff" ] || usage
+mode=handoff
+case "${handoff##*/}" in
+  conductor-simple-*.md|conductor-simple-*.md:*) mode=journal ;;
+esac
+if [ "$mode" = journal ]; then
+  # the task's address <journal file>:<n>, split at its last ':'
+  case "${handoff##*/}" in
+    *.md:*) jp="${handoff%:*}"; jn="${handoff##*:}" ;;
+    *) jp="$handoff"; jn="" ;;
+  esac
+  case "$jn" in
+    ""|*[!0-9]*) jv="" ;;
+    *) jv=$(printf '%s' "$jn" | sed 's/^0*//') ;;
+  esac
+  if [ -z "$jv" ]; then
+    echo "MISSING task line: pass $jp:<n>, n = the line number of the task's request: line"
+    exit 1
+  fi
+  [ -f "$jp" ] && [ -r "$jp" ] || usage
+else
+  [ -f "$handoff" ] && [ -r "$handoff" ] || usage
+fi
 
 if [ ! -f "$vf" ] || [ ! -r "$vf" ]; then
   echo "MISSING evidence file $vf"
@@ -66,6 +138,17 @@ fi
 
 rc=0
 set -f   # ids come from the handoff and are word-split below: no glob expansion
+
+# ---- journal mode: read line n only; it must be a request: line
+jline=""
+if [ "$mode" = journal ]; then
+  jline=$(sed -n "${jv}p" "$jp" 2>/dev/null)
+  if ! printf '%s\n' "$jline" | command grep -Eiq '^[[:space:]]*(- )?request:'; then
+    echo "MISSING request line at $jp:$jn"
+    exit 1
+  fi
+  echo "SIMPLE task $jp:$jn"
+fi
 
 # section body of the verdict file: heading regex -> lines up to the next "## "
 secof() {
@@ -231,6 +314,7 @@ settle() { # $1 = id, $2 = run label, $3 = not-run label
   fi
 }
 
+if [ "$mode" = handoff ]; then
 # ---- ## Not run lines: each must carry a reason
 while IFS= read -r line; do
   case "$line" in
@@ -330,5 +414,105 @@ if [ -z "$(tabrows "$rp" | awk -F '\037' '$1 != "NOCOL" && $0 != "" { print; exi
 fi
 classify "$rptext" "$ids"
 for id in $ids; do settle "$id" COVERED COVERED; done
+fi   # handoff mode
+
+# ---- bug evidence (review-contract.md §10): only for a marked matter
+bmarks=""
+bmark() { if [ -z "$bmarks" ]; then bmarks="$1"; else bmarks="$bmarks,$1"; fi; }
+if [ "$mode" = handoff ]; then
+# m1: ## Reproduction section holding a repro: line
+if awk '!on { if ($0 ~ /^## Reproduction[[:space:]]*$/) on = 1; next } /^## / { exit } /^[[:space:]]*(- )?repro:/ { f = 1; exit } END { exit !f }' "$handoff" 2>/dev/null; then
+  bmark "reproduction:$handoff"
+fi
+# m3: the handoff's Epic line names an Epic whose ## Requirement marks this phase
+eline=$(command grep -m1 -E '^\*\*Epic:\*\*[[:space:]]*[^[:space:]]+[[:space:]]*\(Phase[[:space:]]*[0-9]+' "$handoff" 2>/dev/null)
+if [ -n "$eline" ]; then
+  ename=$(printf '%s\n' "$eline" | sed -E 's/^\*\*Epic:\*\*[[:space:]]*([^[:space:]]+).*/\1/')
+  ephase=$(printf '%s\n' "$eline" | sed -E 's/.*\(Phase[[:space:]]*([0-9]+).*/\1/')
+  case "$handoff" in /*) habs="$handoff" ;; *) habs="$PWD/$handoff" ;; esac
+  eroot=""
+  case "$habs" in */.tad/*) eroot="${habs%/.tad/*}" ;; esac
+  efile=""
+  case "$ename" in
+    */*|"") ;;
+    *)
+      if [ -n "$eroot" ]; then
+        if [ -f "$eroot/.tad/active/epics/$ename" ] && [ -r "$eroot/.tad/active/epics/$ename" ]; then
+          efile="$eroot/.tad/active/epics/$ename"
+        elif [ -f "$eroot/.tad/archive/epics/$ename" ] && [ -r "$eroot/.tad/archive/epics/$ename" ]; then
+          efile="$eroot/.tad/archive/epics/$ename"
+        fi
+      fi ;;
+  esac
+  if [ -n "$efile" ] && P="$ephase" awk 'BEGIN { p = ENVIRON["P"] } !on { if ($0 ~ /^## Requirement[[:space:]]*$/) on = 1; next } /^## / { exit } index($0, "- **Bug fix**:") == 1 || index($0, "- **Bug fix (phase " p ")**:") == 1 { f = 1; exit } END { exit !f }' "$efile" 2>/dev/null; then
+    bmark "epic:$efile"
+  fi
+fi
+else
+# m2 (journal mode): line n holds bug_fix: anywhere on it
+case "$jline" in *bug_fix:*) bmark "journal:$jp:$jn" ;; esac
+fi
+# m4: the verdict's judged: completion report holds a bug_repro: line
+judged=$(awk 'NR == 1 && $0 != "---" { exit } NR == 1 { next } $0 == "---" { exit } /^judged:/ { sub(/^judged:[[:space:]]*/, ""); sub(/[[:space:]].*$/, ""); print; exit }' "$vf")
+brepro=""
+if [ -n "$judged" ] && [ -f "$judged" ] && [ -r "$judged" ]; then
+  brepro=$(command grep -m1 -E '^bug_repro: [^[:space:]]' "$judged" 2>/dev/null)
+  [ -n "$brepro" ] && bmark "completion:$judged"
+fi
+
+if [ -n "$bmarks" ]; then
+  echo "BUGFIX marked by $bmarks"
+  if ! command grep -Eq '^## Bug evidence[[:space:]]*$' "$vf"; then
+    echo "MISSING section ## Bug evidence"
+    rc=1
+  else
+    be=$(secof '^## Bug evidence[[:space:]]*$')
+    # item \037 result cell, one line per data row, by header name
+    berows=$(printf '%s\n' "$be" | awk '
+      function cells(line,   t, n, i) {
+        gsub(/\\\|/, "\036", line)
+        sub(/^[[:space:]]*\|/, "", line); sub(/\|[[:space:]]*$/, "", line)
+        n = split(line, c, "|")
+        for (i = 1; i <= n; i++) {
+          t = c[i]; gsub(/\036/, "|", t)
+          sub(/^[[:space:]]+/, "", t); sub(/[[:space:]]+$/, "", t)
+          gsub(/\037/, " ", t); c[i] = t
+        }
+        return n
+      }
+      !/^[[:space:]]*\|/ { next }
+      !hdr { hdr = 1; n = cells($0); sc = 0; for (i = 2; i <= n; i++) if (tolower(c[i]) == "result") { sc = i; break } ; next }
+      /^[[:space:]]*\|[-:| [:space:]]*$/ { next }
+      { n = cells($0); s = (sc && sc <= n) ? c[sc] : ""; print tolower(c[1]) "\037" s }
+    ')
+    for item in before-file after-file rerun-unfixed rerun-fixed; do
+      found=0; cell=""
+      while IFS="$us" read -r bid bst; do
+        [ "$bid" = "$item" ] || continue
+        found=1; cell="$bst"; break
+      done <<EOF
+$berows
+EOF
+      lc=$(printf '%s' "$cell" | tr 'A-Z' 'a-z')
+      if [ "$found" -eq 0 ]; then
+        case "$item" in
+          rerun-*) if notrun_ok "$item"; then echo "BUG $item not-run"; continue; fi ;;
+        esac
+        echo "MISSING bug-evidence $item"; rc=1; continue
+      fi
+      if [ "$lc" = pass ]; then echo "BUG $item pass"; continue; fi
+      case "$item" in
+        rerun-*)
+          if printf '%s\n' "$lc" | command grep -Eq '^not-run:[[:space:]]*[^[:space:]]'; then echo "BUG $item not-run"; continue; fi
+          if [ "$item" = rerun-unfixed ] && printf '%s\n' "$lc" | command grep -Eq '^not-rebuildable:[[:space:]]*[^[:space:]]'; then echo "BUG $item not-run"; continue; fi
+          if printf '%s\n' "$lc" | command grep -Eq '^not-run:?[[:space:]]*$' && notrun_ok "$item"; then echo "BUG $item not-run"; continue; fi ;;
+      esac
+      echo "UNEXPLAINED bug-evidence $item result '$cell'"; rc=1
+    done
+  fi
+  case "$brepro" in
+    "bug_repro: not-reproduced"*) echo "MISSING bug-evidence fix (bug_repro: not-reproduced is a BF3 stop, not a Gate 3)"; rc=1 ;;
+  esac
+fi
 
 exit $rc

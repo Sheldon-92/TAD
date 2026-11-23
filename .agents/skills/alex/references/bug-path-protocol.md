@@ -24,6 +24,7 @@ bug_path_protocol:
         Optionally call bug-hunter subagent for complex issues.
         When the bug is in an accepted result (an archived handoff or a completed Epic), write one escape-log line with the diagnosis into `.tad/evidence/escape-log.md` (created from `.tad/templates/escape-log.md` when absent; its rule table names the gate that should have caught it).
         Identify root cause and affected files.
+        When the matter is a bug fix, write the reproduction and symptom as the BF1 record (review-contract.md §10): it is shown to the user with the diagnosis and becomes the `## Reproduction` section of the mini-handoff.
         Output diagnosis to user:
         - Root cause
         - Affected files
@@ -65,6 +66,10 @@ bug_path_protocol:
         ## Bug Description
         {user's description + symptoms}
 
+        ## Reproduction
+        repro: {the exact command or steps}
+        symptom: {what it shows}
+
         ## Root Cause Analysis
         {Alex's diagnosis from step2}
 
@@ -78,11 +83,11 @@ bug_path_protocol:
         Mini-handoff AC must include a legal runnable Verification Method — mini-handoff includes §9.1 Spec Compliance Checklist (one row is enough; without this table Gate 3 empty-guard BLOCKS and the Method can never be checked).
         | # | Acceptance Criterion | Verification Type | Verification Method | Expected Evidence | Verified Output |
         |---|---------------------|-------------------|---------------------|-------------------|-----------------|
-        | 1 | Reported symptom fixed, no related regression | post-impl-verifiable | `{repro command or failing-then-passing test, e.g. pytest tests/test_slug.py -k bugfix}` | exit 0, symptom gone under reported conditions | (post-impl) |
+        | AC1 | Reported symptom fixed, no related regression | post-impl-verifiable | `{the repro: line of ## Reproduction}` | before file shows the failure; after file and the reviewer's own re-run pass (review-contract.md §10 BF2–BF5) | (post-impl) |
 
         ## Blake Instructions
         - This is an express bugfix — requirement clarification was a playback (no unclear block)
-        - Apply fix → Layer 1 → commit → Gate 3 reviewers run + consistency (+ domain if security/data/money) per the review contract → then Alex `*accept` (Gate 4 acceptor, runs the reported repro)
+        - Bug-fix sequence (review-contract.md §10 BF2–BF4): run the `repro:` line of `## Reproduction` before changing anything and save the before file; not reproduced → change no file, write `bug_repro: not-reproduced` in the completion report, stop and tell Alex (BF3); otherwise apply fix → re-run the identical `repro:` → save the after file → Layer 1 → commit → Gate 3 reviewers run (BF5) + consistency (+ domain if security/data/money) per the review contract → then Alex `*accept` (Gate 4 acceptor, runs the reported repro)
         - If fix turns out to be more complex than described, escalate to Alex
         ```
 

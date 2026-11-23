@@ -106,6 +106,7 @@ Do not create an inline migration or verifier wrapper. The existing CLI is the a
 ```bash
 bash "$repo_root/.tad/hooks/lib/release-verify.sh" installer-destructive-guard "$repo_root"
 bash "$repo_root/.tad/hooks/lib/release-verify.sh" freshness "$repo_root"
+bash "$repo_root/.tad/hooks/lib/release-verify.sh" release-notes "$repo_root" "$NEW"  # exit 1 blocks every release type
 ```
 
 - `0`: continue. `1`: block. `2`: hard block (wiring failure).

@@ -14,6 +14,9 @@
 #         - else diff -rq the whole dir source-vs-target.
 #       Also diff -rq .agents/skills (the sole framework skills path, v3.0.0).
 #       The registry-only special-case is READ from --registry-only, NEVER hardcoded here.
+#       One target-only line is tolerated: `Only in <target>/.tad/migrations: genesis.yaml`
+#       (the fresh-install anchor tad.sh writes), printed as an ℹ️ line; every other
+#       target-only line in migrations or any other .tad/ dir still fails.
 #       Exit 0 = every derived path byte-identical source-vs-target; exit 1 = ≥1 missing/
 #       differing path (each NAMED); exit 2 = usage.
 #       BYTE-IDENTITY: this gate runs AFTER the verbatim `cp -R` sync (sync-side post-copy),
@@ -136,6 +139,15 @@
 #       offender printed); exit 2 = usage / not a git repo / ref unresolved / build or extraction
 #       failure. Echoes `GATE: release-verify archive-links exit=<n>` on non-zero.
 #
+#   release-notes <repo_root> <version>
+#       Upgrade release-notes gate (4.0.13). Reads <repo_root>/tad.sh, takes the installer's
+#       bullet pattern from its `_bre='...'` line (capture_release_notes) and the reader's
+#       section rule (`^##[[:space:]]+\[x.y.z\]` opens a section, the next `## ` line ends it),
+#       and counts the <version> section lines of <repo_root>/CHANGELOG.md the reader matches
+#       (bash [[ =~ ]], as the reader does). Exit 0 = >=1 line (`RELEASE-NOTES: <v> <n> line(s)
+#       the installer reads`); exit 1 = 0 lines or no section; exit 2 = usage / tad.sh,
+#       CHANGELOG.md or the `_bre=` line missing. Exit 1 blocks for every release type.
+#
 #   Dual-tree mirror modes — REMOVED in v3.0.0 (single skill tree;
 #       nothing to mirror). Replaced by `structural` (.agents/skills byte-identity).
 #       Any caller still invoking them gets usage exit 2 (fail-closed).
@@ -177,6 +189,7 @@ usage() {
   echo "  release-verify.sh path-refs [<repo_root>]" >&2
   echo "  release-verify.sh archive-links <repo_root> [<ref>]" >&2
   echo "  release-verify.sh archive-links --tarball <file>" >&2
+  echo "  release-verify.sh release-notes <repo_root> <version>" >&2
 }
 
 if [ ! -f "$DERIVE" ]; then
@@ -224,6 +237,15 @@ case "$MODE" in
         continue
       fi
       out="$(diff -rq "$SRC/.tad/$d" "$TGT/.tad/$d" 2>&1)" || true
+      if [ "$d" = migrations ] && [ -n "$out" ]; then
+        # The fresh-install anchor tad.sh writes (write_genesis_manifest): exactly this whole
+        # line is removed; every other target-only or differing line is judged as before.
+        gen_line="Only in $TGT/.tad/migrations: genesis.yaml"
+        if printf '%s\n' "$out" | grep -xF -- "$gen_line" >/dev/null; then
+          out="$(printf '%s\n' "$out" | grep -vxF -- "$gen_line" || true)"
+          echo "  ℹ️  target-only genesis anchor: .tad/migrations/genesis.yaml (written by the installer at a fresh install)"
+        fi
+      fi
       if [ -z "$out" ]; then
         echo "  ✅ .tad/$d identical"
       else
@@ -1415,6 +1437,42 @@ VERSION_SWEEP_EOF
     if [ "$al_rc" -ne 0 ]; then echo "VERDICT: archive-links FAIL (exit 1)"; al_gate 1; fi
     echo "VERDICT: archive-links PASS (exit 0)"
     exit 0
+    ;;
+
+  # ───────────────────────── release-notes ─────────────────────────
+  release-notes)
+    # Upgrade release-notes gate (4.0.13): does the installer's "What changed:" reader see
+    # any line of the <version> section? The bullet pattern is READ from tad.sh's own
+    # `_bre='...'` line (capture_release_notes), never restated here; the section rule is
+    # the reader's: `^##[[:space:]]+\[x.y.z\]` opens, the next `## ` line closes.
+    if [ $# -ne 3 ]; then usage; exit 2; fi
+    rn_root="$2"; rn_ver="$3"
+    rn_sh="$rn_root/tad.sh"; rn_cl="$rn_root/CHANGELOG.md"
+    if [ ! -f "$rn_sh" ] || [ ! -f "$rn_cl" ]; then
+      echo "ERROR: release-notes needs tad.sh and CHANGELOG.md under $rn_root" >&2; usage; exit 2
+    fi
+    rn_bre="$(sed -n "s/^[[:space:]]*_bre='\(.*\)'[[:space:]]*\$/\1/p" "$rn_sh" | head -1)"
+    if [ -z "$rn_bre" ]; then
+      echo "ERROR: no _bre='...' line in $rn_sh (the installer's bullet pattern)" >&2; usage; exit 2
+    fi
+    rn_hre='^##[[:space:]]+\[([0-9]+\.[0-9]+\.[0-9]+)\]'
+    rn_in=0; rn_seen=0; rn_n=0
+    while IFS= read -r rn_line || [ -n "$rn_line" ]; do
+      if [[ "$rn_line" =~ ^##[[:space:]] ]]; then
+        rn_in=0
+        if [[ "$rn_line" =~ $rn_hre ]] && [ "${BASH_REMATCH[1]}" = "$rn_ver" ]; then rn_in=1; rn_seen=1; fi
+        continue
+      fi
+      [ "$rn_in" = 1 ] || continue
+      if [[ "$rn_line" =~ $rn_bre ]]; then rn_n=$((rn_n + 1)); fi
+    done < "$rn_cl"
+    if [ "$rn_seen" = 0 ]; then
+      echo "RELEASE-NOTES: $rn_ver no section"; exit 1
+    fi
+    if [ "$rn_n" -ge 1 ]; then
+      echo "RELEASE-NOTES: $rn_ver $rn_n line(s) the installer reads"; exit 0
+    fi
+    echo "RELEASE-NOTES: $rn_ver 0 lines the installer reads (pattern from tad.sh _bre)"; exit 1
     ;;
 
   *)

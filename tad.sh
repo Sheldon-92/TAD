@@ -76,7 +76,7 @@ fi
 # or the ROOT FIX block in main() (failure), never from this literal.
 # It is used ONLY before the source is fetched (banner) and as a last-resort
 # fallback if the source version.txt is unreadable.
-TARGET_VERSION="4.0.12"
+TARGET_VERSION="4.0.13"
 REPO_URL="https://github.com/Sheldon-92/TAD"
 DOWNLOAD_URL="https://github.com/Sheldon-92/TAD/archive/refs/heads/main.tar.gz"
 VERSION_URL="https://raw.githubusercontent.com/Sheldon-92/TAD/main/.tad/version.txt"
@@ -2449,6 +2449,68 @@ pack_meta_empty_precheck() {
     return 0
 }
 
+# Released-copy rule (4.0.13). An upgrade keeps a pack file whose bytes differ from the pack
+# meta's record (Case 3 "migrated" never overwrites; Case 4 keeps "customized" files and
+# conflicts). A file whose git blob id is a row of the release ledger
+# $src/.tad/provenance/framework-released.tsv is an unmodified copy of a released file, so it
+# is replaced from upstream instead. Never an empty file (the empty blob is a ledger row and a
+# user may blank a file on purpose). Named limit: the ledger has no path column, so a file
+# reverted by hand to some released copy is also updated. The ledger is validated once per
+# run like claude_provenance_ready (no symlink; header rows = data rows; blob id = .sha1);
+# not usable => no file is treated as released and behaviour is exactly as before.
+PACK_REL_CHECKED=0
+PACK_REL_LEDGER=""
+PACK_REL_WHY=""
+pack_released_ready() { # $1 = release source root
+    local _src="$1" _l _m _want _have _hdr _rows
+    if [ "$PACK_REL_CHECKED" = "1" ]; then return 0; fi
+    PACK_REL_CHECKED=1
+    PACK_REL_LEDGER=""
+    PACK_REL_WHY=""
+    if [ "${CLAUDE_SHA1_PROBED:-0}" != "1" ]; then claude_sha1_probe || true; fi
+    _l="$_src/.tad/provenance/framework-released.tsv"
+    _m="$_src/.tad/provenance/framework-released.sha1"
+    if [ -z "${CLAUDE_SHA1_TOOL:-}" ]; then
+        PACK_REL_WHY="no SHA-1 tool available"
+    elif [ -L "$_l" ] || [ ! -f "$_l" ] || [ -L "$_m" ] || [ ! -f "$_m" ]; then
+        PACK_REL_WHY="release ledger missing"
+    else
+        _want=$(LC_ALL=C tr -d ' \t\r\n' < "$_m" 2>/dev/null) || _want=""
+        _have=$(claude_blob_id "$_l") || _have=""
+        if [ -z "$_have" ] || [ "$_have" != "$_want" ]; then
+            PACK_REL_WHY="release ledger does not match framework-released.sha1"
+        else
+            _hdr=$(sed -n '1s/^# schema=1 rows=\([0-9][0-9]*\)$/\1/p' "$_l" 2>/dev/null) || _hdr=""
+            _rows=$(grep -vc '^#' "$_l" 2>/dev/null || true)
+            _rows=$(printf '%s' "$_rows" | tr -d ' ')
+            if [ -z "$_hdr" ] || [ "$_hdr" != "$_rows" ]; then
+                PACK_REL_WHY="release ledger row count mismatch"
+            else
+                PACK_REL_LEDGER="$_l"
+            fi
+        fi
+    fi
+    if [ -z "$PACK_REL_LEDGER" ]; then
+        log_warn "pack files: release ledger not usable ($PACK_REL_WHY); files that differ from the pack meta are kept as before"
+    fi
+    return 0
+}
+# pack_is_released_copy <target file> — 0 when the ledger is ready, the file is a non-empty
+# regular file and its blob id is the first field of a ledger row (whole-field match).
+pack_is_released_copy() {
+    local _f="$1" _b
+    [ -n "$PACK_REL_LEDGER" ] || return 1
+    [ -f "$_f" ] && [ ! -L "$_f" ] && [ -s "$_f" ] || return 1
+    _b=$(claude_blob_id "$_f") || return 1
+    [ -n "$_b" ] || return 1
+    PR_B="$_b" LC_ALL=C awk -F'\t' 'BEGIN { b = ENVIRON["PR_B"] } !/^#/ && $1 == b { f = 1; exit } END { exit !f }' "$PACK_REL_LEDGER" 2>/dev/null
+}
+# pack_released_differs <src file> <target file> — the target differs from upstream and is a released copy
+pack_released_differs() {
+    cmp -s -- "$1" "$2" && return 1
+    pack_is_released_copy "$2"
+}
+
 # copy_pack_skill_smart <src_dir> <tgt_dir> — smart copy: compare hashes, skip customized files
 # Requires PACK_STATS_* counters declared as local in the caller (bash dynamic scoping).
 copy_pack_skill_smart() {
@@ -2482,6 +2544,9 @@ copy_pack_skill_smart() {
         return 0
     fi
 
+    # Released-copy rule: the release source root is <src>/.agents/skills/<name> cut back.
+    pack_released_ready "${src_dir%/.agents/skills/*}"
+
     # Case 3: Migrated → only add new files, never overwrite
     if [ "$baseline" = "migrated" ]; then
         local src_file
@@ -2492,6 +2557,9 @@ copy_pack_skill_smart() {
             if [ ! -f "$tgt_dir/$rel" ]; then
                 mkdir -p "$(dirname "$tgt_dir/$rel")"
                 atomic_install_file "$src_file" "$tgt_dir/$rel" || return 1
+            elif pack_released_differs "$src_file" "$tgt_dir/$rel"; then
+                atomic_install_file "$src_file" "$tgt_dir/$rel" || return 1
+                log_info "    $skill_name/$rel: released copy updated"
             fi
         done <<< "$(find "$src_dir" -type f -not -name '.tad-pack-meta.yaml' -not -path '*/local/*')"
         PACK_STATS_MIGRATED=$((PACK_STATS_MIGRATED + 1))
@@ -2530,6 +2598,12 @@ copy_pack_skill_smart() {
 
         # No hash in meta → treat as customized (unknown state)
         if [ -z "$installed_hash" ]; then
+            if pack_released_differs "$src_file" "$tgt_dir/$rel"; then
+                atomic_install_file "$src_file" "$tgt_dir/$rel" || return 1
+                log_info "    $skill_name/$rel: released copy updated"
+                updated=$((updated + 1))
+                continue
+            fi
             modified=$((modified + 1))
             continue
         fi
@@ -2541,6 +2615,11 @@ copy_pack_skill_smart() {
         if [ "$current_hash" = "$installed_hash" ]; then
             # Pristine → safe to overwrite
             atomic_install_file "$src_file" "$tgt_dir/$rel" || return 1
+            updated=$((updated + 1))
+        elif pack_released_differs "$src_file" "$tgt_dir/$rel"; then
+            # Not a local edit: an unmodified copy of a released file -> upstream
+            atomic_install_file "$src_file" "$tgt_dir/$rel" || return 1
+            log_info "    $skill_name/$rel: released copy updated"
             updated=$((updated + 1))
         else
             # Local was modified. Check if upstream also changed.

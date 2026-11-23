@@ -44,7 +44,7 @@ gate4_delta: []
 **Date:** [Current Date]
 **Project:** [Project Name]
 **Task ID:** TASK-[YYYYMMDD]-[###]
-**Handoff Version:** 4.0.12
+**Handoff Version:** 4.0.13
 **Epic:** N/A <!-- Optional: EPIC-{YYYYMMDD}-{slug}.md (Phase {N}/{M}) -->
 **Supersedes:** N/A <!-- Optional: HANDOFF-YYYYMMDD-{slug}.md -->
 
@@ -319,4 +319,4 @@ Fill the same slot as `handoff-a-to-b.md` §8.8 (gate skill `RESEARCH TRUTH CHEC
 
 **Handoff Created By**: Alex (Agent A)
 **Date**: [Date]
-**Version**: 4.0.12
+**Version**: 4.0.13
